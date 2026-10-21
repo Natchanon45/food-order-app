@@ -138,9 +138,8 @@ markDataContract("/admin/tenants", "createTenantButton", {
   actorRole: "super_admin",
   expectedDataMutation: "Create or update tenant using createTenant/updateTenant callable based on edit state.",
 });
-markDataContract("/admin/tenants", "saveRevenueShareButton", {
-  actorRole: "super_admin",
-  expectedDataMutation: "Update tenant revenue-share configuration through updateTenantRevenueShare callable.",
+markNoData("/admin/tenants", "openCentralDeliveryPricing", {
+  expectedDataMutation: "none — open central Premium pricing. Delivery rate and threshold are never edited per Tenant.",
 });
 markDataContract("/admin/tenants", "rejectRevenueSharePayment", {
   actorRole: "super_admin",

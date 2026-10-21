@@ -1589,3 +1589,105 @@ p {
     margin-left:auto;
   }
 }
+
+/* Central Premium Delivery policy is the sole active configuration source.
+   Tenant modal is a read-only view; no per-store overrides yet. */
+.tenant-dialog .tenant-central-share-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #cbe7d3;
+  border-radius: 15px;
+  background: #effaf3;
+  color: #174b2c;
+}
+.tenant-central-share-note > .bi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 26px;
+  font-size: 22px;
+  line-height: 1;
+  color: #128344;
+}
+.tenant-central-share-note > div { display: grid; gap: 4px; min-width: 0; }
+.tenant-central-share-note strong { font-size: 15px; line-height: 1.4; }
+.tenant-central-share-note span { color: #47745a; font-size: 13px; line-height: 1.6; }
+.tenant-central-share-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 4px;
+  color: #34674b;
+  font-weight: 700;
+}
+.tenant-central-share-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.tenant-central-share-value {
+  display: grid;
+  gap: 10px;
+  padding: 15px;
+  min-width: 0;
+  border: 1px solid #d8e9dd;
+  border-radius: 14px;
+  background: #fafdfa;
+}
+.tenant-central-share-value > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: #5b7062;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.tenant-central-share-value > span .bi {
+  color: #158348;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.tenant-central-share-value > strong {
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.35;
+  color: #0a7135;
+  overflow-wrap: anywhere;
+}
+.tenant-central-share-description {
+  margin: 13px 0 0;
+  color: #5e7466;
+  line-height: 1.7;
+  font-size: 12px;
+}
+#revenueShareDialog .tenant-dialog-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+#revenueShareDialog .tenant-dialog-actions .btn > .bi,
+#revenueShareDialog .tenant-dialog-actions .btn > i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+@media(max-width:620px){
+  .tenant-central-share-grid { grid-template-columns: minmax(0,1fr); }
+  .tenant-central-share-value { padding: 13px; }
+  #revenueShareDialog .tenant-dialog-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #revenueShareDialog .tenant-dialog-actions .btn { min-width: 0; width: 100%; white-space: normal; }
+}
+@media(max-width:360px){
+  #revenueShareDialog .tenant-dialog-actions { grid-template-columns: minmax(0,1fr); }
+}

@@ -276,7 +276,7 @@ requireAll("Waiting Queue seating transaction", waitingCore, [
 requireAll("Admin tenant create/edit/share actions", tenants, [
   "if (editing) await updateTenant(payload)",
   "else await createTenant(payload)",
-  "await updateTenantRevenueShare({",
+  "loadAdminSubscriptionPricing",
   "await reconcileRevenueShare(tenantId ? { tenantId } : {})",
 ]);
 requireAll("Admin tenant destructive/review actions", tenants, [

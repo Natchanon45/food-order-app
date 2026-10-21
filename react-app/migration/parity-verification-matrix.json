@@ -1340,17 +1340,17 @@
           "navigation": null
         },
         {
-          "id": "saveRevenueShareButton",
-          "label": "admin_tenants.share.save",
+          "id": "openCentralDeliveryPricing",
+          "label": "Open centrally administered Premium Delivery settings",
           "actorRole": "super_admin",
           "precondition": "pending",
           "masterBehavior": "pending",
           "reactBehavior": "pending",
           "expectedUiResult": "pending",
-          "expectedDataMutation": "Update tenant revenue-share configuration through updateTenantRevenueShare callable.",
+          "expectedDataMutation": "none — central Premium pricing navigation only; Tenant policy is read-only",
           "failureBehavior": "pending",
           "browserCoverage": "pending",
-          "dataVerification": "partial",
+          "dataVerification": "not_applicable",
           "inventorySource": "laravel_blade",
           "labelKey": "admin_tenants.share.save",
           "actionAttribute": null,
@@ -4938,7 +4938,9 @@
         "responsive": "pending"
       },
       "actionInventory": [],
-      "notes": ["New read-only Hybrid Billing report; no Laravel legacy view"]
+      "notes": [
+        "New read-only Hybrid Billing report; no Laravel legacy view"
+      ]
     },
     {
       "route": "/reports/revenue-share",

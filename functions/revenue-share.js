@@ -101,22 +101,25 @@ async function assertTenantAdmin(auth) {
 function revenueSetting(tenant = {}, premiumPricing = null) {
   const legacyChannels = revenueShareChannels(tenant);
   const businessType = normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
-  // Premium subscribers retain subscription status. The platform's shared
-  // Delivery percentage applies separately to paid goods, never to Table/POS.
-  const premiumDeliveryShare = !legacyChannels.enabled && tenant.billingMode === "subscription"
-    && tenant.billingPolicyVersion !== "hybrid_v1"
+  // One centrally administered Delivery threshold/rate applies to every
+  // restaurant-capable Tenant. Old legacy non-Delivery charges remain distinct.
+  const centralDeliveryShare = tenant.billingPolicyVersion !== "hybrid_v1"
     && businessType !== "retail" && premiumPricing != null
     && Number(premiumPricing.deliveryShareRate) > 0;
+  const premiumDeliveryShare = centralDeliveryShare && !legacyChannels.enabled
+    && tenant.billingMode === "subscription";
   const channels = premiumDeliveryShare
     ? { enabled: true, includeRestaurant: true, includeRetail: false, restaurantScope: "delivery_only" }
     : legacyChannels;
   return {
-    enabled: channels.enabled,
+    enabled: legacyChannels.enabled || premiumDeliveryShare,
     legacyEnabled: legacyChannels.enabled,
+    centralDeliveryShare,
     premiumDeliveryShare,
-    rate: premiumDeliveryShare ? Number(premiumPricing.deliveryShareRate)
-      : Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0))),
-    deliveryThreshold: premiumDeliveryShare ? Number(premiumPricing.deliveryThreshold)
+    rate: legacyChannels.enabled ? Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0)))
+      : (centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0),
+    deliveryShareRate: centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0,
+    deliveryThreshold: premiumPricing != null ? Number(premiumPricing.deliveryThreshold)
       : Number(tenant.revenueShareDeliveryThreshold ?? 10000),
     billingCycle: premiumDeliveryShare ? "monthly"
       : (tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly"),
@@ -154,7 +157,7 @@ async function summaryForTenant(tenantId, period, setting) {
     db.collection("tenants").doc(tenantId).collection("sales").get()
   ]);
   let orderSales = 0, orderCount = 0, posSales = 0, posCount = 0;
-  let shareOrderSales = 0;
+  let shareOrderSales = 0, shareDeliverySales = 0;
   let customerDeliveryFees = 0, lalamoveDeliveryCost = 0, lalamoveWalletCoveredCost = 0, deliverySubsidy = 0;
 
   // Evaluate a whole Bangkok calendar month even for a daily report. Otherwise
@@ -214,16 +217,19 @@ async function summaryForTenant(tenantId, period, setting) {
     if (shareEligibleOrder) {
       orderSales += foodSales;
       orderCount += 1;
-      if (!isDelivery) {
-        // Keep the existing Table/Takeaway/Walk-in share rule unchanged.
+      if (!isDelivery && setting.legacyEnabled) {
+        // Preserve historical non-Delivery charges for legacy contracts.
         shareOrderSales += foodSales;
-      } else if (String(row.paymentStatus || "").toLowerCase() === "paid"
-        && String(row.status || "").toLowerCase() !== "refunded"
-        && asDate(row.paidAt) && eligibleDeliveryDays.has(dateKey(asDate(row.paidAt)))) {
-        // Charge goods only (no shipping), net of merchandise refunds.
-        const refund = Math.max(0, Number(row.refundTotal ?? row.refundedAmount ?? row.refundAmount ?? 0) || 0);
-        shareOrderSales += Math.max(0, Math.min(foodSales, Math.max(0, total - customerFee)) - refund);
       }
+    }
+    if (isDelivery && setting.centralDeliveryShare
+      && String(row.paymentStatus || "").toLowerCase() === "paid"
+      && String(row.status || "").toLowerCase() !== "refunded"
+      && asDate(row.paidAt) && eligibleDeliveryDays.has(dateKey(asDate(row.paidAt)))) {
+      // Global rate always wins for paid Delivery, regardless of stale
+      // per-Tenant rate, scope or legacy billing mode.
+      const refund = Math.max(0, Number(row.refundTotal ?? row.refundedAmount ?? row.refundAmount ?? 0) || 0);
+      shareDeliverySales += Math.max(0, Math.min(foodSales, Math.max(0, total - customerFee)) - refund);
     }
     customerDeliveryFees += isLalamove ? customerFee : 0;
     lalamoveDeliveryCost += lalamoveCost;
@@ -250,8 +256,14 @@ async function summaryForTenant(tenantId, period, setting) {
   lalamoveWalletCoveredCost = roundMoney(lalamoveWalletCoveredCost);
   deliverySubsidy = roundMoney(deliverySubsidy);
   const combinedSales = roundMoney(orderSales + posSales);
-  const revenueShareBase = roundMoney(shareOrderSales + posSales);
-  const revenueShare = setting.enabled ? roundMoney(revenueShareBase * setting.rate / 100) : 0;
+  const legacyShareBase = setting.legacyEnabled ? roundMoney(shareOrderSales + posSales) : 0;
+  const deliveryShareBase = roundMoney(shareDeliverySales);
+  const deliveryShareAmount = setting.centralDeliveryShare
+    ? roundMoney(deliveryShareBase * setting.deliveryShareRate / 100) : 0;
+  const legacyShareAmount = setting.legacyEnabled
+    ? roundMoney(legacyShareBase * setting.rate / 100) : 0;
+  const revenueShareBase = roundMoney(legacyShareBase + deliveryShareBase);
+  const revenueShare = roundMoney(deliveryShareAmount + legacyShareAmount);
   const lalamoveOutstandingCost = roundMoney(Math.max(0, lalamoveDeliveryCost - lalamoveWalletCoveredCost));
   const platformAmountDue = setting.premiumDeliveryShare ? revenueShare
     : (setting.enabled ? roundMoney(revenueShare + lalamoveOutstandingCost) : 0);
@@ -262,6 +274,11 @@ async function summaryForTenant(tenantId, period, setting) {
     lalamoveOutstandingCost, deliverySubsidy,
     revenueShareEnabled: setting.legacyEnabled ?? setting.enabled,
     premiumDeliveryShareEnabled: setting.premiumDeliveryShare === true,
+    centralDeliveryShareEnabled: setting.centralDeliveryShare === true,
+    deliveryShareRate: setting.deliveryShareRate,
+    deliveryShareBase,
+    deliveryShareAmount,
+    legacyShareAmount,
     revenueShareRate: setting.rate,
     revenueShareDeliveryThreshold: setting.deliveryThreshold,
     revenueShareBase,
@@ -471,19 +488,22 @@ async function duplicateSlipReferenceExists(referenceId = "", transRef = "") {
   return false;
 }
 
-async function reconcileTenant(tenantId) {
+async function reconcileTenant(tenantId, centralPricing = null) {
   const db = getFirestore();
   const tenantRef = db.collection("tenants").doc(tenantId);
   const tenantSnapshot = await tenantRef.get();
   if (!tenantSnapshot.exists) return { state: "tenant_missing", action: "none" };
   let tenant = { id: tenantSnapshot.id, ...tenantSnapshot.data() };
-  const setting = revenueSetting(tenant);
-  if (!setting.enabled) {
+  const historicalSetting = revenueSetting(tenant);
+  // Keep legacy enforcement restricted to historical revenue-share tenants.
+  // Premium subscribers never enter this suspension flow.
+  if (!historicalSetting.enabled) {
     if (!tenant.revenueShareSuspended) return { state: "subscription", action: "none" };
     const active = subscriptionActive(tenant);
     await mirrorTenantAccess(tenantRef, tenant, { active, revenueShareSuspended: false, revenueShareSuspendedAt: FieldValue.delete(), revenueShareSuspendedPeriodType: FieldValue.delete(), revenueShareSuspendedPeriodStart: FieldValue.delete(), revenueShareSuspendedPeriodEnd: FieldValue.delete(), revenueShareSuspensionReason: FieldValue.delete() });
     return { state: active ? "active" : "subscription_inactive", action: "released" };
   }
+  const setting = revenueSetting(tenant, centralPricing || await loadPricing(db));
   if (tenant.revenueShareSuspended) {
     const payment = await latestPaymentForPeriod(tenantRef, tenant.revenueShareSuspendedPeriodStart || "", tenant.revenueShareSuspendedPeriodEnd || "");
     if (!payment || payment.data().status !== "approved") return { state: "suspended", action: "none" };
@@ -878,45 +898,9 @@ exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => 
 
 exports.updateTenantRevenueShare = onCall({ region: REGION }, async request => {
   await assertSuperAdmin(request.auth);
-  const tenantId = String(request.data?.tenantId || "").trim();
-  const enabled = request.data?.enabled === true;
-  const rate = Number(request.data?.rate || 0);
-  const billingCycle = request.data?.billingCycle === "daily" ? "daily" : request.data?.billingCycle === "monthly" ? "monthly" : "";
-  const recipientName = String(request.data?.recipientName || "").trim().slice(0, 160);
-  if (!tenantId || !Number.isFinite(rate) || rate < 0 || rate > 100 || !billingCycle) throw new HttpsError("invalid-argument", "Invalid revenue-share settings");
-  const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
-  if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
-  const tenant = { id: snapshot.id, ...snapshot.data() };
-  const threshold = Number(request.data?.deliveryThreshold ?? tenant.revenueShareDeliveryThreshold ?? 10000);
-  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1000000000
-    || Math.abs(threshold * 100 - Math.round(threshold * 100)) > 0.00001) {
-    throw new HttpsError("invalid-argument", "Invalid Delivery share threshold");
-  }
-  if (tenant.billingPolicyVersion === "hybrid_v1") {
-    throw new HttpsError("failed-precondition", "Hybrid tenants cannot use legacy revenue-share settings");
-  }
-  const businessType = normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
-  const restaurantScope = businessType === "retail"
-    ? "all"
-    : normalizeRestaurantScope(request.data?.restaurantScope || tenant.revenueShareRestaurantScope || "all");
-  const active = enabled ? tenant.revenueShareSuspended !== true : subscriptionActive(tenant);
-  await mirrorTenantAccess(
-    tenantRef,
-    tenant,
-    {
-      revenueShareEnabled: enabled,
-      revenueShareRate: Math.round(rate * 10000) / 10000,
-      revenueShareDeliveryThreshold: Math.round(threshold * 100) / 100,
-      revenueShareBillingCycle: billingCycle,
-      revenueShareBusinessType: businessType,
-      revenueShareRestaurantScope: restaurantScope,
-      billingMode: enabled ? "revenue_share" : "subscription",
-      active,
-    },
-    { revenueShareRecipientName: recipientName }
-  );
-  if (!enabled && tenant.revenueShareSuspended) await reconcileTenant(tenantId);
-  return { ok: true, tenantId, enabled, rate, deliveryThreshold: threshold, billingCycle, businessType, restaurantScope, recipientName, active };
+  // Per-Tenant overrides are intentionally not available yet. Prevent stale
+  // clients from mutating Tenant billing mode, percentage or Delivery threshold.
+  throw new HttpsError("failed-precondition", "Per-Tenant commission settings are disabled; edit central Premium pricing.");
 });
 
 exports.unlockTenantRevenueShare = onCall({ region: REGION }, async request => {
@@ -936,11 +920,13 @@ exports.reconcileRevenueShare = onCall({ region: REGION }, async request => {
   await assertSuperAdmin(request.auth);
   const db = getFirestore(), tenantId = String(request.data?.tenantId || "").trim();
   if (tenantId) return { ok: true, tenantId, result: await reconcileTenant(tenantId) };
-  const snapshot = await db.collection("tenants").get();
+  const [snapshot, centralPricing] = await Promise.all([
+    db.collection("tenants").get(), loadPricing(db),
+  ]);
   let checked = 0, suspended = 0, released = 0;
   for (const doc of snapshot.docs) {
     if (!revenueSetting(doc.data()).enabled) continue;
-    const result = await reconcileTenant(doc.id); checked += 1;
+    const result = await reconcileTenant(doc.id, centralPricing); checked += 1;
     if (result.action === "suspended") suspended += 1;
     if (result.action === "released") released += 1;
   }
@@ -948,11 +934,14 @@ exports.reconcileRevenueShare = onCall({ region: REGION }, async request => {
 });
 
 exports.syncRevenueShareTenants = onSchedule({ schedule: "every day 00:20", timeZone: "Asia/Bangkok", region: REGION }, async () => {
-  const snapshot = await getFirestore().collection("tenants").get();
+  const db = getFirestore();
+  const [snapshot, centralPricing] = await Promise.all([
+    db.collection("tenants").get(), loadPricing(db),
+  ]);
   let checked = 0;
   for (const doc of snapshot.docs) {
     if (!revenueSetting(doc.data()).enabled) continue;
-    await reconcileTenant(doc.id); checked += 1;
+    await reconcileTenant(doc.id, centralPricing); checked += 1;
   }
   console.log("Revenue-share reconciliation completed", { checked });
 });

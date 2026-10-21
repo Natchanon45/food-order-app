@@ -10,6 +10,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm, sweetPrompt } from "@/components/sweetDialog";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
+import { loadAdminSubscriptionPricing } from "@/data/subscriptionPricing";
 import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
   backfillTenantSubscriptions,
@@ -25,7 +26,6 @@ import {
   unlockTenantRevenueShare,
   updateTenant,
   updateTenantLalamoveApproval,
-  updateTenantRevenueShare,
   updateTenantSubscription,
 } from "@/data/platformTenantService";
 
@@ -312,8 +312,8 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
         <article><span>{t("admin_tenants.sales.order")}</span><strong>{money(summary.orderSales)}</strong><small>{t("admin_tenants.common.items", { count: formatNumber(summary.orderCount || 0) })}</small></article>
         <article><span>{t("admin_tenants.sales.pos")}</span><strong>{money(summary.posSales)}</strong><small>{t("admin_tenants.common.receipts", { count: formatNumber(summary.posCount || 0) })}</small></article>
         <article className="total"><span>{t("admin_tenants.sales.combined")}</span><strong>{money(summary.combinedSales)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-        <article className="share"><span>{summary.premiumDeliveryShareEnabled === true
-          ? `Delivery ${money(summary.revenueShareRate)}%`
+        <article className="share"><span>{summary.centralDeliveryShareEnabled === true
+          ? `Delivery ${money(summary.deliveryShareRate)}%${summary.revenueShareEnabled ? " + Legacy" : ""}`
           : shareEnabled ? t("admin_tenants.sales.share_rate", { rate: `${money(summary.revenueShareRate)}%` })
             : t("admin_tenants.sales.share_disabled")}</span><strong>{money(summary.revenueShare)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
         <article className="delivery-customer"><span>{t("admin_tenants.sales.customer_delivery_fees")}</span><strong>{money(summary.customerDeliveryFees)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
@@ -515,14 +515,10 @@ export function AdminTenantsPage() {
   const [reviewCounts, setReviewCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [reviewItems, setReviewItems] = useState([]);
   const [shareTenant, setShareTenant] = useState(null);
-  const [shareEnabled, setShareEnabled] = useState(false);
-  const [shareRate, setShareRate] = useState("0.00");
-  const [shareDeliveryThreshold, setShareDeliveryThreshold] = useState("10000");
-  const [shareBillingCycle, setShareBillingCycle] = useState("monthly");
-  const [shareBusinessType, setShareBusinessType] = useState("both");
-  const [shareRestaurantScope, setShareRestaurantScope] = useState("all");
-  const [shareSaving, setShareSaving] = useState(false);
+  const [centralDeliveryPricing, setCentralDeliveryPricing] = useState(null);
+  const [centralPricingLoading, setCentralPricingLoading] = useState(false);
   const [shareError, setShareError] = useState("");
+  const centralShareRequestRef = useRef(0);
   const [rejectItem, setRejectItem] = useState(null);
   const [reviewNote, setReviewNote] = useState("");
   const [reviewError, setReviewError] = useState("");
@@ -670,53 +666,43 @@ export function AdminTenantsPage() {
     dialogRef.current?.showModal?.();
   };
 
-  const openShare = tenant => {
-    const summary = summaries[tenant.id] || {};
-    setShareTenant(tenant);
-    setShareEnabled(summary.revenueShareEnabled === true || tenant.billingMode === "revenue_share");
-    setShareRate(Number(summary.revenueShareRate || tenant.revenueShareRate || 0).toFixed(2));
-    setShareDeliveryThreshold(String(summary.revenueShareDeliveryThreshold
-      ?? tenant.revenueShareDeliveryThreshold ?? 10000));
-    setShareBillingCycle(summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly");
-    setShareBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
-    setShareRestaurantScope(summary.revenueShareRestaurantScope || tenant.revenueShareRestaurantScope || tenant.signupBilling?.restaurantRevenueShareScope || "all");
+  const closeShare = () => {
+    centralShareRequestRef.current += 1;
+    shareDialogRef.current?.close?.();
+    setShareTenant(null);
+    setCentralDeliveryPricing(null);
+    setCentralPricingLoading(false);
     setShareError("");
-    shareDialogRef.current?.showModal?.();
+  };
+
+  const openShare = async tenant => {
+    const requestId = ++centralShareRequestRef.current;
+    setShareTenant(tenant);
+    setCentralDeliveryPricing(null); // Never show a previous Tenant's or cached policy values.
+    setCentralPricingLoading(true);
+    setShareError("");
+    if (!shareDialogRef.current?.open) shareDialogRef.current?.showModal?.();
+    try {
+      const result = await loadAdminSubscriptionPricing();
+      if (centralShareRequestRef.current !== requestId) return;
+      // A real Super Admin-configured policy must exist; don't silently substitute defaults.
+      if (!result.exists) throw new Error("CENTRAL_DELIVERY_PRICING_MISSING");
+      setCentralDeliveryPricing(result.config);
+    } catch (error) {
+      if (centralShareRequestRef.current !== requestId) return;
+      console.error("CENTRAL_DELIVERY_PRICING_LOAD_FAILED", error);
+      setShareError(intlLocale.startsWith("th")
+        ? "ไม่สามารถโหลดเงื่อนไข Delivery จากส่วนกลางได้ กรุณาลองใหม่อีกครั้ง"
+        : "Failed to load central Delivery settings. Please retry.");
+    } finally {
+      if (centralShareRequestRef.current === requestId) setCentralPricingLoading(false);
+    }
   };
 
   const openRevenueNotice = tenant => {
     setTenantId(String(tenant?.id || ""));
     setReviewStatus("all");
     window.setTimeout(() => document.getElementById("tenantShareReviewTitle")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
-  };
-
-  const saveShare = async event => {
-    event.preventDefault();
-    if (!shareTenant?.id) return;
-    const rate = Math.max(0, Math.min(100, Number(shareRate || 0)));
-    setShareSaving(true);
-    setShareError("");
-    try {
-      await updateTenantRevenueShare({
-        tenantId: shareTenant.id,
-        enabled: shareEnabled,
-        rate,
-        deliveryThreshold: Number(shareDeliveryThreshold),
-        billingCycle: shareBillingCycle,
-        restaurantScope: shareBusinessType === "retail" ? "all" : shareRestaurantScope,
-      });
-      showToast(t("admin_tenants.share.saved"));
-      shareDialogRef.current?.close?.();
-      setShareTenant(null);
-      await Promise.all([loadTenantList(), loadSales(), loadReviews()]);
-    } catch (error) {
-      console.error("REVENUE_SHARE_SAVE_FAILED", error);
-      const message = t("admin_tenants.share.save_failed");
-      setShareError(message);
-      showToast(message, "error");
-    } finally {
-      setShareSaving(false);
-    }
   };
 
   const unlockShare = async tenant => {
@@ -1085,10 +1071,6 @@ export function AdminTenantsPage() {
 
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const shareSummary = shareTenant ? (summaries[shareTenant.id] || {}) : {};
-  const shareEstimate = shareEnabled
-    ? Number(shareSummary.revenueShareBase ?? shareSummary.combinedSales ?? 0)
-      * Math.max(0, Math.min(100, Number(shareRate || 0))) / 100
-    : 0;
   const currentPeriodLabel = localizedPeriodLabel(period, {
     date,
     month,
@@ -1348,77 +1330,88 @@ export function AdminTenantsPage() {
         </form>
       </dialog>
 
-      <dialog id="revenueShareDialog" className="tenant-dialog revenue-share-dialog" ref={shareDialogRef}>
-        <form id="revenueShareForm" className="tenant-dialog-card" onSubmit={saveShare}>
+      <dialog id="revenueShareDialog" className="tenant-dialog revenue-share-dialog" ref={shareDialogRef} onClose={closeShare}>
+        <div id="revenueShareForm" className="tenant-dialog-card" data-central-delivery-settings="true">
           <div className="tenant-dialog-head">
             <div className="tenant-dialog-title">
               <span className="tenant-dialog-icon share"><i className="bi bi-percent" aria-hidden="true"></i></span>
-              <div><span className="tenant-dialog-eyebrow">{t("admin_tenants.share.eyebrow")}</span><h2>{t("admin_tenants.share.title")}</h2><p id="revenueShareTenantName">{shareTenant?.name || shareTenant?.slug || shareTenant?.id || "-"}</p></div>
+              <div>
+                <span className="tenant-dialog-eyebrow">{intlLocale.startsWith("th") ? "กำหนดจาก Super Admin ส่วนกลาง" : "Central Super Admin policy"}</span>
+                <h2>{intlLocale.startsWith("th") ? "เงื่อนไขส่วนแบ่ง Delivery" : "Delivery commission settings"}</h2>
+                <p id="revenueShareTenantName">{shareTenant?.name || shareTenant?.slug || shareTenant?.id || "-"}</p>
+              </div>
             </div>
-            <button type="button" className="tenant-dialog-close" data-close-share-dialog aria-label={t("admin_tenants.common.close")} onClick={() => shareDialogRef.current?.close?.()}><i className="bi bi-x-lg" aria-hidden="true"></i></button>
+            <button type="button" className="tenant-dialog-close" data-close-share-dialog aria-label={t("admin_tenants.common.close")} onClick={closeShare}><i className="bi bi-x-lg" aria-hidden="true"></i></button>
           </div>
           <div className="tenant-dialog-body">
-            <label className="tenant-share-switch">
-              <input id="revenueShareEnabled" type="checkbox" checked={shareEnabled} onChange={e => setShareEnabled(e.target.checked)} />
-              <span><strong>{t("admin_tenants.share.enabled")}</strong><small>{t("admin_tenants.share.help")}</small></span>
-            </label>
-            <div className="field">
-              <label htmlFor="revenueShareBusinessType">{t("admin_tenants.share.business_type")}</label>
-              <input className="input" id="revenueShareBusinessType" readOnly value={t(`admin_tenants.signup_billing.businesses.${shareBusinessType}`)} aria-readonly="true" />
-              <small>{t("admin_tenants.share.business_type_help")}</small>
-            </div>
-            {shareBusinessType !== "retail" ? (
-              <div className="field">
-                <label htmlFor="revenueShareRestaurantScope">{t("admin_tenants.share.restaurant_scope")}</label>
-                <select className="input" id="revenueShareRestaurantScope" value={shareRestaurantScope} onChange={e => setShareRestaurantScope(e.target.value)}>
-                  <option value="delivery_only">{t("admin_tenants.signup_billing.restaurant_scopes.delivery_only")}</option>
-                  <option value="storefront_only">{t("admin_tenants.signup_billing.restaurant_scopes.storefront_only")}</option>
-                  <option value="all">{t("admin_tenants.signup_billing.restaurant_scopes.all")}</option>
-                </select>
-                <small>{t("admin_tenants.share.restaurant_scope_help")}</small>
+            <div className="tenant-central-share-note" role="note">
+              <i className="bi bi-shield-check" aria-hidden="true"></i>
+              <div>
+                <strong>{intlLocale.startsWith("th") ? "ใช้ค่าเดียวกันทุกร้าน" : "One shared rate for all stores"}</strong>
+                <span>{intlLocale.startsWith("th")
+                  ? "อัตราส่วนแบ่งและเกณฑ์ยอดขาย Delivery ดึงจากหน้าตั้งราคา Premium ส่วนกลาง ไม่ได้บันทึกค่าแยกร้าน"
+                  : "The Delivery rate and sales threshold come from central Premium pricing. No per-store overrides are saved."}</span>
               </div>
-            ) : null}
-            {shareBusinessType === "retail" ? (
-              <div className="tenant-share-retail-rule">
-                <i className="bi bi-basket2" aria-hidden="true"></i>
-                <span>{t("admin_tenants.share.retail_scope_fixed")}</span>
+            </div>
+            {centralPricingLoading ? (
+              <p id="centralDeliverySettingsLoading" className="tenant-central-share-state" role="status">
+                <i className="bi bi-arrow-repeat" aria-hidden="true"></i>
+                <span>{intlLocale.startsWith("th") ? "กำลังโหลดค่าจากส่วนกลาง..." : "Loading central pricing..."}</span>
+              </p>
+            ) : centralDeliveryPricing ? (
+              <>
+                <div className="tenant-central-share-grid" id="centralDeliveryShareValues">
+                  <div className="tenant-central-share-value">
+                    <span><i className="bi bi-percent" aria-hidden="true"></i>{intlLocale.startsWith("th") ? "ส่วนแบ่ง Platform จาก Delivery" : "Platform Delivery commission"}</span>
+                    <strong id="revenueShareRate">{money(centralDeliveryPricing.deliveryShareRate)}%</strong>
+                  </div>
+                  <div className="tenant-central-share-value">
+                    <span><i className="bi bi-truck" aria-hidden="true"></i>{intlLocale.startsWith("th") ? "เกณฑ์ยอด Delivery สะสมต่อเดือน" : "Monthly Delivery threshold"}</span>
+                    <strong id="revenueShareDeliveryThreshold">{money(centralDeliveryPricing.deliveryThreshold)} {t("admin_tenants.common.baht")}</strong>
+                  </div>
+                </div>
+                <p className="tenant-central-share-description">
+                  {intlLocale.startsWith("th")
+                    ? "นับเฉพาะยอดสินค้าผ่าน Delivery ที่ชำระแล้ว ไม่รวมค่าส่ง เริ่มคิด % เมื่อยอดสะสมรายเดือนเกินเกณฑ์ และไม่คิดย้อนหลังวันก่อนหน้า"
+                    : "Only paid Delivery merchandise counts, excluding shipping. Share begins after the monthly threshold is exceeded, without retroactive charges."}
+                </p>
+                <div className="tenant-share-preview">
+                  <span>{intlLocale.startsWith("th") ? "ยอด Delivery ที่เข้าเกณฑ์" : "Eligible Delivery sales"}</span>
+                  <strong id="revenueShareSalesPreview">{money(shareSummary.deliveryShareBase)} {t("admin_tenants.common.baht")}</strong>
+                  <span>{intlLocale.startsWith("th") ? "ส่วนแบ่ง Delivery จากส่วนกลาง" : "Central Delivery commission"}</span>
+                  <strong id="revenueShareAmountPreview">{money(shareSummary.deliveryShareAmount)} {t("admin_tenants.common.baht")}</strong>
+                </div>
+                {shareTenant?.billingMode === "revenue_share" ? (
+                  <p className="tenant-central-share-description">
+                    {intlLocale.startsWith("th")
+                      ? "หมายเหตุ: ร้านเดิมที่เคยใช้ Revenue Share อาจมีรายการส่วนแบ่งย้อนหลังตามเงื่อนไขเดิม ยอดรายงานแสดงตามข้อมูลที่บันทึกอยู่"
+                      : "Note: historical Revenue Share tenants may have older charge rules. Reports reflect recorded legacy data."}
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <div id="revenueShareError" className="upload-error" role="alert">
+                {shareError || (intlLocale.startsWith("th") ? "ไม่มีข้อมูลส่วนกลาง" : "No central settings available")}
               </div>
-            ) : null}
-            <div className="field">
-              <label htmlFor="revenueShareRate">{t("admin_tenants.share.rate")}</label>
-              <div className="tenant-share-input"><input className="input" id="revenueShareRate" type="number" min="0" max="100" step="0.01" value={shareRate} required onChange={e => setShareRate(e.target.value)} /><span>%</span></div>
-            </div>
-            {shareBusinessType !== "retail" && shareRestaurantScope !== "storefront_only" ? (
-              <div className="field">
-                <label htmlFor="revenueShareDeliveryThreshold">เกณฑ์ยอดขาย Delivery ต่อเดือน / Monthly Delivery threshold (฿)</label>
-                <input className="input" id="revenueShareDeliveryThreshold" type="number"
-                  min="0" max="1000000000" step="0.01" required
-                  value={shareDeliveryThreshold}
-                  onChange={event => setShareDeliveryThreshold(event.target.value)} />
-                <small>คิด % ของสินค้า Delivery ที่ชำระแล้ว ตั้งแต่วันที่ยอดสะสมเกินเกณฑ์ โดยไม่คิดย้อนหลังวันก่อนหน้า</small>
-              </div>
-            ) : null}
-            <div className="field">
-              <label htmlFor="revenueShareBillingCycle">{t("admin_tenants.share.billing_cycle")}</label>
-              <select className="input" id="revenueShareBillingCycle" required value={shareBillingCycle} onChange={e => setShareBillingCycle(e.target.value)}>
-                <option value="daily">{t("admin_tenants.share.billing_cycles.daily")}</option>
-                <option value="monthly">{t("admin_tenants.share.billing_cycles.monthly")}</option>
-              </select>
-              <small>{t("admin_tenants.share.billing_cycle_help")}</small>
-            </div>
-            <div className="tenant-share-preview">
-              <span>{t("admin_tenants.share.current_sales")}</span><strong id="revenueShareSalesPreview">{money(shareSummary.combinedSales)} {t("admin_tenants.common.baht")}</strong>
-              <span>{t("admin_tenants.share.estimated")}</span><strong id="revenueShareAmountPreview">{Number(shareDeliveryThreshold) !== Number(shareSummary.revenueShareDeliveryThreshold ?? shareTenant?.revenueShareDeliveryThreshold ?? 10000)
-                ? "— (บันทึกเพื่อคำนวณใหม่)"
-                : `${money(shareEstimate)} ${t("admin_tenants.common.baht")}`}</strong>
-            </div>
-            {shareError ? <div className="upload-error" id="revenueShareError">{shareError}</div> : <div className="upload-error" id="revenueShareError" hidden></div>}
+            )}
           </div>
           <div className="tenant-dialog-actions">
-            <button type="button" className="btn" data-close-share-dialog onClick={() => shareDialogRef.current?.close?.()}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{t("admin_tenants.common.cancel")}</span></button>
-            <button type="submit" className="btn btn-primary" id="saveRevenueShareButton" disabled={shareSaving}><i className="bi bi-floppy" aria-hidden="true"></i><span>{shareSaving ? t("admin_tenants.share.saving") : t("admin_tenants.share.save")}</span></button>
+            <button type="button" className="btn" data-close-share-dialog onClick={closeShare}>
+              <i className="bi bi-x-circle" aria-hidden="true"></i><span>{t("admin_tenants.common.close")}</span>
+            </button>
+            {shareError ? (
+              <button type="button" className="btn btn-primary" id="retryCentralDeliverySettings" onClick={() => shareTenant && openShare(shareTenant)}>
+                <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                <span>{intlLocale.startsWith("th") ? "ลองโหลดอีกครั้ง" : "Retry"}</span>
+              </button>
+            ) : (
+              <Link className="btn btn-primary" id="openCentralDeliveryPricing" to="/platform/pricing" onClick={closeShare}>
+                <i className="bi bi-gear" aria-hidden="true"></i>
+                <span>{intlLocale.startsWith("th") ? "ตั้งค่าที่ส่วนกลาง" : "Edit central settings"}</span>
+              </Link>
+            )}
           </div>
-        </form>
+        </div>
       </dialog>
 
       <dialog id="revenueShareReviewDialog" className="tenant-dialog tenant-review-dialog" ref={reviewDialogRef}>

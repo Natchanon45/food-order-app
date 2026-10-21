@@ -103,9 +103,11 @@ test("legacy subscription schedulers skip new hybrid tenants", () => {
   assert.equal((backend.match(/billingPolicyVersion === "hybrid_v1"/g) || []).length, 4);
 });
 
-test("legacy pricing controls cannot override future hybrid tenants", () => {
-  for (const filename of ["functions/subscription-admin.js", "functions/revenue-share.js"]) {
-    const source = fs.readFileSync(filename, "utf8");
-    assert.match(source, /Hybrid tenants cannot use legacy/);
-  }
+test("legacy subscription controls reject Hybrid, and per-Tenant share edits are disabled", () => {
+  const subscription = fs.readFileSync("functions/subscription-admin.js", "utf8");
+  const commission = fs.readFileSync("functions/revenue-share.js", "utf8");
+  assert.match(subscription, /Hybrid tenants cannot use legacy/);
+  const update = commission.slice(commission.indexOf("exports.updateTenantRevenueShare ="), commission.indexOf("exports.unlockTenantRevenueShare ="));
+  assert.match(update, /Per-Tenant commission settings are disabled/);
+  assert.doesNotMatch(update, /mirrorTenantAccess|tenantRef\.update/);
 });

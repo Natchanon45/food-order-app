@@ -119,16 +119,17 @@ test("revenue share calculation filters restaurant/POS share base by tenant poli
   ]) assert.ok(source.includes(token), `revenue-share missing ${token}`);
 });
 
-test("Super Admin tenant management shows and edits signup business/share scope", () => {
+test("Super Admin Tenant modal shows only central Delivery settings, without per-store fields", () => {
   const source = fs.readFileSync("react-app/src/pages/AdminTenantsPage.jsx", "utf8");
   for (const token of [
-    "shareBusinessType",
-    "shareRestaurantScope",
-    "revenueShareBusinessType",
-    "revenueShareRestaurantScope",
-    "signup_billing",
-    "tenant.signupBilling",
+    "loadAdminSubscriptionPricing", "centralDeliveryPricing", "centralPricingLoading",
+    'data-central-delivery-settings="true"', 'id="revenueShareRate"',
+    'id="revenueShareDeliveryThreshold"', 'id="openCentralDeliveryPricing"',
+    'to="/platform/pricing"', "tenant.signupBilling",
   ]) assert.ok(source.includes(token), `AdminTenantsPage missing ${token}`);
+  assert.doesNotMatch(source, /await updateTenantRevenueShare\(/);
+  assert.doesNotMatch(source, /id="revenueShareEnabled"|id="saveRevenueShareButton"|setShareRate\(/);
+  assert.match(source, /if \(!result\.exists\) throw new Error\("CENTRAL_DELIVERY_PRICING_MISSING"\)/);
 });
 
 test("subscription initializer/backfill/scheduler preserve signup cycle/trial and skip revenue-share tenants", () => {
@@ -185,7 +186,8 @@ test("master business and selected scope control Retail POS commission eligibili
   assert.equal(channels("both", "delivery_only").includeRestaurant, true);
   const ui = fs.readFileSync("react-app/src/pages/AdminTenantsPage.jsx", "utf8");
   const backend = fs.readFileSync("functions/revenue-share.js", "utf8");
-  assert.match(ui, /id="revenueShareBusinessType" readOnly/);
+  assert.match(ui, /data-central-delivery-settings="true"/);
+  assert.doesNotMatch(ui, /id="revenueShareBusinessType"|id="revenueShareRestaurantScope"/);
   assert.doesNotMatch(backend.slice(backend.indexOf("exports.updateTenantRevenueShare")), /request.data\?\.businessType/);
 });
 
@@ -220,11 +222,13 @@ test("only existing Revenue Share computation is adjusted; Delivery must be PAID
   assert.match(source, /row\.totalAmount \?\? row\.total/);
   assert.match(source, /Math\.max\(0, total - shipping\)/);
   assert.match(source, /row\.subtotalAmount != null && row\.subtotalAmount !== ""/);
-  assert.match(source, /const revenueShareBase = roundMoney\(shareOrderSales \+ posSales\)/);
-  assert.match(source, /const revenueShare = setting\.enabled \? roundMoney\(revenueShareBase \* setting\.rate \/ 100\) : 0/);
-  assert.match(source, /revenueShareDeliveryThreshold: Math\.round\(threshold \* 100\) \/ 100/);
+  assert.match(source, /const deliveryShareBase = roundMoney\(shareDeliverySales\)/);
+  assert.match(source, /deliveryShareBase \* setting\.deliveryShareRate \/ 100/);
+  assert.match(source, /const revenueShare = roundMoney\(deliveryShareAmount \+ legacyShareAmount\)/);
+  assert.match(source, /Per-Tenant commission settings are disabled/);
   assert.match(form, /id="revenueShareDeliveryThreshold"/);
-  assert.match(form, /deliveryThreshold: Number\(shareDeliveryThreshold\)/);
+  assert.match(form, /centralDeliveryPricing\.deliveryThreshold/);
+  assert.doesNotMatch(form, /deliveryThreshold: Number\(shareDeliveryThreshold\)/);
   assert.doesNotMatch(source, /issueTenantHybridInvoices|hybridBillingInvoices|processHybridBillingDaily/);
 });
 
@@ -244,12 +248,13 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   ];
   const sales = [{ totalAmount: 3000, status: "completed", createdAt: "2026-10-04T11:00:00+07:00" }];
   const docs = rows => rows.map(data => ({ data: () => data }));
-  const db = { collection: () => ({ doc: () => ({
+  const db = { collection: name => ({ doc: () => ({
+    get: async () => ({ data: () => name === "users" ? { role: "super_admin", active: true } : {} }),
     collection: category => ({ get: async () => ({ docs: docs(category === "orders" ? orders : sales) }) }),
   }) }) };
   const policy = require("../../functions/revenue-share-policy.js");
   const dependencies = {
-    "firebase-functions/v2/https": { onCall: (_options, fn) => fn, HttpsError: class extends Error {} },
+    "firebase-functions/v2/https": { onCall: (_options, fn) => fn, HttpsError: class extends Error { constructor(code, message) { super(message); this.code = code; } } },
     "firebase-functions/v2/scheduler": { onSchedule: (_options, fn) => fn },
     "firebase-admin/firestore": { getFirestore: () => db, FieldValue: {} },
     "firebase-admin/storage": { getStorage: () => ({}) },
@@ -296,11 +301,37 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   }, pricing);
   assert.equal(legacy.premiumDeliveryShare, false);
   assert.equal(legacy.rate, 10);
-  assert.equal(legacy.deliveryThreshold, 20000);
+  assert.equal(legacy.deliveryThreshold, 10000);
+  assert.equal(legacy.deliveryShareRate, 5);
+  assert.equal(legacy.centralDeliveryShare, true);
+  assert.equal(legacy.rate, 10, "Historical non-Delivery rate remains unchanged");
+  const legacyMonth = await loaded.exports.__summary("legacy", span("2026-10-01", "2026-11-01"), legacy);
+  assert.equal(legacyMonth.deliveryShareAmount, 75, "Legacy Delivery must also use 5% central");
+  assert.equal(legacyMonth.legacyShareAmount, 500, "Old POS/table charges remain under original historical contract");
   assert.equal(legacy.channels.includeRetail, true);
   assert.equal(loaded.exports.__setting(tenant).enabled, false, "Legacy suspension scheduler never activates Premium");
+  await assert.rejects(
+    loaded.exports.updateTenantRevenueShare({ auth: { uid: "super" }, data: {
+      tenantId: "legacy", rate: 60, deliveryThreshold: 100, enabled: true, billingCycle: "monthly",
+    } }),
+    /Per-Tenant commission settings are disabled/,
+    "A stale Super Admin client cannot overwrite central policy with Tenant-specific values",
+  );
+  const revised = loaded.exports.__setting(legacy ? {
+    billingMode: "revenue_share", businessType: "both", revenueShareRate: 60,
+    revenueShareDeliveryThreshold: 999999,
+  } : {}, { ...pricing, deliveryThreshold: 12000, deliveryShareRate: 3 });
+  assert.equal(revised.deliveryThreshold, 12000);
+  assert.equal(revised.deliveryShareRate, 3);
+  const revisedSummary = await loaded.exports.__summary("legacy", span("2026-10-01", "2026-11-01"), revised);
+  assert.equal(revisedSummary.deliveryShareAmount, 0, "Central higher threshold wins regardless of stale Tenant config");
+  assert.equal(revisedSummary.legacyShareAmount, 3000, "Legacy non-Delivery billing remains distinct");
   assert.match(server, /revenueSetting\(tenant, await loadPricing\(getFirestore\(\)\)\)/);
   assert.match(server, /revenueSetting\(tenant, premiumPricing\)/);
+  assert.match(server, /const historicalSetting = revenueSetting\(tenant\)/);
+  assert.match(server, /const setting = revenueSetting\(tenant, centralPricing \|\| await loadPricing\(db\)\)/);
+  assert.match(server, /await reconcileTenant\(doc.id, centralPricing\)/);
+  assert.doesNotMatch(server.slice(server.indexOf("async function reconcileTenant"), server.indexOf("async function tenantWalletReport")), /premiumDeliveryShare[^=]\s*=\s*true/);
 });
 
 test("Premium price editor exposes central paid-Delivery threshold and percentage", () => {
