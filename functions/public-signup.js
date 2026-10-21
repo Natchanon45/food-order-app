@@ -1,6 +1,6 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getAuth } = require("firebase-admin/auth");
-const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 const { randomUUID } = require("crypto");
 const { loadPricing, pricingSnapshot } = require("./subscription-pricing-core");
 const { normalizeSignupBilling, businessUnitsFor } = require("./revenue-share-policy");
@@ -71,6 +71,9 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       tx.get(tenantSlugRef), tx.get(pendingSlugRef), tx.get(pendingRef),
     ]);
     const priorSignup = pendingSignupSnap.exists ? pendingSignupSnap.data() : null;
+    // A single trusted server instant defines BOTH first-request timestamp
+    // and Bangkok anniversary date, including requests near midnight.
+    const firstRequestAt = priorSignup?.createdAt || Timestamp.now();
     if (priorSignup?.status === "active" && priorSignup.tenantId) {
       throw new HttpsError("already-exists", "HYBRID_SIGNUP_ALREADY_ACTIVE");
     }
@@ -97,13 +100,12 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       billingPolicyVersion: "hybrid_v1",
       hybridBillingSnapshot: hybridSettings,
       hybridBillingStartDate: priorSignup?.hybridBillingStartDate
-        || (priorSignup?.createdAt?.toDate?.()
-          ? dateKey(priorSignup.createdAt.toDate()) : dateKey(new Date())),
+        || dateKey(firstRequestAt.toDate()),
       pricingSnapshot: signupPricing,
       status: "email_verification_required",
       previewUrl: `${PUBLIC_APP_ORIGIN}/s/${slug}/`,
       updatedAt: now,
-      createdAt: priorSignup?.createdAt || now
+      createdAt: firstRequestAt
     };
     tx.set(pendingRef, payload, { merge: true });
     tx.set(pendingSlugRef, { uid, slug, email, status: "pending", updatedAt: now, createdAt: now }, { merge: true });
