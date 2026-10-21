@@ -2,6 +2,8 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
+const { mirrorLegacySubscriptionAccess } =
+  require("./hybrid-billing-legacy-access-guard");
 
 const DEFAULT_TERM_DAYS = 30;
 const DEFAULT_GRACE_DAYS = 3;
@@ -41,16 +43,20 @@ function effectiveStatus(tenant, now = new Date()) {
   return "expired";
 }
 
-async function mirrorSubscription(batch, db, tenant, patch) {
-  const slug = String(tenant.slug || "").trim();
-  if (!slug) return;
-  batch.set(db.collection("tenantSlugs").doc(slug), {
+// Derived from the SAME transactional tenant state as the active patch.
+function subscriptionSlugPatch(tenant, patch) {
+  return {
     active: patch.active,
     subscriptionStatus: patch.subscriptionStatus,
     subscriptionExpiresAt: patch.subscriptionExpiresAt || null,
     gracePeriodDays: patch.gracePeriodDays ?? tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS,
     updatedAt: FieldValue.serverTimestamp()
-  }, { merge: true });
+  };
+}
+function writeLegacySubscription(db, tenantRef, makePatch) {
+  return mirrorLegacySubscriptionAccess({
+    db, tenantRef, makePatch, makeSlugPatch: subscriptionSlugPatch,
+  });
 }
 
 function defaultPatch(now = new Date(), tenant = {}) {
@@ -72,17 +78,12 @@ function defaultPatch(now = new Date(), tenant = {}) {
 exports.initializeTenantSubscription = onDocumentCreated(
   { document: "tenants/{tenantId}", region: "asia-southeast1" },
   async event => {
-    const snapshot = event.data;
-    if (!snapshot) return;
-    const tenant = snapshot.data();
-    if (tenant.billingPolicyVersion === "hybrid_v1") return;
-    if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return;
+    if (!event.data) return;
     const db = getFirestore();
-    const batch = db.batch();
-    const patch = defaultPatch(new Date(), tenant);
-    batch.set(snapshot.ref, patch, { merge: true });
-    await mirrorSubscription(batch, db, tenant, patch);
-    await batch.commit();
+    await writeLegacySubscription(db, event.data.ref, tenant => {
+      if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return null;
+      return defaultPatch(new Date(), tenant);
+    });
   }
 );
 
@@ -94,15 +95,11 @@ exports.backfillTenantSubscriptions = onCall(
     const snapshot = await db.collection("tenants").get();
     let updated = 0;
     for (const tenantDoc of snapshot.docs) {
-      const tenant = tenantDoc.data();
-      if (tenant.billingPolicyVersion === "hybrid_v1") continue;
-      if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) continue;
-      const batch = db.batch();
-      const patch = defaultPatch(new Date(), tenant);
-      batch.set(tenantDoc.ref, patch, { merge: true });
-      await mirrorSubscription(batch, db, tenant, patch);
-      await batch.commit();
-      updated += 1;
+      const result = await writeLegacySubscription(db, tenantDoc.ref, tenant => {
+        if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return null;
+        return defaultPatch(new Date(), tenant);
+      });
+      if (result.applied) updated += 1;
     }
     return { ok: true, updated };
   }
@@ -114,70 +111,64 @@ exports.updateTenantSubscription = onCall(
     await assertSuperAdmin(request.auth);
     const tenantId = String(request.data?.tenantId || "").trim();
     if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
-
     const db = getFirestore();
     const tenantRef = db.collection("tenants").doc(tenantId);
-    const snapshot = await tenantRef.get();
-    if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
-    const tenant = snapshot.data();
-    if (tenant.billingPolicyVersion === "hybrid_v1") {
-      throw new HttpsError("failed-precondition", "Hybrid tenants cannot use legacy subscription controls");
-    }
-
     const action = String(request.data?.action || "").trim();
-    const now = new Date();
-    let expiresAt = asDate(tenant.subscriptionExpiresAt) || now;
-    let status = tenant.subscriptionStatus || "active";
-    let active = tenant.active !== false;
-    let suspensionReason = tenant.suspensionReason || "";
-
-    if (action === "extend") {
-      const days = Math.max(1, Math.min(3660, Number(request.data?.days || 0)));
-      const base = expiresAt > now ? expiresAt : now;
-      expiresAt = addDays(base, days);
-      status = "active";
-      active = true;
-      suspensionReason = "";
-    } else if (action === "set-expiry") {
-      const requested = asDate(request.data?.expiresAt);
-      if (!requested) throw new HttpsError("invalid-argument", "Expiry date is invalid");
-      requested.setHours(23, 59, 59, 999);
-      expiresAt = requested;
-      status = requested >= now ? "active" : "expired";
-      active = status !== "expired";
-      suspensionReason = "";
-    } else if (action === "suspend") {
-      status = "suspended";
-      active = false;
-      suspensionReason = String(request.data?.reason || "ระงับโดย Super Admin").trim();
-    } else if (action === "activate") {
-      status = effectiveStatus({ ...tenant, subscriptionStatus: "active", active: true, subscriptionExpiresAt: Timestamp.fromDate(expiresAt), suspensionReason: "" }, now);
-      active = status === "active" || status === "grace";
-      suspensionReason = "";
-    } else {
+    if (!["extend", "set-expiry", "suspend", "activate"].includes(action))
       throw new HttpsError("invalid-argument", "Unknown subscription action");
-    }
-
-    const gracePeriodDays = Math.max(0, Math.min(30, Number(request.data?.gracePeriodDays ?? tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS)));
-    if (revenueShareEnabled(tenant)) active = tenant.revenueShareSuspended !== true;
-
-    const patch = {
-      planCode: String(request.data?.planCode || tenant.planCode || "monthly"),
-      subscriptionStatus: status,
-      subscriptionExpiresAt: Timestamp.fromDate(expiresAt),
-      gracePeriodDays,
-      active,
-      suspensionReason,
-      suspendedAt: status === "suspended" ? FieldValue.serverTimestamp() : null,
-      subscriptionUpdatedBy: request.auth.uid,
-      updatedAt: FieldValue.serverTimestamp()
-    };
-
-    const batch = db.batch();
-    batch.set(tenantRef, patch, { merge: true });
-    await mirrorSubscription(batch, db, tenant, patch);
-    await batch.commit();
-    return { ok: true, tenantId, status, active, expiresAt: expiresAt.toISOString(), gracePeriodDays };
+    const result = await writeLegacySubscription(db, tenantRef, tenant => {
+      const now = new Date();
+      let expiresAt = asDate(tenant.subscriptionExpiresAt) || now;
+      let status = tenant.subscriptionStatus || "active";
+      let active = tenant.active !== false;
+      let suspensionReason = tenant.suspensionReason || "";
+      if (action === "extend") {
+        const days = Math.max(1, Math.min(3660, Number(request.data?.days || 0)));
+        const base = expiresAt > now ? expiresAt : now;
+        expiresAt = addDays(base, days);
+        status = "active";
+        active = true;
+        suspensionReason = "";
+      } else if (action === "set-expiry") {
+        const requested = asDate(request.data?.expiresAt);
+        if (!requested) throw new HttpsError("invalid-argument", "Expiry date is invalid");
+        requested.setHours(23, 59, 59, 999);
+        expiresAt = requested;
+        status = requested >= now ? "active" : "expired";
+        active = status !== "expired";
+        suspensionReason = "";
+      } else if (action === "suspend") {
+        status = "suspended";
+        active = false;
+        suspensionReason = String(request.data?.reason || "ระงับโดย Super Admin").trim();
+      } else {
+        status = effectiveStatus({ ...tenant, subscriptionStatus: "active",
+          active: true, subscriptionExpiresAt: Timestamp.fromDate(expiresAt),
+          suspensionReason: "" }, now);
+        active = status === "active" || status === "grace";
+        suspensionReason = "";
+      }
+      const gracePeriodDays = Math.max(0, Math.min(30,
+        Number(request.data?.gracePeriodDays ?? tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS)));
+      if (revenueShareEnabled(tenant)) active = tenant.revenueShareSuspended !== true;
+      return {
+        planCode: String(request.data?.planCode || tenant.planCode || "monthly"),
+        subscriptionStatus: status,
+        subscriptionExpiresAt: Timestamp.fromDate(expiresAt),
+        gracePeriodDays, active, suspensionReason,
+        suspendedAt: status === "suspended" ? FieldValue.serverTimestamp() : null,
+        subscriptionUpdatedBy: request.auth.uid,
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+    });
+    if (!result.applied)
+      throw new HttpsError(result.reason === "missing" ? "not-found" : "failed-precondition",
+        result.reason === "missing" ? "Tenant not found" :
+          "Hybrid tenants cannot use legacy subscription controls");
+    const patch = result.patch;
+    return { ok: true, tenantId, status: patch.subscriptionStatus, active: patch.active,
+      expiresAt: asDate(patch.subscriptionExpiresAt).toISOString(),
+      gracePeriodDays: patch.gracePeriodDays };
   }
 );
 
@@ -188,28 +179,18 @@ exports.syncExpiredTenants = onSchedule(
     const snapshot = await db.collection("tenants").get();
     let changed = 0;
     for (const tenantDoc of snapshot.docs) {
-      const tenant = tenantDoc.data();
-      if (tenant.billingPolicyVersion === "hybrid_v1") continue;
-      if (revenueShareEnabled(tenant)) continue;
-      if (!tenant.subscriptionExpiresAt) {
-        const batch = db.batch();
-        const patch = defaultPatch(new Date(), tenant);
-        batch.set(tenantDoc.ref, patch, { merge: true });
-        await mirrorSubscription(batch, db, tenant, patch);
-        await batch.commit();
-        changed += 1;
-        continue;
-      }
-      if (tenant.subscriptionStatus === "suspended") continue;
-      const status = effectiveStatus(tenant);
-      const active = status === "active" || status === "grace";
-      if (status === tenant.subscriptionStatus && active === (tenant.active !== false)) continue;
-      const patch = { subscriptionStatus: status, active, updatedAt: FieldValue.serverTimestamp() };
-      const batch = db.batch();
-      batch.set(tenantDoc.ref, patch, { merge: true });
-      await mirrorSubscription(batch, db, tenant, { ...patch, subscriptionExpiresAt: tenant.subscriptionExpiresAt, gracePeriodDays: tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS });
-      await batch.commit();
-      changed += 1;
+      const result = await writeLegacySubscription(db, tenantDoc.ref, tenant => {
+        if (revenueShareEnabled(tenant)) return null;
+        if (!tenant.subscriptionExpiresAt) return defaultPatch(new Date(), tenant);
+        if (tenant.subscriptionStatus === "suspended") return null;
+        const status = effectiveStatus(tenant);
+        const active = status === "active" || status === "grace";
+        if (status === tenant.subscriptionStatus && active === (tenant.active !== false))
+          return null;
+        return { subscriptionStatus: status, active,
+          updatedAt: FieldValue.serverTimestamp() };
+      });
+      if (result.applied) changed += 1;
     }
     console.log("Tenant subscription sync completed", { changed });
   }

@@ -2829,3 +2829,52 @@ test("emulator Phase3AN: legacy access mirror rejects Hybrid and journal-only te
   assert.equal((await legacyRef.get()).data().active, true);
   assert.equal((await db.collection("tenantSlugs").doc(legacySlug).get()).data().active, true);
 });
+
+test("emulator Phase3AO: Subscription writer blocks Hybrid and journal-only access reactivation", async () => {
+  const { mirrorLegacySubscriptionAccess } = require(
+    "../../functions/hybrid-billing-legacy-access-guard.js");
+  const build = tenant => ({ active: true, subscriptionStatus: "active",
+    updatedAt: Timestamp.now() });
+  const toSlug = (_, patch) => ({ ...patch });
+  const cases = [
+    ["tenant-emu-3ao-hybrid", { billingPolicyVersion: "hybrid_v1", active: false }],
+    ["tenant-emu-3ao-enabled", { hybridBillingEnabled: true, active: false }],
+    ["tenant-emu-3ao-mode", { billingPolicyVersion: "legacy",
+      hybridReceiptJournalMode: "", active: false }],
+    ["tenant-emu-3ao-coverage", { billingPolicyVersion: "legacy",
+      hybridReceiptJournalCoverageReady: true, active: false }],
+  ];
+  for (const [id, data] of cases) {
+    const ref = tenant(id), slug = id + "-slug";
+    await ref.create({ slug, ...data });
+    await db.collection("tenantSlugs").doc(slug).set({ active: false });
+    let calls = 0;
+    const result = await mirrorLegacySubscriptionAccess({
+      db, tenantRef: ref, makePatch: row => { calls++; return build(row); },
+      makeSlugPatch: toSlug,
+    });
+    assert.equal(result.applied, false);
+    assert.equal(result.reason, "hybrid_blocked");
+    assert.equal(calls, 0, "must not build patch after a Hybrid marker");
+    assert.equal((await ref.get()).data().active, false);
+    assert.equal((await db.collection("tenantSlugs").doc(slug).get()).data().active, false);
+  }
+  const id = "tenant-emu-3ao-legacy",ref = tenant(id), slug = id + "-slug";
+  await ref.create({ slug, billingPolicyVersion: "legacy", active: false });
+  await db.collection("tenantSlugs").doc(slug).set({ active: false });
+  let result = await mirrorLegacySubscriptionAccess({
+    db, tenantRef: ref, makePatch: build, makeSlugPatch: toSlug,
+  });
+  assert.equal(result.applied, true);
+  assert.equal((await ref.get()).data().active, true);
+  assert.equal((await db.collection("tenantSlugs").doc(slug).get()).data().active, true);
+  result = await mirrorLegacySubscriptionAccess({
+    db, tenantRef: ref, makePatch: () => null, makeSlugPatch: toSlug,
+  });
+  assert.equal(result.applied, false);
+  assert.equal(result.reason, "unchanged");
+  await assert.rejects(mirrorLegacySubscriptionAccess({
+    db, tenantRef: ref, makePatch: () => ({ active: true,
+      hybridBillingSuspended: false }), makeSlugPatch: toSlug,
+  }), /HYBRID_LEGACY_SUBSCRIPTION_INVALID_PATCH/);
+});

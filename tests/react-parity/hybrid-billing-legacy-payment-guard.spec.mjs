@@ -69,3 +69,26 @@ test("Phase3AN: Revenue Share access mirror is an atomic tenant-read guard, not 
   const subscription = fs.readFileSync("functions/subscription-admin.js", "utf8");
   assert.match(subscription, /exports\.updateTenantSubscription/);
 });
+
+test("Phase3AO: all four Subscription Admin writer paths use fresh-tenant transaction guard", () => {
+  const backend = fs.readFileSync("functions/subscription-admin.js", "utf8");
+  const helper = fs.readFileSync("functions/hybrid-billing-legacy-access-guard.js", "utf8");
+  const paths = ["initializeTenantSubscription", "backfillTenantSubscriptions",
+    "updateTenantSubscription", "syncExpiredTenants"];
+  for (let i = 0; i < paths.length; i++) {
+    const from = backend.indexOf("exports." + paths[i] + " =");
+    const to = i + 1 < paths.length
+      ? backend.indexOf("exports." + paths[i+1] + " =", from) : backend.length;
+    assert.ok(from >= 0 && to > from);
+    const section = backend.slice(from, to);
+    assert.match(section, /writeLegacySubscription\(db,/);
+    assert.doesNotMatch(section, /db\.batch\(|batch\.commit\(/);
+  }
+  assert.match(helper, /async function mirrorLegacySubscriptionAccess\(/);
+  assert.match(helper, /db\.runTransaction\(async tx =>/);
+  assert.match(helper, /tx\.get\(tenantRef\)/);
+  assert.match(helper, /legacyDeliveryPaidWriterAllowed\(tenant\)/);
+  assert.match(helper, /tx\.set\(tenantRef, patch/);
+  assert.match(helper, /tx\.set\(db\.collection\("tenantSlugs"\)/);
+  assert.equal((backend.match(/mirrorLegacySubscriptionAccess\(/g) || []).length, 1);
+});

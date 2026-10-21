@@ -136,11 +136,13 @@ test("Super Admin tenant management shows and edits signup business/share scope"
 
 test("subscription initializer/backfill/scheduler preserve signup cycle/trial and skip revenue-share tenants", () => {
   const source = fs.readFileSync("functions/subscription-admin.js", "utf8");
-  assert.ok(source.includes("if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return;"));
+  assert.ok(source.includes("if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return null;"));
   assert.ok(source.includes('tenant.planCode === "yearly" ? "yearly" : "monthly"'));
   assert.ok(source.includes("tenant.trialEndsAt"));
   assert.ok(source.includes('tenant.subscriptionStatus === "trialing"'));
   assert.equal((source.match(/defaultPatch\(new Date\(\), tenant\)/g) || []).length, 3);
+  assert.equal((source.match(/writeLegacySubscription\(db, /g) || []).length, 4);
+  assert.doesNotMatch(source, /db\.batch\(/);
 });
 
 test("repeat activation preserves the original subscription trial end", () => {
