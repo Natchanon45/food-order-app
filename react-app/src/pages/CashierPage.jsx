@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getDownloadURL, ref as storageRef } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
+import { serverTimestamp } from "firebase/firestore";
 import { useAuth } from "@/auth/AuthProvider";
 import { CashierOrderNotifier } from "@/components/CashierOrderNotifier";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -816,7 +817,9 @@ export function CashierPage() {
         return;
       }
       const now = new Date().toISOString();
-      const patch = { paymentStatus: "paid", paidAt: now };
+      const patch = { paymentStatus: "paid",
+        paidAt: order.orderType === "delivery" && tenant?.billingPolicyVersion === "hybrid_v1"
+          ? serverTimestamp() : now };
       if (codSettlement) {
         patch.status = "paid";
         patch.completedAt = order.completedAt || now;
