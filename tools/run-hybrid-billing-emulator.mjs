@@ -56,11 +56,20 @@ try {
   }, null, 2) + "\n");
   console.log("HYBRID FIRESTORE EMULATOR UAT | demo project only | localhost:8187 | deny-all client rules");
   console.log("Java:", home);
+  // Phase3AC: only ONE extra fixed, reviewed test target. No arbitrary commands
+  // or remote project/Emulator target can be selected through environment.
+  const target = process.env.HYBRID_EMULATOR_TEST_TARGET || "integration";
+  if (!["integration", "journal-scale"].includes(target)) {
+    throw Error("HYBRID_EMULATOR_UNKNOWN_TEST_TARGET");
+  }
+  const testCommand = target === "journal-scale"
+    ? "node --test tests/react-parity/hybrid-billing-trusted-journal-benchmark.spec.mjs"
+    : "node --test tests/react-parity/hybrid-billing-firestore-emulator.spec.mjs";
   const output = spawnSync("firebase", [
     "emulators:exec", "--only", "firestore",
     "--project", PROJECT, "--config", config,
     "--log-verbosity", "QUIET",
-    "node --test tests/react-parity/hybrid-billing-firestore-emulator.spec.mjs",
+    testCommand,
   ], {
     cwd: ROOT, stdio: "inherit",
     env: {
