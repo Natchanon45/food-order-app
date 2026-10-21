@@ -363,7 +363,23 @@ service cloud.firestore {
           && resource.data.get('orderType', '') == 'delivery'
           && resource.data.get('paymentStatus', '') == 'paid';
       }
-      allow read: if true; allow create, update, delete: if superAdminRole();
+      // Source-only hardening: receipt journal coverage cannot be asserted
+      // by ANY client, including Super Admin. Backoffice attestation must be
+      // a separate trusted server workflow after ALL writers are enrolled.
+      function hybridReceiptCoverageFieldsUnchanged() {
+        return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'hybridReceiptJournalCoverageReady', 'hybridReceiptJournalMode'
+        ]);
+      }
+      function hybridReceiptCoverageFieldsAbsentOnCreate() {
+        return !request.resource.data.keys().hasAny([
+          'hybridReceiptJournalCoverageReady', 'hybridReceiptJournalMode'
+        ]);
+      }
+      allow read: if true;
+      allow create: if superAdminRole() && hybridReceiptCoverageFieldsAbsentOnCreate();
+      allow update: if superAdminRole() && hybridReceiptCoverageFieldsUnchanged();
+      allow delete: if superAdminRole();
       match /menus/{menuId} { allow read: if tenantBusinessEnabled(tenantId, 'order_delivery') && (true); allow create, update, delete: if tenantBusinessEnabled(tenantId, 'order_delivery') && (tenantAdminRole(tenantId)); }
       match /settings/{settingId} { allow read: if true; allow create, update, delete: if (tenantAdminRole(tenantId) && settingId != 'lalamove' && settingId != 'lalamoveWallet') || (settingId == 'catalog-order' && tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId)); }
       match /products/{productId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (true); allow create: if hybridOperationalWriteAllowed() && tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId) && ((!('importedFromExcel' in request.resource.data) && !('importedFromCatalog' in request.resource.data)) || tenantOwner(tenantId))); allow update: if tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId) && tenantResourceMatches(tenantId)) || retailStockUpdate(tenantId) || validPosStockUpdate(tenantId)); allow delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantProductManagerRole(tenantId) && tenantResourceMatches(tenantId)); }
