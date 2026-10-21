@@ -61,3 +61,13 @@ This section tracks targeted corrections to the existing Delivery-only PR #8; it
 6. Run Owner and Super Admin PC/tablet/mobile UAT yourself and report any mismatches. Source completion/green CI is not permission to deploy or touch real billing records.
 
 **Release state:** PR #8 must remain DRAFT and unmerged; PR #7 is historical. Runtime enrollment/collection switches remain OFF until an explicit owner-approved rollout. Real staging/physical-device and bank-payment confirmation are not claimed from source/CI evidence.
+
+## Invoice issuance concurrency hardening (2026-10-22 Bangkok)
+
+- Verified a race in the original candidate: a Super Admin or scheduler could start an expensive Delivery fee calculation from a Tenant snapshot that had `hybridBillingLive=true`, then issue an invoice **after** another request had paused the Tenant's billing. The historical period price could also be locked without any payable invoice.
+- `functions/hybrid-billing-ledger.js::issueForTenant` now uses a **Firestore transaction** per invoice. Within that transaction it reads the current Tenant, price-lock period and invoice document **before writing**, rejects missing/non-Hybrid/paused Tenants, checks the immutable period price, and creates the first period snapshot and invoice in the same commit.
+- A retry or concurrent issuer sees the same invoice and returns `skipped`; changed date/kind/amount returns a conflict instead of silently overwriting the bill. Previously issued paid invoices are never reset.
+- **Real Firebase Emulator CI:** three added cases validate paused billing with a stale caller snapshot, a removed Hybrid policy with a stale caller snapshot, and three simultaneous issuance calls committing exactly one invoice and one cycle price snapshot. The full Emulator suite now has **15 PASS, 0 FAIL, 0 TODO**. Pure/React CI also passed on code HEAD `6e8cfabfeb2de1ec5e25af962a981c51317e045d`, GitHub Push `39661074909` and PR `39661080186` (both jobs in each run succeeded).
+- This transaction does not certify historic paid-Delivery evidence or authorize production billing. Source coverage remains explicitly uncertified; staging/order reconciliation and all manual Owner UAT remain outstanding.
+
+**Additional Owner UAT case:** while an invoice-issuance action is being attempted on a test Tenant, pause its Hybrid collection as Super Admin. No newly created invoice should appear after the pause; retry/concurrent calls must not duplicate any earlier bill. Keep production rollout OFF.
