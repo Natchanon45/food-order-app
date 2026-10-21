@@ -30,23 +30,23 @@ test("exact threshold in first month triggers share and never fixed fee", () => 
   assert.equal(result.fixedFee, 0);
   assert.equal(result.slipUnlimited, true);
 });
-test("threshold-day overshoot bills only the ceiling", () => {
+test("threshold-day bills only that day's Delivery goods, not the cumulative threshold", () => {
   const result = calc([item("2026-10-04", 9000), item("2026-10-20", 4000)]);
   assert.equal(result.totalDeliverySales, 13000);
-  assert.equal(result.totalFee, 500);
-  assert.equal(result.invoices[0].calculationBase, 10000);
+  assert.equal(result.totalFee, 200);
+  assert.equal(result.invoices[0].calculationBase, 4000);
   assert.equal(result.invoices[0].date, "2026-10-20");
 });
 test("following days charge only same-day Delivery and do not rebill overshoot", () => {
   const result = calc([item("2026-10-04", 9000), item("2026-10-20", 4000), item("2026-10-21", 2000), item("2026-10-22", 3000)]);
-  assert.equal(result.totalFee, 750);
-  assert.deepEqual(result.invoices.map(x => x.amount), [500, 100, 150]);
+  assert.equal(result.totalFee, 450);
+  assert.deepEqual(result.invoices.map(x => x.amount), [200, 100, 150]);
   assert.equal(result.fixedFee, 0);
 });
 test("multiple same-day sales are combined and only one invoice is issued", () => {
   const result = calc([item("2026-10-11", 7000), item("2026-10-11", 5000), item("2026-10-12", 500)]);
   assert.deepEqual(result.invoices.map(x => x.id), ["2026-10:delivery:trigger", "2026-10:delivery:2026-10-12"]);
-  assert.equal(result.totalFee, 525);
+  assert.equal(result.totalFee, 625);
 });
 test("zero-selling days issue no revenue-share invoices", () => {
   const result = calc([item("2026-10-04", 10000), item("2026-10-05", 0)]);
@@ -55,7 +55,7 @@ test("zero-selling days issue no revenue-share invoices", () => {
 test("custom admin values drive all threshold/rate/fixed/quota results", () => {
   const settings = { monthlyFee: 799, deliveryThreshold: 15000, deliveryShareRate: 3, monthlySlipQuota: 80 };
   assert.equal(calc([item("2026-10-04", 14000)], false, settings).totalFee, 799);
-  assert.equal(calc([item("2026-10-04", 16000)], false, settings).totalFee, 450);
+  assert.equal(calc([item("2026-10-04", 16000)], false, settings).totalFee, 480);
   assert.equal(calc([], false, settings).slipQuota, 80);
 });
 test("new billing month does not inherit previous threshold state", () => {

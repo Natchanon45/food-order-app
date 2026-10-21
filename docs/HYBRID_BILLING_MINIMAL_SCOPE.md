@@ -14,12 +14,13 @@ The change is the **platform fee charged to a Tenant based solely on paid Delive
 ## Change in this PR
 1. Small pure `previewDeliveryOnlyMonth` adapter provides one explicit read-only seam between existing orders and current billing calculator, used by the existing preview callable.
 2. Reject a refund larger than the original paid merchandise instead of silently treating it as zero.
-3. Automated tests establish that non-Delivery channels cannot affect threshold and that missing trusted payment timestamps do not become guessed sales.
+3. Align the threshold-day calculation to the original later approved pure rule: 5% of Delivery goods sold on the trigger DAY only, not 5% of the accumulated 10,000 THB threshold and not backdated to prior days. Keep the rest of the original calendar-month candidate unchanged.
+4. Automated tests establish that non-Delivery channels cannot affect threshold and that missing trusted payment timestamps do not become guessed sales.
 
 ## Non-goals and outstanding verification
 - No modification to retail POS, table/takeaway, cashier, Lalamove, Firebase Rules, live payments, tenant memberships, registration flags, or production deployment.
 - Source read currently uses a bounded `paidAt` range; older records lacking canonical Firestore `paidAt` may be **missing from the estimate**. This requires separate read-only completeness verification before charging tenants. Do NOT enable invoice or suspension from this preview.
-- `calculateMonth` currently charges 5% on the **full threshold amount** on the day the cumulative Delivery total first reaches 10,000 THB (not only the daily incremental amount); confirm policy before billing real tenants.
+- `calculateMonth` now charges 5% only on paid Delivery goods of the trigger calendar DAY, consistent with the later Hybrid prototype. Confirm this business policy before billing real tenants.
 - Billing anniversary period vs calendar month, threshold-day calculation base, refunds/adjustments, payment confirmation and actual charge workflow require business sign-off. These do **not** justify rewriting the operational payment writers.
 - All four readiness flags remain false. No real tenant fee issuance, automatic suspension, merge or Firebase deploy.
 

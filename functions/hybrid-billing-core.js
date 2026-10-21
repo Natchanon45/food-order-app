@@ -70,7 +70,9 @@ function calculateMonth({ month, firstMonth = false, dailyDeliverySales = [], se
     let baseCents = 0, kind = null;
     if (!triggerDate && cumulativeCents >= thresholdCents) {
       triggerDate = date;
-      baseCents = thresholdCents;
+      // Charge only the Delivery goods sold on the closed trigger day.
+      // Previous days determine threshold crossing but are not re-billed.
+      baseCents = cents;
       kind = "delivery_threshold";
     } else if (triggerDate && date !== triggerDate && cents > 0) {
       baseCents = cents;

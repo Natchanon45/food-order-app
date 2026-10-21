@@ -42,6 +42,18 @@ test("only verified-paid eligible Delivery crosses threshold; shipping excluded"
   assert.equal(result.totalFee, 500); // preserve existing threshold policy
   assert.equal(result.fixedFee, 0);
 });
+test("Delivery threshold day uses only that day's paid goods, excluding prior days", () => {
+  const rows = [
+    order(9000, { paidAt: paidTime("2026-10-19T08:00:00Z") }),
+    order(4000, { paidAt: paidTime("2026-10-20T08:00:00Z") }),
+    order(50000, { orderType: "pos" }),
+  ];
+  const result = preview(rows);
+  assert.equal(result.totalDeliverySales, 13000);
+  assert.equal(result.triggerDate, "2026-10-20");
+  assert.equal(result.invoices[0].calculationBase, 4000);
+  assert.equal(result.totalFee, 200);
+});
 test("partial Delivery refunds reduce qualifying sales without touching POS", () => {
   const result = preview([order(10000, { refundTotal: 501 }), order(30000, { orderType: "pos" })]);
   assert.equal(result.totalDeliverySales, 9499);
