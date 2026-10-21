@@ -6,6 +6,7 @@
 const { createHash }=require("node:crypto");
 const { Timestamp, FieldValue }=require("firebase-admin/firestore");
 const { paidDeliverySale }=require("./hybrid-billing-orders");
+const {dateKey}=require("./hybrid-billing-core");
 const { prepareBankReceiptJournal, journalReceiptIssue }=require("./hybrid-billing-receipt-journal");
 const {assertHybridEpochDemoOptIn,requireHybridEpochAdmissionCandidate}=require("./hybrid-billing-writer-epoch-candidate");
 
@@ -117,7 +118,7 @@ async function recordHybridVerifiedPromptPay({
      proof,serverTimestamp,
    });
    if(epochAdmissionDemo)await requireHybridEpochAdmissionCandidate({
-     tx,tenantRef,sourceKey:"promptpay_bank"});
+     tx,tenantRef,sourceKey:"promptpay_bank",sourceDay:dateKey(proof.paidAt)});
    tx.create(bankRef,{tenantId,orderId,source:SOURCE,
      referenceHash:proof.referenceHash,evidenceSha256:proof.evidenceSha256,
      recordedAt:serverTimestamp()});
