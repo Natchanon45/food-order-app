@@ -128,23 +128,9 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
   if (!lines.length) return { inserted: [], skipped: [], cycleId: estimate.cycleId, selectedDate: throughDate };
   const destination = await configuredDestination(db);
   if (!destination) throw new HttpsError("failed-precondition", "HYBRID_PAYMENT_BANK_REQUIRED");
-  // Preserve the pricing snapshot used for the FIRST invoice in the cycle.
+  // The first invoice and its cycle price snapshot must commit together.
+  // Do not freeze a period if billing was paused before any invoice was issued.
   const periodRef = ref.collection("hybridBillingPeriods").doc(estimate.cycleId);
-  const period = await periodRef.get();
-  if (!period.exists) {
-    try {
-      await periodRef.create({
-        configSnapshot: estimate.config, cycleStart: estimate.cycleStart, cycleEnd: estimate.cycleEnd,
-        createdAt: FieldValue.serverTimestamp(), createdBy: actor,
-      });
-    } catch (error) {
-      if (![6, "6", "already-exists", "ALREADY_EXISTS"].includes(error.code)) throw error;
-    }
-  }
-  const locked = await periodRef.get();
-  if (!locked.exists || !sameBillingPrices(locked.data().configSnapshot, estimate.config)) {
-    throw new HttpsError("failed-precondition", "HYBRID_CYCLE_PRICING_CHANGED_RETRY");
-  }
   // If historical orders move the trigger day or change an already-issued
   // amount, require finance reconciliation instead of issuing a second bill.
   const issued = await ref.collection(BILLING_COLLECTION)
@@ -179,22 +165,43 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
       reconciledBy: actor, reconciliationAttestation: attest,
       issuedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     };
-    try {
-      await invoiceRef.create(payload);
-      inserted.push(safeInvoiceSummary(line.id, payload));
-    } catch (error) {
-      const code = String(error.code || "");
-      if (code === "6" || code === "already-exists" || code === "ALREADY_EXISTS") {
-        // Never change an already-issued bill when late orders or configuration changes.
-        const existing = await invoiceRef.get();
-        if (existing.exists && amountSatang(existing.data()?.amount) !== amountSatang(line.amount)) {
+    const outcome = await db.runTransaction(async tx => {
+      // The viewer/scheduler snapshot can become stale while calculating a
+      // potentially large Delivery cycle. Check the CURRENT Tenant atomically
+      // with invoice creation so a paused/removed Tenant is never billed.
+      const current = await tx.get(ref);
+      if (!current.exists || current.data().billingPolicyVersion !== "hybrid_v1"
+        || current.data().hybridBillingLive !== true) {
+        throw new HttpsError("failed-precondition", "HYBRID_BILLING_NOT_LIVE_AT_ISSUANCE");
+      }
+      const [locked, existing] = await Promise.all([
+        tx.get(periodRef), tx.get(invoiceRef),
+      ]);
+      if (locked.exists && !sameBillingPrices(locked.data().configSnapshot, estimate.config)) {
+        throw new HttpsError("failed-precondition", "HYBRID_CYCLE_PRICING_CHANGED_RETRY");
+      }
+      if (existing.exists) {
+        const row = existing.data();
+        if (row.cycleId !== estimate.cycleId || row.kind !== line.kind
+          || row.date !== line.date
+          || amountSatang(row.amount) !== amountSatang(line.amount)) {
           throw new HttpsError("failed-precondition", "HYBRID_ISSUED_INVOICE_AMOUNT_MISMATCH");
         }
-        skipped.push(line.id);
-        continue;
+        return "skipped";
       }
-      throw error;
-    }
+      // Firestore transactions require all reads before their first write.
+      if (!locked.exists) {
+        tx.create(periodRef, {
+          configSnapshot: estimate.config, cycleStart: estimate.cycleStart,
+          cycleEnd: estimate.cycleEnd,
+          createdAt: FieldValue.serverTimestamp(), createdBy: actor,
+        });
+      }
+      tx.create(invoiceRef, payload);
+      return "inserted";
+    });
+    if (outcome === "inserted") inserted.push(safeInvoiceSummary(line.id, payload));
+    else skipped.push(line.id);
   }
   return { inserted, skipped, cycleId: estimate.cycleId, selectedDate: throughDate };
 }
