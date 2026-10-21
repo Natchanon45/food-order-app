@@ -3,10 +3,13 @@
 // GLOBAL reference and order locks are candidates, NEVER real bank settlement,
 // trustworthy attestation, payment receipt, financial journal, or invoice.
 const {FieldValue}=require("firebase-admin/firestore");
+const {createHash}=require("node:crypto");
 const {assertHybridEpochDemoOptIn}=require("./hybrid-billing-writer-epoch-candidate");
 const {previewHybridLalamoveCodBatch}=require("./hybrid-billing-lalamove-batch-preview");
 const ID=/^[A-Za-z0-9_-]{8,128}$/;
 const SHA=/^[a-f0-9]{64}$/;
+const providerClaimId=providerOrderId=>createHash("sha256")
+ .update(JSON.stringify(["lalamove_cod_provider_order_v1",providerOrderId])).digest("hex");
 const money=x=>typeof x==="number"&&Number.isFinite(x)
   &&Math.abs(x*100-Math.round(x*100))<=0.00001?Math.round(x*100):null;
 async function reserveHybridDemoCodBatchCandidate({
@@ -31,12 +34,15 @@ async function reserveHybridDemoCodBatchCandidate({
  const lines=preview.allocations.map(a=>({
   info:a,order:t.collection("orders").doc(a.orderId),
   proof:t.collection("hybridLalamoveCodCompletionProof").doc(a.orderId),
-  claim:t.collection("hybridBillingDemoCodOrderClaims").doc(a.orderId)
+  claim:t.collection("hybridBillingDemoCodOrderClaims").doc(a.orderId),
+  providerClaim:db.collection("hybridBillingDemoLalamoveProviderOrderClaims")
+   .doc(providerClaimId(a.providerOrderId))
  }));
  return db.runTransaction(async tx=>{
   const [tenant,actor,oldCandidate,oldTransfer,...lookups]=await Promise.all([
    tx.get(t),tx.get(user),tx.get(candidate),tx.get(transfer),
-   ...lines.flatMap(x=>[tx.get(x.order),tx.get(x.proof),tx.get(x.claim)])
+   ...lines.flatMap(x=>[tx.get(x.order),tx.get(x.proof),tx.get(x.claim),
+    tx.get(x.providerClaim)])
   ]);
   if(!actor.exists||actor.data()?.role!=="super_admin"
     ||actor.data()?.active!==true)
@@ -47,8 +53,8 @@ async function reserveHybridDemoCodBatchCandidate({
     throw Error("HYBRID_DEMO_BATCH_TENANT_NOT_READY");
   const claims=[];
   for(let i=0;i<lines.length;i++){
-   const l=lines[i],o=lookups[i*3],proof=lookups[i*3+1],
-     claim=lookups[i*3+2],info=l.info;
+   const l=lines[i],o=lookups[i*4],proof=lookups[i*4+1],
+     claim=lookups[i*4+2],globalProviderClaim=lookups[i*4+3],info=l.info;
    if(!o.exists||!proof.exists
      ||o.data()?.orderType!=="delivery"||o.data()?.paymentStatus!=="unpaid"
      ||o.data()?.paymentMethod!=="cod"||o.data()?.deliveryProvider!=="lalamove"
@@ -64,13 +70,17 @@ async function reserveHybridDemoCodBatchCandidate({
      ||proof.data()?.providerOrderId!==info.providerOrderId
      ||proof.data()?.eventHash!==info.deliveryEvidenceDigest)
      throw Error("HYBRID_DEMO_BATCH_ORDER_CHANGED");
-   claims.push({ref:l.claim,snapshot:claim});
+   claims.push({ref:l.claim,snapshot:claim,
+    providerRef:l.providerClaim,providerSnapshot:globalProviderClaim,
+    providerOrderId:info.providerOrderId,orderId:info.orderId});
   }
   const prev=oldCandidate.exists?oldCandidate.data():null;
   const transferData=oldTransfer.exists?oldTransfer.data():null;
   const existingClaims=claims.filter(x=>x.snapshot.exists);
-  if(prev||transferData||existingClaims.length){
+  const existingProviderClaims=claims.filter(x=>x.providerSnapshot.exists);
+  if(prev||transferData||existingClaims.length||existingProviderClaims.length){
    if(!prev||!transferData||existingClaims.length!==lines.length
+     ||existingProviderClaims.length!==lines.length
      ||prev.witnessDigest!==preview.witnessDigest
      ||prev.transferReferenceSha256!==preview.transferReferenceSha256
      ||prev.status!=="pending_independent_review"
@@ -79,7 +89,13 @@ async function reserveHybridDemoCodBatchCandidate({
      ||transferData.witnessDigest!==preview.witnessDigest
      ||claims.some(x=>x.snapshot.data()?.batchId!==batchId
        ||x.snapshot.data()?.witnessDigest!==preview.witnessDigest
-       ||x.snapshot.data()?.candidateOnly!==true))
+       ||x.snapshot.data()?.candidateOnly!==true
+       ||x.providerSnapshot.data()?.tenantId!==tenantId
+       ||x.providerSnapshot.data()?.batchId!==batchId
+       ||x.providerSnapshot.data()?.orderId!==x.orderId
+       ||x.providerSnapshot.data()?.providerOrderId!==x.providerOrderId
+       ||x.providerSnapshot.data()?.witnessDigest!==preview.witnessDigest
+       ||x.providerSnapshot.data()?.candidateOnly!==true))
       throw Error("HYBRID_DEMO_BATCH_REFERENCE_OR_ORDER_REPLAY");
    return {tenantId,batchId,alreadyReserved:true,pending:true,
      canMarkPaid:false,canIssueInvoice:false,coverageCertified:false};
@@ -101,6 +117,9 @@ async function reserveHybridDemoCodBatchCandidate({
    candidateOnly:true,createdAt});
   for(const x of claims){
    tx.create(x.ref,{tenantId,batchId,witnessDigest:preview.witnessDigest,
+     candidateOnly:true,createdAt});
+   tx.create(x.providerRef,{tenantId,batchId,orderId:x.orderId,
+     providerOrderId:x.providerOrderId,witnessDigest:preview.witnessDigest,
      candidateOnly:true,createdAt});
   }
   return {tenantId,batchId,alreadyReserved:false,pending:true,
