@@ -78,6 +78,11 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
     if (existingPending?.uid && existingPending.uid !== uid) {
       throw new HttpsError("permission-denied", "Signup belongs to another user");
     }
+    // A retry of an already activated signup must never return the record
+    // to "email_verification_required" or silently restart its billing cycle.
+    if (existingPending?.status === "active" && existingPending.tenantId) {
+      throw new HttpsError("failed-precondition", "Tenant signup is already active");
+    }
     const hybridBillingStartDate = resolveSignupBillingStartDate(existingPending, requestedAt);
     const payload = {
       uid,

@@ -165,3 +165,13 @@ test("read-only audit disregards POS rows even if test query adapter supplies th
   assert.deepEqual(await auditPaidDeliveryCoverage(onlyOrders(rows)),
     { scanned: 2, paidDeliveryCount: 1, coverageCertified: false });
 });
+
+test("re-submitting an already active signup cannot reset activation status or billing day", () => {
+  const source = fs.readFileSync("functions/public-signup.js", "utf8");
+  const start = source.indexOf("exports.requestTrialTenantSignup =");
+  const end = source.indexOf("exports.activateTrialTenantSignup =");
+  const requestSection = source.slice(start, end);
+  assert.match(requestSection, /existingPending\?\.status === "active" && existingPending\.tenantId/);
+  assert.match(requestSection, /Tenant signup is already active/);
+  assert.match(requestSection, /resolveSignupBillingStartDate\(existingPending, requestedAt\)/);
+});
