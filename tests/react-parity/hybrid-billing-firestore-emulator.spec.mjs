@@ -2597,8 +2597,8 @@ test("emulator Phase3AH: global provider-order claim prevents replay across Hybr
  const {reserveHybridDemoCodBatchCandidate}=require(
   "../../functions/hybrid-billing-demo-batch-reservation.js");
  const commonProviderId="LL-GLOBAL-REPLAY-PROVIDER-120",at=new Date("2026-10-21T08:00:00Z");
- const account="a".repeat(64),recipient="b".repeat(64),firstTransfer="c".repeat(64),
-  secondTransfer="1".repeat(64),providerDigest="d".repeat(64),bankDigest="e".repeat(64);
+ const account="a".repeat(64),recipient="b".repeat(64),firstTransfer="7".repeat(64),
+  secondTransfer="8".repeat(64),providerDigest="d".repeat(64),bankDigest="e".repeat(64);
  async function prepare(n,transfer){
   const tenantId="tenant-phase3ah-global-"+n,reviewerUid="super-phase3ah-global-"+n;
   const batchId="batch-phase3ah-global-"+n,tenantRef=await activate(tenantId,{
