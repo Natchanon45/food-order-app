@@ -5,7 +5,7 @@ const { randomUUID } = require("crypto");
 const { loadPricing, pricingSnapshot } = require("./subscription-pricing-core");
 const { normalizeSignupBilling, businessUnitsFor } = require("./revenue-share-policy");
 const { loadHybridBillingSettings, HYBRID_REGISTRATION_READY } = require("./hybrid-billing-settings");
-const { dateKey, resolveSignupBillingStartDate } = require("./hybrid-billing-core");
+const { dateKey } = require("./hybrid-billing-core");
 
 const PLAN_ID = "premium";
 const TRIAL_DAYS = 30;
@@ -65,25 +65,11 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   const now = FieldValue.serverTimestamp();
   const signupPricing = pricingSnapshot(await loadPricing(db));
   const hybridSettings = await loadHybridBillingSettings(db);
-  // Capture the request date on the server. Replays must retain the prior anchor.
-  const requestedAt = new Date();
 
   await db.runTransaction(async tx => {
-    const [tenantSlugSnap, pendingSlugSnap, pendingSignupSnap] = await Promise.all([
-      tx.get(tenantSlugRef), tx.get(pendingSlugRef), tx.get(pendingRef),
-    ]);
+    const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
     if (tenantSlugSnap.exists) throw new HttpsError("already-exists", "This slug is already in use");
     if (pendingSlugSnap.exists && pendingSlugSnap.data()?.uid !== uid) throw new HttpsError("already-exists", "This slug is already reserved");
-    const existingPending = pendingSignupSnap.exists ? pendingSignupSnap.data() : null;
-    if (existingPending?.uid && existingPending.uid !== uid) {
-      throw new HttpsError("permission-denied", "Signup belongs to another user");
-    }
-    // A retry of an already activated signup must never return the record
-    // to "email_verification_required" or silently restart its billing cycle.
-    if (existingPending?.status === "active" && existingPending.tenantId) {
-      throw new HttpsError("failed-precondition", "Tenant signup is already active");
-    }
-    const hybridBillingStartDate = resolveSignupBillingStartDate(existingPending, requestedAt);
     const payload = {
       uid,
       email,
@@ -101,12 +87,11 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       signupBilling: { ...signupBilling },
       billingPolicyVersion: "hybrid_v1",
       hybridBillingSnapshot: hybridSettings,
-      hybridBillingStartDate,
       pricingSnapshot: signupPricing,
       status: "email_verification_required",
       previewUrl: `${PUBLIC_APP_ORIGIN}/s/${slug}/`,
       updatedAt: now,
-      createdAt: existingPending?.createdAt || now,
+      createdAt: now
     };
     tx.set(pendingRef, payload, { merge: true });
     tx.set(pendingSlugRef, { uid, slug, email, status: "pending", updatedAt: now, createdAt: now }, { merge: true });
@@ -164,8 +149,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const businessUnits = businessUnitsFor(signupBilling.businessType);
   const primaryShopName = clean(pending.orderDeliveryShopName) || clean(pending.retailPosShopName);
   const subscriptionTrial = signupBilling.billingMode === "subscription";
-  const signupDate = hybridSignup ? resolveSignupBillingStartDate(pending) : null;
-  const signupMonth = hybridSignup ? signupDate.slice(0, 7) : dateKey(new Date()).slice(0, 7);
+  const signupMonth = dateKey(new Date()).slice(0, 7);
 
   await db.runTransaction(async tx => {
     const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
@@ -189,7 +173,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       businessType: signupBilling.businessType,
       subscriptionPricingSnapshot: signupPricing,
       ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
-        hybridBillingStartDate: signupDate, hybridTrialMonth: signupMonth } : {}),
+        hybridTrialMonth: signupMonth } : {}),
       ...(subscriptionTrial
         ? { subscriptionStatus: "trialing", trialStartsAt: now, trialEndsAt }
         : { subscriptionStatus: "active" }),
@@ -215,8 +199,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       businessType: signupBilling.businessType,
       revenueShareEnabled: signupBilling.billingMode === "revenue_share",
       ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
-        hybridBillingStartDate: signupDate, hybridTrialMonth: signupMonth,
-        hybridBillingEnabled: false } : {}),
+        hybridTrialMonth: signupMonth, hybridBillingEnabled: false } : {}),
       revenueShareRate: 0,
       revenueShareBillingCycle: "monthly",
       revenueShareBusinessType: signupBilling.businessType,
@@ -267,7 +250,6 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
     tx.set(pendingRef, {
       status: "active",
       tenantId,
-      ...(hybridSignup ? { hybridBillingStartDate: signupDate } : {}),
       trialEndsAt: subscriptionTrial ? trialEndsAt : null,
       activatedAt: now,
       updatedAt: now,

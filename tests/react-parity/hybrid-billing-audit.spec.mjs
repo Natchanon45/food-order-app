@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const { auditPaidDeliveryCoverage, resolveHybridStartDate, previewHybridCycle } =
+const { auditPaidDeliveryCoverage, resolveHybridStartDate, previewHybridCycle,
+  signupStartDateForPreview } =
   require("../../functions/hybrid-billing-preview.js");
 
 function paid(amount, iso, overrides = {}) {
@@ -123,40 +124,6 @@ test("read-only preview aborts if a paid Delivery has noncanonical paidAt", asyn
     /HYBRID_PAID_DELIVERY_NONCANONICAL_TIMESTAMP/);
 });
 
-// The signup anchor is a pure policy decision, not a reason to modify POS,
-// cashier writers, payment status or live Tenant records.
-const { resolveSignupBillingStartDate } = require("../../functions/hybrid-billing-core.js");
-import fs from "node:fs";
-
-test("first request anchors at server Bangkok day, including midnight UTC", () => {
-  const now = new Date("2026-10-15T17:15:00Z");
-  assert.equal(resolveSignupBillingStartDate(null, now), "2026-10-16");
-});
-test("request retries preserve signup day regardless of later confirmation date", () => {
-  const today = new Date("2026-11-18T10:00:00Z");
-  assert.equal(resolveSignupBillingStartDate({ hybridBillingStartDate: "2026-10-16" }, today),
-    "2026-10-16");
-  const legacy = { createdAt: { toDate: () => new Date("2026-10-15T17:00:01Z") } };
-  assert.equal(resolveSignupBillingStartDate(legacy, today), "2026-10-16");
-});
-test("unverifiable and future signup anchors fail instead of silently regranting free cycle", () => {
-  const today = new Date("2026-10-20T10:00:00Z");
-  assert.throws(() => resolveSignupBillingStartDate({}, today),
-    /HYBRID_PENDING_SIGNUP_START_DATE_UNVERIFIED/);
-  assert.throws(() => resolveSignupBillingStartDate({ hybridBillingStartDate: "2026-11-01" }, today),
-    /HYBRID_SIGNUP_START_DATE_IN_FUTURE/);
-  assert.throws(() => resolveSignupBillingStartDate({ hybridBillingStartDate: "2026-10-35" }, today));
-});
-test("signup requests and activation propagate one canonical anchor without changing payment writers", () => {
-  const source = fs.readFileSync("functions/public-signup.js", "utf8");
-  assert.match(source, /tx\.get\(pendingRef\)/);
-  assert.match(source, /resolveSignupBillingStartDate\(existingPending, requestedAt\)/);
-  assert.match(source, /resolveSignupBillingStartDate\(pending\)/);
-  assert.match(source, /hybridBillingStartDate: signupDate/g);
-  assert.match(source, /hybridBillingEnabled: false/);
-  assert.match(source, /if \(!HYBRID_REGISTRATION_READY\)/);
-  assert.doesNotMatch(source, /paidAt:|paymentStatus: "paid"|hybridReceiptJournal/);
-});
 test("read-only audit disregards POS rows even if test query adapter supplies them", async () => {
   const rows = [paid(100, "2026-10-20T10:00:00Z"),
     paid(5000, "2026-10-20T10:00:00Z", {
@@ -166,17 +133,8 @@ test("read-only audit disregards POS rows even if test query adapter supplies th
     { scanned: 2, paidDeliveryCount: 1, coverageCertified: false });
 });
 
-test("re-submitting an already active signup cannot reset activation status or billing day", () => {
-  const source = fs.readFileSync("functions/public-signup.js", "utf8");
-  const start = source.indexOf("exports.requestTrialTenantSignup =");
-  const end = source.indexOf("exports.activateTrialTenantSignup =");
-  const requestSection = source.slice(start, end);
-  assert.match(requestSection, /existingPending\?\.status === "active" && existingPending\.tenantId/);
-  assert.match(requestSection, /Tenant signup is already active/);
-  assert.match(requestSection, /resolveSignupBillingStartDate\(existingPending, requestedAt\)/);
-});
 
-test("audit requests indexed paid Delivery query and pages using document cursor", async () => {
+test("audit uses existing single-field Delivery index and pages by document cursor", async () => {
   const calls = [];
   // 501 rows force the second page (PAGE_LIMIT = 500).
   const rows = docRows(Array.from({ length: 501 }, (_, i) =>
@@ -205,13 +163,12 @@ test("audit requests indexed paid Delivery query and pages using document cursor
   assert.equal(result.scanned, 501);
   assert.equal(result.paidDeliveryCount, 501);
   assert.equal(result.coverageCertified, false);
-  assert.deepEqual(calls.filter(c => c[0] === "where").slice(0, 2), [
+  assert.deepEqual(calls.filter(c => c[0] === "where"), [
     ["where", "orderType", "==", "delivery"],
-    ["where", "paymentStatus", "==", "paid"],
   ]);
   assert.ok(calls.some(c => c[0] === "startAfter"));
 });
-test("more than 3,000 paid Delivery can be audited within new bounded cap", async () => {
+test("more than 3,000 Delivery records can be read under the bounded cap", async () => {
   const n = 3001, today = "2026-10-20T10:00:00Z";
   const ref = onlyOrders(Array.from({ length: n }, () => paid(10, today)));
   const result = await auditPaidDeliveryCoverage(ref);
@@ -219,30 +176,59 @@ test("more than 3,000 paid Delivery can be audited within new bounded cap", asyn
   assert.equal(result.paidDeliveryCount, n);
   assert.equal(result.coverageCertified, false);
 });
-test("more than 10,000 paid Delivery still stops with an explicit error", async () => {
+test("more than 10,000 Delivery records still fails closed", async () => {
   const ref = onlyOrders(Array.from({ length: 10001 }, () =>
     paid(10, "2026-10-20T10:00:00Z")));
   await assert.rejects(auditPaidDeliveryCoverage(ref),
     /HYBRID_DELIVERY_COVERAGE_SCAN_LIMIT/);
 });
-test("explicit audit index is limited to Order channel and paid status", () => {
-  const indexes = JSON.parse(fs.readFileSync("firestore.indexes.json", "utf8")).indexes;
-  assert.ok(indexes.some(index => index.collectionGroup === "orders"
-    && index.queryScope === "COLLECTION"
-    && index.fields[0]?.fieldPath === "orderType"
-    && index.fields[1]?.fieldPath === "paymentStatus"));
-});
 
-test("current Cashier and Slip2Go payment writers produce different paidAt formats (read-only contract)", () => {
+
+test("read-only preview uses existing first signup request day, not activation day", async () => {
+  const pending = { uid: "owner-1", tenantId: "tenant-1", status: "active",
+    createdAt: { toDate: () => new Date("2026-10-15T17:00:00Z") } };
+  const reads = [];
+  const db = { collection(name) {
+    assert.equal(name, "publicTenantSignups"); reads.push(name);
+    return { doc(uid) {
+      assert.equal(uid, "owner-1"); return { get: async () => ({ exists: true, data: () => pending }) };
+    } };
+  } };
+  const tenant = { id: "tenant-1", ownerUid: "owner-1",
+    createdAt: { toDate: () => new Date("2026-10-18T17:00:00Z") } };
+  assert.equal(await signupStartDateForPreview(db, tenant), "2026-10-16");
+  assert.deepEqual(reads, ["publicTenantSignups"]);
+});
+test("unknown or mismatched signup request falls back to trusted Tenant creation", async () => {
+  const tenant = { id: "tenant-1", ownerUid: "owner-1",
+    createdAt: { toDate: () => new Date("2026-10-18T17:00:00Z") } };
+  const db = { collection() { return { doc() { return {
+    get: async () => ({ exists: true, data: () => ({
+      uid: "owner-1", tenantId: "another-tenant", status: "active",
+    }) }),
+  }; } }; } };
+  assert.equal(await signupStartDateForPreview(db, tenant), "2026-10-19");
+});
+test("unverifiable or post-activation signup day must not shift billing cycle", async () => {
+  const tenant = { id: "tenant-1", ownerUid: "owner-1",
+    createdAt: { toDate: () => new Date("2026-10-18T17:00:00Z") } };
+  const read = pending => ({ collection() { return { doc() { return {
+    get: async () => ({ exists: true, data: () => ({ uid: "owner-1",
+      tenantId: "tenant-1", status: "active", ...pending }) }),
+  }; } }; } });
+  await assert.rejects(signupStartDateForPreview(read({ createdAt: null }), tenant),
+    /HYBRID_SIGNUP_REQUEST_DATE_UNVERIFIED/);
+  await assert.rejects(signupStartDateForPreview(read({
+    createdAt: { toDate: () => new Date("2026-11-16T17:00:00Z") },
+  }), tenant), /HYBRID_SIGNUP_REQUEST_DATE_AFTER_ACTIVATION/);
+});
+test("original Cashier, registration, and Firestore indexes are unchanged by minimal PR", () => {
+  const fs = require("node:fs");
   const cashier = fs.readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
-  const slip = fs.readFileSync("functions/delivery-slip.js", "utf8");
-  assert.match(cashier, /const now = new Date\(\)\.toISOString\(\)/);
+  const signup = fs.readFileSync("functions/public-signup.js", "utf8");
+  const preview = fs.readFileSync("functions/hybrid-billing-preview.js", "utf8");
   assert.match(cashier, /const patch = \{ paymentStatus: "paid", paidAt: now \}/);
-  assert.match(slip, /paymentStatus: "paid", paidAt: FieldValue\.serverTimestamp\(\)/);
-  // This discrepancy is explicitly a production billing BLOCKER, not a reason
-  // to trust browser timestamps or to rewrite payment/Cashier writers in this PR.
-  const { paidDeliverySale } = require("../../functions/hybrid-billing-orders.js");
-  assert.throws(() => paidDeliverySale(paid(900, "2026-10-20T10:00:00Z", {
-    paidAt: "2026-10-20T10:00:00Z",
-  })), /HYBRID_PAID_DELIVERY_MISSING_SERVER_TIMESTAMP/);
+  assert.doesNotMatch(cashier, /cashierPaidAt|hybridCashierPaidAt/);
+  assert.doesNotMatch(signup, /resolveSignupBillingStartDate|hybridBillingStartDate/);
+  assert.match(preview, /signupStartDateForPreview/);
 });

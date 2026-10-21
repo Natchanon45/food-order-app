@@ -9,9 +9,8 @@ const { loadHybridBillingSettings } = require("./hybrid-billing-settings");
 const REGION = "asia-southeast1";
 const MAX_PAID_ORDERS = 50000;
 const PAGE_LIMIT = 500;
-// Paid Delivery only, not all unpaid/submitted orders. This is a preview cap,
-// not permission to issue charges or a certified financial ledger.
-const MAX_AUDIT_PAID_DELIVERY = 10000;
+// Bound read-only Delivery history scans; never silently truncate a preview.
+const MAX_AUDIT_DELIVERY = 10000;
 
 function monthWindow(month) {
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(month || ""))) {
@@ -114,19 +113,17 @@ function resolveHybridStartDate(tenant = {}) {
 // Bounded, read-only audit to detect paid Delivery documents excluded by a
 // Firestore paidAt Timestamp range (e.g. legacy ISO strings or missing paidAt).
 // This is an anomaly check, NOT a transactionally consistent certification.
-async function auditPaidDeliveryCoverage(tenantRef, { maxDocs = MAX_AUDIT_PAID_DELIVERY } = {}) {
-  if (!Number.isSafeInteger(maxDocs) || maxDocs < 1 || maxDocs > MAX_AUDIT_PAID_DELIVERY) {
+async function auditPaidDeliveryCoverage(tenantRef, { maxDocs = MAX_AUDIT_DELIVERY } = {}) {
+  if (!Number.isSafeInteger(maxDocs) || maxDocs < 1 || maxDocs > MAX_AUDIT_DELIVERY) {
     throw new RangeError("Invalid coverage audit limit");
   }
   let scanned = 0, paidDeliveryCount = 0, cursor = null;
   for (;;) {
     const pageSize = Math.min(PAGE_LIMIT, maxDocs + 1 - scanned);
-    // Match the exact canonical persisted fields at the database layer to
-    // avoid scanning large volumes of unpaid Delivery or paid non-Delivery.
-    // An explicit composite index is included in firestore.indexes.json.
+    // Existing single-field Delivery index; no new composite index or
+    // payment-status writer change is required.
     let query = tenantRef.collection("orders")
       .where("orderType", "==", "delivery")
-      .where("paymentStatus", "==", "paid")
       .orderBy("__name__").limit(pageSize);
     if (cursor) query = query.startAfter(cursor);
     const snap = await query.get();
@@ -154,8 +151,32 @@ async function auditPaidDeliveryCoverage(tenantRef, { maxDocs = MAX_AUDIT_PAID_D
   return { scanned, paidDeliveryCount, coverageCertified: false };
 }
 
-async function previewHybridCycle(tenantRef, tenant, onDate, db) {
-  const signupDate = resolveHybridStartDate(tenant);
+// Reuse the existing server-recorded signup request date without editing
+// registration or Tenant records. For pre-existing Tenants with no matching
+// request, use their trusted Tenant.createdAt activation day as a fallback.
+async function signupStartDateForPreview(db, tenant = {}) {
+  if (tenant.hybridBillingStartDate) return resolveHybridStartDate(tenant);
+  const ownerUid = String(tenant.ownerUid || "").trim();
+  if (!ownerUid) return resolveHybridStartDate(tenant);
+  const pendingSnap = await db.collection("publicTenantSignups").doc(ownerUid).get();
+  const pending = pendingSnap.exists ? pendingSnap.data() : null;
+  if (!pending || pending.uid !== ownerUid || pending.tenantId !== tenant.id
+    || pending.status !== "active") return resolveHybridStartDate(tenant);
+  const created = pending.createdAt?.toDate?.();
+  if (!(created instanceof Date) || !Number.isFinite(created.getTime())) {
+    throw new Error("HYBRID_SIGNUP_REQUEST_DATE_UNVERIFIED");
+  }
+  const signupDate = dateKey(created);
+  // If retries altered the request date after activation, do not claim a
+  // trusted signup anniversary or silently shift a user's billing cycle.
+  if (signupDate > resolveHybridStartDate(tenant)) {
+    throw new Error("HYBRID_SIGNUP_REQUEST_DATE_AFTER_ACTIVATION");
+  }
+  return signupDate;
+}
+
+async function previewHybridCycle(tenantRef, tenant, onDate, db,
+  signupDate = resolveHybridStartDate(tenant)) {
   const cycle = billingCycle(signupDate, onDate);
   const { start, end } = cycleWindow(cycle);
   // Fail closed rather than showing a plausible partial number when legacy
@@ -191,10 +212,11 @@ exports.getTenantHybridBillingPreview = onCall({ region: REGION, timeoutSeconds:
   try {
     validDate(onDate);
     const today = dateKey(new Date());
-    if (onDate < resolveHybridStartDate(tenant) || onDate > today) {
+    const signupDate = await signupStartDateForPreview(db, tenant);
+    if (onDate < signupDate || onDate > today) {
       throw new RangeError("Date outside Tenant billing history");
     }
-    const result = await previewHybridCycle(tenantRef, tenant, onDate, db);
+    const result = await previewHybridCycle(tenantRef, tenant, onDate, db, signupDate);
     return { ok: true, ...result };
   } catch (error) {
     if (error instanceof RangeError) {
@@ -211,4 +233,5 @@ exports.paidOrdersInWindow = paidOrdersInWindow;
 exports.previewHybridMonth = previewHybridMonth;
 exports.previewHybridCycle = previewHybridCycle;
 exports.resolveHybridStartDate = resolveHybridStartDate;
+exports.signupStartDateForPreview = signupStartDateForPreview;
 exports.auditPaidDeliveryCoverage = auditPaidDeliveryCoverage;

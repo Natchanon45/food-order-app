@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getDownloadURL, ref as storageRef } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
-import { serverTimestamp } from "firebase/firestore";
 import { useAuth } from "@/auth/AuthProvider";
 import { CashierOrderNotifier } from "@/components/CashierOrderNotifier";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -32,7 +31,6 @@ import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
 import { deliveryDriverMapsUrl, isSelfDeliveryOrder } from "@/utils/deliveryDriverShare";
 import { validDeliveryLocation } from "@/utils/deliveryLocationPolicy";
-import { cashierPaidAt } from "@/utils/hybridCashierPaidAt";
 import { openReceiptPrintLoading, updateReceiptPrintLoading } from "@/utils/receiptPrintWindow";
 
 const approveDeliveryPaymentReview = httpsCallable(functions, "approveDeliveryPaymentReview");
@@ -818,7 +816,7 @@ export function CashierPage() {
         return;
       }
       const now = new Date().toISOString();
-      const patch = { paymentStatus: "paid", paidAt: cashierPaidAt(order, tenant, now, serverTimestamp) };
+      const patch = { paymentStatus: "paid", paidAt: now };
       if (codSettlement) {
         patch.status = "paid";
         patch.completedAt = order.completedAt || now;
