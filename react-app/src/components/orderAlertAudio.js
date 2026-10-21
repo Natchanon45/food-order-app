@@ -1,8 +1,8 @@
 import { createRecordedOrderAlert, orderAlertAudioTokens } from "./orderAlertRecordedAudio.js";
 
 const CHIME_NOTES = [[659.25, 0, .36], [783.99, .24, .36], [987.77, .48, .36], [783.99, .72, .48]];
-const FEMALE_THAI_VOICE = /kanya|premwadee|narisa|ploy|thanya|female|ผู้หญิง|google.*ไทย/i;
-const MALE_THAI_VOICE = /niwat|male|ผู้ชาย/i;
+const FEMALE_THAI_VOICE = /kanya|กันยา|premwadee|เปรมวดี|narisa|นริศา|ploy|พลอย|thanya|ธัญญา|female|ผู้หญิง|google.*ไทย/i;
+const MALE_THAI_VOICE = /niwat|นิวัฒน์|male|ผู้ชาย/i;
 const delay = ms => new Promise(resolve => window.setTimeout(resolve, ms));
 
 export function orderAlertChannelLabel(order = {}) {
@@ -36,9 +36,10 @@ export function orderAlertSpeechText(order = {}) {
 }
 export function chooseThaiFemaleVoice(voices = []) {
   const thai = voices.filter(voice => /^th(?:-|_)/i.test(String(voice?.lang || "")));
-  return thai.find(voice => FEMALE_THAI_VOICE.test(String(voice?.name || "")))
-    || thai.find(voice => !MALE_THAI_VOICE.test(String(voice?.name || "")))
-    || thai[0] || null;
+  // OS/browser voices have no gender field. Use only positively identified
+  // female voices: silently taking an unknown Thai voice could select a man.
+  return thai.find(voice => FEMALE_THAI_VOICE.test(String(voice?.name || ""))
+    && !MALE_THAI_VOICE.test(String(voice?.name || ""))) || null;
 }
 export function isIOSSpeechBrowser(navigatorLike = typeof navigator === "undefined" ? null : navigator) {
   const ua = String(navigatorLike?.userAgent || "");
@@ -121,11 +122,18 @@ export function createOrderAlertAudioController() {
     primingInProgress = true;
     const voices = window.speechSynthesis.getVoices?.() || [];
     const thai = chooseThaiFemaleVoice(voices);
-    const utterance = new window.SpeechSynthesisUtterance("ทดสอบเสียงแจ้งเตือนภาษาไทย");
-    if (thai) utterance.voice = thai;
-    utterance.lang = thai?.lang || "th-TH";
+    if (!thai) {
+      speechIssue = "thai-female-voice-unavailable";
+      report();
+      return Promise.resolve(false);
+    }
+    // Prime silently on a real staff gesture. Never play a test sentence and
+    // never allow the system-default male voice to be selected implicitly.
+    const utterance = new window.SpeechSynthesisUtterance("พร้อม");
+    utterance.voice = thai;
+    utterance.lang = "th-TH";
     utterance.rate = .96;
-    utterance.volume = 1;
+    utterance.volume = 0;
     priming = new Promise(resolve => {
       let complete = false;
       const done = ok => {
@@ -138,7 +146,7 @@ export function createOrderAlertAudioController() {
         report();
         resolve(ok);
       };
-      const timer = window.setTimeout(() => done(false), 3800);
+      const timer = window.setTimeout(() => done(false), 8000);
       utterance.onstart = () => { webSpeechStarted = true; mode = "web"; report(); };
       utterance.onend = () => done(true);
       utterance.onerror = event => { speechIssue = "speech-" + (event?.error || "failed"); done(false); };
@@ -148,8 +156,10 @@ export function createOrderAlertAudioController() {
   };
   const arm = async ({ speechGesture = false } = {}) => {
     cancelled = false;
-    // Call speak() in the click handler, before awaiting AudioContext.resume().
-    if (speechGesture) void primeWebSpeech();
+    // Prime on an actual gesture before any asynchronous work, including when
+    // the chime AudioContext was already unlocked earlier.
+    if (speechGesture && !webSpeechStarted) void primeWebSpeech();
+    else if (!speechGesture) void loadVoices(); // preload Chrome voice inventory
     const ctx = await ensureContext();
     void prepareRecorded();
     return ctx?.state === "running";
@@ -182,11 +192,16 @@ export function createOrderAlertAudioController() {
     if (!text || !window.speechSynthesis?.speak || !window.SpeechSynthesisUtterance) return false;
     const voices = await loadVoices();
     if (cancelled) return false;
+    const voice = chooseThaiFemaleVoice(voices);
+    if (!voice) {
+      speechIssue = "thai-female-voice-unavailable";
+      report();
+      return false;
+    }
     return new Promise(resolve => {
       const utterance = new window.SpeechSynthesisUtterance(text);
-      const voice = chooseThaiFemaleVoice(voices);
-      if (voice) utterance.voice = voice;
-      utterance.lang = voice?.lang || "th-TH";
+      utterance.voice = voice;
+      utterance.lang = "th-TH";
       utterance.rate = .96;
       utterance.pitch = 1.03;
       utterance.volume = 1;
@@ -202,7 +217,10 @@ export function createOrderAlertAudioController() {
         report();
         resolve(success);
       };
-      const timeout = window.setTimeout(() => done(false), 6500);
+      // 6.5 seconds incorrectly cancelled many complete Thai announcements,
+      // leading to an eSpeak replay even when the female native voice worked.
+      const maxSpeechMs = Math.min(30000, Math.max(15000, 2500 + text.length * 420));
+      const timeout = window.setTimeout(() => done(false), maxSpeechMs);
       utterance.onstart = () => { webSpeechStarted = true; mode = "web"; speechIssue = ""; report(); };
       utterance.onend = () => done(true);
       utterance.onerror = event => { speechIssue = "speech-" + (event?.error || "failed"); done(false); };
@@ -234,16 +252,6 @@ export function createOrderAlertAudioController() {
     const spoken = await speakRecorded(order);
     return { chimePlayed, spoken, mode: spoken ? "recorded" : "unavailable" };
   };
-  const testVoice = async () => {
-    cancelled = false;
-    const trial = primeWebSpeech(); // called synchronously during the click
-    const ctx = await ensureContext();
-    const fallback = prepareRecorded();
-    if (await trial) return { spoken: true, mode: "web" };
-    await fallback;
-    const spoken = ctx?.state === "running" && await speakRecorded();
-    return { spoken: Boolean(spoken), mode: spoken ? "recorded" : "unavailable" };
-  };
   const cancel = () => {
     cancelled = true;
     generation++;
@@ -251,7 +259,7 @@ export function createOrderAlertAudioController() {
     try { window.speechSynthesis?.cancel?.(); } catch {}
   };
   return {
-    arm, announce, playChime, testVoice, cancel,
+    arm, announce, playChime, cancel,
     subscribe: fn => { listeners.add(fn); fn(voiceState()); return () => listeners.delete(fn); },
     voiceState,
     state: () => audioContext?.state || "unavailable",

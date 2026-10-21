@@ -32,7 +32,6 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
   const [enabled, setEnabledState] = useState(initialEnabled);
   const [armed, setArmed] = useState(false);
   const [voiceStatus, setVoiceStatus] = useState({ chimeReady: false, speechReady: false, mode: "locked", error: "" });
-  const [voiceTesting, setVoiceTesting] = useState(false);
   const seenRef = useRef(new Set());
   const initializedRef = useRef(false);
   const titleTimerRef = useRef(null);
@@ -87,19 +86,23 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
   };
 
   useEffect(() => {
-    if (!enabled || armed) return undefined;
+    // AudioContext may be ready before native Thai speech is unlocked.
+    // Keep listening for the first real staff gesture even if the chime
+    // already works, so Kitchen and Cashier can use the native female voice.
+    if (!enabled || (armed && voiceStatus.mode === "web")) return undefined;
     let active = true;
-    const tryArm = () => {
-      controllerRef.current.arm().then(ok => {
+    const tryArm = speechGesture => {
+      controllerRef.current.arm({ speechGesture }).then(ok => {
         if (active && ok) setArmed(true);
       }).catch(() => {});
     };
     const unlockFromInteraction = event => {
-      if (event?.target?.closest?.("#orderAlertButton, #orderAlertVoiceTestButton")) return;
-      tryArm();
+      // The bell itself primes Thai speech synchronously in toggle().
+      if (event?.target?.closest?.("#orderAlertButton")) return;
+      tryArm(true);
     };
 
-    tryArm();
+    if (!armed) tryArm(false);
     document.addEventListener("pointerdown", unlockFromInteraction, true);
     document.addEventListener("keydown", unlockFromInteraction, true);
     document.addEventListener("touchstart", unlockFromInteraction, { capture: true, passive: true });
@@ -109,7 +112,7 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
       document.removeEventListener("keydown", unlockFromInteraction, true);
       document.removeEventListener("touchstart", unlockFromInteraction, true);
     };
-  }, [enabled, armed]);
+  }, [enabled, armed, voiceStatus.mode]);
 
   useEffect(() => {
     const ids = rows.map(order => String(order.id));
@@ -166,25 +169,6 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
     onToast?.(t("notifications.order.disabled"));
   };
 
-  const tryVoice = async () => {
-    if (voiceTesting) return;
-    setVoiceTesting(true);
-    setEnabled(true);
-    try {
-      const result = await controllerRef.current.testVoice();
-      const status = controllerRef.current.voiceState();
-      setArmed(status.chimeReady);
-      onToast?.(t(result.spoken ? (result.mode === "recorded"
-        ? "notifications.order.voice_recorded" : "notifications.order.voice_web")
-        : "notifications.order.voice_failed"));
-    } catch (error) {
-      console.warn("CASHIER_VOICE_TEST_FAILED", error);
-      onToast?.(t("notifications.order.voice_failed"));
-    } finally {
-      setVoiceTesting(false);
-    }
-  };
-
   const voiceLabel = t(
     !voiceStatus.chimeReady ? "notifications.order.voice_locked"
       : voiceStatus.speechReady
@@ -201,20 +185,6 @@ export function CashierOrderNotifier({ orders = [], onToast, surface = "cashier"
 
   return (
     <div className="order-alert-controls" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <button
-        type="button"
-        id="orderAlertVoiceTestButton"
-        className="delivery-alert-toggle order-alert-voice-test"
-        aria-label={t("notifications.order.test_voice") + " • " + voiceLabel}
-        title={t("notifications.order.test_voice") + " • " + voiceLabel}
-        data-voice-mode={voiceStatus.mode}
-        data-voice-ready={String(voiceStatus.speechReady)}
-        onClick={tryVoice}
-        disabled={voiceTesting}
-        style={{ width: 36, height: 36, padding: 0, border: "1px solid #d9e5dc", borderRadius: "50%", background: "#fff", display: "grid", placeItems: "center", flex: "0 0 auto", position: "relative" }}
-      ><i className={voiceTesting ? "bi bi-hourglass-split app-icon" : voiceStatus.speechReady ? "bi bi-volume-up-fill app-icon" : "bi bi-volume-up app-icon"} aria-hidden="true" />
-        <span aria-hidden="true" style={{ position: "absolute", right: 1, bottom: 1, width: 8, height: 8, borderRadius: "50%", border: "1px solid #fff", background: voiceStatus.speechReady ? "#159447" : voiceStatus.chimeReady ? "#d69b2b" : "#98a39b" }} />
-      </button>
       <button
       type="button"
       id="orderAlertButton"

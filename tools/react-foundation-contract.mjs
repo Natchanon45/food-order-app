@@ -1738,7 +1738,9 @@ assert(
   &&orderAlertAudio.includes("kanya")
   &&orderAlertAudio.includes("premwadee")
   &&orderAlertAudio.includes("utterance.rate = .96")
-  &&orderAlertAudio.includes('utterance.lang = voice?.lang || "th-TH"'),
+  &&orderAlertAudio.includes('utterance.lang = "th-TH"')
+  &&orderAlertAudio.includes("กันยา")
+  &&!cashierNotifier.includes('id="orderAlertVoiceTestButton"'),
   "Order alert audio must use natural Thai service wording, omit table numbers, and keep the Thai female speech/chime contract",
 );
 const quickOrderPage=read("react-app/src/pages/QuickOrderPage.jsx");

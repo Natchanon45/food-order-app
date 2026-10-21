@@ -47,38 +47,42 @@ test("Detects iOS iPhone, iPad and iPadOS desktop UA, never desktop Mac", () => 
   assert.equal(isIOSSpeechBrowser({userAgent:"Mozilla/5.0 (Macintosh; Intel Mac OS X)",maxTouchPoints:5}),true);
   assert.equal(isIOSSpeechBrowser({userAgent:"Mozilla/5.0 (Macintosh; Intel Mac OS X)",maxTouchPoints:0}),false);
   assert.equal(chooseThaiFemaleVoice([{name:"Niwat",lang:"th-TH"},{name:"Kanya",lang:"th-TH"}]).name,"Kanya");
+  assert.equal(chooseThaiFemaleVoice([{name:"นิวัฒน์",lang:"th-TH"},{name:"กันยา",lang:"th-TH"}]).name,"กันยา");
+  assert.equal(chooseThaiFemaleVoice([{name:"Unknown Thai",lang:"th-TH"},{name:"Niwat",lang:"th-TH"}]),null,
+    "Must not silently pick an unspecified or male Thai voice");
+  assert.equal(chooseThaiFemaleVoice([{name:"Kanya",lang:"en-US"}]),null,
+    "Voice must actually speak Thai");
 });
 
-test("Voice test is wired to a direct user-gesture button with separate readiness status", () => {
+test("Kitchen and Cashier share a single bell; the Thai voice test control is removed", () => {
   const jsx=fs.readFileSync("react-app/src/components/CashierOrderNotifier.jsx","utf8");
-  assert.match(jsx,/id="orderAlertVoiceTestButton"/);
-  assert.match(jsx,/onClick=\{tryVoice\}/);
-  assert.match(jsx,/controllerRef\.current\.testVoice\(\)/);
+  const controller=fs.readFileSync("react-app/src/components/orderAlertAudio.js","utf8");
+  assert.match(jsx,/id="orderAlertButton"/);
+  assert.match(jsx,/surface = "cashier"/);
+  assert.doesNotMatch(jsx,/orderAlertVoiceTestButton|onClick=\{tryVoice\}|voiceTesting|testVoice\(/);
+  assert.doesNotMatch(controller,/testVoice =|testVoice,/);
   assert.match(jsx,/controllerRef\.current\.subscribe\(setVoiceStatus\)/);
   assert.match(jsx,/speechGesture: true/);
+  assert.match(jsx,/tryArm\(true\)/);
+  assert.match(jsx,/voiceStatus\.mode === "web"/);
   assert.match(jsx,/notifications\.order\.voice_failed/);
-  assert.match(jsx,/data-voice-ready=\{String\(voiceStatus\.speechReady\)\}/);
   for (const locale of ["th","en","my","lo","km"]) {
     const json=JSON.parse(fs.readFileSync("react-app/src/i18n/parity-translations.json","utf8"));
-    for (const key of ["test_voice","voice_web","voice_recorded","voice_locked","voice_checking","voice_failed"])
-      assert.ok(json[locale].notifications.order[key],locale+" "+key);
+    assert.ok(json[locale].notifications.order.voice_failed);
+    assert.equal(json[locale].notifications.order.test_voice,undefined);
   }
 });
 
-test("Header renders only voice-test and bell controls, without a visible status label", () => {
-  const jsx=fs.readFileSync("react-app/src/components/CashierOrderNotifier.jsx","utf8");
-  const header=jsx.slice(jsx.indexOf('return (\n    <div className="order-alert-controls"'));
-  assert.ok(header.includes('id="orderAlertVoiceTestButton"'));
-  assert.ok(header.includes('id="orderAlertButton"'));
-  assert.ok(header.includes('aria-label={t("notifications.order.test_voice") + " • " + voiceLabel}'));
-  assert.ok(header.includes('title={label + " • " + voiceLabel}'));
-  assert.ok(!header.includes('<span className="sr-only" role="status"'));
-  assert.ok(!header.includes('>{voiceLabel}</span>'));
-  // Only the two controls occupy the toolbar row; voice status is still in
-  // their accessible labels/tooltips rather than visible header text.
-  assert.ok(header.includes('display: "flex", alignItems: "center", gap: 8'));
+test("Thai female voice is primed silently on real user gestures; complete Thai phrases are not cancelled at 6.5 seconds", () => {
+  const js=fs.readFileSync("react-app/src/components/orderAlertAudio.js","utf8");
+  assert.match(js,/const utterance = new window\.SpeechSynthesisUtterance\("พร้อม"\)/);
+  assert.match(js,/utterance\.volume = 0;/);
+  assert.match(js,/if \(speechGesture && !webSpeechStarted\) void primeWebSpeech\(\)/);
+  assert.match(js,/thai-female-voice-unavailable/);
+  assert.match(js,/const maxSpeechMs = Math\.min\(30000, Math\.max\(15000/);
+  assert.doesNotMatch(js,/setTimeout\(\(\) => done\(false\), 6500\)/);
+  assert.doesNotMatch(js,/ทดสอบเสียงแจ้งเตือนภาษาไทย/);
 });
-
 test("Order alert never bypasses existing cashier and kitchen order gating", () => {
   const source=fs.readFileSync("react-app/src/components/CashierOrderNotifier.jsx","utf8");
   assert.match(source,/cashierOrderAlertEligible\(order, surface\)/);
