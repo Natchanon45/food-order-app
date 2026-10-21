@@ -74,6 +74,10 @@ test("buyer-facing invoice and superadmin payment review are connected", () => {
   const admin = fs.readFileSync("react-app/src/pages/PlatformPricingPage.jsx", "utf8");
   const data = fs.readFileSync("react-app/src/data/hybridBillingLedger.js", "utf8");
   assert.match(tenant, /submitTenantHybridPayment\(tenant\.id, invoice\.id, file\)/);
+  // Tenant may pay ONLY to the bank destination frozen on this issued invoice.
+  assert.match(tenant, /invoice\.paymentDestination\.bankName/);
+  assert.match(tenant, /invoice\.paymentDestination\.accountNumber/);
+  assert.doesNotMatch(tenant, /invoice\.paymentDestination \|\| destination/);
   assert.match(admin, /reviewTenantHybridPayment\(hybridTenantId\.trim\(\), invoice\.id/);
   assert.match(admin, /setTenantHybridBillingLive\(/);
   assert.match(data, /uploadBytes\(target, file/);
