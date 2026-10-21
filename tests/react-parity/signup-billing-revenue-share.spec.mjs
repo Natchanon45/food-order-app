@@ -171,9 +171,13 @@ test("Super Admin can change master business without rewriting signup and share 
   assert.match(ui, /businessType: form.businessType/);
   assert.match(ui, /tenant-signup-business-overview/);
   assert.match(edit, /BUSINESS_TYPES\.has\(requestedBusinessType\)/);
-  assert.match(edit, /businessUnitsFor\(requestedBusinessType\)/);
-  assert.doesNotMatch(edit, /signupBilling\s*:/);
-  assert.doesNotMatch(edit, /revenueShareBusinessType\s*:/);
+  const guarded = fs.readFileSync("functions/hybrid-billing-tenant-admin-guard.js", "utf8");
+  assert.match(edit, /updateTenantMetadataTransaction\(/);
+  assert.match(edit, /requestedBusinessType, businessUnitsFor, usersSnapshot/);
+  assert.match(guarded, /businessUnitsFor\(requestedBusinessType\)/);
+  assert.match(guarded, /tx\.get\(tenantRef\)/);
+  assert.doesNotMatch(edit + guarded, /signupBilling\s*:/);
+  assert.doesNotMatch(edit + guarded, /revenueShareBusinessType\s*:/);
 });
 
 test("master business and selected scope control Retail POS commission eligibility", () => {
