@@ -32,6 +32,14 @@ function assertDemo(){
   throw Error("HYBRID_EPOCH_DEMO_EMULATOR_ONLY");
 }
 function epochRef(t){return t.collection("hybridBillingEpochCandidates").doc("active");}
+// Phase3AD source-only financial-day admission barrier: independent of the
+// global Epoch seal and NEVER treated as an actual immutable financial manifest.
+function demoDayRef(t,day){return t.collection("hybridBillingDayCutoffCandidates").doc(day);}
+function validDemoDay(day){
+ if(typeof day!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(day))return false;
+ const parsed=new Date(day+"T00:00:00Z");
+ return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===day;
+}
 function validateEpoch(data){
  if(!data||data.registryDigest!==REGISTRY_DIGEST||data.epoch!==1
    ||!["open","sealed"].includes(data.status)
@@ -40,7 +48,7 @@ function validateEpoch(data){
    throw Error("HYBRID_EPOCH_MISSING_OR_TAMPERED");
  return data;
 }
-async function requireHybridEpochAdmissionCandidate({tx,tenantRef,sourceKey}){
+async function requireHybridEpochAdmissionCandidate({tx,tenantRef,sourceKey,sourceDay}){
  assertDemo();
  if(!tx||!tenantRef||typeof sourceKey!=="string"||!ADMISSIBLE.has(sourceKey))
    throw Error("HYBRID_EPOCH_WRITER_NOT_REGISTERED");
@@ -50,6 +58,22 @@ async function requireHybridEpochAdmissionCandidate({tx,tenantRef,sourceKey}){
  const snap=await tx.get(epochRef(tenantRef));
  const state=validateEpoch(snap.exists?snap.data():null);
  if(state.status!=="open")throw Error("HYBRID_EPOCH_CLOSED");
+ // Every opted-in writer reads the SAME day's barrier in its financial
+ // transaction. A concurrent SEAL modifies this doc, forcing retry/abort.
+ // No day barrier field => historical Phase3W/3Z demo behavior unchanged.
+ if(Object.hasOwn(state,"dayCutoffDemoDate")){
+   if(state.dayCutoffCandidateOnly!==true||!validDemoDay(state.dayCutoffDemoDate))
+     throw Error("HYBRID_DAY_CUTOFF_TAMPERED");
+   if(!validDemoDay(sourceDay)||sourceDay!==state.dayCutoffDemoDate)
+     throw Error("HYBRID_DAY_CUTOFF_DAY_MISMATCH");
+   const snapDay=await tx.get(demoDayRef(tenantRef,sourceDay));
+   const data=snapDay.exists?snapDay.data():null;
+   if(!data||data.day!==sourceDay||data.candidateOnly!==true
+     ||data.coverageCertified!==false||data.canIssueInvoice!==false
+     ||!["open","sealed"].includes(data.status))
+     throw Error("HYBRID_DAY_CUTOFF_TAMPERED");
+   if(data.status!=="open")throw Error("HYBRID_DAY_CUTOFF_CLOSED");
+ }
  return {epoch:state.epoch,registryDigest:REGISTRY_DIGEST,
    admittedForDemo:true,coverageCertified:false,canIssueInvoice:false};
 }
@@ -96,6 +120,60 @@ async function sealHybridEpochCandidate({db,tenantId,reviewerUid}){
     coverageCertified:false,canIssueInvoice:false};
  });
 }
+// Requires explicit Super Admin and a LIVE demo Epoch. Registers exactly ONE
+// financial source day for this prototype (no automatic rollover / late AR).
+async function initializeHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day}={}){
+ assertDemo();
+ if(!db||![tenantId,reviewerUid].every(v=>typeof v==="string"&&ID.test(v))
+   ||!validDemoDay(day))throw Error("HYBRID_DAY_CUTOFF_BAD_REQUEST");
+ const t=db.collection("tenants").doc(tenantId),u=db.collection("users").doc(reviewerUid);
+ const epoch=epochRef(t),ref=demoDayRef(t,day);
+ return db.runTransaction(async tx=>{
+   const [tenant,user,epochSnap,oldDay]=await Promise.all([
+     tx.get(t),tx.get(u),tx.get(epoch),tx.get(ref)]);
+   if(!user.exists||user.data()?.role!=="super_admin"||user.data()?.active!==true)
+     throw Error("HYBRID_DAY_CUTOFF_SUPER_ADMIN_REQUIRED");
+   if(!tenant.exists||tenant.data()?.billingPolicyVersion!=="hybrid_v1"
+     ||tenant.data()?.hybridBillingEnabled!==true)
+     throw Error("HYBRID_DAY_CUTOFF_NOT_HYBRID");
+   const state=validateEpoch(epochSnap.exists?epochSnap.data():null);
+   if(state.status!=="open"||Object.hasOwn(state,"dayCutoffDemoDate")||oldDay.exists)
+     throw Error("HYBRID_DAY_CUTOFF_ALREADY_ACTIVE");
+   tx.create(ref,{day,status:"open",candidateOnly:true,coverageCertified:false,
+     canIssueInvoice:false,createdAt:FieldValue.serverTimestamp()});
+   tx.update(epoch,{dayCutoffDemoDate:day,dayCutoffCandidateOnly:true});
+   return {day,status:"open",sourceWritersGloballyEnforced:false,
+     immutableFinancialDayManifest:false,coverageCertified:false,canIssueInvoice:false};
+ });
+}
+async function sealHybridDemoDayCutoffCandidate({db,tenantId,reviewerUid,day}={}){
+ assertDemo();
+ if(!db||![tenantId,reviewerUid].every(v=>typeof v==="string"&&ID.test(v))
+   ||!validDemoDay(day))throw Error("HYBRID_DAY_CUTOFF_BAD_REQUEST");
+ const t=db.collection("tenants").doc(tenantId),u=db.collection("users").doc(reviewerUid);
+ const epoch=epochRef(t),ref=demoDayRef(t,day);
+ return db.runTransaction(async tx=>{
+   const [tenant,user,epochSnap,daySnap]=await Promise.all([
+     tx.get(t),tx.get(u),tx.get(epoch),tx.get(ref)]);
+   if(!user.exists||user.data()?.role!=="super_admin"||user.data()?.active!==true)
+     throw Error("HYBRID_DAY_CUTOFF_SUPER_ADMIN_REQUIRED");
+   if(!tenant.exists||tenant.data()?.billingPolicyVersion!=="hybrid_v1"
+     ||tenant.data()?.hybridBillingEnabled!==true)
+     throw Error("HYBRID_DAY_CUTOFF_NOT_HYBRID");
+   const state=validateEpoch(epochSnap.exists?epochSnap.data():null);
+   const data=daySnap.exists?daySnap.data():null;
+   if(state.dayCutoffDemoDate!==day||state.dayCutoffCandidateOnly!==true
+     ||!data||data.day!==day||data.candidateOnly!==true
+     ||data.coverageCertified!==false||data.canIssueInvoice!==false
+     ||!["open","sealed"].includes(data.status))
+     throw Error("HYBRID_DAY_CUTOFF_TAMPERED");
+   if(data.status==="open")tx.update(ref,{
+     status:"sealed",sealedAt:FieldValue.serverTimestamp()});
+   return {day,status:"sealed",alreadySealed:data.status==="sealed",
+     sourceWritersGloballyEnforced:false,immutableFinancialDayManifest:false,
+     coverageCertified:false,canIssueInvoice:false};
+ });
+}
 function reviewHybridWriterRegistryCandidate(){
  return {registryDigest:REGISTRY_DIGEST,
    sources:SOURCES.map(x=>({...x})),
@@ -108,4 +186,5 @@ function reviewHybridWriterRegistryCandidate(){
 module.exports={SOURCES,REGISTRY_DIGEST,reviewHybridWriterRegistryCandidate,
  assertHybridEpochDemoOptIn,
  requireHybridEpochAdmissionCandidate,initializeHybridEpochCandidate,
- sealHybridEpochCandidate};
+ sealHybridEpochCandidate,initializeHybridDemoDayCutoffCandidate,
+ sealHybridDemoDayCutoffCandidate};
