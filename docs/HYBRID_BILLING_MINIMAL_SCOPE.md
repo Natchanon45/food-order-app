@@ -24,10 +24,28 @@ The sole change is the **Tenant platform fee calculated from paid Delivery goods
 - Up to 10,000 total Delivery documents are scanned, not 10,000 paid only. Large Tenant history may fail closed. Current implementation is for safe read-only estimation, NOT production money issuance.
 - Fees, historical completeness, real Tenant reconciliation and production billing authorizations remain unverified. User has not authorized merge, deploy or live collection.
 
-## Chat handoff (update on every continuation)
-Repository: `Natchanon45/food-order-app`. Branch: `feature/hybrid-billing-delivery-only-minimal`. Draft PR #8: https://github.com/Natchanon45/food-order-app/pull/8. Base: `feature/react-firebase-port`, pinned SHA `c9aef253e5d8e0953900a8bb34dbb6921ab40357`. Historic PR #7 must remain Draft/unmerged. Use GitHub-first; do not consume Mac MCP quota for ordinary source/CI work. Verify exact HEAD, working tree scope, push/PR CI on continuation. Before chat context ends update this handoff with exact latest HEAD, verified runs, remaining blockers, and reusable new-chat command.
-
 ## Final acceptance close-out: date-accurate read-only report
 - The selected Bangkok report date is now a true **as-of day**: a paid Delivery receipt later in the same anniversary cycle must not alter that day's accumulated threshold, fee, or displayed sales. Query ends at the next Bangkok midnight and the pure adapter independently bounds rows by selected day.
 - Rapid report date changes/refreshes invalidate stale requests instead of overwriting a newer selected period. All changes stay inside the pure calculator/preview and existing report UI.
 - No changes to payment writers, Cashier, original signup, Firestore index/rules, POS or Lalamove. No automatic money collection or live deployment.
+
+## Final implementation acceptance — completed in this chat, 2026-10-21
+
+**Development scope COMPLETE (source-only, read-only preview).** This is not approval for real-money billing.
+
+| Acceptance requirement | Code/test status |
+| --- | --- |
+| Paid Delivery merchandise only, excluding shipping, POS, table, takeaway, walk-in | PASS |
+| Anniversary 16 Oct → 16 Nov, including short February months | PASS |
+| Threshold 10,000 THB; 5% of trigger day and following paid Delivery days | PASS |
+| First cycle below threshold free; subsequent cycle under threshold fixed-fee estimate | PASS |
+| Selected date shows only receipts through that Bangkok calendar day | PASS |
+| Rapid date changes cannot overwrite a newer preview response | PASS |
+| No cashier, payment writer, registration, index, rules, POS or Lalamove changes | VERIFIED DIFF |
+| All CI tests, React build | PASS |
+
+**Code verified:** `f03b95de1605579e819ec6c46e73c9538cb3e005` — [Push CI 39639426909](https://github.com/Natchanon45/food-order-app/actions/runs/39639426909), [PR CI 39639435825](https://github.com/Natchanon45/food-order-app/actions/runs/39639435825), both SUCCESS. Tests: 30 calculator/adapter + 32 existing contracts + 16 audit = **78 passing, 0 failing**; React build PASS.
+
+**No production certification:** the feature is intentionally an estimated, read-only report. Existing legacy paid Delivery orders containing browser ISO `paidAt` may make the report refuse to calculate. First request dates can have been overwritten by previous registration retries; fallback to verified Tenant creation can differ from first request day. Complete historical data reconciliation, fee-policy confirmation, any charge issuance, tenant payments, access suspension and production rollout are **NOT implemented/authorized**. Do not describe this PR as an operational billing/collection system.
+
+**Final working location:** `Natchanon45/food-order-app`, `feature/hybrid-billing-delivery-only-minimal`, [Draft PR #8](https://github.com/Natchanon45/food-order-app/pull/8) targeting `feature/react-firebase-port` at base `c9aef253e5d8e0953900a8bb34dbb6921ab40357`. PR #7 stays Draft, unmerged and unchanged. This chat is the close-out; no new workstream or new-chat handoff is requested.
