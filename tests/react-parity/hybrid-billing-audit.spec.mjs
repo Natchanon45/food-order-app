@@ -178,9 +178,9 @@ test("re-submitting an already active signup cannot reset activation status or b
 
 test("audit requests indexed paid Delivery query and pages using document cursor", async () => {
   const calls = [];
-  const rows = docRows([paid(100, "2026-10-20T10:00:00Z"),
-    paid(200, "2026-10-20T10:00:00Z"),
-    paid(300, "2026-10-20T10:00:00Z")]);
+  // 501 rows force the second page (PAGE_LIMIT = 500).
+  const rows = docRows(Array.from({ length: 501 }, (_, i) =>
+    paid(i + 1, "2026-10-20T10:00:00Z")));
   function query(offset = 0) {
     return {
       where(field, op, value) {
@@ -190,7 +190,9 @@ test("audit requests indexed paid Delivery query and pages using document cursor
       limit(n) { calls.push(["limit", n]); this.size = n; return this; },
       startAfter(cursor) {
         calls.push(["startAfter", cursor.id]);
-        return query(rows.findIndex(row => row.id === cursor.id) + 1);
+        const next = query(rows.findIndex(row => row.id === cursor.id) + 1);
+        next.size = this.size;
+        return next;
       },
       async get() {
         const docs = rows.slice(offset, offset + this.size);
@@ -199,9 +201,9 @@ test("audit requests indexed paid Delivery query and pages using document cursor
     };
   }
   const ref = { collection(name) { assert.equal(name, "orders"); return query(); } };
-  const result = await auditPaidDeliveryCoverage(ref, { maxDocs: 3 });
-  assert.equal(result.scanned, 3);
-  assert.equal(result.paidDeliveryCount, 3);
+  const result = await auditPaidDeliveryCoverage(ref, { maxDocs: 501 });
+  assert.equal(result.scanned, 501);
+  assert.equal(result.paidDeliveryCount, 501);
   assert.equal(result.coverageCertified, false);
   assert.deepEqual(calls.filter(c => c[0] === "where").slice(0, 2), [
     ["where", "orderType", "==", "delivery"],
