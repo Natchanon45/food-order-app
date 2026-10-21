@@ -36,6 +36,11 @@ jobs:
           node --test tests/react-parity/hybrid-billing-ledger.spec.mjs
       - name: Delivery paidAt completeness and anniversary preview guards
         run: node --test tests/react-parity/hybrid-billing-audit.spec.mjs
+      - name: Original cashier, Delivery Slip2Go and operational regressions
+        run: |
+          npm run test:operational
+          npm run test:delivery-slip2go
+          npm run test:cashier-receipt-loading
       - name: Verify React source compiles (no deploy)
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
