@@ -292,3 +292,23 @@ test("Slip2Go allowance is charged once per order and rejects the next order at 
   const counter = await ref.collection("hybridSlipUsage").doc(status.cycleId).get();
   assert.equal(counter.data().count, 1);
 });
+
+test("disabling Hybrid collection restores only Hybrid suspension without erasing the invoice", async () => {
+  const { tenant, ref } = await fixture();
+  await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
+  await invoiceRef(ref).update({ suspendFrom: "2024-10-12" });
+  assert.equal((await _test.reconcileTenantAccess(db, ref, tenant)).action, "suspended");
+  const adminUid = "pause-super-" + randomUUID();
+  await db.collection("users").doc(adminUid).set({ role: "super_admin", active: true });
+  const { setTenantHybridBillingLive, submitTenantHybridPayment } =
+    require("./hybrid-billing-ledger.js");
+  const pause = await setTenantHybridBillingLive.run({
+    auth: { uid: adminUid }, data: { tenantId: tenant.id, enabled: false },
+  });
+  assert.equal(pause.enabled, false);
+  const stored = (await ref.get()).data();
+  assert.equal(stored.hybridBillingLive, false);
+  assert.equal(stored.hybridBillingSuspended, false);
+  assert.equal(stored.active, true);
+  assert.equal((await invoiceRef(ref).get()).data().status, "issued");
+});
