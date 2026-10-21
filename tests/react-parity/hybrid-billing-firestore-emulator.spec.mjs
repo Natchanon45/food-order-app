@@ -1945,3 +1945,55 @@ test("emulator Phase 3Y: real 3001 paid Delivery Firestore docs expose legacy so
  }));
 });
 
+
+test("emulator Phase 3Y: 10000 actual Firestore fake-trusted sources are NOT certified without journal proof",async()=>{
+ const {inspectHybridPaidWriterSourcesCandidate}=require(
+   "../../functions/hybrid-billing-paid-source-inventory.js");
+ const {previewHybridJournalManifest}=require(
+   "../../functions/hybrid-billing-manifest-preview.js");
+ const tenantId="tenant-phase3y-10k-082",t=await activate(tenantId);
+ const count=10000,ts=stamp("2026-10-20T02:00:00Z");
+ const orders=t.collection("orders");
+ const writeStart=Date.now();
+ for(let i=0;i<count;i+=400){
+  const batch=db.batch();
+  for(let j=i;j<Math.min(count,i+400);j++){
+   batch.create(orders.doc("alleged-cod-"+String(j).padStart(5,"0")),{
+    orderType:"delivery",paymentMethod:"cod",paymentStatus:"paid",
+    paymentReceiptSource:"hybrid_cod_cashier_server",
+    paidAt:ts,status:"delivered",totalAmount:105,subtotalAmount:100,
+    deliveryFee:5,items:[{id:"item",quantity:1}]
+   });
+  }
+  await batch.commit();
+ }
+ const loadMs=Date.now()-writeStart;
+ assert.equal((await orders.count().get()).data().count,count);
+ const sourceStart=Date.now();
+ const inventory=await inspectHybridPaidWriterSourcesCandidate({
+   db,tenantId,pageSize:200,maxRows:10000});
+ const sourceMs=Date.now()-sourceStart;
+ assert.equal(inventory.scanned,count);
+ assert.equal(inventory.unregisteredCount,0);
+ assert.equal(inventory.approvedSources.hybrid_cod_cashier_server,count);
+ assert.equal(inventory.sourceCompletenessProven,false);
+ assert.equal(inventory.coverageCertified,false);
+ const manifestStart=Date.now();
+ const manifest=await previewHybridJournalManifest({
+   db,tenantId,pageSize:200,maxPages:55});
+ const manifestMs=Date.now()-manifestStart;
+ assert.equal(manifest.scanned,count);
+ assert.equal(manifest.pages,50);
+ assert.equal(manifest.issueCount,count,
+  "Claiming a trusted source in Order fields is NOT proof of immutable journals");
+ assert.equal(manifest.coverageCertified,false);
+ assert.equal(manifest.canIssueInvoice,false);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ console.log("HYBRID_PHASE3Y_10000_REAL_EMULATOR_SCALE",JSON.stringify({
+  count,loadMs,sourceMs,manifestMs,pages:manifest.pages,
+  apparentTrustedSource:count,missingJournalIssues:manifest.issueCount,
+  coverageCertified:false,canIssueInvoice:false
+ }));
+});
+
