@@ -209,7 +209,8 @@ test("Auth and Firestore emulators: signup is gated, first Bangkok request date 
   const uid = "owner-" + randomUUID();
   const email = "hybrid-" + randomUUID().slice(0, 10) + "@example.test";
   const slug = "hybrid-new-" + randomUUID().slice(0, 14);
-  await getAuth().createUser({ uid, email, emailVerified: true });
+  const password = "Emulator-test-password-123!";
+  await getAuth().createUser({ uid, email, emailVerified: true, password });
   const { requestTrialTenantSignup, activateTrialTenantSignup } =
     require("./public-signup.js");
   const request = {
@@ -244,5 +245,30 @@ test("Auth and Firestore emulators: signup is gated, first Bangkok request date 
   assert.equal(again.tenantId, activation.tenantId);
   await assert.rejects(requestTrialTenantSignup.run(request),
     /HYBRID_SIGNUP_ALREADY_ACTIVE/);
+  // Exercise actual Storage security rules using an authenticated Web SDK,
+  // rather than the Admin SDK (which bypasses client security rules).
+  const [{ initializeApp: initializeClientApp, deleteApp },
+    { getAuth: getWebAuth, connectAuthEmulator, signInWithEmailAndPassword },
+    { getStorage: getWebStorage, connectStorageEmulator, ref: fileRef, uploadBytes }] =
+    await Promise.all([import("firebase/app"), import("firebase/auth"), import("firebase/storage")]);
+  const app = initializeClientApp({
+    apiKey: "local-test-only", projectId: "demo-hybrid-ci",
+    authDomain: "demo-hybrid-ci.firebaseapp.com",
+    storageBucket: "demo-hybrid-ci.firebasestorage.app",
+  }, "hybrid-auth-storage-" + randomUUID());
+  const webAuth = getWebAuth(app);
+  connectAuthEmulator(webAuth, "http://127.0.0.1:9099", { disableWarnings: true });
+  const webStorage = getWebStorage(app);
+  connectStorageEmulator(webStorage, "127.0.0.1", 9199);
+  await signInWithEmailAndPassword(webAuth, email, password);
+  const invoiceId = "2024-10-10:delivery:trigger";
+  const paymentId = "proof-" + randomUUID();
+  const ownPath = `tenants/${activation.tenantId}/hybrid-billing-slips/${invoiceId}/${paymentId}/proof.png`;
+  const proof = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0]);
+  await uploadBytes(fileRef(webStorage, ownPath), proof, { contentType: "image/png" });
+  const otherTenantPath = `tenants/other-tenant-123456/hybrid-billing-slips/${invoiceId}/${paymentId}/proof.png`;
+  await assert.rejects(uploadBytes(fileRef(webStorage, otherTenantPath), proof,
+    { contentType: "image/png" }), /unauthorized|permission|403/);
+  await deleteApp(app);
   await configRef.set({ registrationReady: false }, { merge: true });
 });
