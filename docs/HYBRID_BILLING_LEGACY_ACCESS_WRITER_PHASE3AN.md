@@ -21,3 +21,8 @@ Independently, `functions/subscription-admin.js` still includes legacy `active` 
 
 ## Still unresolved
 The remaining Subscription Admin legacy access writers, other privileged REST/import paths, actual trusted cashier non-PromptPay paidAt and journal, full-scope suspended Hybrid Client+Backend gate, provider/posted credit, immutable cutoff, Thai tax/AR, concurrency 4/8/32, real App Check, staging device UAT and Finance/Security approvals remain **BLOCKERS**. The two original Firestore Emulator TODO are OPEN. Four readiness flags FALSE. Do not export finance candidates from `functions/index.js`, flip coverage ready on real stores, merge PR #7 or deploy Firebase.
+
+### Phase3AN CI-driven correction — 2026-10-21
+- Initial CODE `7756f4d9fcfc2817ebde431c734c03b130dbc4f3` failed the new **genuine Firestore Emulator** test because the new guard had a reversed patch-validation condition. Push run `39577150836` and PR run `39577156697` were FAILURE 5/6: 77 PASS + 2 TODO + 1 FAIL. No Hybrid money or live records touched.
+- Corrected CODE `81ea30924169d99001b208073075eb8c4b7bc66d` flips the validation condition to accept only patches with legitimate legacy access fields and continue to the authoritative `tx.get(tenantRef)` transaction guard; the security gate is **not bypassed**. New CODE Push `39577593617`, PR `39577604861` started; must verify actual final CI status/counts before reporting PASS.
+- The scoped guard still applies ONLY to Revenue Share access mirroring, and the independent `subscription-admin.js` legacy active/slug mutators are still unguarded. Both historical Firestore Emulator TODO remain OPEN. None of four readiness flags were enabled, no finance exports/deploy/merge.
