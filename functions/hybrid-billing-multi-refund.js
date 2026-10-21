@@ -104,7 +104,7 @@ async function appendHybridVerifiedPartialRefund({db,tenantId,orderId,reviewerUi
    if(!Number.isSafeInteger(version)||version<0||version>=Number.MAX_SAFE_INTEGER)
      throw Error("HYBRID_PARTIAL_REFUND_FENCE_INVALID");
    if(epochAdmissionDemo)await requireHybridEpochAdmissionCandidate({
-     tx,tenantRef:t,sourceKey:"refund_partial"});
+     tx,tenantRef:t,sourceKey:"refund_partial",sourceDay:dateKey(proof.refundAt)});
    const stampServer=serverTimestamp();
    tx.create(claimRef,{tenantId,orderId,source:SOURCE,
      refundSequence:seq,referenceHash:proof.referenceHash,
