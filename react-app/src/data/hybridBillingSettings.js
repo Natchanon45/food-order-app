@@ -19,3 +19,15 @@ export async function saveAdminHybridBillingSettings(config) {
   if (response?.data?.ok !== true) throw new Error("HYBRID_PRICING_SAVE_FAILED");
   return response.data.config;
 }
+export async function getAdminHybridRegistrationReady() {
+  const response = await httpsCallable(functions, "getHybridBillingSettings")({});
+  if (response?.data?.ok !== true) throw new Error("HYBRID_REGISTRATION_STATUS_UNAVAILABLE");
+  return response.data.registrationReady === true;
+}
+export async function setAdminHybridRegistrationReady(enabled) {
+  const response = await httpsCallable(functions, "setHybridRegistrationReady")({
+    enabled, confirmation: enabled ? "ENABLE_HYBRID_REGISTRATION" : "",
+  });
+  if (response?.data?.ok !== true) throw new Error("HYBRID_REGISTRATION_SETTING_FAILED");
+  return response.data.registrationReady === true;
+}

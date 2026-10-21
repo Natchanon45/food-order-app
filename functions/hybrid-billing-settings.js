@@ -8,6 +8,10 @@ const COLLECTION = "platformSettings";
 const DOCUMENT = "hybridBilling";
 // Fail closed until invoice issuance, payment confirmation, access recovery and quotas are integrated.
 const HYBRID_REGISTRATION_READY = false;
+async function hybridRegistrationReady(db = getFirestore()) {
+  const snap = await db.collection(COLLECTION).doc(DOCUMENT).get();
+  return snap.exists && snap.data().registrationReady === true;
+}
 async function loadHybridBillingSettings(db = getFirestore()) {
   const doc = await db.collection(COLLECTION).doc(DOCUMENT).get();
   return normalizeSettings(doc.exists ? { ...DEFAULT_SETTINGS, ...doc.data() } : DEFAULT_SETTINGS);
@@ -21,13 +25,35 @@ async function assertSuperAdmin(auth) {
 }
 exports.loadHybridBillingSettings = loadHybridBillingSettings;
 exports.HYBRID_REGISTRATION_READY = HYBRID_REGISTRATION_READY;
+exports.hybridRegistrationReady = hybridRegistrationReady;
+exports.setHybridRegistrationReady = onCall({ region: "asia-southeast1" }, async request => {
+  await assertSuperAdmin(request.auth);
+  const enabled = request.data?.enabled === true;
+  if (enabled && request.data?.confirmation !== "ENABLE_HYBRID_REGISTRATION") {
+    throw new HttpsError("failed-precondition", "HYBRID_REGISTRATION_EXPLICIT_CONFIRMATION_REQUIRED");
+  }
+  const db = getFirestore();
+  if (enabled) {
+    const destination = (await db.collection("platformSettings").doc("hybridBillingPayment").get()).data();
+    if (!destination || !String(destination.bankName || "").trim()
+      || !String(destination.accountName || "").trim()
+      || !/^[0-9]{8,16}$/.test(String(destination.accountNumber || ""))) {
+      throw new HttpsError("failed-precondition", "HYBRID_PAYMENT_BANK_REQUIRED");
+    }
+  }
+  await db.collection(COLLECTION).doc(DOCUMENT).set({
+    registrationReady: enabled, registrationReadyUpdatedBy: request.auth.uid,
+    registrationReadyUpdatedAt: FieldValue.serverTimestamp(),
+  }, { merge: true });
+  return { ok: true, registrationReady: enabled };
+});
 exports.getPublicHybridBillingSettings = onCall({ region: "asia-southeast1" }, async () => {
   const config = await loadHybridBillingSettings();
-  return { ok: true, config, registrationReady: HYBRID_REGISTRATION_READY };
+  return { ok: true, config, registrationReady: await hybridRegistrationReady() };
 });
 exports.getHybridBillingSettings = onCall({ region: "asia-southeast1" }, async request => {
   await assertSuperAdmin(request.auth);
-  return { ok: true, config: await loadHybridBillingSettings() };
+  return { ok: true, config: await loadHybridBillingSettings(), registrationReady: await hybridRegistrationReady() };
 });
 exports.updateHybridBillingSettings = onCall({ region: "asia-southeast1" }, async request => {
   await assertSuperAdmin(request.auth);

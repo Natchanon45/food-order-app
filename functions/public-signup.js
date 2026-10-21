@@ -4,7 +4,7 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { randomUUID } = require("crypto");
 const { loadPricing, pricingSnapshot } = require("./subscription-pricing-core");
 const { normalizeSignupBilling, businessUnitsFor } = require("./revenue-share-policy");
-const { loadHybridBillingSettings, HYBRID_REGISTRATION_READY } = require("./hybrid-billing-settings");
+const { loadHybridBillingSettings, hybridRegistrationReady } = require("./hybrid-billing-settings");
 const { dateKey } = require("./hybrid-billing-core");
 
 const PLAN_ID = "premium";
@@ -41,7 +41,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   // The server, never the browser, selects the new signup billing policy.
   const signupBilling = normalizeSignupBilling({ businessType: request.data?.businessType,
     billingMode: "hybrid", planCode: "monthly" });
-  if (!HYBRID_REGISTRATION_READY) {
+  if (!await hybridRegistrationReady()) {
     throw new HttpsError("failed-precondition", "Hybrid registration is pending verified billing rollout");
   }
   if (!["restaurant_cafe", "retail", "both"].includes(String(request.data?.businessType || ""))) {
@@ -67,7 +67,16 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   const hybridSettings = await loadHybridBillingSettings(db);
 
   await db.runTransaction(async tx => {
-    const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
+    const [tenantSlugSnap, pendingSlugSnap, pendingSignupSnap] = await Promise.all([
+      tx.get(tenantSlugRef), tx.get(pendingSlugRef), tx.get(pendingRef),
+    ]);
+    const priorSignup = pendingSignupSnap.exists ? pendingSignupSnap.data() : null;
+    if (priorSignup?.status === "active" && priorSignup.tenantId) {
+      throw new HttpsError("already-exists", "HYBRID_SIGNUP_ALREADY_ACTIVE");
+    }
+    if (priorSignup?.uid && priorSignup.uid !== uid) {
+      throw new HttpsError("permission-denied", "HYBRID_SIGNUP_OWNER_MISMATCH");
+    }
     if (tenantSlugSnap.exists) throw new HttpsError("already-exists", "This slug is already in use");
     if (pendingSlugSnap.exists && pendingSlugSnap.data()?.uid !== uid) throw new HttpsError("already-exists", "This slug is already reserved");
     const payload = {
@@ -87,11 +96,14 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       signupBilling: { ...signupBilling },
       billingPolicyVersion: "hybrid_v1",
       hybridBillingSnapshot: hybridSettings,
+      hybridBillingStartDate: priorSignup?.hybridBillingStartDate
+        || (priorSignup?.createdAt?.toDate?.()
+          ? dateKey(priorSignup.createdAt.toDate()) : dateKey(new Date())),
       pricingSnapshot: signupPricing,
       status: "email_verification_required",
       previewUrl: `${PUBLIC_APP_ORIGIN}/s/${slug}/`,
       updatedAt: now,
-      createdAt: now
+      createdAt: priorSignup?.createdAt || now
     };
     tx.set(pendingRef, payload, { merge: true });
     tx.set(pendingSlugRef, { uid, slug, email, status: "pending", updatedAt: now, createdAt: now }, { merge: true });
@@ -141,7 +153,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const signupPricing = pending.pricingSnapshot || pricingSnapshot(await loadPricing(db));
   const signupBilling = normalizeSignupBilling(pending);
   const hybridSignup = pending.billingPolicyVersion === "hybrid_v1";
-  if (hybridSignup && !HYBRID_REGISTRATION_READY) {
+  if (hybridSignup && !await hybridRegistrationReady(db)) {
     throw new HttpsError("failed-precondition", "Hybrid registration is pending verified billing rollout");
   }
   const hybridSettings = hybridSignup
@@ -149,6 +161,12 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const businessUnits = businessUnitsFor(signupBilling.businessType);
   const primaryShopName = clean(pending.orderDeliveryShopName) || clean(pending.retailPosShopName);
   const subscriptionTrial = signupBilling.billingMode === "subscription";
+  const startDate = hybridSignup ? String(pending.hybridBillingStartDate || "") : "";
+  if (hybridSignup && (!/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate)
+    || startDate > dateKey(new Date())
+    || (pending.createdAt?.toDate?.() && startDate !== dateKey(pending.createdAt.toDate())))) {
+    throw new HttpsError("failed-precondition", "HYBRID_SIGNUP_START_DATE_UNVERIFIED");
+  }
   const signupMonth = dateKey(new Date()).slice(0, 7);
 
   await db.runTransaction(async tx => {
@@ -173,7 +191,7 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       businessType: signupBilling.businessType,
       subscriptionPricingSnapshot: signupPricing,
       ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
-        hybridTrialMonth: signupMonth } : {}),
+        hybridTrialMonth: signupMonth, hybridBillingStartDate: startDate } : {}),
       ...(subscriptionTrial
         ? { subscriptionStatus: "trialing", trialStartsAt: now, trialEndsAt }
         : { subscriptionStatus: "active" }),
@@ -199,7 +217,8 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       businessType: signupBilling.businessType,
       revenueShareEnabled: signupBilling.billingMode === "revenue_share",
       ...(hybridSignup ? { billingPolicyVersion: "hybrid_v1", hybridBillingSnapshot: hybridSettings,
-        hybridTrialMonth: signupMonth, hybridBillingEnabled: false } : {}),
+        hybridTrialMonth: signupMonth, hybridBillingStartDate: startDate,
+        hybridBillingEnabled: true, hybridBillingLive: true } : {}),
       revenueShareRate: 0,
       revenueShareBillingCycle: "monthly",
       revenueShareBusinessType: signupBilling.businessType,

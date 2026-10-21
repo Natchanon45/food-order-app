@@ -15,7 +15,8 @@ import {
   subscriptionVatLabel,
 } from "@/data/subscriptionPricing";
 import {
-  loadAdminHybridBillingSettings, saveAdminHybridBillingSettings
+  loadAdminHybridBillingSettings, saveAdminHybridBillingSettings,
+  getAdminHybridRegistrationReady, setAdminHybridRegistrationReady
 } from "@/data/hybridBillingSettings";
 import {
   getPlatformHybridInvoices, getPlatformHybridPaymentDestination, hybridSlipUrl,
@@ -68,6 +69,7 @@ export function PlatformPricingPage() {
   const [hybridInvoices, setHybridInvoices] = useState([]);
   const [hybridTenantLive, setHybridTenantLive] = useState(false);
   const [hybridConfirm, setHybridConfirm] = useState("");
+  const [hybridRegistrationReady, setHybridRegistrationReady] = useState(false);
   const [hybridBusy, setHybridBusy] = useState(false);
   const [hybridMessage, setHybridMessage] = useState("");
 
@@ -103,6 +105,9 @@ export function PlatformPricingPage() {
 
   useEffect(() => {
     if (profile?.role !== "super_admin") return;
+    getAdminHybridRegistrationReady()
+      .then(setHybridRegistrationReady)
+      .catch(error => console.error("HYBRID_REGISTRATION_STATUS_LOAD_FAILED", error));
     getPlatformHybridPaymentDestination()
       .then(destination => {
         if (destination) setHybridBank(destination);
@@ -120,6 +125,17 @@ export function PlatformPricingPage() {
     } catch (error) {
       console.error("HYBRID_ADMIN_INVOICES_FAILED", error);
       setHybridMessage("ไม่สามารถโหลดใบแจ้งค่าบริการได้");
+    } finally { setHybridBusy(false); }
+  };
+  const toggleHybridRegistration = async () => {
+    setHybridBusy(true); setHybridMessage("");
+    try {
+      const enabled = await setAdminHybridRegistrationReady(!hybridRegistrationReady);
+      setHybridRegistrationReady(enabled);
+      setHybridMessage(enabled ? "เปิดลงทะเบียน Hybrid แล้ว" : "ปิดรับสมัคร Hybrid แล้ว");
+    } catch (error) {
+      console.error("HYBRID_REGISTRATION_SWITCH_FAILED", error);
+      setHybridMessage(String(error?.message || "เปลี่ยนสถานะไม่ได้"));
     } finally { setHybridBusy(false); }
   };
   const saveHybridBank = async event => {
@@ -322,6 +338,11 @@ export function PlatformPricingPage() {
           <form className="card platform-pricing-form-card" onSubmit={saveHybridBank}>
             <div className="section-title"><h2>บัญชีรับค่าบริการ Hybrid Billing</h2></div>
             <p className="field-help">บัญชี PENGUIN สำหรับให้ Tenant โอนค่าบริการ ไม่ใช่บัญชีรับยอดขายลูกค้า</p>
+            <p>การเปิดรับสมัคร Hybrid: <strong>{hybridRegistrationReady ? "เปิด" : "ปิด"}</strong></p>
+            <button className="btn btn-sm" type="button" disabled={hybridBusy || (!hybridRegistrationReady && hybridConfirm !== "ENABLE")}
+              onClick={toggleHybridRegistration}>
+              {hybridRegistrationReady ? "ปิดรับสมัครใหม่" : "เปิดรับสมัครใหม่ (ต้องพิมพ์ ENABLE ในส่วน Tenant)"}
+            </button>
             <div className="platform-pricing-fields">
               {[
                 ["bankName", "ธนาคาร"], ["accountName", "ชื่อบัญชี"], ["accountNumber", "เลขบัญชี"],
