@@ -85,6 +85,41 @@ test("real Firestore invoice write is idempotent and immutable across order corr
   assert.equal(snap.data().amount, 500);
 });
 
+test("a stale active Tenant snapshot cannot issue an invoice after billing is paused", async () => {
+  const { tenant, ref } = await fixture();
+  await ref.update({ hybridBillingLive: false });
+  await assert.rejects(
+    _test.issueForTenant(db, ref, tenant, "2024-10-11", attest),
+    /HYBRID_BILLING_NOT_LIVE_AT_ISSUANCE/,
+  );
+  assert.equal((await invoiceRef(ref).get()).exists, false);
+  assert.equal((await ref.collection("hybridBillingPeriods").doc("2024-10-10").get()).exists, false);
+});
+
+test("a stale Tenant with removed Hybrid policy cannot create a bill", async () => {
+  const { tenant, ref } = await fixture();
+  await ref.update({ billingPolicyVersion: "legacy" });
+  await assert.rejects(
+    _test.issueForTenant(db, ref, tenant, "2024-10-11", attest),
+    /HYBRID_BILLING_NOT_LIVE_AT_ISSUANCE/,
+  );
+  assert.equal((await invoiceRef(ref).get()).exists, false);
+});
+
+test("concurrent issuance commits one invoice and one locked cycle price", async () => {
+  const { tenant, ref } = await fixture();
+  const results = await Promise.all(Array.from({ length: 3 }, () =>
+    _test.issueForTenant(db, ref, tenant, "2024-10-11", attest)));
+  assert.equal(results.reduce((sum, row) => sum + row.inserted.length, 0), 1);
+  assert.equal(results.reduce((sum, row) => sum + row.skipped.length, 0), 2);
+  const invoice = await invoiceRef(ref).get();
+  assert.equal(invoice.data().amount, 500);
+  assert.equal(invoice.data().status, "issued");
+  const periods = await ref.collection("hybridBillingPeriods").get();
+  assert.equal(periods.size, 1);
+  assert.equal(periods.docs[0].data().configSnapshot.deliveryShareRate, 5);
+});
+
 test("real Firestore invoice reconciliation suspends then restores tenant and slug", async () => {
   const { tenant, ref, slug } = await fixture();
   await _test.issueForTenant(db, ref, tenant, "2024-10-11", attest);
