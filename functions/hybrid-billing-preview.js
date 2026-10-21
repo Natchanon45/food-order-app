@@ -128,6 +128,8 @@ async function auditPaidDeliveryCoverage(tenantRef, { maxDocs = 3000 } = {}) {
     if (scanned > maxDocs) throw new Error("HYBRID_DELIVERY_COVERAGE_SCAN_LIMIT");
     for (const doc of snap.docs) {
       const order = doc.data();
+      // Even in a filtered query, enforce the Delivery-only boundary locally.
+      if (String(order.orderType || "").toLowerCase() !== "delivery") continue;
       if (String(order.paymentStatus || "").toLowerCase() !== "paid") continue;
       const status = String(order.status || "").toLowerCase();
       if (["cancelled", "canceled", "voided", "deleted", "refunded"].includes(status)) continue;

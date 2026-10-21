@@ -205,7 +205,29 @@ function calculateCycle({ signupDate, cycleId, dailyDeliverySales = [], settings
   };
 }
 
+
+// Persist the Bangkok day of the FIRST server-accepted signup request.
+// Retried requests must reuse the existing trusted field (or legacy server
+// createdAt), never restart the free billing cycle at email activation time.
+function resolveSignupBillingStartDate(pending = null, now = new Date()) {
+  const today = dateKey(now);
+  if (!pending) return today;
+  const existingStart = pending.hybridBillingStartDate;
+  if (existingStart !== undefined && existingStart !== null && existingStart !== "") {
+    const day = validDate(existingStart);
+    if (day > today) throw new Error("HYBRID_SIGNUP_START_DATE_IN_FUTURE");
+    return day;
+  }
+  const created = pending.createdAt?.toDate?.();
+  if (created instanceof Date && Number.isFinite(created.getTime())) {
+    const day = dateKey(created);
+    if (day > today) throw new Error("HYBRID_SIGNUP_START_DATE_IN_FUTURE");
+    return day;
+  }
+  throw new Error("HYBRID_PENDING_SIGNUP_START_DATE_UNVERIFIED");
+}
+
 module.exports = { DEFAULT_SETTINGS, normalizeSettings, calculateMonth, calculateCycle,
   billingCycle, billingCycleById, anchorAtMonth, cycleWindow,
-  overdueInvoices, dateKey, validDate };
+  overdueInvoices, dateKey, validDate, resolveSignupBillingStartDate };
 

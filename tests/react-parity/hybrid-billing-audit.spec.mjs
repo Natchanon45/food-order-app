@@ -122,3 +122,46 @@ test("read-only preview aborts if a paid Delivery has noncanonical paidAt", asyn
   await assert.rejects(previewHybridCycle(ref, tenant, "2026-10-20", {}),
     /HYBRID_PAID_DELIVERY_NONCANONICAL_TIMESTAMP/);
 });
+
+// The signup anchor is a pure policy decision, not a reason to modify POS,
+// cashier writers, payment status or live Tenant records.
+const { resolveSignupBillingStartDate } = require("../../functions/hybrid-billing-core.js");
+import fs from "node:fs";
+
+test("first request anchors at server Bangkok day, including midnight UTC", () => {
+  const now = new Date("2026-10-15T17:15:00Z");
+  assert.equal(resolveSignupBillingStartDate(null, now), "2026-10-16");
+});
+test("request retries preserve signup day regardless of later confirmation date", () => {
+  const today = new Date("2026-11-18T10:00:00Z");
+  assert.equal(resolveSignupBillingStartDate({ hybridBillingStartDate: "2026-10-16" }, today),
+    "2026-10-16");
+  const legacy = { createdAt: { toDate: () => new Date("2026-10-15T17:00:01Z") } };
+  assert.equal(resolveSignupBillingStartDate(legacy, today), "2026-10-16");
+});
+test("unverifiable and future signup anchors fail instead of silently regranting free cycle", () => {
+  const today = new Date("2026-10-20T10:00:00Z");
+  assert.throws(() => resolveSignupBillingStartDate({}, today),
+    /HYBRID_PENDING_SIGNUP_START_DATE_UNVERIFIED/);
+  assert.throws(() => resolveSignupBillingStartDate({ hybridBillingStartDate: "2026-11-01" }, today),
+    /HYBRID_SIGNUP_START_DATE_IN_FUTURE/);
+  assert.throws(() => resolveSignupBillingStartDate({ hybridBillingStartDate: "2026-10-35" }, today));
+});
+test("signup requests and activation propagate one canonical anchor without changing payment writers", () => {
+  const source = fs.readFileSync("functions/public-signup.js", "utf8");
+  assert.match(source, /tx\.get\(pendingRef\)/);
+  assert.match(source, /resolveSignupBillingStartDate\(existingPending, requestedAt\)/);
+  assert.match(source, /resolveSignupBillingStartDate\(pending\)/);
+  assert.match(source, /hybridBillingStartDate: signupDate/g);
+  assert.match(source, /hybridBillingEnabled: false/);
+  assert.match(source, /if \(!HYBRID_REGISTRATION_READY\)/);
+  assert.doesNotMatch(source, /paidAt:|paymentStatus: "paid"|hybridReceiptJournal/);
+});
+test("read-only audit disregards POS rows even if test query adapter supplies them", async () => {
+  const rows = [paid(100, "2026-10-20T10:00:00Z"),
+    paid(5000, "2026-10-20T10:00:00Z", {
+      orderType: "pos", paidAt: "bad legacy timestamp",
+    })];
+  assert.deepEqual(await auditPaidDeliveryCoverage(onlyOrders(rows)),
+    { scanned: 2, paidDeliveryCount: 1, coverageCertified: false });
+});
