@@ -115,6 +115,39 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
   }
   const today = dateKey(new Date());
   const lines = eligibleForIssuance(estimate, today);
+  if (!lines.length) return { inserted: [], skipped: [], cycleId: estimate.cycleId, selectedDate: throughDate };
+  // Preserve the pricing snapshot used for the FIRST invoice in the cycle.
+  const periodRef = ref.collection("hybridBillingPeriods").doc(estimate.cycleId);
+  const period = await periodRef.get();
+  if (!period.exists) {
+    try {
+      await periodRef.create({
+        configSnapshot: estimate.config, cycleStart: estimate.cycleStart, cycleEnd: estimate.cycleEnd,
+        createdAt: FieldValue.serverTimestamp(), createdBy: actor,
+      });
+    } catch (error) {
+      if (![6, "6", "already-exists", "ALREADY_EXISTS"].includes(error.code)) throw error;
+    }
+  }
+  const locked = await periodRef.get();
+  if (!locked.exists || JSON.stringify(locked.data().configSnapshot) !== JSON.stringify(estimate.config)) {
+    throw new HttpsError("failed-precondition", "HYBRID_CYCLE_PRICING_CHANGED_RETRY");
+  }
+  // If historical orders move the trigger day or change an already-issued
+  // amount, require finance reconciliation instead of issuing a second bill.
+  const issued = await ref.collection(BILLING_COLLECTION)
+    .where("cycleId", "==", estimate.cycleId).limit(100).get();
+  if (issued.size >= 100) throw new HttpsError("resource-exhausted", "HYBRID_CYCLE_INVOICE_SCAN_LIMIT");
+  const wanted = new Map(lines.map(line => [line.id, line]));
+  for (const doc of issued.docs) {
+    const item = doc.data(), matching = wanted.get(doc.id);
+    if (item.status === "void") continue;
+    if (!matching || item.date !== matching.date
+      || item.kind !== matching.kind
+      || amountSatang(item.amount) !== amountSatang(matching.amount)) {
+      throw new HttpsError("failed-precondition", "HYBRID_ISSUED_INVOICE_RECONCILIATION_REQUIRED");
+    }
+  }
   const inserted = [], skipped = [];
   for (const line of lines) {
     const invoiceRef = ref.collection(BILLING_COLLECTION).doc(line.id);

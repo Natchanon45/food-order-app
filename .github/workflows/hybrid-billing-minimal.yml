@@ -30,6 +30,10 @@ jobs:
       - name: Existing billing/order/report/signup regression contracts
         run: node --test tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/signup-billing-revenue-share.spec.mjs
 
+      - name: Hybrid invoice, payment and access lifecycle contract tests
+        run: |
+          node --check functions/hybrid-billing-ledger.js
+          node --test tests/react-parity/hybrid-billing-ledger.spec.mjs
       - name: Delivery paidAt completeness and anniversary preview guards
         run: node --test tests/react-parity/hybrid-billing-audit.spec.mjs
       - name: Verify React source compiles (no deploy)
