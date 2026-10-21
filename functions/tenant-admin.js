@@ -1,5 +1,6 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { updateTenantMetadataTransaction } = require("./hybrid-billing-tenant-admin-guard");
 const { legacyDeliveryPaidWriterAllowed } = require("./hybrid-billing-legacy-payment-guard");
 const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
@@ -276,60 +277,28 @@ exports.updateTenant = onCall(
 
     const db = getFirestore();
     const tenantRef = db.collection("tenants").doc(tenantId);
-    const tenantSnapshot = await tenantRef.get();
-    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
-
-    const current = tenantSnapshot.data();
-    const oldSlug = String(current.slug || "").trim();
-    const slugRef = db.collection("tenantSlugs").doc(slug);
-    if (slug !== oldSlug) {
-      const existingSlug = await slugRef.get();
-      if (existingSlug.exists && existingSlug.data().tenantId !== tenantId) {
-        throw new HttpsError("already-exists", "This slug is already in use");
-      }
-    }
-
-    const batch = db.batch();
-    const masterBusinessChanged = requestedBusinessType !== undefined && requestedBusinessType !== current.businessType;
-    const masterFields = masterBusinessChanged ? { businessType: requestedBusinessType, businessUnits: businessUnitsFor(requestedBusinessType) } : {};
-    batch.set(tenantRef, {
-      ...masterFields,
-      name,
-      slug,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
-    batch.set(tenantRef.collection("settings").doc("store"), {
-      shopName: name,
-      shopPhone: phone,
-      shopAddress: address,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
-    batch.set(slugRef, {
-      tenantId,
-      slug,
-      name,
-      active: current.active !== false,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
-    if (oldSlug && oldSlug !== slug) batch.delete(db.collection("tenantSlugs").doc(oldSlug));
-
+    // User metadata is not the finance decision: the CURRENT Tenant + slug
+    // records are re-read under transaction to guard any financial hold.
     const usersSnapshot = await db.collection("users").where("tenantId", "==", tenantId).get();
-    usersSnapshot.docs.forEach(userDoc => {
-      batch.set(userDoc.ref, {
-        ...(masterBusinessChanged ? { businessType: requestedBusinessType, businessUnits: businessUnitsFor(requestedBusinessType) } : {}),
-        tenantSlug: slug,
-        tenantName: name,
-        updatedAt: FieldValue.serverTimestamp()
-      }, { merge: true });
-      batch.set(tenantRef.collection("memberships").doc(userDoc.id), {
-        tenantSlug: slug,
-        tenantName: name,
-        updatedAt: FieldValue.serverTimestamp()
-      }, { merge: true });
-    });
-
-    await batch.commit();
-    return { ok: true, tenant: { id: tenantId, slug, name, active: current.active !== false } };
+    let result;
+    try {
+      result = await updateTenantMetadataTransaction({
+        db, tenantRef, tenantId, slug, name, phone, address,
+        requestedBusinessType, businessUnitsFor, usersSnapshot,
+        serverTimestamp: () => FieldValue.serverTimestamp(),
+      });
+    } catch (err) {
+      if (err.message === "HYBRID_TENANT_PROFILE_NOT_FOUND")
+        throw new HttpsError("not-found", "Tenant not found");
+      if (err.message === "HYBRID_TENANT_PROFILE_SLUG_IN_USE")
+        throw new HttpsError("already-exists", "This slug is already in use");
+      if (err.message === "HYBRID_TENANT_PROFILE_OLD_SLUG_MISMATCH")
+        throw new HttpsError("failed-precondition", "Old tenant slug belongs to another tenant");
+      throw err;
+    }
+    return { ok: true, tenant: {
+      id: tenantId, slug, name, active: result.active
+    } };
   }
 );
 

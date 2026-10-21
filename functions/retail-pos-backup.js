@@ -4,6 +4,7 @@ const {
   encodeFirestoreValue,
   decodeFirestoreValue,
 } = require("./retail-pos-backup-codec");
+const { transactLegacyMigration } = require("./hybrid-billing-legacy-migration-guard");
 
 const FULL_COLLECTIONS = [
   "products",
@@ -118,16 +119,16 @@ async function readBackup(db, tenantId) {
   return Object.fromEntries(entries);
 }
 
-async function clearCollection(db, ref, name) {
+async function clearCollection(db, tenant, ref, name) {
   const snap = await ref.get();
   const docs = FULL_COLLECTIONS.includes(name)
     ? snap.docs
     : snap.docs.filter(doc => belongsToPos(name, doc.id, doc.data()));
 
   for (let offset = 0; offset < docs.length; offset += 200) {
-    const batch = db.batch();
-    docs.slice(offset, offset + 200).forEach(doc => batch.delete(doc.ref));
-    await batch.commit();
+    await transactLegacyMigration({ db, tenantRef: tenant, onAllowed: tx => {
+      docs.slice(offset, offset + 200).forEach(doc => tx.delete(doc.ref));
+    } });
   }
 }
 
@@ -146,11 +147,12 @@ function preparedRows(name, rows, db) {
   });
 }
 
-async function restoreRows(db, ref, rows) {
+async function restoreRows(db, tenant, ref, rows) {
   for (let offset = 0; offset < rows.length; offset += 200) {
-    const batch = db.batch();
-    rows.slice(offset, offset + 200).forEach(row => batch.set(ref.doc(row.id), row.value));
-    await batch.commit();
+    await transactLegacyMigration({ db, tenantRef: tenant, onAllowed: tx => {
+      rows.slice(offset, offset + 200)
+        .forEach(row => tx.set(ref.doc(row.id), row.value));
+    } });
   }
 }
 
@@ -160,13 +162,13 @@ async function restoreSettings(db, tenant, rows) {
   const rowMap = new Map(safeRows.map(row => [row.id, row.value]));
 
   for (let offset = 0; offset < POS_SETTINGS_IDS.length; offset += 200) {
-    const batch = db.batch();
-    POS_SETTINGS_IDS.slice(offset, offset + 200).forEach(id => {
-      const ref = tenant.collection("settings").doc(id);
-      if (rowMap.has(id)) batch.set(ref, rowMap.get(id));
-      else batch.delete(ref);
-    });
-    await batch.commit();
+    await transactLegacyMigration({ db, tenantRef: tenant, onAllowed: tx => {
+      POS_SETTINGS_IDS.slice(offset, offset + 200).forEach(id => {
+        const ref = tenant.collection("settings").doc(id);
+        if (rowMap.has(id)) tx.set(ref, rowMap.get(id));
+        else tx.delete(ref);
+      });
+    } });
   }
 }
 
@@ -212,20 +214,31 @@ exports.restoreRetailPosBackup = onCall(
     );
 
     const tenant = db.collection("tenants").doc(tenantId);
-
-    for (const name of COLLECTIONS) {
-      const ref = tenant.collection(name);
-      await clearCollection(db, ref, name);
-      await restoreRows(db, ref, prepared[name]);
-    }
-
+    // Validate ALL payload sections before ANY destructive restore mutation.
     const settings = preparedRows("settings", source.settings || [], db);
     const allowedSettings = new Set(POS_SETTINGS_IDS);
     if (settings.some(row => !allowedSettings.has(row.id))) {
       throw new HttpsError("invalid-argument", "Backup contains a non-POS settings document");
     }
-
-    await restoreSettings(db, tenant, settings);
+    // Preflight rejects Hybrid even when the requested backup has zero rows.
+    // Each subsequent restore/delete chunk independently retries a fresh
+    // Tenant policy read: a concurrent Hybrid migration halts further writes.
+    try {
+      await transactLegacyMigration({ db, tenantRef: tenant, onAllowed: () => true });
+      for (const name of COLLECTIONS) {
+        const ref = tenant.collection(name);
+        await clearCollection(db, tenant, ref, name);
+        await restoreRows(db, tenant, ref, prepared[name]);
+      }
+      await restoreSettings(db, tenant, settings);
+    } catch (error) {
+      if (/^HYBRID_LEGACY_MIGRATION_(TRUSTED_WRITER_REQUIRED|TARGET_MISSING)$/.test(
+        String(error.message || ""))) {
+        throw new HttpsError("failed-precondition",
+          "Hybrid or missing tenant cannot use legacy Retail POS backup restore");
+      }
+      throw error;
+    }
 
     return {
       ok: true,

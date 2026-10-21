@@ -12,9 +12,9 @@ const PINS=Object.freeze({
  "public-delivery-submit.js":"0be3cdebc2ecb85399499d6e240a99f97b307efe",
  "lalamove-order-lifecycle.js":"4e6964c5f36e9172647f19ca5fd735ae374dfff4",
  "lalamove-webhook.js":"a6716d828f9349846afba1481b1bef89efcd811c",
- "retail-pos-backup.js":"d80205ff325b06b15ec3987041e6211073a2f730",
+ "retail-pos-backup.js":"f56f25d6579fb055322d58106aaf00a8208eaa68",
  "saas-migration.js":"91a286e8612113fe67086e510ec8211a57460e36",
- "tenant-admin.js":"60bcfdfcec8276edabbcc728ca930fae256998e3",
+ "tenant-admin.js":"fa830dc6fac9f973b1f9d74b14097c51845b2dfc",
  "revenue-share.js":"393edfeaa54d4aeb3f62fb431c16fad69c8eb802",
  "subscription-admin.js":"f992e8e5744d6ae56b84d65728012ad2179258ff",
  "hybrid-billing-legacy-payment-guard.js":"a696082ffb84ef5cd3eb7ee42d89977e3019d2e5"

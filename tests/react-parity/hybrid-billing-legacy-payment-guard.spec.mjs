@@ -113,3 +113,29 @@ test("Release Gate W1: legacy SaaS import routes are transactionally tenant-gate
     "hybridBillingRefundChains","hybridBillingDayManifestCandidates"])
     assert.ok(deleteSection.includes(collection), collection);
 });
+
+test("W1 grouped source contracts: Tenant metadata transaction cannot revive suspended Hybrid slug", () => {
+  const backend = fs.readFileSync("functions/tenant-admin.js","utf8");
+  const guard = fs.readFileSync("functions/hybrid-billing-tenant-admin-guard.js","utf8");
+  const update = backend.slice(backend.indexOf("exports.updateTenant ="),
+    backend.indexOf("exports.deleteTenant ="));
+  assert.match(update, /updateTenantMetadataTransaction\(/);
+  assert.doesNotMatch(update, /db\.batch\(/);
+  assert.match(guard,/db\.runTransaction\(async tx =>/);
+  assert.match(guard,/tx\.get\(tenantRef\)/);
+  assert.match(guard,/tx\.get\(slugRef\)/);
+  assert.match(guard,/hybridBillingSuspended !== true/);
+  assert.match(guard,/hybridBillingManualHold !== true/);
+});
+test("W1 grouped source contracts: POS backup Restore is guarded per destructive chunk", () => {
+  const s = fs.readFileSync("functions/retail-pos-backup.js", "utf8");
+  assert.match(s, /require\("\.\/hybrid-billing-legacy-migration-guard"\)/);
+  const restore=s.slice(s.indexOf("exports.restoreRetailPosBackup ="));
+  assert.match(restore,/await transactLegacyMigration\(/);
+  assert.match(restore,/clearCollection\(db, tenant, ref, name\)/);
+  assert.match(restore,/restoreRows\(db, tenant, ref, prepared\[name\]\)/);
+  assert.ok(restore.indexOf('const settings = preparedRows("settings"')
+    < restore.indexOf("await clearCollection("));
+  assert.doesNotMatch(s,/db\.batch\(/);
+  assert.ok((s.match(/transactLegacyMigration\(/g)||[]).length>=4);
+});

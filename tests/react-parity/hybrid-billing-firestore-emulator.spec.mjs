@@ -2915,3 +2915,60 @@ test("emulator Release Gate W1: legacy migration transaction rejects paid Hybrid
     onAllowed:tx=>tx.set(missing,{active:true})});
   assert.equal((await missing.get()).exists,true);
 });
+
+test("emulator Release Gate W1: tenant profile transaction protects slug on Hybrid suspension", async () => {
+  const { updateTenantMetadataTransaction } =
+    require("../../functions/hybrid-billing-tenant-admin-guard.js");
+  const oldId="tenant-emu-w1-slug-old", next="tenant-emu-w1-slug-new";
+  const ref=tenant(oldId);
+  await ref.create({ slug:oldId,active:true,billingPolicyVersion:"hybrid_v1",
+    hybridBillingEnabled:true,hybridBillingSuspended:true });
+  await db.collection("tenantSlugs").doc(oldId).set({
+    tenantId:oldId,slug:oldId,active:true,
+  });
+  const calls={
+    db,tenantRef:ref,tenantId:oldId,slug:next,name:"Renamed Test",
+    phone:"",address:"",businessUnitsFor:()=>[],usersSnapshot:{docs:[]},
+    serverTimestamp:()=>Timestamp.now(),
+  };
+  const res=await updateTenantMetadataTransaction(calls);
+  assert.equal(res.active,true); // preserve actual tenant active bit
+  assert.equal(res.slugActive,false); // fail closed on finance suspension
+  assert.equal((await db.collection("tenantSlugs").doc(next).get()).data().active,false);
+  assert.equal((await db.collection("tenantSlugs").doc(oldId).get()).exists,false);
+  const state=(await ref.get()).data();
+  assert.equal(state.hybridBillingSuspended,true);
+  assert.equal(state.active,true);
+  assert.equal(state.slug,next);
+  await db.collection("tenantSlugs").doc("tenant-emu-w1-foreign")
+    .set({tenantId:"foreign",active:true});
+  await assert.rejects(updateTenantMetadataTransaction({
+    ...calls,slug:"tenant-emu-w1-foreign",
+  }),/HYBRID_TENANT_PROFILE_SLUG_IN_USE/);
+  assert.equal((await ref.get()).data().slug,next);
+});
+test("emulator Release Gate W1: legacy POS destructive chunk transaction rejects journal markers", async () => {
+  const { transactLegacyMigration } =
+    require("../../functions/hybrid-billing-legacy-migration-guard.js");
+  for (const [id,data] of [
+    ["pos-mode",{hybridReceiptJournalMode:""}],
+    ["pos-ready",{hybridReceiptJournalCoverageReady:true}],
+    ["pos-enabled",{hybridBillingEnabled:true}],
+    ["pos-policy",{billingPolicyVersion:"hybrid_v1"}],
+  ]) {
+    const ref=tenant("tenant-emu-w1-"+id);
+    await ref.create({active:true,...data});
+    const sales=ref.collection("sales").doc("protected");
+    await sales.create({sum:100,paid:true});
+    await assert.rejects(transactLegacyMigration({db,tenantRef:ref,
+      onAllowed:tx=>tx.delete(sales)}),/HYBRID_LEGACY_MIGRATION_TRUSTED_WRITER_REQUIRED/);
+    assert.equal((await sales.get()).exists,true);
+  }
+  const ref=tenant("tenant-emu-w1-pos-legacy");
+  await ref.create({billingPolicyVersion:"legacy"});
+  const sales=ref.collection("sales").doc("legacy-sale");
+  await sales.create({sum:9});
+  await transactLegacyMigration({db,tenantRef:ref,
+    onAllowed:tx=>tx.delete(sales)});
+  assert.equal((await sales.get()).exists,false);
+});
