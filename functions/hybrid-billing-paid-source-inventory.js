@@ -21,7 +21,7 @@ async function inspectHybridPaidWriterSourcesCandidate({
  if(!tenant.exists||tenant.data()?.hybridBillingEnabled!==true
    ||tenant.data()?.billingPolicyVersion!=="hybrid_v1")
    throw Error("HYBRID_SOURCE_INVENTORY_NOT_HYBRID");
- const approved={},unregistered={};
+ const approved=Object.create(null),unregistered=Object.create(null);
  let cursor=null,scanned=0,pages=0,legacy=0,nonCanonical=0;
  for(;;){
   // Query only real paid delivery documents; read-only source inventory.
