@@ -2117,3 +2117,108 @@ test("emulator Phase 3Z: legacy bypass after sealed epoch is DETECTABLE but seal
  assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
 });
 
+
+
+test("emulator Phase3AD: day cutoff admits all four real demo financial writers and then seals atomically", async () => {
+  const { executeHybridDemoEnforcedWriter } = require("../../functions/hybrid-billing-demo-enforced-writer.js");
+  const {
+    initializeHybridEpochCandidate, initializeHybridDemoDayCutoffCandidate,
+    sealHybridDemoDayCutoffCandidate,
+  } = require("../../functions/hybrid-billing-writer-epoch-candidate.js");
+  const tenantId = "tenant-phase3ad-daycutoff-104", t = await activate(tenantId);
+  const reviewerUid = "super-phase3ad-daycutoff-104", day = "2026-10-20";
+  await db.collection("users").doc(reviewerUid).set({
+    role: "super_admin", active: true, tenantId,
+  });
+  await initializeHybridEpochCandidate({ db, tenantId, reviewerUid });
+  await assert.rejects(initializeHybridDemoDayCutoffCandidate({
+    db, tenantId, reviewerUid, day: "2026-02-30",
+  }), /HYBRID_DAY_CUTOFF_BAD_REQUEST/);
+  await initializeHybridDemoDayCutoffCandidate({ db, tenantId, reviewerUid, day });
+  await assert.rejects(initializeHybridDemoDayCutoffCandidate({
+    db, tenantId, reviewerUid, day,
+  }), /HYBRID_DAY_CUTOFF_ALREADY_ACTIVE/);
+  const codId = "cod-phase3ad-daycutoff-104";
+  const laterId = "cod-phase3ad-afterseal-104";
+  const bankId = "bank-phase3ad-daycutoff-104";
+  for (const [id, method] of [[codId, "cod"], [laterId, "cod"], [bankId, "promptpay"]]) {
+    await t.collection("orders").doc(id).create({
+      orderType: "delivery", paymentMethod: method, paymentStatus: "unpaid",
+      status: "delivered", totalAmount: 1010, subtotalAmount: 1000,
+      deliveryFee: 10, items: [{ id: "item", quantity: 1 }],
+    });
+  }
+  const paidAt = new Date("2026-10-20T12:30:00Z");
+  const codArgs = (id, date = paidAt) => ({
+    db, tenantId, orderId: id, actorUid: reviewerUid,
+    clock: () => date, serverTimestamp: () => Timestamp.fromDate(date),
+  });
+  await assert.rejects(executeHybridDemoEnforcedWriter({
+    sourceKey: "cod_cashier",
+    args: codArgs(laterId, new Date("2026-10-21T12:30:00Z")),
+  }), /HYBRID_DAY_CUTOFF_DAY_MISMATCH/);
+  assert.equal((await t.collection("orders").doc(laterId).get()).data().paymentStatus, "unpaid");
+
+  const cod = await executeHybridDemoEnforcedWriter({
+    sourceKey: "cod_cashier", args: codArgs(codId),
+  });
+  assert.equal(cod.alreadyPaid, false);
+  const bank = await executeHybridDemoEnforcedWriter({
+    sourceKey: "promptpay_bank", args: {
+      db, tenantId, orderId: bankId, reviewerUid,
+      now: new Date("2026-10-20T13:00:00Z"),
+      resolveIndependentBankPayment: async () => ({
+        verified: true, source: "independent_bank_record",
+        tenantId, orderId: bankId, currency: "THB",
+        recipientConfirmed: true, platformBankAccountVerified: true,
+        reference: "BANK-PHASE3AD-DAYCUTOFF-104", evidenceSha256: "a".repeat(64),
+        grossAmountCents: 101000, paidAt,
+        checkedAt: new Date("2026-10-20T12:59:00Z"),
+      }),
+    },
+  });
+  assert.equal(bank.alreadyPaid, false);
+
+  const refundArgs = (reference, amount, at) => ({
+    db, tenantId, orderId: codId, reviewerUid,
+    now: new Date("2026-10-20T13:30:00Z"),
+    resolveIndependentRefund: async () => ({
+      verified: true, source: "independent_bank_refund_record",
+      tenantId, orderId: codId, currency: "THB", refundSettled: true,
+      recipientConfirmed: true, platformDebitConfirmed: true,
+      reference, evidenceSha256: "b".repeat(64),
+      refundAmountCents: amount, refundAt: new Date(at),
+      checkedAt: new Date("2026-10-20T13:29:00Z"),
+    }),
+  });
+  const refund = await executeHybridDemoEnforcedWriter({
+    sourceKey: "refund_initial",
+    args: refundArgs("BANK-RFD-PHASE3AD-104-A", 20000, "2026-10-20T13:05:00Z"),
+  });
+  assert.equal(refund.alreadyRecorded, false);
+  const part = await executeHybridDemoEnforcedWriter({
+    sourceKey: "refund_partial",
+    args: refundArgs("BANK-RFD-PHASE3AD-104-B", 10000, "2026-10-20T13:10:00Z"),
+  });
+  assert.equal(part.sequence, 2);
+  const dayBefore = (await t.collection("hybridBillingDayCutoffCandidates").doc(day).get()).data();
+  assert.equal(dayBefore.status, "open");
+  const sealed = await sealHybridDemoDayCutoffCandidate({ db, tenantId, reviewerUid, day });
+  assert.equal(sealed.status, "sealed");
+  assert.equal(sealed.coverageCertified, false);
+  assert.equal(sealed.immutableFinancialDayManifest, false);
+  assert.equal((await t.collection("hybridBillingEpochCandidates").doc("active").get()).data().status, "open",
+    "Day seal is separate from the existing global demonstration epoch");
+  await assert.rejects(executeHybridDemoEnforcedWriter({
+    sourceKey: "cod_cashier", args: codArgs(laterId),
+  }), /HYBRID_DAY_CUTOFF_CLOSED/);
+  await assert.rejects(executeHybridDemoEnforcedWriter({
+    sourceKey: "refund_partial",
+    args: refundArgs("BANK-RFD-PHASE3AD-104-C", 5000, "2026-10-20T13:15:00Z"),
+  }), /HYBRID_DAY_CUTOFF_CLOSED/);
+  assert.equal((await t.collection("orders").doc(laterId).get()).data().paymentStatus, "unpaid");
+  assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size, 4,
+    "COD + bank receipt + initial refund + partial refund only");
+  assert.equal((await t.collection("hybridBillingInvoices").get()).size, 0);
+  assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady, undefined);
+});
