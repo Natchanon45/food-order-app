@@ -221,8 +221,8 @@ test("only existing Revenue Share computation is adjusted; Delivery must be PAID
   assert.match(source, /eligibleDeliveryShareDays/);
   assert.match(source, /String\(row\.paymentStatus \|\| ""\)\.toLowerCase\(\) !== "paid"/);
   assert.match(source, /row\.totalAmount \?\? row\.total/);
-  assert.match(source, /Math\\.max\\(0, total - shipping\\)/);
-  assert.match(source, /row\\.subtotalAmount != null && row\\.subtotalAmount !== ""/);
+  assert.match(source, /Math\.max\(0, total - shipping\)/);
+  assert.match(source, /row\.subtotalAmount != null && row\.subtotalAmount !== ""/);
   assert.match(source, /const revenueShareBase = roundMoney\(shareOrderSales \+ posSales\)/);
   assert.match(source, /const revenueShare = setting\.enabled \? roundMoney\(revenueShareBase \* setting\.rate \/ 100\) : 0/);
   assert.match(source, /revenueShareDeliveryThreshold: Math\.round\(threshold \* 100\) \/ 100/);
