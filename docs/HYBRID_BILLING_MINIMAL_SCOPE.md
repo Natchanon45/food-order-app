@@ -41,3 +41,23 @@ Latest exact HEAD / job status must be checked on https://github.com/Natchanon45
 - Set real bank destination and explicit rollout flags only after reviewing these results. **Do not enable production solely because GitHub CI is green.**
 
 No new project, PR, or separate-chat handoff is required.
+
+## Source hardening before owner-run UAT (2026-10-22 Bangkok)
+
+This section tracks targeted corrections to the existing Delivery-only PR #8; it does **not** authorize an environment deployment, monetary charge, PR merge, or a rollout switch change.
+
+- **Unapproved proof is unpaid:** an overdue invoice with `paymentStatus=pending` is still unpaid. A tenant suspended for that overdue bill must not become active solely because a slip was uploaded. Only Super Admin approval marking the invoice `paid` can restore Hybrid-owned suspension (assuming no other overdue invoice).
+- **Atomic/current access check:** suspension/recovery now reads the *current* Tenant, issued-invoice query, and slug ownership within one Firestore transaction. Stale request snapshots cannot overwrite a separately paused Tenant. A slug belonging to another Tenant causes a fail-closed error; a missing slug is never implicitly created.
+- **Frozen invoice bank:** Tenant payment UI uses `invoice.paymentDestination` only. If an old or invalid invoice lacks a frozen bank snapshot, the page requires contacting PENGUIN rather than substituting the current platform bank (which may have changed after issuance).
+- **Emulator regressions:** pending proof stays suspended until paid; stale Tenant snapshot cannot force a new suspension; changed slug ownership cannot be overwritten. Existing invoice idempotency, payment review, old Cashier/POS exclusions, signup, Slip2Go, React build and Storage/Auth security remain in the no-deploy CI workflow.
+
+### Owner-run acceptance after source CI passes
+
+1. On authorized staging or local emulator, start with a newly registered test Tenant; verify signup anniversary, configured Delivery-only threshold and the first vs subsequent cycle prices.
+2. Issue on a *closed Bangkok day*, reissue the same day, and confirm exactly one invoice with the same due date, amount and frozen bank account.
+3. Change the platform bank **after** issuance: the existing invoice must still show its original bank. Missing bank snapshot must block a transfer instruction rather than display the new bank.
+4. Mark the invoice overdue, upload a slip without approving it: the Tenant must **remain suspended**. Super Admin approval then restores access, and rejection does not count as money received.
+5. Disable Hybrid billing for a Tenant, repeat access reconciliation, and confirm a stale caller cannot resuspend it. Confirm POS, Table, Takeaway, walk-in and Lalamove payment flows remain unchanged.
+6. Run Owner and Super Admin PC/tablet/mobile UAT yourself and report any mismatches. Source completion/green CI is not permission to deploy or touch real billing records.
+
+**Release state:** PR #8 must remain DRAFT and unmerged; PR #7 is historical. Runtime enrollment/collection switches remain OFF until an explicit owner-approved rollout. Real staging/physical-device and bank-payment confirmation are not claimed from source/CI evidence.
