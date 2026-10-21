@@ -312,7 +312,10 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
         <article><span>{t("admin_tenants.sales.order")}</span><strong>{money(summary.orderSales)}</strong><small>{t("admin_tenants.common.items", { count: formatNumber(summary.orderCount || 0) })}</small></article>
         <article><span>{t("admin_tenants.sales.pos")}</span><strong>{money(summary.posSales)}</strong><small>{t("admin_tenants.common.receipts", { count: formatNumber(summary.posCount || 0) })}</small></article>
         <article className="total"><span>{t("admin_tenants.sales.combined")}</span><strong>{money(summary.combinedSales)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-        <article className="share"><span>{shareEnabled ? t("admin_tenants.sales.share_rate", { rate: `${money(summary.revenueShareRate)}%` }) : t("admin_tenants.sales.share_disabled")}</span><strong>{money(summary.revenueShare)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
+        <article className="share"><span>{summary.premiumDeliveryShareEnabled === true
+          ? `Delivery ${money(summary.revenueShareRate)}%`
+          : shareEnabled ? t("admin_tenants.sales.share_rate", { rate: `${money(summary.revenueShareRate)}%` })
+            : t("admin_tenants.sales.share_disabled")}</span><strong>{money(summary.revenueShare)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
         <article className="delivery-customer"><span>{t("admin_tenants.sales.customer_delivery_fees")}</span><strong>{money(summary.customerDeliveryFees)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
         <article className="delivery-cost"><span>{t("admin_tenants.sales.lalamove_delivery_cost")}</span><strong>{money(summary.lalamoveDeliveryCost)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
         <article className="subsidy"><span>{t("admin_tenants.sales.delivery_subsidy")}</span><strong>{money(summary.deliverySubsidy)}</strong><small>{t("admin_tenants.common.baht")}</small></article>

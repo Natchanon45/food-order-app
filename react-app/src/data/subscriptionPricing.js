@@ -5,6 +5,8 @@ export const DEFAULT_SUBSCRIPTION_PRICING = Object.freeze({
   planId: "premium",
   currency: "THB",
   monthlyPrice: 590,
+  deliveryThreshold: 10000,
+  deliveryShareRate: 5,
   annualMonths: 12,
   discountType: "amount",
   discountValue: 1180,
@@ -20,6 +22,8 @@ export function normalizeSubscriptionPricing(input = {}) {
     planId: "premium",
     currency: "THB",
     monthlyPrice: Math.max(0, round2(finite(input.monthlyPrice, 590))),
+    deliveryThreshold: Math.max(0, round2(finite(input.deliveryThreshold, 10000))),
+    deliveryShareRate: Math.max(0, round2(finite(input.deliveryShareRate, 5))),
     annualMonths: Math.max(1, Math.round(finite(input.annualMonths, 12))),
     discountType: ["none", "amount", "percent"].includes(String(input.discountType || ""))
       ? String(input.discountType) : "amount",

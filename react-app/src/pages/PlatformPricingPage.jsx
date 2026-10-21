@@ -156,6 +156,16 @@ export function PlatformPricingPage() {
                 <input id="pricingMonthlyPrice" type="number" min="0.01" max="1000000" step="0.01" required value={config.monthlyPrice} onChange={e => update({ monthlyPrice: e.target.value })} />
               </label>
               <label>
+                <span>{intlLocale.startsWith("th") ? "เกณฑ์ยอด Delivery สะสมต่อเดือน (บาท)" : "Monthly paid Delivery threshold (THB)"}</span>
+                <input id="pricingDeliveryThreshold" type="number" min="0" max="1000000000" step="0.01" required
+                  value={config.deliveryThreshold} onChange={e => update({ deliveryThreshold: e.target.value })} />
+              </label>
+              <label>
+                <span>{intlLocale.startsWith("th") ? "ส่วนแบ่ง Platform จากยอด Delivery (%)" : "Platform share of paid Delivery (%)"}</span>
+                <input id="pricingDeliveryShareRate" type="number" min="0" max="100" step="0.01" required
+                  value={config.deliveryShareRate} onChange={e => update({ deliveryShareRate: e.target.value })} />
+              </label>
+              <label>
                 <span>{t("platform.pricing.months")}</span>
                 <input id="pricingAnnualMonths" type="number" min="1" max="60" step="1" required value={config.annualMonths} onChange={e => update({ annualMonths: e.target.value })} />
               </label>
@@ -210,6 +220,9 @@ export function PlatformPricingPage() {
                 />
               </label>
             </div>
+            <p className="field-help">{intlLocale.startsWith("th")
+              ? "คิดเฉพาะยอดสินค้าผ่าน Delivery ที่ชำระแล้ว ไม่รวมค่าส่ง เมื่อยอดสะสมรายเดือนเกินเกณฑ์ จะเริ่มคิดส่วนแบ่งตั้งแต่วันที่เกินเกณฑ์ โดยไม่คิดย้อนหลังวันก่อนหน้า"
+              : "Paid Delivery merchandise only, excluding shipping. Revenue share starts on the day monthly sales exceed the threshold, without charging earlier days."}</p>
             {message ? <p id="pricingStorageMessage">{message}</p> : <p id="pricingStorageMessage" hidden></p>}
             <div className="platform-pricing-actions">
               <button id="pricingReset" className="btn" type="button" onClick={reset}>{t("platform.pricing.reset")}</button>

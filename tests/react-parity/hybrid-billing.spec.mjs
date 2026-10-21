@@ -80,16 +80,16 @@ test("reject invalid/malicious money, overlarge quota and impossible dates", () 
   assert.throws(() => calc([item("2026-10-33", 5)]));
   assert.throws(() => calc([item("2026-11-01", 1)]));
 });
-test("retired Hybrid signup is not exposed and existing billing choices are restored", () => {
+test("registration provides Premium only, never retired Hybrid or legacy Revenue Share signup", () => {
   const page = fs.readFileSync("react-app/src/pages/RegisterPage.jsx", "utf8");
   const signup = fs.readFileSync("functions/public-signup.js", "utf8");
   assert.ok(page.includes("loadPublicSubscriptionPricing"));
-  assert.ok(page.includes('name="billingMode"'));
-  assert.ok(page.includes('name="restaurantRevenueShareScope"'));
+  assert.ok(page.includes('name="planCode"'));
+  assert.ok(page.includes('billingMode: "subscription"'));
   assert.ok(signup.includes("signupBillingSelectionValid"));
-  assert.ok(signup.includes('["subscription", "revenue_share"]'));
+  assert.ok(signup.includes('request.data?.billingMode !== "subscription"'));
   assert.ok(signup.includes('pending.billingPolicyVersion === "hybrid_v1"'));
-  assert.doesNotMatch(page, /loadPublicHybridBillingSettings|hybrid-signup-grid/);
+  assert.doesNotMatch(page, /name="billingMode"|billingModeRevenueShare|loadPublicHybridBillingSettings|hybrid-signup-grid/);
   assert.doesNotMatch(signup, /billingMode: "hybrid"|loadHybridBillingSettings|HYBRID_REGISTRATION_READY/);
 });
 test("subscription pricing does not load inactive Hybrid Billing settings", () => {

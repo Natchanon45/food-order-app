@@ -91,25 +91,23 @@ test("revenue-share business policy selects restaurant and retail sales independ
   });
 });
 
-test("public signup preserves the existing Premium and Revenue Share choices without Hybrid dependency", () => {
+test("public registration only offers Premium monthly/yearly and keeps legacy tenants unchanged", () => {
   const page = fs.readFileSync("react-app/src/pages/RegisterPage.jsx", "utf8");
   const backend = fs.readFileSync("functions/public-signup.js", "utf8");
   for (const token of [
     "businessType", '"restaurant_cafe"', '"retail"', '"both"',
-    "loadPublicSubscriptionPricing", 'name="billingMode"', 'name="planCode"',
-    'name="restaurantRevenueShareScope"', 'billingMode,', "restaurantRevenueShareScope:",
+    "loadPublicSubscriptionPricing", 'name="planCode"', 'value="monthly"', 'value="yearly"',
+    'billingMode: "subscription"', "subscription_cycle",
   ]) assert.ok(page.includes(token), `RegisterPage missing ${token}`);
-  assert.doesNotMatch(page, /loadPublicHybridBillingSettings|hybrid-signup-grid|registrationReady/);
-  for (const token of [
-    "signupBillingSelectionValid", "normalizeSignupBilling", "businessUnitsFor",
+  assert.doesNotMatch(page, /name="billingMode"|billingModeRevenueShare|name="restaurantRevenueShareScope"|revenueShareMode|loadPublicHybridBillingSettings/);
+  assert.match(backend, /request.data\?\.billingMode !== "subscription"/);
+  for (const token of ["signupBillingSelectionValid", "normalizeSignupBilling", "businessUnitsFor",
     "signupBilling:", 'revenueShareEnabled: signupBilling.billingMode === "revenue_share"',
-    '["subscription", "revenue_share"]',
     'pending.billingPolicyVersion === "hybrid_v1"',
-    'existingPendingSnap.data()?.billingPolicyVersion === "hybrid_v1"',
-  ]) assert.ok(backend.includes(token), `Public signup missing ${token}`);
-  assert.doesNotMatch(backend, /loadHybridBillingSettings|HYBRID_REGISTRATION_READY|hybridBillingSnapshot|hybridTrialMonth/);
+    'existingPendingSnap.data()?.billingPolicyVersion === "hybrid_v1"']) {
+    assert.ok(backend.includes(token), `Public signup missing ${token}`);
+  }
 });
-
 test("revenue share calculation filters restaurant/POS share base by tenant policy", () => {
   const source = fs.readFileSync("functions/revenue-share.js", "utf8");
   for (const token of [
@@ -228,4 +226,93 @@ test("only existing Revenue Share computation is adjusted; Delivery must be PAID
   assert.match(form, /id="revenueShareDeliveryThreshold"/);
   assert.match(form, /deliveryThreshold: Number\(shareDeliveryThreshold\)/);
   assert.doesNotMatch(source, /issueTenantHybridInvoices|hybridBillingInvoices|processHybridBillingDaily/);
+});
+
+test("Premium monthly Delivery commission reads centrally configured pricing and excludes POS/table", async () => {
+  const { normalizePricing } = require("../../functions/subscription-pricing-core.js");
+  const pricing = normalizePricing({ monthlyPrice: 590, deliveryThreshold: 10000, deliveryShareRate: 5 });
+  assert.equal(pricing.deliveryThreshold, 10000);
+  assert.equal(pricing.deliveryShareRate, 5);
+
+  const orders = [
+    { orderType: "delivery", paymentStatus: "paid", status: "delivered", subtotalAmount: 4000, totalAmount: 4050, deliveryFee: 50, paidAt: "2026-10-01T10:00:00+07:00" },
+    { orderType: "delivery", paymentStatus: "paid", status: "delivered", subtotalAmount: 6000, totalAmount: 6050, deliveryFee: 50, paidAt: "2026-10-02T10:00:00+07:00" },
+    { orderType: "delivery", paymentStatus: "paid", status: "delivered", deliveryProvider: "lalamove", lalamoveDispatchFee: 80, subtotalAmount: 500, totalAmount: 550, deliveryFee: 50, paidAt: "2026-10-03T10:00:00+07:00" },
+    { orderType: "delivery", paymentStatus: "paid", status: "delivered", subtotalAmount: 1000, totalAmount: 1050, deliveryFee: 50, paidAt: "2026-10-04T10:00:00+07:00" },
+    { orderType: "table", paymentStatus: "paid", status: "served", totalAmount: 2000, paidAt: "2026-10-04T10:00:00+07:00" },
+    { orderType: "delivery", paymentStatus: "unpaid", status: "placed", totalAmount: 50000, deliveryFee: 0, createdAt: "2026-10-01T10:00:00+07:00" },
+  ];
+  const sales = [{ totalAmount: 3000, status: "completed", createdAt: "2026-10-04T11:00:00+07:00" }];
+  const docs = rows => rows.map(data => ({ data: () => data }));
+  const db = { collection: () => ({ doc: () => ({
+    collection: category => ({ get: async () => ({ docs: docs(category === "orders" ? orders : sales) }) }),
+  }) }) };
+  const policy = require("../../functions/revenue-share-policy.js");
+  const dependencies = {
+    "firebase-functions/v2/https": { onCall: (_options, fn) => fn, HttpsError: class extends Error {} },
+    "firebase-functions/v2/scheduler": { onSchedule: (_options, fn) => fn },
+    "firebase-admin/firestore": { getFirestore: () => db, FieldValue: {} },
+    "firebase-admin/storage": { getStorage: () => ({}) },
+    "./slip-verification": { inspectSlip: async () => ({}) },
+    "./subscription-pricing-core": { loadPricing: async () => pricing },
+    "./revenue-share-policy": policy,
+  };
+  const loaded = { exports: {} };
+  const server = fs.readFileSync("functions/revenue-share.js", "utf8");
+  new Function("module", "exports", "require", server +
+    "\nmodule.exports.__setting = revenueSetting; module.exports.__summary = summaryForTenant;")(
+    loaded, loaded.exports, key => {
+      assert.ok(key in dependencies, `Unexpected dependency ${key}`);
+      return dependencies[key];
+    }
+  );
+  const tenant = { billingMode: "subscription", businessType: "both", revenueShareRate: 0 };
+  const setting = loaded.exports.__setting(tenant, pricing);
+  assert.equal(setting.premiumDeliveryShare, true);
+  assert.equal(setting.legacyEnabled, false);
+  assert.equal(setting.channels.includeRetail, false);
+  assert.equal(setting.channels.restaurantScope, "delivery_only");
+  assert.equal(setting.billingCycle, "monthly");
+  const span = (day, next) => ({ start: new Date(day + "T00:00:00+07:00"), end: new Date(next + "T00:00:00+07:00") });
+  const expected = [
+    ["2026-10-01", "2026-10-02", 0],
+    ["2026-10-02", "2026-10-03", 0],
+    ["2026-10-03", "2026-10-04", 25],
+    ["2026-10-04", "2026-10-05", 50],
+    ["2026-10-01", "2026-11-01", 75],
+  ];
+  for (const [from, to, amount] of expected) {
+    const actual = await loaded.exports.__summary("premium", span(from, to), setting);
+    assert.equal(actual.revenueShare, amount, `Premium paid Delivery share: ${from}`);
+    assert.equal(actual.platformAmountDue, amount, "Premium % excludes Lalamove delivery cost from commission due");
+    assert.equal(actual.premiumDeliveryShareEnabled, true);
+    assert.equal(actual.revenueShareEnabled, false, "Do not transform Premium into legacy revenue-share billing");
+  }
+  const retail = loaded.exports.__setting({ billingMode: "subscription", businessType: "retail" }, pricing);
+  assert.equal(retail.enabled, false);
+  const legacy = loaded.exports.__setting({
+    billingMode: "revenue_share", businessType: "both",
+    revenueShareRestaurantScope: "all", revenueShareRate: 10, revenueShareDeliveryThreshold: 20000,
+  }, pricing);
+  assert.equal(legacy.premiumDeliveryShare, false);
+  assert.equal(legacy.rate, 10);
+  assert.equal(legacy.deliveryThreshold, 20000);
+  assert.equal(legacy.channels.includeRetail, true);
+  assert.equal(loaded.exports.__setting(tenant).enabled, false, "Legacy suspension scheduler never activates Premium");
+  assert.match(server, /revenueSetting\(tenant, await loadPricing\(getFirestore\(\)\)\)/);
+  assert.match(server, /revenueSetting\(tenant, premiumPricing\)/);
+});
+
+test("Premium price editor exposes central paid-Delivery threshold and percentage", () => {
+  const page = fs.readFileSync("react-app/src/pages/PlatformPricingPage.jsx", "utf8");
+  const client = fs.readFileSync("react-app/src/data/subscriptionPricing.js", "utf8");
+  const core = require("../../functions/subscription-pricing-core.js");
+  assert.equal(core.DEFAULT_PRICING.deliveryThreshold, 10000);
+  assert.equal(core.DEFAULT_PRICING.deliveryShareRate, 5);
+  assert.match(page, /id="pricingDeliveryThreshold"/);
+  assert.match(page, /id="pricingDeliveryShareRate"/);
+  assert.match(client, /deliveryThreshold: 10000/);
+  assert.match(client, /deliveryShareRate: 5/);
+  assert.equal(core.calculatePricing({ monthlyPrice: 590, deliveryThreshold: 18000, deliveryShareRate: 3 }).config.deliveryThreshold, 18000);
+  assert.equal(core.calculatePricing({ monthlyPrice: 590, deliveryThreshold: 18000, deliveryShareRate: 3 }).config.deliveryShareRate, 3);
 });

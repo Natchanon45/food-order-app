@@ -21,6 +21,13 @@ function validate(raw = {}) {
   if (!Number.isFinite(Number(raw.monthlyPrice)) || config.monthlyPrice <= 0 || config.monthlyPrice > 1000000) {
     throw new HttpsError("invalid-argument", "Monthly price is invalid");
   }
+  for (const [key, maximum] of [["deliveryThreshold", 1000000000], ["deliveryShareRate", 100]]) {
+    const value = Number(raw[key] ?? config[key]);
+    if (!Number.isFinite(value) || value < 0 || value > maximum
+      || Math.abs(value * 100 - Math.round(value * 100)) > 0.00001) {
+      throw new HttpsError("invalid-argument", `Invalid ${key}`);
+    }
+  }
   if (!Number.isFinite(Number(raw.annualMonths)) || config.annualMonths < 1 || config.annualMonths > 60) {
     throw new HttpsError("invalid-argument", "Annual period is invalid");
   }
@@ -64,6 +71,8 @@ exports.updateSubscriptionPricing = onCall({ region: "asia-southeast1" }, async 
     console.info("SUBSCRIPTION_PRICING_UPDATE_ATTEMPT", {
       uid: request.auth.uid,
       monthlyPrice: config.monthlyPrice,
+      deliveryThreshold: config.deliveryThreshold,
+      deliveryShareRate: config.deliveryShareRate,
       annualMonths: config.annualMonths,
       discountType: config.discountType,
       discountValue: config.discountValue,

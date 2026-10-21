@@ -3,6 +3,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { inspectSlip } = require("./slip-verification");
+const { loadPricing } = require("./subscription-pricing-core");
 const {
   normalizeBusinessType,
   normalizeRestaurantScope,
@@ -97,16 +98,31 @@ async function assertTenantAdmin(auth) {
   return { profile, tenantRef, tenant: { id: tenantSnapshot.id, ...tenantSnapshot.data() } };
 }
 
-function revenueSetting(tenant = {}) {
-  const channels = revenueShareChannels(tenant);
+function revenueSetting(tenant = {}, premiumPricing = null) {
+  const legacyChannels = revenueShareChannels(tenant);
+  const businessType = normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
+  // Premium subscribers retain subscription status. The platform's shared
+  // Delivery percentage applies separately to paid goods, never to Table/POS.
+  const premiumDeliveryShare = !legacyChannels.enabled && tenant.billingMode === "subscription"
+    && tenant.billingPolicyVersion !== "hybrid_v1"
+    && businessType !== "retail" && premiumPricing != null
+    && Number(premiumPricing.deliveryShareRate) > 0;
+  const channels = premiumDeliveryShare
+    ? { enabled: true, includeRestaurant: true, includeRetail: false, restaurantScope: "delivery_only" }
+    : legacyChannels;
   return {
     enabled: channels.enabled,
-    rate: Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0))),
-    deliveryThreshold: Number(tenant.revenueShareDeliveryThreshold ?? 10000),
-    billingCycle: tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly",
+    legacyEnabled: legacyChannels.enabled,
+    premiumDeliveryShare,
+    rate: premiumDeliveryShare ? Number(premiumPricing.deliveryShareRate)
+      : Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0))),
+    deliveryThreshold: premiumDeliveryShare ? Number(premiumPricing.deliveryThreshold)
+      : Number(tenant.revenueShareDeliveryThreshold ?? 10000),
+    billingCycle: premiumDeliveryShare ? "monthly"
+      : (tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly"),
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
-    businessType: normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both"),
-    restaurantScope: normalizeRestaurantScope(tenant.revenueShareRestaurantScope || "all"),
+    businessType,
+    restaurantScope: channels.restaurantScope,
     channels,
   };
 }
@@ -237,13 +253,15 @@ async function summaryForTenant(tenantId, period, setting) {
   const revenueShareBase = roundMoney(shareOrderSales + posSales);
   const revenueShare = setting.enabled ? roundMoney(revenueShareBase * setting.rate / 100) : 0;
   const lalamoveOutstandingCost = roundMoney(Math.max(0, lalamoveDeliveryCost - lalamoveWalletCoveredCost));
-  const platformAmountDue = setting.enabled ? roundMoney(revenueShare + lalamoveOutstandingCost) : 0;
+  const platformAmountDue = setting.premiumDeliveryShare ? revenueShare
+    : (setting.enabled ? roundMoney(revenueShare + lalamoveOutstandingCost) : 0);
 
   return {
     orderSales, orderCount, posSales, posCount, combinedSales,
     customerDeliveryFees, lalamoveDeliveryCost, lalamoveWalletCoveredCost,
     lalamoveOutstandingCost, deliverySubsidy,
-    revenueShareEnabled: setting.enabled,
+    revenueShareEnabled: setting.legacyEnabled ?? setting.enabled,
+    premiumDeliveryShareEnabled: setting.premiumDeliveryShare === true,
     revenueShareRate: setting.rate,
     revenueShareDeliveryThreshold: setting.deliveryThreshold,
     revenueShareBase,
@@ -594,7 +612,7 @@ async function tenantLalamoveFailures(tenantId, period) {
 exports.getTenantRevenueShareAccess = onCall({ region: REGION }, async request => {
   const { tenant } = await assertTenantAdmin(request.auth);
   return {
-    ...revenueSetting(tenant),
+    ...revenueSetting(tenant, await loadPricing(getFirestore())),
     suspended: tenant.revenueShareSuspended === true,
     suspensionReason: String(tenant.revenueShareSuspensionReason || ""),
     suspendedAt: asDate(tenant.revenueShareSuspendedAt)?.toISOString() || null,
@@ -606,7 +624,7 @@ exports.getTenantRevenueShareAccess = onCall({ region: REGION }, async request =
 
 exports.getTenantRevenueShareSummary = onCall({ region: REGION }, async request => {
   const { tenant } = await assertTenantAdmin(request.auth);
-  const setting = revenueSetting(tenant);
+  const setting = revenueSetting(tenant, await loadPricing(getFirestore()));
   if (!setting.enabled) throw new HttpsError("permission-denied", "Revenue share is disabled");
   const period = periodFromData(request.data || {});
   const [summary, wallet, lalamoveFailures] = await Promise.all([
@@ -631,7 +649,7 @@ exports.listTenantRevenueSharePayments = onCall({ region: REGION }, async reques
 
 exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSeconds: 60, memory: "512MiB" }, async request => {
   const { profile, tenantRef, tenant } = await assertTenantAdmin(request.auth);
-  const setting = revenueSetting(tenant);
+  const setting = revenueSetting(tenant, await loadPricing(getFirestore()));
   if (!setting.enabled) throw new HttpsError("failed-precondition", "Revenue share is disabled");
   const period = periodFromData(request.data || {});
   if (period.type !== setting.billingCycle) throw new HttpsError("failed-precondition", `Billing cycle is ${setting.billingCycle}`);
@@ -789,6 +807,7 @@ exports.getPlatformRevenueShareSummary = onCall({ region: REGION }, async reques
   const tenantFilter = String(request.data?.tenantId || "").trim();
   const tenantsSnapshot = await db.collection("tenants").get();
   const tenants = tenantsSnapshot.docs.filter(doc => !tenantFilter || doc.id === tenantFilter);
+  const premiumPricing = await loadPricing(db);
   const result = {}, totals = {
     orderSales: 0, orderCount: 0, posSales: 0, posCount: 0, combinedSales: 0,
     customerDeliveryFees: 0, lalamoveDeliveryCost: 0, lalamoveWalletCoveredCost: 0,
@@ -796,7 +815,7 @@ exports.getPlatformRevenueShareSummary = onCall({ region: REGION }, async reques
   };
   for (const snapshot of tenants) {
     const tenant = { id: snapshot.id, ...snapshot.data() };
-    const summary = await summaryForTenant(tenant.id, period, revenueSetting(tenant));
+    const summary = await summaryForTenant(tenant.id, period, revenueSetting(tenant, premiumPricing));
     result[tenant.id] = summary;
     Object.keys(totals).forEach(key => { totals[key] += Number(summary[key] || 0); });
   }

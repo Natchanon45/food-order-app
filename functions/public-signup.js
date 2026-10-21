@@ -37,8 +37,8 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   const ownerName = validateText(request.data?.ownerName, "Owner name");
   const phone = validateText(request.data?.phone, "Phone", 8, 30);
   // Retired Hybrid signup is not a supported public billing choice.
-  if (!["subscription", "revenue_share"].includes(String(request.data?.billingMode || ""))) {
-    throw new HttpsError("invalid-argument", "Select Premium subscription or revenue share");
+  if (request.data?.billingMode !== "subscription") {
+    throw new HttpsError("invalid-argument", "Only Premium subscription is available for new signups");
   }
   if (!signupBillingSelectionValid(request.data || {})) {
     throw new HttpsError("invalid-argument", "Billing mode, business type, or revenue-share scope is invalid");
