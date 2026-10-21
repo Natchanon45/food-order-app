@@ -56,6 +56,10 @@ function validSourceEvent(id,event,tenantId){
    ||!validDay(event.sourceDay)||event.currency!=="THB"
    ||!Number.isSafeInteger(event.shard)||event.shard<0||event.shard>=16
    ||!ID.test(event.actorUid||""))return false;
+ const at=event.source==="hybrid_refund_bank_verified_server"
+   ?event.refundAt:event.paidAt;
+ if(typeof at?.toDate!=="function"||dateKey(at.toDate())!==event.sourceDay)
+   return false;
  if(id==="cod-"+event.orderId
    &&event.source==="hybrid_cod_cashier_server")
     return safeMoney(event.grossCents)&&safeMoney(event.merchandiseCents)
@@ -147,6 +151,9 @@ async function previewHybridSealedDayManifestCandidate({
  const events=await scanCandidateDayEvents({
   tenantRef:t,tenantId,day,pageSize,maxPages
  });
+ const fenceSum=journal.fenceVersions.reduce((a,b)=>a+b,0);
+ if(!Number.isSafeInteger(fenceSum)||events.totalEvents!==fenceSum)
+   throw Error("HYBRID_DEMO_DAY_MANIFEST_EVENT_FENCE_MISMATCH");
  const after=await readCutoff(t,day);
  if(before.dayRevision!==after.dayRevision
    ||before.epochRevision!==after.epochRevision)
