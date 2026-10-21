@@ -1,32 +1,43 @@
-# PENGUIN Hybrid Billing — implementation and release audit
+# PENGUIN Hybrid Billing — complete source workflow and UAT readiness
 
-Updated 2026-10-22 (Asia/Bangkok).
+Updated 2026-10-22 (Asia/Bangkok). Single working branch `feature/hybrid-billing-delivery-only-minimal`, Draft PR #8. The older PR #7 is historical only.
 
-## Intended complete workflow
+## Implemented scope
 
-Hybrid Tenant signup (Super Admin rollout switch) → immutable first-request Bangkok anniversary → paid Delivery merchandise-only threshold and fee calculation → closed-day invoice issuance with pricing snapshot → Tenant displays outstanding invoice → uploads bank transfer slip → Super Admin reviews and accepts/rejects → scheduled due reconciliation, suspension on overdue and access restoration after payment → monthly Slip2Go allowance (100 by default), unlimited after Delivery threshold. No POS, Table, Takeaway, Lalamove wallet or checkout commission.
+- Only **PAID Delivery merchandise** enters the Tenant platform fee. POS, Table, Takeaway, walk-in, Lalamove charges, COD remittances and customer delivery fees never contribute.
+- 10,000 THB paid Delivery threshold per Bangkok signup anniversary cycle. On the threshold-crossing day and following days, 5% of that day's eligible Delivery merchandise is billed, not earlier days. First under-threshold cycle has no fixed fee; later under-threshold cycles use the configured monthly flat fee (default 590 THB). All thresholds/rates/quota values remain Super Admin editable.
+- New Hybrid signup has an explicit global rollout switch, **OFF by default**. Signup stores one immutable trusted server instant and Bangkok calendar start date. Retries cannot shift the first day; activation is idempotent.
+- Tenant report shows an as-of-day fee projection and a **separate, persisted invoice history**. Projection is never mistaken for a payable invoice.
+- Super Admin configures the PENGUIN bank recipient and opens billing by Tenant only after explicit confirmation. Invoices freeze their price and payment-destination snapshot. Retried issuance is idempotent. Changed historical sales or pricing cause a reconciliation error instead of mutating prior bills.
+- Daily scheduled issuing/reconciling is enabled only for explicitly live Hybrid tenants. Only completed prior Bangkok calendar days can be invoiced. Invoice due date is the **actual issue date**, and automatic Hybrid suspension cannot begin before the following Bangkok day; a newly issued invoice must never suspend a shop instantly.
+- Tenant uploads bank-transfer proof (JPG/PNG/WebP/PDF, max 10 MB) to a Tenant+invoice+payment isolated Storage path. Owner or Admin can view own bill and submit proof. Super Admin verifies/approves/rejects transactionally. Repeats cannot approve or submit the same pending/paid payment. Pausing fee collection keeps old invoices settleable and releases only Hybrid-origin suspension.
+- Hybrid-only Slip2Go usage counter is transactionally reserved once per order. Default 100 per anniversary cycle, unlimited after threshold. At quota limit, cashier manual review is used, without blocking the Delivery order. Usage count is shown on Tenant billing page.
+- Cashier continues normal workflows, but Hybrid Delivery payment confirmations use Firestore server-assigned `paidAt`, ensuring canonical billing timestamps. Legacy and other channels are unchanged.
 
-## Current Draft PR #8 source
+## CI and integration verification
 
-- Source branch `feature/hybrid-billing-delivery-only-minimal` at `ad8d46cdae82ddc65965dc31c92d4f54bee63840`; pinned base `feature/react-firebase-port` at `c9aef253e5d8e0953900a8bb34dbb6921ab40357`.
-- Added an isolated Hybrid invoice lifecycle (`functions/hybrid-billing-ledger.js`), invoice and payment callable exports, separate payment proof storage rules, daily scheduler, tenant invoice list/upload and Platform Super Admin issuer/reviewer/bank details panel.
-- Added a Super Admin-controlled runtime signup flag; default OFF, requires bank destination and explicit enable. New Hybrid signup retains its FIRST request date across retries. Newly activated Hybrid Tenants are live only when explicitly enabled global signup has allowed registration.
-- Hybrid Delivery checkout from Cashier now writes a Firestore server-assigned `paidAt` in the existing flow. Existing non-Hybrid payment paths and Lalamove fee settlement remain unchanged.
-- Hybrid Slip2Go credit usage reserves one unit per order per billing cycle before the provider request; if quota is exceeded or cannot be verified, it routes to the existing cashier manual review. Legacy tenants are unaffected.
-- Monetary estimates and invoice issuance exclude non-Delivery or unpaid sales; historical string `paidAt` blocks fee issuance instead of silently charging unknown days.
+`.github/workflows/hybrid-billing-minimal.yml` runs on push and PR without production deployment:
+1. Calculator, order-audit, signup, UI and legacy contract tests plus React production build.
+2. Local Firebase **Firestore, Storage and Auth emulators**, using demo project `demo-hybrid-ci` (no external credentials): real Firestore issuance/idempotency/amount reconciliation; a payable-day grace before suspension; late-invoice suspension and restoration; platform payment review authorization and duplicate rejection; real bank-slip Storage upload and transactional submission/approval; end-to-end gated/signup/activation and anniversary preservation; Storage owner authorization and cross-tenant deny; Slip2Go quota retry/count; pausing access recovery; cross-tenant billing history denial.
 
-## Verified source tests
+Latest exact HEAD / job status must be checked on https://github.com/Natchanon45/food-order-app/pull/8 before merge.
 
-Exact-head [Push CI 39645252136](https://github.com/Natchanon45/food-order-app/actions/runs/39645252136) and [PR CI 39645260144](https://github.com/Natchanon45/food-order-app/actions/runs/39645260144) completed SUCCESS. 31 + 32 + 9 + 16 = **88 node tests PASS, 0 FAIL**; React build PASS. These are source/contract tests, NOT Firebase emulator or real-money acceptance.
+## Release safety, facts and remaining real-environment requirements
 
-## Important release blockers: NOT PRODUCTION-COMPLETE
+- This is a **source-complete candidate**, NOT a production deployment. CI and Firebase emulators cannot certify bank receipt, production quotas, full historic completeness, or customer financial consent.
+- Current billing previews retain `coverageCertified:false` and `canIssueInvoice:false`: these indicate the estimator is not an independently certified transaction ledger. Explicitly enabled Super Admin issuance requires the `RECONCILED_DELIVERY_SOURCE` attestation and does not silently invoice from noncanonical historical records.
+- Historical paid Delivery `paidAt` ISO strings still require authorized reconciliation before charging migrated tenants. Unknown/malformed source data fails closed. No automatic financial backfill or live data mutation was attempted.
+- Real bank destination, policy sign-off, deployment/merge and production UAT using consented staging data require the product owner's explicit action. No production charges or suspensions were triggered from this chat. All rollout controls remain OFF until deliberately enabled.
+- Existing POS, Table/Takeaway and Lalamove settlement flows are not modified for Hybrid fees.
 
-1. Config snapshot comparison in `issueForTenant` uses `JSON.stringify(locked.data().configSnapshot) !== JSON.stringify(estimate.config)`, sensitive to object field ordering after Firestore serialization. A retry may incorrectly block issuance. This needs field-wise immutable-price comparison and a Firestore integration test.
-2. Existing historical Cashier receipts stored `paidAt` as ISO strings. The reader deliberately blocks those; no verified backfill/reconciliation has been run against actual Tenant data.
-3. Hybrid Slip2Go credit accounting, invoice-payment transaction, scheduled issuance/reconciliation, Storage Rules and new Tenant registration need full Firebase Emulator end-to-end/UAT tests with authorized sample data; source passing is not proof these are safe to deploy.
-4. The current invoice source still has `coverageCertified: false`: an authorized Super Admin attestation permits invoice issuance for an opted-in Tenant, but the source is not independently certified or transactionally immutable. Do not enable automatic real charges until finance data completeness and role enforcement are reviewed.
-5. Real recipient bank details and production rollout approval are external requirements. Neither has been provided in this conversation.
+## Final safety acceptance checklist
 
-**Release guardrails:** PR #8 remains DRAFT, UNMERGED and UNDEPLOYED; new registration remains OFF by default. No live Tenant has been charged or suspended by this chat. Original PR #7 remains separate, DRAFT, unmerged.
+- Verify a fresh Hybrid test Tenant's signup, business type and Bangkok anniversary date on staging.
+- Confirm paid Delivery goods only, refunds, timestamp normalization and first-cycle charge policy against consented real order fixtures.
+- In staging, issue a day-closed invoice twice; confirm one immutable invoice, correct due date and bank snapshot.
+- Upload and review a Tenant payment proof; confirm duplicate submissions fail and a paid invoice cannot be issued or approved twice.
+- Simulate overdue invoice and approval, confirm access only changes for Hybrid-owned suspension and is restored.
+- Confirm quota exactly 100 and that a later attempted Slip2Go review falls back to manual without affecting checkout.
+- Set real bank destination and explicit rollout flags only after reviewing these results. **Do not enable production solely because GitHub CI is green.**
 
-**Truthful completion status:** The full workflow is largely implemented in code, but production completion is NOT VERIFIED and these blockers must not be hidden by green CI badges.
+No new project, PR, or separate-chat handoff is required.
