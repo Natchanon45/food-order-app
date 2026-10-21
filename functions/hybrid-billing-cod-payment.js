@@ -5,6 +5,7 @@
 // Future callable MUST take actorUid exclusively from verified request.auth.uid;
 // never pass a client-supplied uid, role, amount, timestamp, or payment state.
 const { FieldValue } = require("firebase-admin/firestore");
+const { dateKey } = require("./hybrid-billing-core");
 const { prepareCodReceiptJournal, journalReceiptIssue } = require("./hybrid-billing-receipt-journal");
 const {assertHybridEpochDemoOptIn,requireHybridEpochAdmissionCandidate} = require("./hybrid-billing-writer-epoch-candidate");
 
@@ -86,11 +87,12 @@ async function settleHybridCodDeliveryPayment({
     if (!isLalamove && !DELIVERED_STATUSES.has(order.status)) {
       fail("HYBRID_COD_DELIVERY_NOT_COMPLETED");
     }
+    const receivedAt = clock();
     const journalWrites = await prepareCodReceiptJournal({
-      tx, tenantRef, order, tenantId, orderId, actorUid, now: clock(), serverTimestamp,
+      tx, tenantRef, order, tenantId, orderId, actorUid, now: receivedAt, serverTimestamp,
     });
     if (epochAdmissionDemo) await requireHybridEpochAdmissionCandidate({
-      tx,tenantRef,sourceKey:"cod_cashier"});
+      tx,tenantRef,sourceKey:"cod_cashier",sourceDay:dateKey(receivedAt)});
     const patch = {
       paymentStatus: "paid",
       paidAt: serverTimestamp(),
