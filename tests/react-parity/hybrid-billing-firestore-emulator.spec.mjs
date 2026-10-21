@@ -2533,9 +2533,45 @@ test("emulator Phase3AG: isolated Lalamove 2-order PAID_OUT batch + bank POSTED 
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
  assert.equal((await t.collection("hybridBillingLateExceptionCandidates").get()).size,0);
  assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ const {reserveHybridDemoCodBatchCandidate}=require(
+   "../../functions/hybrid-billing-demo-batch-reservation.js");
+ const first=await reserveHybridDemoCodBatchCandidate(args);
+ assert.equal(first.alreadyReserved,false);
+ assert.equal(first.canMarkPaid,false);
+ assert.equal((await reserveHybridDemoCodBatchCandidate(args)).alreadyReserved,true);
+ const doc=t.collection("hybridBillingDemoCodBatchCandidates").doc(batchId);
+ const recorded=(await doc.get()).data();
+ assert.equal(recorded.status,"pending_independent_review");
+ assert.equal(recorded.sourceAttested,false);
+ assert.equal(recorded.bankCreditVerified,false);
+ assert.equal(recorded.settlementPosted,false);
+ assert.equal(recorded.canMarkPaid,false);
+ assert.equal(recorded.canIssueInvoice,false);
+ assert.equal(recorded.coverageCertified,false);
+ assert.equal((await t.collection("hybridBillingDemoCodOrderClaims").get()).size,2);
+ assert.equal((await db.collection("hybridBillingDemoBatchTransferClaims").doc(c).get()).data().batchId,batchId);
+ // Same bank credit cannot be allocated again under a second batch ID;
+ // different bank reference for same orders also cannot allocate again.
+ provider.batchId="batch-phase3ag-second-110";
+ await assert.rejects(reserveHybridDemoCodBatchCandidate({
+   ...args,batchId:"batch-phase3ag-second-110"
+ }),/HYBRID_DEMO_BATCH_REFERENCE_OR_ORDER_REPLAY/);
+ provider.batchId=batchId;
+ provider.transferReferenceSha256="1".repeat(64);
+ bank.transferReferenceSha256="1".repeat(64);
+ await assert.rejects(reserveHybridDemoCodBatchCandidate({
+   ...args,batchId:"batch-phase3ag-second-110",
+   resolveProviderBatch:async()=>({...provider,batchId:"batch-phase3ag-second-110"})
+ }),/HYBRID_DEMO_BATCH_REFERENCE_OR_ORDER_REPLAY/);
+ // A mismatched bank amount must fail BEFORE claiming anything.
+ provider.transferReferenceSha256=c;
+ bank.transferReferenceSha256=c;
  bank.creditedCents=78499;
  await assert.rejects(previewHybridLalamoveCodBatch(args),
    /HYBRID_LALAMOVE_BATCH_INDEPENDENT_POSTED_CREDIT_REQUIRED/);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,0);
+ assert.equal((await t.collection("orders").doc(orderIds[0]).get()).data().paymentStatus,"unpaid");
 });
 test("emulator Phase3AG: cashier cannot access privileged batch evidence lookups",async()=>{
  const {previewHybridLalamoveCodBatch}=require(
