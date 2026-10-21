@@ -91,7 +91,11 @@ test("registration only offers business services and server selects hybrid polic
   assert.ok(!page.includes('billingMode,'));
   assert.ok(signup.includes('billingMode: "hybrid"'));
   assert.ok(signup.includes('billingPolicyVersion: "hybrid_v1"'));
-  assert.ok(signup.includes('hybridBillingEnabled: false'));
+  assert.ok(signup.includes('hybridBillingEnabled: true'));
+  assert.ok(signup.includes('hybridBillingStartDate: startDate'));
+  assert.ok(signup.includes('hybridBillingLive: true'));
+  assert.ok(signup.includes('await hybridRegistrationReady'));
+  assert.ok(signup.includes('HYBRID_SIGNUP_ALREADY_ACTIVE'));
 });
 test("pricing editor & translations expose all four editable values", () => {
   const page = fs.readFileSync("react-app/src/pages/PlatformPricingPage.jsx", "utf8");
