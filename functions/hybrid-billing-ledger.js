@@ -59,6 +59,7 @@ function safeInvoiceSummary(id, row = {}) {
     paymentStatus: String(row.paymentStatus || ""), paymentId: String(row.paymentId || ""),
     paidAt: row.paidAt?.toDate?.()?.toISOString() || "",
     issuedAt: row.issuedAt?.toDate?.()?.toISOString() || "",
+    paymentDestination: row.paymentDestination || null,
   };
 }
 function eligibleForIssuance(estimate, today) {
@@ -125,6 +126,8 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
   const today = dateKey(new Date());
   const lines = eligibleForIssuance(estimate, today);
   if (!lines.length) return { inserted: [], skipped: [], cycleId: estimate.cycleId, selectedDate: throughDate };
+  const destination = await configuredDestination(db);
+  if (!destination) throw new HttpsError("failed-precondition", "HYBRID_PAYMENT_BANK_REQUIRED");
   // Preserve the pricing snapshot used for the FIRST invoice in the cycle.
   const periodRef = ref.collection("hybridBillingPeriods").doc(estimate.cycleId);
   const period = await periodRef.get();
@@ -170,6 +173,7 @@ async function issueForTenant(db, ref, tenant, throughDate, { attest, actor } = 
       calculationBase: line.calculationBase, amount: line.amount, status: "issued",
       paymentStatus: "", paymentId: "",
       configSnapshot: estimate.config,
+      paymentDestination: destination,
       pricingSource: estimate.source,
       coverageCertified: false, // Operator attested; not a certified immutable payment feed.
       reconciledBy: actor, reconciliationAttestation: attest,

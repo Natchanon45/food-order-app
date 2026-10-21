@@ -83,7 +83,7 @@ export function HybridBillingReportPage() {
   const submitInvoiceSlip = async (event, invoice) => {
     event.preventDefault();
     const file = slips[invoice.id];
-    if (!file || submittingInvoice || !destination) return;
+    if (!file || submittingInvoice || !(invoice.paymentDestination || destination)) return;
     setSubmittingInvoice(invoice.id);
     setPaymentMessage("");
     try {
@@ -202,9 +202,7 @@ export function HybridBillingReportPage() {
         <section className="card hybrid-report-details" aria-labelledby="hybridInvoicesHeading">
           <h2 id="hybridInvoicesHeading">ใบแจ้งค่าบริการจาก PENGUIN</h2>
           <p className="hybrid-report-notice">ยอดด้านบนเป็นเพียง Preview ส่วนรายการด้านล่างเป็นบิลที่ PENGUIN ออกจริงหลังตรวจสอบแล้วเท่านั้น</p>
-          {destination ? (
-            <p>บัญชีรับชำระ: <strong>{destination.bankName} — {destination.accountName} — {destination.accountNumber}</strong></p>
-          ) : <p role="status">ยังไม่ได้ตั้งค่าบัญชีรับชำระ กรุณาติดต่อผู้ดูแล PENGUIN ก่อนโอนเงิน</p>}
+          <p className="hybrid-report-notice">โปรดโอนเงินเข้าบัญชีที่ระบุไว้ในบิลแต่ละรายการ ซึ่งอาจต่างจากบัญชีรับเงินปัจจุบัน</p>
           {paymentMessage ? <p role="status">{paymentMessage}</p> : null}
           <button className="btn btn-sm" type="button" onClick={loadInvoices}>รีเฟรชสถานะบิล</button>
           <div className="hybrid-report-table-scroll">
@@ -218,8 +216,9 @@ export function HybridBillingReportPage() {
                     <td>{invoice.state === "paid" ? "ชำระแล้ว" :
                       invoice.state === "review" ? "รอตรวจสอบ" :
                       invoice.state === "void" ? "ยกเลิก" : "ค้างชำระ"}</td>
-                    <td>{invoice.state === "outstanding" && destination ? (
+                    <td>{invoice.state === "outstanding" && (invoice.paymentDestination || destination) ? (
                       <form onSubmit={event => submitInvoiceSlip(event, invoice)}>
+                        <small>โอนเข้าบัญชี: {(invoice.paymentDestination || destination).bankName} — {(invoice.paymentDestination || destination).accountName} — {(invoice.paymentDestination || destination).accountNumber}</small>
                         <label>
                           <span className="visually-hidden">หลักฐานชำระ {invoice.id}</span>
                           <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf"

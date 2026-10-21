@@ -35,6 +35,9 @@ async function fixture() {
     },
   };
   await ref.set(tenant);
+  await db.collection("platformSettings").doc("hybridBillingPayment").set({
+    bankName: "Example Bank", accountName: "PENGUIN Tests", accountNumber: "1234567890",
+  });
   await db.collection("tenantSlugs").doc(slug).set({ tenantId: id, active: true });
   const orderRef = ref.collection("orders").doc("paid-delivery-1");
   await orderRef.set({
@@ -59,6 +62,7 @@ test("real Firestore invoice write is idempotent and immutable across order corr
   assert.equal(snap.data().amount, 500);
   assert.equal(snap.data().status, "issued");
   assert.equal(snap.data().cycleId, "2024-10-10");
+  assert.equal(snap.data().paymentDestination.accountNumber, "1234567890");
   const period = await ref.collection("hybridBillingPeriods").doc("2024-10-10").get();
   assert.equal(period.data().configSnapshot.deliveryThreshold, 10000);
   // Fetch through the Firestore backend: object insertion order may change.
