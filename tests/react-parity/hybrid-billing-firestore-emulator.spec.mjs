@@ -2470,3 +2470,88 @@ test("emulator Phase3AF: missing original frozen witness and non-Super Admin can
  assert.equal((await t.collection("hybridBillingLateExceptionCandidates").get()).size,0);
  assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
 });
+
+
+test("emulator Phase3AG: isolated Lalamove 2-order PAID_OUT batch + bank POSTED proof preview never mutates paid state",async()=>{
+ const {previewHybridLalamoveCodBatch}=require(
+   "../../functions/hybrid-billing-lalamove-batch-preview.js");
+ const tenantId="tenant-phase3ag-batch-110",reviewerUid="super-phase3ag-batch-110";
+ const a="a".repeat(64),b="b".repeat(64),c="c".repeat(64),
+   d="d".repeat(64),e="e".repeat(64),f="f".repeat(64);
+ const t=await activate(tenantId,{
+   lalamoveAccountScopeSha256:a,lalamoveCodRecipientAccountSha256:b
+ });
+ await db.collection("users").doc(reviewerUid).set({role:"super_admin",active:true});
+ const orderIds=["order-phase3ag-batch-a-110","order-phase3ag-batch-b-110"];
+ const amounts=[500,300],providerIds=["LL-BATCH-101","LL-BATCH-102"];
+ for(let i=0;i<2;i++){
+   await t.collection("orders").doc(orderIds[i]).create({
+     orderType:"delivery",deliveryProvider:"lalamove",
+     paymentMethod:"cod",lalamoveCodEnabled:true,paymentStatus:"unpaid",
+     lalamoveOrderId:providerIds[i],totalAmount:amounts[i]
+   });
+   await t.collection("hybridLalamoveCodCompletionProof").doc(orderIds[i]).create({
+     tenantId,orderId:orderIds[i],providerOrderId:providerIds[i],
+     accountScopeSha256:a,providerEvidenceSha256:e,eventHash:f,
+     deliveryVerified:true,codSettlementVerified:false,bankReconciled:false,
+     status:"delivery_verified_settlement_pending"
+   });
+ }
+ const now=new Date("2026-10-21T08:00:00Z"),batchId="batch-phase3ag-110";
+ let providerCalls=0,bankCalls=0;
+ const provider={source:"authenticated_lalamove_batch_remittance_lookup",
+   authenticated:true,tenantId,batchId,market:"TH",currency:"THB",
+   status:"PAID_OUT",batchPayout:true,orderCount:2,
+   allocations:[
+    {orderId:orderIds[0],providerOrderId:providerIds[0],
+     collectedCodCents:50000,feeCents:1000,remittedCents:49000},
+    {orderId:orderIds[1],providerOrderId:providerIds[1],
+     collectedCodCents:30000,feeCents:500,remittedCents:29500}
+   ],accountScopeSha256:a,recipientAccountSha256:b,
+   transferReferenceSha256:c,evidenceSha256:d,checkedAt:now,
+   paidOutAt:new Date(now.getTime()-120000),
+   collectedCodCents:80000,feeCents:1500,remittedCents:78500};
+ const bank={source:"independent_bank_posted_credit_lookup",
+   authenticated:true,tenantId,status:"POSTED",currency:"THB",
+   recipientConfirmed:true,recipientAccountSha256:b,bankAccountScopeSha256:b,
+   transferReferenceSha256:c,evidenceSha256:e,
+   creditedCents:78500,checkedAt:now,postedAt:new Date(now.getTime()-60000)};
+ const args={db,tenantId,batchId,orderIds,reviewerUid,now,
+   resolveProviderBatch:async()=>{providerCalls++;return provider;},
+   resolveIndependentBankCredit:async()=>{bankCalls++;return bank;}};
+ const found=await previewHybridLalamoveCodBatch(args);
+ assert.equal(found.orderCount,2);
+ assert.equal(found.matchedPostedCreditCents,78500);
+ assert.equal(found.canMarkPaid,false);
+ assert.equal(found.coverageCertified,false);
+ assert.equal(found.sourceAttested,false);
+ assert.equal(providerCalls,1);assert.equal(bankCalls,1);
+ for(const id of orderIds){
+   assert.equal((await t.collection("orders").doc(id).get()).data().paymentStatus,"unpaid");
+ }
+ assert.equal((await t.collection("hybridBillingReceiptEvents").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+ assert.equal((await t.collection("hybridBillingLateExceptionCandidates").get()).size,0);
+ assert.equal((await t.get()).data().hybridReceiptJournalCoverageReady,undefined);
+ bank.creditedCents=78499;
+ await assert.rejects(previewHybridLalamoveCodBatch(args),
+   /HYBRID_LALAMOVE_BATCH_INDEPENDENT_POSTED_CREDIT_REQUIRED/);
+});
+test("emulator Phase3AG: cashier cannot access privileged batch evidence lookups",async()=>{
+ const {previewHybridLalamoveCodBatch}=require(
+   "../../functions/hybrid-billing-lalamove-batch-preview.js");
+ const tenantId="tenant-phase3ag-deny-111",uid="cashier-phase3ag-deny-111";
+ const t=await activate(tenantId);
+ await db.collection("users").doc(uid).set({role:"cashier",active:true,tenantId});
+ let calls=0;
+ const args={db,tenantId,batchId:"batch-phase3ag-deny-111",
+   orderIds:["order-phase3ag-deny-a-111","order-phase3ag-deny-b-111"],
+   reviewerUid:uid,now:new Date("2026-10-21T08:00:00Z"),
+   resolveProviderBatch:async()=>{calls++;return{};},
+   resolveIndependentBankCredit:async()=>{calls++;return{};}};
+ await assert.rejects(previewHybridLalamoveCodBatch(args),
+   /HYBRID_LALAMOVE_BATCH_SUPER_ADMIN_REQUIRED/);
+ assert.equal(calls,0,"Unprivileged caller must not invoke provider/bank lookups");
+ assert.equal((await t.collection("orders").get()).size,0);
+ assert.equal((await t.collection("hybridBillingInvoices").get()).size,0);
+});
