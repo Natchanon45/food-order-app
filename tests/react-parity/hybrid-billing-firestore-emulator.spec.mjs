@@ -269,6 +269,15 @@ test("Auth and Firestore emulators: signup is gated, first Bangkok request date 
   const otherTenantPath = `tenants/other-tenant-123456/hybrid-billing-slips/${invoiceId}/${paymentId}/proof.png`;
   await assert.rejects(uploadBytes(fileRef(webStorage, otherTenantPath), proof,
     { contentType: "image/png" }), /unauthorized|permission|403/);
+  const { getFirestore: getWebFirestore, connectFirestoreEmulator,
+    doc: webDoc, setDoc } = await import("firebase/firestore");
+  const webDb = getWebFirestore(app);
+  connectFirestoreEmulator(webDb, "127.0.0.1", 8080);
+  // Neither owner nor browser may issue financial documents: Server only.
+  await assert.rejects(setDoc(webDoc(webDb, "tenants", activation.tenantId,
+    "hybridBillingInvoices", "forged-client-bill"), {
+    amount: 500, status: "paid", cycleId: "2024-10-10",
+  }), /permission|denied|403/);
   await deleteApp(app);
   await configRef.set({ registrationReady: false }, { merge: true });
 });
