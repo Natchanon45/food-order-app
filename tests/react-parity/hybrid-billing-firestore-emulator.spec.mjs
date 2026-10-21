@@ -2768,3 +2768,29 @@ test("emulator Phase3AJ: readonly paidAt quarantine identifies untrusted string/
   db,tenantId:id,reviewerUid:uid,maxRows:2,pageSize:1
  }),/HYBRID_PAIDAT_QUARANTINE_LIMIT/);
 });
+
+test("emulator Phase3AL: migrating Hybrid cashier rejects server COD with no Paid or journal writes", async () => {
+  const cases = [
+    { id: "tenant-emu-3al-migrating-a", policy: "legacy", enabled: true },
+    { id: "tenant-emu-3al-migrating-b", policy: "hybrid_v1", enabled: false },
+    { id: "tenant-emu-3al-migrating-c", policy: "legacy", enabled: false,
+      journalMode: "strict_v1" },
+  ];
+  for (const [i, item] of cases.entries()) {
+    const ref = await activate(item.id, {
+      billingPolicyVersion: item.policy, hybridBillingEnabled: item.enabled,
+      ...(item.journalMode ? { hybridReceiptJournalMode: item.journalMode } : {}),
+    });
+    const uid = "cashier-emu-phase3al-" + String(i).padStart(2, "0");
+    const orderId = "cod-emu-phase3al-" + String(i).padStart(2, "0");
+    await codActor(uid, item.id);
+    await unpaidCod(ref, orderId, 900);
+    await assert.rejects(settleHybridCodDeliveryPayment({
+      db, tenantId: item.id, orderId, actorUid: uid,
+    }), /HYBRID_COD_TENANT_NOT_ENABLED/);
+    const row = (await ref.collection("orders").doc(orderId).get()).data();
+    assert.equal(row.paymentStatus, "unpaid");
+    assert.equal(row.paidAt, undefined);
+    assert.equal((await ref.collection("hybridBillingReceiptEvents").get()).size, 0);
+  }
+});

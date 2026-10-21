@@ -19,7 +19,8 @@ test("Phase3K: Hybrid COD source cutover is explicitly DISABLED", () => {
 test("Phase3K: legacy Delivery and other legacy cashier payments unchanged", () => {
   assert.equal(hybridDeliveryCashierRoute(legacy, cod), "legacy");
   assert.equal(hybridDeliveryCashierRoute(hybrid, { ...cod, orderType: "takeaway" }), "legacy");
-  assert.equal(hybridDeliveryCashierRoute(null, cod), "legacy");
+  assert.equal(hybridDeliveryCashierRoute(null, cod), "hybrid_tenant_unknown");
+  assert.equal(hybridDeliveryCashierRoute(undefined, cod), "hybrid_tenant_unknown");
 });
 
 test("Phase3K: Hybrid PromptPay uses existing trusted slip review and all unknown payments block", () => {
@@ -69,4 +70,46 @@ test("Phase3K: staged Cashier adapter never invokes an unregistered Callable", a
   await assert.rejects(settleHybridCodCashier(legacy, cod, mockCallable),
     /HYBRID_COD_CASHIER_NOT_RELEASED/);
   assert.equal(called, 0);
+});
+
+test("Phase3AL: partially migrated Hybrid Delivery never enters legacy browser-paidAt", () => {
+  const signaled = [
+    { billingPolicyVersion: "legacy", hybridBillingEnabled: true },
+    { billingPolicyVersion: "hybrid_v1", hybridBillingEnabled: false },
+    { billingPolicyVersion: "subscription_v1", hybridReceiptJournalCoverageReady: true },
+    { billingPolicyVersion: "legacy", hybridReceiptJournalMode: "strict_v1" },
+    { billingPolicyVersion: "legacy", hybridReceiptJournalMode: "" },
+  ];
+  for (const tenant of signaled) {
+    for (const paymentMethod of ["cod", "promptpay", "cash"]) {
+      assert.equal(hybridDeliveryCashierRoute({ ...tenant, active: true },
+        { ...cod, paymentMethod }), "hybrid_incomplete_migration");
+    }
+  }
+  // Non-Delivery channels retain their existing routing.
+  assert.equal(hybridDeliveryCashierRoute(signaled[0],
+    { ...cod, orderType: "takeaway" }), "legacy");
+});
+
+test("Phase3AL: suspended Hybrid cannot enter PromptPay review before provider verification", () => {
+  for (const mutation of [
+    { hybridBillingSuspended: true },
+    { active: false },
+  ]) {
+    assert.equal(hybridDeliveryCashierRoute({ ...hybrid, ...mutation },
+      { ...cod, paymentMethod: "promptpay" }), "hybrid_disabled");
+  }
+  assert.equal(hybridDeliveryCashierRoute(hybrid,
+    { ...cod, paymentMethod: "promptpay" }), "proof_review");
+});
+
+test("Phase3AL: Cashier UI must reject all untrusted Hybrid route classifications", () => {
+  const page = readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
+  const adapter = readFileSync("react-app/src/data/hybridCodCashierRoute.mjs", "utf8");
+  assert.match(page, /!\["legacy", "proof_review", "server"\]\.includes\(hybridRoute\)/);
+  assert.match(adapter, /hybridReceiptJournalCoverageReady === true/);
+  assert.match(adapter, /tenant\.hybridReceiptJournalMode !== undefined/);
+  assert.match(adapter, /hybrid_tenant_unknown/);
+  assert.match(adapter, /hybrid_incomplete_migration/);
+  assert.equal(HYBRID_COD_CASHIER_CUTOVER_READY, false);
 });
