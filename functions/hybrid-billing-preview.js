@@ -9,6 +9,9 @@ const { loadHybridBillingSettings } = require("./hybrid-billing-settings");
 const REGION = "asia-southeast1";
 const MAX_PAID_ORDERS = 50000;
 const PAGE_LIMIT = 500;
+// Paid Delivery only, not all unpaid/submitted orders. This is a preview cap,
+// not permission to issue charges or a certified financial ledger.
+const MAX_AUDIT_PAID_DELIVERY = 10000;
 
 function monthWindow(month) {
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(month || ""))) {
@@ -111,14 +114,19 @@ function resolveHybridStartDate(tenant = {}) {
 // Bounded, read-only audit to detect paid Delivery documents excluded by a
 // Firestore paidAt Timestamp range (e.g. legacy ISO strings or missing paidAt).
 // This is an anomaly check, NOT a transactionally consistent certification.
-async function auditPaidDeliveryCoverage(tenantRef, { maxDocs = 3000 } = {}) {
-  if (!Number.isSafeInteger(maxDocs) || maxDocs < 1 || maxDocs > 3000) {
+async function auditPaidDeliveryCoverage(tenantRef, { maxDocs = MAX_AUDIT_PAID_DELIVERY } = {}) {
+  if (!Number.isSafeInteger(maxDocs) || maxDocs < 1 || maxDocs > MAX_AUDIT_PAID_DELIVERY) {
     throw new RangeError("Invalid coverage audit limit");
   }
   let scanned = 0, paidDeliveryCount = 0, cursor = null;
   for (;;) {
     const pageSize = Math.min(PAGE_LIMIT, maxDocs + 1 - scanned);
-    let query = tenantRef.collection("orders").where("orderType", "==", "delivery")
+    // Match the exact canonical persisted fields at the database layer to
+    // avoid scanning large volumes of unpaid Delivery or paid non-Delivery.
+    // An explicit composite index is included in firestore.indexes.json.
+    let query = tenantRef.collection("orders")
+      .where("orderType", "==", "delivery")
+      .where("paymentStatus", "==", "paid")
       .orderBy("__name__").limit(pageSize);
     if (cursor) query = query.startAfter(cursor);
     const snap = await query.get();

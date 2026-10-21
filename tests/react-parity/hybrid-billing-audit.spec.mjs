@@ -175,3 +175,58 @@ test("re-submitting an already active signup cannot reset activation status or b
   assert.match(requestSection, /Tenant signup is already active/);
   assert.match(requestSection, /resolveSignupBillingStartDate\(existingPending, requestedAt\)/);
 });
+
+test("audit requests indexed paid Delivery query and pages using document cursor", async () => {
+  const calls = [];
+  const rows = docRows([paid(100, "2026-10-20T10:00:00Z"),
+    paid(200, "2026-10-20T10:00:00Z"),
+    paid(300, "2026-10-20T10:00:00Z")]);
+  function query(offset = 0) {
+    return {
+      where(field, op, value) {
+        calls.push(["where", field, op, value]); return this;
+      },
+      orderBy(field) { calls.push(["orderBy", field]); return this; },
+      limit(n) { calls.push(["limit", n]); this.size = n; return this; },
+      startAfter(cursor) {
+        calls.push(["startAfter", cursor.id]);
+        return query(rows.findIndex(row => row.id === cursor.id) + 1);
+      },
+      async get() {
+        const docs = rows.slice(offset, offset + this.size);
+        return { docs, size: docs.length };
+      },
+    };
+  }
+  const ref = { collection(name) { assert.equal(name, "orders"); return query(); } };
+  const result = await auditPaidDeliveryCoverage(ref, { maxDocs: 3 });
+  assert.equal(result.scanned, 3);
+  assert.equal(result.paidDeliveryCount, 3);
+  assert.equal(result.coverageCertified, false);
+  assert.deepEqual(calls.filter(c => c[0] === "where").slice(0, 2), [
+    ["where", "orderType", "==", "delivery"],
+    ["where", "paymentStatus", "==", "paid"],
+  ]);
+  assert.ok(calls.some(c => c[0] === "startAfter"));
+});
+test("more than 3,000 paid Delivery can be audited within new bounded cap", async () => {
+  const n = 3001, today = "2026-10-20T10:00:00Z";
+  const ref = onlyOrders(Array.from({ length: n }, () => paid(10, today)));
+  const result = await auditPaidDeliveryCoverage(ref);
+  assert.equal(result.scanned, n);
+  assert.equal(result.paidDeliveryCount, n);
+  assert.equal(result.coverageCertified, false);
+});
+test("more than 10,000 paid Delivery still stops with an explicit error", async () => {
+  const ref = onlyOrders(Array.from({ length: 10001 }, () =>
+    paid(10, "2026-10-20T10:00:00Z")));
+  await assert.rejects(auditPaidDeliveryCoverage(ref),
+    /HYBRID_DELIVERY_COVERAGE_SCAN_LIMIT/);
+});
+test("explicit audit index is limited to Order channel and paid status", () => {
+  const indexes = JSON.parse(fs.readFileSync("firestore.indexes.json", "utf8")).indexes;
+  assert.ok(indexes.some(index => index.collectionGroup === "orders"
+    && index.queryScope === "COLLECTION"
+    && index.fields[0]?.fieldPath === "orderType"
+    && index.fields[1]?.fieldPath === "paymentStatus"));
+});

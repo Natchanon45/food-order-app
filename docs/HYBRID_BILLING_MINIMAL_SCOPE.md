@@ -19,7 +19,7 @@ The change is the **platform fee charged to a Tenant based solely on paid Delive
 
 ## Non-goals and outstanding verification
 - No modification to retail POS, table/takeaway, cashier, Lalamove, Firebase Rules, live payments, tenant memberships, registration flags, or production deployment.
-- The read-only preview now scans at most 3,000 Delivery Order records to detect paid entries with missing or noncanonical `paidAt` before calculating. It fails closed on anomalies or if scan exceeds the cap (no silent undercount); this scan is not a transactionally consistent snapshot or all-writer certification. Large shops need a separately designed efficient completeness mechanism before real fee issuance. No data migration, invoice or suspension is enabled.
+- The read-only preview now scans at most 10,000 paid Delivery Order records to detect paid entries with missing or noncanonical `paidAt` before calculating. It fails closed on anomalies or if scan exceeds the cap (no silent undercount); this scan is not a transactionally consistent snapshot or all-writer certification. Large shops need a separately designed efficient completeness mechanism before real fee issuance. No data migration, invoice or suspension is enabled.
 - `calculateMonth` now charges 5% only on paid Delivery goods of the trigger calendar DAY, consistent with the later Hybrid prototype. Confirm this business policy before billing real tenants.
 - Anniversary billing has been added to the **new read-only preview path** using immutable server Tenant.createdAt (or existing hybridBillingStartDate) and Bangkok date boundaries; the original calendar-month helper remains for old compatibility tests, not invoice issuance. Fee policy, refunds/adjustments, actual charge workflow and payment confirmation still require sign-off. These do **not** justify rewriting the operational payment writers.
 - All four readiness flags remain false. No real tenant fee issuance, automatic suspension, merge or Firebase deploy.
@@ -34,7 +34,7 @@ Repository `Natchanon45/food-order-app`. Base `feature/react-firebase-port` pinn
 
 ## 2026-10-21 follow-up — Anniversary and completeness verification
 - Runtime preview is tied to a Tenant trusted start day, either `hybridBillingStartDate` if explicitly provided or the existing server-owned `createdAt` activation timestamp. **Activation date may differ from the original registration request date**; this policy choice must be confirmed before real billing. No live Tenant data was altered.
-- Read-only audit detects missing/ISO `paidAt` on currently paid Delivery orders, bounded at 3,000 Delivery records to avoid unbounded reads. Above the limit, or on malformed timestamps, the preview errors rather than returning an incomplete amount. No global consistent snapshot or financial-source certification is claimed.
+- Read-only audit detects missing/ISO `paidAt` on currently paid Delivery orders, bounded at 10,000 paid Delivery records to avoid unbounded reads. Above the limit, or on malformed timestamps, the preview errors rather than returning an incomplete amount. No global consistent snapshot or financial-source certification is claimed.
 - Source-only unit tests now cover anniversary 16th/31st transitions, Thailand midnight, cross-cycle exclusion, partial refunds, malformed timestamps, and audit caps. Old POS / Lalamove and other transaction routes are unchanged.
 - All readiness flags stay disabled. PR #8 remains DRAFT; PR #7 retains its historical archived proposal and stays DRAFT/unmerged.
 
@@ -44,3 +44,10 @@ Repository `Natchanon45/food-order-app`. Base `feature/react-firebase-port` pinn
 - For already-created tenants without a `hybridBillingStartDate` the preview still falls back to their trusted Tenant `createdAt` date. Such tenants require a one-time business reconciliation of request vs activation dates; no automatic retroactive change is made.
 - The Delivery completeness audit keeps the exact-case Firestore `orderType == delivery` constraint plus in-loop case-insensitive defensive checks. The bounded scan is **not** a certificate of perfect source coverage; atypical legacy type encodings remain a documented data-quality risk.
 - Retries after activation are now rejected before re-writing the pending registration; an active Tenant cannot accidentally be moved back to `email_verification_required`. The original activation callable retains its idempotent active-tenant response.
+
+## 2026-10-21 follow-up — Paid-only indexed coverage audit
+
+- **Audit query narrowed** to `tenants/{tenant}/orders` where `orderType == "delivery"` AND `paymentStatus == "paid"`, ordered and paginated by document name. This avoids scanning the much larger population of unpaid Delivery submissions and paid POS/table/walk-in orders. Add a single compound Firestore index for `orders(orderType, paymentStatus)`; it is **source-only and has NOT been deployed**. A missing live index should fail the preview instead of silently skipping records.
+- Read-only cap raised from **3,000 to 10,000 paid Delivery records** with a one-document overflow sentinel and deterministic cursor pagination; a store exceeding this still receives an explicit safe failure. Larger history requires a subsequent incremental/certified approach, not unbounded scans on a user-facing callable.
+- Canonical lower-case stored channel and payment fields are required for index match; legacy alternate-case / missing-field paid orders are not certified by this query. The preview explicitly returns `coverageCertified: false` and `canIssueInvoice: false`; **do not charge on this data until source completeness is reconciled**.
+- This is NOT a change to the order writer, payments, Lalamove, cashier, POS or business registration flow.

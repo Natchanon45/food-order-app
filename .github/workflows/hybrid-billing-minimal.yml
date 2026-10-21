@@ -22,6 +22,7 @@ jobs:
           node --check functions/hybrid-billing-orders.js
           node --check functions/hybrid-billing-delivery-only.js
           node --check functions/hybrid-billing-preview.js
+          node -e 'JSON.parse(require("node:fs").readFileSync("firestore.indexes.json", "utf8"))'
       - name: Hybrid monthly policy and Delivery-only regression
         run: node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-delivery-only.spec.mjs
       - name: Install only existing Functions dependencies for report compatibility tests
