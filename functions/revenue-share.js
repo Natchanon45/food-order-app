@@ -155,7 +155,7 @@ async function summaryForTenant(tenantId, period, setting) {
     const total = Math.max(0, Number(row.totalAmount ?? row.total ?? 0) || 0);
     const shipping = Math.max(0, Number(row.deliveryFee || 0) || 0);
     const subtotal = Number(row.subtotalAmount);
-    const goods = Number.isFinite(subtotal)
+    const goods = row.subtotalAmount != null && row.subtotalAmount !== "" && Number.isFinite(subtotal)
       ? Math.min(Math.max(0, subtotal), Math.max(0, total - shipping))
       : Math.max(0, total - shipping);
     const refund = Math.max(0, Number(row.refundTotal ?? row.refundedAmount ?? row.refundAmount ?? 0) || 0);
@@ -177,7 +177,7 @@ async function summaryForTenant(tenantId, period, setting) {
     const orderType = String(row.orderType || "").toLowerCase();
     const isDelivery = orderType === "delivery";
     const customerFee = isDelivery ? Math.max(0, Number(row.deliveryFee || 0) || 0) : 0;
-    const foodSales = isDelivery && Number.isFinite(Number(row.subtotalAmount))
+    const foodSales = isDelivery && row.subtotalAmount != null && row.subtotalAmount !== "" && Number.isFinite(Number(row.subtotalAmount))
       ? Math.max(0, Number(row.subtotalAmount))
       : (isDelivery ? Math.max(0, total - customerFee) : total);
 
