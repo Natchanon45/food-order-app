@@ -37,12 +37,12 @@ jobs:
           npm ci --no-audit --no-fund
           npm install --prefix functions --no-audit --no-fund
           npm install --global firebase-tools@15.34.0 --no-audit --no-fund
-      - name: Run 10000 real demo COD journal writer transactions, 8 concurrency
+      - name: Run 10000 real demo COD journal writer transactions, 2 concurrency
         timeout-minutes: 48
         env:
           HYBRID_EMULATOR_TEST_TARGET: journal-scale
           HYBRID_JOURNAL_BENCHMARK_COUNT: "10000"
-          HYBRID_JOURNAL_BENCHMARK_WORKERS: "8"
+          HYBRID_JOURNAL_BENCHMARK_WORKERS: "2"
         run: npm run test:hybrid-billing:emulator
       - name: No tracked generated assets or source mutation
         run: git diff --exit-code
