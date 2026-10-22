@@ -747,6 +747,8 @@ export function DeliveryPage() {
             slip2go_quota_exhausted: "slip_manual_quota",
             slip2go_rate_limited: "slip_manual_quota",
             slip2go_fallback_vision: "slip_manual_fallback",
+            slip2go_found_unverified: "slip_manual_unverified",
+            slip2go_condition_request_invalid: "slip_manual_condition_request",
           };
           const reasonKey = manualReasons[String(result.reason || "")] || "slip_manual";
           showStorefrontToast(t("delivery.checkout.payment." + reasonKey),

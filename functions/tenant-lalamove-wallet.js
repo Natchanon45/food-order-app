@@ -359,7 +359,7 @@ async function inspectTopupSlip(buffer, mime, filename, expectedAmount) {
     form.append("payload", JSON.stringify(payload));
     const response = await fetch(`${apiUrl}/api/verify-slip/qr-image/info`, {
       method: "POST",
-      headers: { Accept: "application/json", Authorization: `Bearer ${secret}` },
+      headers: { Accept: "application/json", Authorization: secret },
       body: form,
       signal: AbortSignal.timeout(30000),
     });
@@ -377,6 +377,11 @@ async function inspectTopupSlip(buffer, mime, filename, expectedAmount) {
     };
     if (code === "200200") return { ...base, ...details, status: "matched", reason: "slip2go_verified" };
     const mapped = {
+      // 200000 only means the bank found a transfer. It does NOT
+      // acknowledge that receiver, amount, date and duplicate checks passed.
+      // Never silently auto-approve or mask this as a service outage.
+      "200000": ["manual_review", "slip2go_found_unverified", false],
+      "400400": ["manual_review", "slip2go_condition_request_invalid", false],
       "200401": ["receiver_mismatch", "slip2go_receiver_mismatch", false],
       "200402": ["mismatch", "amount_not_matched", false],
       "200403": ["manual_review", "slip2go_date_mismatch", false],

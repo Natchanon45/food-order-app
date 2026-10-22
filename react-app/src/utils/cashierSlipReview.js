@@ -20,6 +20,8 @@ export function cashierSlipReviewSummary(order = {}, t = key => key) {
     slip2go_unavailable: "slip_manual",
     slip2go_error: "slip_manual",
     slip2go_verified_payload_incomplete: "slip_manual",
+    slip2go_found_unverified: "slip_manual_unverified",
+    slip2go_condition_request_invalid: "slip_manual_condition_request",
     slip2go_bank_error: "slip_manual",
     verification_expired: "slip_manual",
   };

@@ -1762,6 +1762,8 @@
           "slip_manual_fee": "ไม่สามารถยืนยันค่าส่งจากใบเสนอราคาล่าสุดได้ แคชเชียร์จะตรวจสอบหลักฐานก่อนส่งเข้าครัว",
           "slip_manual_quota": "บริการตรวจสลิปถูกจำกัดคำขอหรือเครดิตชั่วคราว แคชเชียร์จะตรวจสอบหลักฐานก่อนส่งเข้าครัว",
           "slip_manual_fallback": "บริการ Slip2Go ตรวจสอบไม่ได้ ระบบใช้ Google Vision ช่วยอ่านภาพ แต่ต้องให้แคชเชียร์ยืนยันการชำระเงิน",
+          "slip_manual_unverified": "Slip2Go พบข้อมูลสลิป แต่ยังไม่ได้ยืนยันยอดเงิน ผู้รับ วันที่ และการใช้ซ้ำครบทุกเงื่อนไข ต้องให้แคชเชียร์ตรวจสอบ",
+          "slip_manual_condition_request": "คำขอตรวจสอบเงื่อนไข Slip2Go ไม่ถูกต้อง กรุณาให้แคชเชียร์ตรวจสอบก่อนส่งเข้าครัว",
           "slip_service_error": "ไม่สามารถตรวจสลิปได้ กรุณาลองใหม่หรือเลือกเก็บเงินปลายทาง"
         },
         "validation": {
@@ -8400,6 +8402,8 @@
           "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
           "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
+          "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
+          "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
           "slip_service_error": "Unable to verify the slip. Please retry or select cash on delivery."
         },
         "validation": {
@@ -14763,6 +14767,8 @@
           "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
           "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
+          "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
+          "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
           "slip_service_error": "စလစ်စစ်ဆေး၍ မရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် COD ရွေးပါ။"
         },
         "validation": {
@@ -21126,6 +21132,8 @@
           "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
           "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
+          "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
+          "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
           "slip_service_error": "ກວດສະລິບບໍ່ໄດ້ ກະລຸນາລອງໃໝ່ ຫຼື ເລືອກ COD."
         },
         "validation": {
@@ -27489,6 +27497,8 @@
           "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
           "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
+          "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
+          "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
           "slip_service_error": "មិនអាចពិនិត្យស្លិបបានទេ។ សូមព្យាយាមម្តងទៀត ឬជ្រើស COD។"
         },
         "validation": {

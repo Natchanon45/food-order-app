@@ -299,7 +299,7 @@ exports.testPlatformSlipVerification = onCall({ region: REGION, timeoutSeconds: 
   if (!apiUrl || !secret) throw new HttpsError("failed-precondition", "SLIP2GO_CONFIG_REQUIRED");
   try {
     const response = await fetch(`${apiUrl}/api/account/info`, {
-      headers: { Accept: "application/json", Authorization: `Bearer ${secret}` },
+      headers: { Accept: "application/json", Authorization: secret },
       signal: AbortSignal.timeout(15000),
     });
     const responseText = await response.text();
