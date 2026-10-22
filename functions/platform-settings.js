@@ -283,7 +283,8 @@ exports.updatePlatformSlipVerification = onCall({ region: REGION }, async reques
 
 function slip2GoConnectionStatus(code = "", httpStatus = 0) {
   const normalized = String(code || "");
-  if (["401001", "401002", "401003", "401004", "401007"].includes(normalized) || [401, 403].includes(Number(httpStatus))) {
+  if (normalized === "401004") return "package_expired";
+  if (["401001", "401002", "401003", "401007"].includes(normalized) || [401, 403].includes(Number(httpStatus))) {
     return "config_invalid";
   }
   if (["401005", "401006"].includes(normalized)) return "quota_exhausted";

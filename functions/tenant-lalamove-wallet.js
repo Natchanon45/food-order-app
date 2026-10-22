@@ -392,7 +392,7 @@ async function inspectTopupSlip(buffer, mime, filename, expectedAmount) {
       "401001": ["config_invalid", "slip2go_config_invalid", true],
       "401002": ["config_invalid", "slip2go_config_invalid", true],
       "401003": ["config_invalid", "slip2go_config_invalid", true],
-      "401004": ["config_invalid", "slip2go_config_invalid", true],
+      "401004": ["manual_review", "slip2go_package_expired", true],
       "401007": ["config_invalid", "slip2go_config_invalid", true],
       "401005": ["manual_review", "slip2go_quota_exhausted", true],
       "401006": ["manual_review", "slip2go_quota_exhausted", true],

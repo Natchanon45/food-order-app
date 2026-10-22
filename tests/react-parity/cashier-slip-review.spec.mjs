@@ -49,3 +49,21 @@ test("backend preserves fallback original error in server proof and Cashier orde
   assert.ok(engine.includes('primaryCode: String(primary?.code'));
   assert.ok(cashier.includes('data-cashier-slip-review-reason'));
 });
+
+test("Slip2Go 401004 is package expiration, not invalid credentials or empty quota", () => {
+  const review = cashierSlipReviewSummary({ ...base,
+    paymentReviewReason: "slip2go_fallback_vision",
+    paymentReviewPrimaryReason: "slip2go_package_expired",
+    paymentReviewProviderCode: "401004",
+  }, t);
+  assert.equal(review.reason, "slip2go_package_expired");
+  assert.equal(review.code, "401004");
+  assert.equal(review.text, "delivery.checkout.payment.slip_manual_package_expired");
+  const platform = readFileSync("functions/platform-settings.js", "utf8");
+  assert.ok(platform.includes('if (normalized === "401004") return "package_expired";'));
+  for (const path of ["functions/slip-verification.js", "functions/tenant-lalamove-wallet.js"]) {
+    const source = readFileSync(path, "utf8");
+    assert.ok(source.includes('"401004": ["manual_review", "slip2go_package_expired", true]'), path);
+    assert.ok(!source.includes('"401004": ["config_invalid"'), path);
+  }
+});

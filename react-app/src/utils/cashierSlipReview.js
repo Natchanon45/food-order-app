@@ -10,6 +10,7 @@ export function cashierSlipReviewSummary(order = {}, t = key => key) {
     delivery_fee_mismatch: "slip_manual_fee",
     slip2go_config_required: "slip_manual_config",
     slip2go_config_invalid: "slip_manual_config",
+    slip2go_package_expired: "slip_manual_package_expired",
     merchant_promptpay_receiver_not_supported: "slip_manual_receiver",
     slip2go_receiver_mismatch: "slip_manual_receiver",
     slip2go_date_mismatch: "slip_manual_old",
