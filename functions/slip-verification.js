@@ -146,8 +146,14 @@ function fallbackResult(primary, fallback, expectedAmount) {
 async function inspectSlip(buffer, mime, filename, expectedAmount, options = {}) {
   const snapshot = await getFirestore().collection("platformPrivateSettings").doc("slipVerification").get();
   const settings = snapshot.data() || {};
-  const provider = options.providerOverride || (["google_vision", "slip2go", "slip2go_fallback_vision"].includes(settings.provider)
-    ? settings.provider : "google_vision");
+  const configuredProvider = ["google_vision", "slip2go", "slip2go_fallback_vision"].includes(settings.provider)
+    ? settings.provider : "google_vision";
+  // Delivery still requires real Slip2Go transaction verification for an
+  // automatic match. Permit configured Vision fallback ONLY for manual review.
+  const provider = options.providerOverride === "slip2go" && options.allowConfiguredFallback === true
+    && configuredProvider === "slip2go_fallback_vision"
+    ? "slip2go_fallback_vision"
+    : (options.providerOverride || configuredProvider);
   if (provider === "google_vision") return inspectGoogleVision(buffer, mime, expectedAmount);
 
   const apiUrl = String(settings.slip2GoApiUrl || "").replace(/\/$/, "");
@@ -178,6 +184,8 @@ async function inspectSlip(buffer, mime, filename, expectedAmount, options = {})
     checkDuplicate: true,
     checkAmount: { type: "eq", amount: money(expectedAmount).toFixed(2) },
     checkReceiver: [Object.fromEntries(Object.entries(receiver).filter(([, value]) => value))],
+    // Require a recent bank transfer, not a historical slip with the same amount.
+    checkDate: { type: "gte", date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() },
   };
 
   try {

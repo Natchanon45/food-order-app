@@ -80,6 +80,7 @@ exports.verifyDeliveryPaymentSlip = onCall(
     }
     const itemsSignature = normalizedItems(menuRows);
     const manualProof = async reason => {
+      console.info("DELIVERY_SLIP_REVIEW_REASON", { reason });
       await proofRef.set({
         tenantId, orderId, slipPath, amountCents: amountCents(amount),
         foodCents, feeCents, itemsSignature,
@@ -184,9 +185,13 @@ exports.verifyDeliveryPaymentSlip = onCall(
     const [buffer] = await bucketFile.download();
     const receiverOverride = { accountType: receiverType, accountNumber: account };
     const result = await inspectSlip(buffer, mime, slipPath.split("/").pop(), amount, {
-      providerOverride: "slip2go", receiverOverride,
+      providerOverride: "slip2go", allowConfiguredFallback: true, receiverOverride,
     });
     const status = slipDecision(result);
+    console.info("DELIVERY_SLIP_CHECK_RESULT", {
+      status, reason: clean(result.reason), provider: clean(result.provider),
+      code: clean(result.code),
+    });
     if (["duplicate", "mismatch", "invalid", "receiver_mismatch"].includes(status)) {
       return { status, reason: clean(result.reason) };
     }

@@ -41,6 +41,25 @@ test("Slip2Go unavailable/config problems fall back to cashier manual review", (
   }
 });
 
+test("configured Vision fallback always requires cashier approval", () => {
+  assert.equal(policy.slipDecision({
+    provider: "slip2go_fallback_vision", status: "manual_review",
+    reason: "slip2go_fallback_vision", fallbackAllowed: false,
+    detectedAmount: 500, amountMatched: true,
+  }), "manual_review");
+  assert.equal(policy.slipDecision({
+    provider: "slip2go_fallback_vision", status: "matched",
+    reason: "amount_matched", amountMatched: true, transRef: "OCR-REFERENCE",
+  }), "manual_review");
+  const engine = fs.readFileSync("functions/slip-verification.js", "utf8");
+  const delivery = fs.readFileSync("functions/delivery-slip.js", "utf8");
+  assert.match(engine, /configuredProvider === "slip2go_fallback_vision"/);
+  assert.match(engine, /options.allowConfiguredFallback === true/);
+  assert.match(engine, /checkDate: \{ type: "gte", date: new Date\(Date.now\(\) - 24 \* 60 \* 60 \* 1000\).toISOString\(\) \}/);
+  assert.match(delivery, /providerOverride: "slip2go", allowConfiguredFallback: true/);
+  assert.match(delivery, /DELIVERY_SLIP_CHECK_RESULT/);
+});
+
 test("proof can release kitchen only when it exactly matches pending PromptPay order", () => {
   const now = Date.now();
   const order = {

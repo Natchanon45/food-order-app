@@ -8,6 +8,8 @@ const normalizedItems = rows => JSON.stringify([...rows].map(item => ({
 function slipDecision(result = {}) {
   const status = String(result.status || "");
   if (status === "matched" && result.amountMatched === false) return "mismatch";
+  if (status === "manual_review" && result.provider === "slip2go_fallback_vision"
+    && result.reason === "slip2go_fallback_vision") return "manual_review";
   if (status === "manual_review" && result.fallbackAllowed !== true) return "invalid";
   if (["duplicate", "mismatch", "invalid", "receiver_mismatch"].includes(status)) return status;
   if (status === "matched") {

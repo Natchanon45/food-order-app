@@ -1754,7 +1754,14 @@
           "slip_mismatch": "ยอดโอนเงินไม่ตรงกับยอดคำสั่งซื้อ กรุณาอัปโหลดสลิปใหม่หรือเลือกเก็บเงินปลายทาง",
           "slip_receiver_mismatch": "บัญชีผู้รับเงินบนสลิปไม่ตรงกับร้านค้า กรุณาตรวจสอบและอัปโหลดใหม่",
           "slip_invalid": "สลิปมีปัญหาหรือไม่ถูกต้อง กรุณาอัปโหลดสลิปใหม่หรือเลือกเก็บเงินปลายทาง",
+          "slip_date_invalid": "สลิปนี้เป็นรายการเก่าหรือวันที่โอนไม่อยู่ในช่วงที่ยอมรับ กรุณาใช้หลักฐานการโอนครั้งใหม่",
           "slip_manual": "ระบบตรวจสลิปอัตโนมัติไม่พร้อม แคชเชียร์จะตรวจสอบก่อนส่งออเดอร์เข้าครัว",
+          "slip_manual_config": "ระบบกลาง PENGUIN ยังเชื่อมต่อบริการตรวจสลิปไม่ได้ แคชเชียร์จะตรวจสอบหลักฐานก่อนส่งเข้าครัว",
+          "slip_manual_receiver": "ร้านค้ายังตั้งค่า PromptPay สำหรับการตรวจสอบอัตโนมัติไม่ครบ แคชเชียร์จะตรวจสอบสลิปก่อนส่งเข้าครัว",
+          "slip_manual_old": "วันที่ในสลิปไม่ผ่านการตรวจสอบ กรุณาใช้สลิปโอนเงินครั้งใหม่ หรือให้แคชเชียร์ตรวจสอบก่อนส่งเข้าครัว",
+          "slip_manual_fee": "ไม่สามารถยืนยันค่าส่งจากใบเสนอราคาล่าสุดได้ แคชเชียร์จะตรวจสอบหลักฐานก่อนส่งเข้าครัว",
+          "slip_manual_quota": "บริการตรวจสลิปถูกจำกัดคำขอหรือเครดิตชั่วคราว แคชเชียร์จะตรวจสอบหลักฐานก่อนส่งเข้าครัว",
+          "slip_manual_fallback": "บริการ Slip2Go ตรวจสอบไม่ได้ ระบบใช้ Google Vision ช่วยอ่านภาพ แต่ต้องให้แคชเชียร์ยืนยันการชำระเงิน",
           "slip_service_error": "ไม่สามารถตรวจสลิปได้ กรุณาลองใหม่หรือเลือกเก็บเงินปลายทาง"
         },
         "validation": {
@@ -8385,7 +8392,14 @@
           "slip_mismatch": "The transferred amount does not match the order total. Upload another slip or switch to cash on delivery.",
           "slip_receiver_mismatch": "The slip receiver does not match this store. Check the payment and upload another slip.",
           "slip_invalid": "The slip is invalid or could not be verified. Upload another slip or switch to cash on delivery.",
+          "slip_date_invalid": "This receipt is from an older transfer or its date is not accepted. Use a new transfer receipt.",
           "slip_manual": "Automatic slip verification is unavailable. The cashier will review it before releasing the order to the kitchen.",
+          "slip_manual_config": "PENGUIN platform slip verification is not configured or cannot authenticate. Cashier review is required.",
+          "slip_manual_receiver": "Store PromptPay receiver is not supported for automatic verification. Cashier review is required.",
+          "slip_manual_old": "The slip transaction date failed verification. Use a new transfer receipt or request cashier review.",
+          "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
+          "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
+          "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_service_error": "Unable to verify the slip. Please retry or select cash on delivery."
         },
         "validation": {
@@ -14741,7 +14755,14 @@
           "slip_mismatch": "လွှဲငွေပမာဏသည် အော်ဒါစုစုပေါင်းနှင့် မကိုက်ညီပါ။ စလစ်အသစ်တင်ပါ သို့မဟုတ် COD ကိုရွေးပါ။",
           "slip_receiver_mismatch": "စလစ်ရှိ ငွေလက်ခံအကောင့်သည် ဆိုင်နှင့်မကိုက်ညီပါ။ စစ်ဆေးပြီး စလစ်အသစ်တင်ပါ။",
           "slip_invalid": "စလစ်မမှန်ကန်ပါ သို့မဟုတ် စစ်ဆေး၍မရပါ။ စလစ်အသစ်တင်ပါ သို့မဟုတ် COD ကိုရွေးပါ။",
+          "slip_date_invalid": "This receipt is from an older transfer or its date is not accepted. Use a new transfer receipt.",
           "slip_manual": "အလိုအလျောက် စလစ်စစ်ဆေးမှု မရနိုင်ပါ။ မီးဖိုခန်းသို့ မပို့မီ Cashier က စစ်ဆေးပါမည်။",
+          "slip_manual_config": "PENGUIN platform slip verification is not configured or cannot authenticate. Cashier review is required.",
+          "slip_manual_receiver": "Store PromptPay receiver is not supported for automatic verification. Cashier review is required.",
+          "slip_manual_old": "The slip transaction date failed verification. Use a new transfer receipt or request cashier review.",
+          "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
+          "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
+          "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_service_error": "စလစ်စစ်ဆေး၍ မရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် COD ရွေးပါ။"
         },
         "validation": {
@@ -21097,7 +21118,14 @@
           "slip_mismatch": "ຈຳນວນເງິນໂອນບໍ່ກົງກັບຍອດອໍເດີ ກະລຸນາອັບໂຫຼດສະລິບໃໝ່ ຫຼື ເລືອກ COD",
           "slip_receiver_mismatch": "ບັນຊີຜູ້ຮັບໃນສະລິບບໍ່ກົງກັບຮ້ານ ກະລຸນາກວດສອບແລະອັບໂຫຼດໃໝ່",
           "slip_invalid": "ສະລິບບໍ່ຖືກຕ້ອງ ຫຼື ກວດສອບບໍ່ໄດ້ ກະລຸນາອັບໂຫຼດໃໝ່ ຫຼື ເລືອກ COD",
+          "slip_date_invalid": "This receipt is from an older transfer or its date is not accepted. Use a new transfer receipt.",
           "slip_manual": "ລະບົບກວດສະລິບອັດຕະໂນມັດບໍ່ພ້ອມ ແຄຊເຊຍຈະກວດກ່ອນສົ່ງອໍເດີເຂົ້າຄົວ",
+          "slip_manual_config": "PENGUIN platform slip verification is not configured or cannot authenticate. Cashier review is required.",
+          "slip_manual_receiver": "Store PromptPay receiver is not supported for automatic verification. Cashier review is required.",
+          "slip_manual_old": "The slip transaction date failed verification. Use a new transfer receipt or request cashier review.",
+          "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
+          "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
+          "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_service_error": "ກວດສະລິບບໍ່ໄດ້ ກະລຸນາລອງໃໝ່ ຫຼື ເລືອກ COD."
         },
         "validation": {
@@ -27453,7 +27481,14 @@
           "slip_mismatch": "ចំនួនប្រាក់ផ្ទេរមិនត្រូវនឹងសរុបការកម្មង់។ សូមបញ្ចូលស្លីបថ្មី ឬជ្រើស COD។",
           "slip_receiver_mismatch": "គណនីអ្នកទទួលក្នុងស្លីបមិនត្រូវនឹងហាង។ សូមពិនិត្យ និងបញ្ចូលស្លីបថ្មី។",
           "slip_invalid": "ស្លីបមិនត្រឹមត្រូវ ឬមិនអាចផ្ទៀងផ្ទាត់បាន។ សូមបញ្ចូលស្លីបថ្មី ឬជ្រើស COD។",
+          "slip_date_invalid": "This receipt is from an older transfer or its date is not accepted. Use a new transfer receipt.",
           "slip_manual": "ការផ្ទៀងផ្ទាត់ស្លីបស្វ័យប្រវត្តិមិនអាចប្រើបាន។ Cashier នឹងពិនិត្យមុនបញ្ជូនការកម្មង់ទៅផ្ទះបាយ។",
+          "slip_manual_config": "PENGUIN platform slip verification is not configured or cannot authenticate. Cashier review is required.",
+          "slip_manual_receiver": "Store PromptPay receiver is not supported for automatic verification. Cashier review is required.",
+          "slip_manual_old": "The slip transaction date failed verification. Use a new transfer receipt or request cashier review.",
+          "slip_manual_fee": "The latest delivery quotation could not be confirmed. Cashier review is required.",
+          "slip_manual_quota": "Slip verification is temporarily rate-limited or out of credits. Cashier review is required.",
+          "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_service_error": "មិនអាចពិនិត្យស្លិបបានទេ។ សូមព្យាយាមម្តងទៀត ឬជ្រើស COD។"
         },
         "validation": {

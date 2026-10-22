@@ -700,14 +700,32 @@ export function DeliveryPage() {
           invalid: "slip_invalid",
         };
         if (slipErrors[slipCheckStatus]) {
-          showStorefrontToast(t("delivery.checkout.payment." + slipErrors[slipCheckStatus]), "error");
+          const reason = String(result.reason || "");
+          const errorKey = reason === "slip2go_date_mismatch"
+            ? "slip_date_invalid" : slipErrors[slipCheckStatus];
+          showStorefrontToast(t("delivery.checkout.payment." + errorKey), "error");
           return;
         }
         if (!["matched", "manual_review"].includes(slipCheckStatus)) {
           throw new Error("DELIVERY_SLIP_CHECK_INCOMPLETE");
         }
         if (slipCheckStatus === "manual_review") {
-          showStorefrontToast(t("delivery.checkout.payment.slip_manual"));
+          // The reason comes from a trusted callable. Avoid claiming the
+          // service is offline when a slip is old, a quotation expired, or
+          // the PENGUIN platform has no verification credentials.
+          const manualReasons = {
+            slip2go_config_required: "slip_manual_config",
+            slip2go_config_invalid: "slip_manual_config",
+            merchant_promptpay_receiver_not_supported: "slip_manual_receiver",
+            slip2go_date_mismatch: "slip_manual_old",
+            delivery_fee_requires_cashier_review: "slip_manual_fee",
+            slip2go_quota_exhausted: "slip_manual_quota",
+            slip2go_rate_limited: "slip_manual_quota",
+            slip2go_fallback_vision: "slip_manual_fallback",
+          };
+          const reasonKey = manualReasons[String(result.reason || "")] || "slip_manual";
+          showStorefrontToast(t("delivery.checkout.payment." + reasonKey),
+            reasonKey === "slip_manual_old" ? "error" : "info");
         }
       }
       const paidItems = cart.map(({ id, name, price, qty, note: itemNote }) => ({
