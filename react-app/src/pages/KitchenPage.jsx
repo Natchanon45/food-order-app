@@ -17,6 +17,7 @@ import {
 } from "@/data/operationalData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
+import { useLalamoveAutoRefresh } from "@/hooks/useLalamoveAutoRefresh";
 import { useTenant } from "@/tenant/TenantProvider";
 import { deliveryKitchenAdmitted } from "@/data/deliveryKitchenGate";
 import { isKitchenLocked, isLalamoveDelivery, lalamoveDispatchActive, lalamoveStatus } from "@/utils/kitchenOrderLock";
@@ -304,6 +305,7 @@ export function KitchenPage() {
   const completionRepairRef = useRef(new Set());
   const tableSettlementRepairRef = useRef(new Set());
   const allowedRole = ["owner", "admin", "kitchen"].includes(profile?.role);
+  useLalamoveAutoRefresh(tenant?.id, orders, allowedRole);
 
   const money = value => `${formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${t("kitchen.units.currency")}`;
   const formatTime = value => {

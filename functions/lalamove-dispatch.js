@@ -41,14 +41,15 @@ function prefixesValid(environment, apiKey, apiSecret) {
     && String(apiSecret).startsWith(env === "production" ? "sk_prod" : "sk_test"));
 }
 
-async function profileFor(auth) {
+async function profileFor(auth, { allowStatusReaders = false } = {}) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "AUTH_REQUIRED");
   const snapshot = await getFirestore().collection("users").doc(auth.uid).get();
   const profile = snapshot.data();
   if (!profile || profile.active === false || !profile.tenantId) {
     throw new HttpsError("permission-denied", "ACTIVE_TENANT_USER_REQUIRED");
   }
-  if (!["owner", "admin", "cashier"].includes(String(profile.role || ""))) {
+  const roles = allowStatusReaders ? ["owner", "admin", "cashier", "manager", "kitchen"] : ["owner", "admin", "cashier"];
+  if (!roles.includes(String(profile.role || ""))) {
     throw new HttpsError("permission-denied", "CASHIER_PERMISSION_REQUIRED");
   }
   return { ...profile, uid: auth.uid, tenantId: String(profile.tenantId) };
@@ -192,8 +193,8 @@ async function accountFor(tenantRef, forcedMode = "") {
   };
 }
 
-async function loadContext(request, { requireReady = true } = {}) {
-  const profile = await profileFor(request.auth);
+async function loadContext(request, { requireReady = true, allowStatusReaders = false } = {}) {
+  const profile = await profileFor(request.auth, { allowStatusReaders });
   const orderId = String(request.data?.orderId || "").trim();
   if (!orderId) throw new HttpsError("invalid-argument", "ORDER_ID_REQUIRED");
   const tenantRef = getFirestore().collection("tenants").doc(profile.tenantId);
@@ -767,7 +768,7 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
 });
 
 exports.refreshTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
-  const context = await loadContext(request, { requireReady: false });
+  const context = await loadContext(request, { requireReady: false, allowStatusReaders: true });
   const orderId = String(context.order.lalamoveOrderId || "").trim();
   if (!orderId) return { item: dispatchState(context.order) };
 
@@ -790,6 +791,7 @@ exports.refreshTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds:
   if (Number.isFinite(lastSync) && Date.now() - lastSync < 10000) {
     return { item: dispatchState(context.order), cached: true };
   }
+  const startedAt = Date.now();
   const provider = await providerRequest(
     context.account.credentials,
     "GET",
@@ -798,18 +800,37 @@ exports.refreshTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds:
   if (!provider.ok) throw providerError("LALAMOVE_ORDER_STATUS_FAILED", provider);
   const current = orderFromResponse(provider);
   const nowIso = new Date().toISOString();
-  const completion = lalamoveCompletionPatch(context.order, current.status, nowIso);
-  const patch = {
-    lalamoveOrderStatus: current.status,
-    lalamoveDriverId: current.driverId,
-    lalamoveShareLink: current.shareLink,
-    lalamoveOrderLastSyncedAt: nowIso,
-    ...(Number.isFinite(Number(current.fee)) ? { lalamoveDispatchFee: Number(current.fee) } : {}),
-    ...completion,
-    updatedAt: FieldValue.serverTimestamp(),
-  };
-  await context.orderRef.set(patch, { merge: true });
-  return { item: dispatchState({ ...context.order, ...patch }) };
+  // A webhook may mark this delivery COMPLETED while GET is in flight.
+  // Never overwrite a newer terminal status with a stale provider response.
+  const latest = await getFirestore().runTransaction(async tx => {
+    const snapshot = await tx.get(context.orderRef);
+    if (!snapshot.exists) return context.order;
+    const stored = { id: snapshot.id, ...(snapshot.data() || {}) };
+    if (String(stored.lalamoveOrderId || "") !== orderId) return stored;
+    const storedStatus = String(stored.lalamoveOrderStatus || "").toUpperCase();
+    const incomingStatus = String(current.status || "").toUpperCase();
+    const storedTerminal = FINISHED.has(storedStatus);
+    const incomingTerminal = FINISHED.has(incomingStatus);
+    const webhookUpdatedAfterStart = Boolean(stored.lalamoveWebhookLastTimestamp)
+      && new Date(String(stored.lalamoveOrderLastSyncedAt || "")).getTime() > startedAt;
+    if (storedTerminal && !lalamoveCompletionNeedsRepair(stored)) return stored;
+    if (webhookUpdatedAfterStart && !incomingTerminal) return stored;
+    const finalStatus = storedTerminal ? storedStatus : incomingStatus;
+    const patch = {
+      lalamoveOrderStatus: finalStatus,
+      lalamoveOrderLastSyncedAt: nowIso,
+      ...(storedTerminal ? {} : {
+        lalamoveDriverId: current.driverId,
+        lalamoveShareLink: current.shareLink,
+        ...(Number.isFinite(Number(current.fee)) ? { lalamoveDispatchFee: Number(current.fee) } : {}),
+      }),
+      ...lalamoveCompletionPatch(stored, finalStatus, nowIso),
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    tx.set(context.orderRef, patch, { merge: true });
+    return { ...stored, ...patch };
+  });
+  return { item: dispatchState(latest) };
 });
 
 exports.cancelTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
