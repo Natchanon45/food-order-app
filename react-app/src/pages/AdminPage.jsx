@@ -13,6 +13,7 @@ import { uploadStoreBrandImage } from "@/data/storeBrandingData";
 import { normalizeHeroFocus } from "@/utils/storeHeroFocus";
 import { defaultDeliveryHours, normalizeDeliveryHours, normalizeManualStoreStatus, bangkokClock } from "@/utils/deliveryOpeningHours";
 import { AdminCollapsibleCard } from "@/components/AdminCollapsibleCard";
+import { AdminMobileEntityList } from "@/components/AdminMobileEntityList";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
   deleteAdminMenu,
@@ -2011,18 +2012,18 @@ export function AdminPage() {
           heading={<h2>{t("admin.menu.list_title")}</h2>}
           t={t}
         >
-          <div className="admin-list-actions">
+          <div className="admin-list-actions admin-entity-list-actions">
             <button className="btn btn-primary btn-sm" type="button" data-open-admin-modal="menu" onClick={() => openMenu(null)}><i className="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>{t("admin.menu.add")}</span></button>
           </div>
-          <div className="grid grid-2" style={{ marginBottom: 12 }}>
-            <input className="input" id="menuListSearch" value={menuSearch} onChange={e => setMenuSearch(e.target.value)} placeholder={t("admin.menu.search")} />
+          <div className="grid grid-2 admin-entity-list-filters" style={{ marginBottom: 12 }}>
+            <input className="input" id="menuListSearch" aria-label={t("admin.menu.search")} value={menuSearch} onChange={e => setMenuSearch(e.target.value)} placeholder={t("admin.menu.search")} />
             <select className="input" id="menuListStatus" value={menuStatus} onChange={e => setMenuStatus(e.target.value)}>
               <option value="all">{t("admin.menu.status_all")}</option>
               <option value="active">{t("admin.menu.status_active")}</option>
               <option value="inactive">{t("admin.menu.status_inactive")}</option>
             </select>
           </div>
-          <div className="admin-table-scroll admin-menu-table-scroll" data-horizontal-scroll="true">
+          <div className="admin-table-scroll admin-menu-table-scroll admin-desktop-entity-list" data-horizontal-scroll="true">
             <table className="table-list">
               <thead><tr><th>{t("admin.menu.header_image")}</th><th>{t("admin.menu.header_menu")}</th><th>{t("admin.menu.header_category")}</th><th>{t("admin.menu.header_price")}</th><th>{t("admin.menu.header_status")}</th><th></th></tr></thead>
               <tbody id="menuRows">
@@ -2033,12 +2034,20 @@ export function AdminPage() {
                     <td>{item.category || "-"}</td>
                     <td>{money(item.price, intlLocale)}</td>
                     <td>{item.active !== false ? <span className="badge">{t("admin.menu.active")}</span> : <span className="badge dark">{t("admin.menu.closed")}</span>}</td>
-                    <td><button className="btn btn-sm" type="button" data-edit-menu={item.id} data-admin-button-icon="pencil-square" aria-label={t("admin.common.edit")} title={t("admin.common.edit")} onClick={() => openMenu(item)}><i className="bi bi-pencil-square app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.edit")}</span></button>{" "}<button className="btn btn-danger btn-sm" type="button" data-delete-menu={item.id} data-admin-button-icon="trash3" aria-label={t("admin.common.delete")} title={t("admin.common.delete")} onClick={() => removeMenu(item)}><i className="bi bi-trash3 app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.delete")}</span></button></td>
+                    <td><button className="btn btn-sm" type="button" data-edit-menu={item.id} data-admin-button-icon="edit" aria-label={t("admin.common.edit")} title={t("admin.common.edit")} onClick={() => openMenu(item)}><i className="fi fi-rr-edit app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.edit")}</span></button>{" "}<button className="btn btn-danger btn-sm" type="button" data-delete-menu={item.id} data-admin-button-icon="trash3" aria-label={t("admin.common.delete")} title={t("admin.common.delete")} onClick={() => removeMenu(item)}><i className="bi bi-trash3 app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.delete")}</span></button></td>
                   </tr>
                 )) : <tr><td colSpan="6"><div className="empty">{t("admin.pagination.no_results")}</div></td></tr>}
               </tbody>
             </table>
           </div>
+          <AdminMobileEntityList
+            kind="menu"
+            items={visibleMenus}
+            t={t}
+            intlLocale={intlLocale}
+            onEdit={openMenu}
+            onDelete={removeMenu}
+          />
           {menuPages > 1 ? <nav id="menuListPagination" className="menu-pagination" aria-label={t("admin.menu.pagination_aria")}>
             <button type="button" className="menu-page-button menu-page-direction" disabled={currentMenuPage === 1} aria-label={t("admin.pagination.previous")} onClick={() => goToListPage("menu", currentMenuPage - 1)}><i className="bi bi-chevron-left" aria-hidden="true"></i></button>
             {menuPaginationPages.map(page => <button type="button" className={"menu-page-button" + (page === currentMenuPage ? " active" : "")} aria-label={t("admin.pagination.page", { page })} aria-current={page === currentMenuPage ? "page" : undefined} onClick={() => goToListPage("menu", page)} key={page}>{page}</button>)}
@@ -2099,19 +2108,19 @@ export function AdminPage() {
           heading={<h2>{t("admin.table.list_title")}</h2>}
           t={t}
         >
-          <div className="admin-list-actions">
+          <div className="admin-list-actions admin-entity-list-actions">
             <Link to="/admin/qr" className="btn btn-dark btn-sm"><i className="bi bi-qr-code app-icon" aria-hidden="true"></i><span>{t("admin.table.issue_qr")}</span></Link>
             <button className="btn btn-primary btn-sm" type="button" data-open-admin-modal="table" onClick={() => openTable(null)}><i className="bi bi-plus-lg app-icon" aria-hidden="true"></i><span>{t("admin.table.add")}</span></button>
           </div>
-          <div className="grid grid-2" style={{ marginBottom: 12 }}>
-            <input className="input" id="tableListSearch" value={tableSearch} onChange={e => setTableSearch(e.target.value)} placeholder={t("admin.table.search")} />
+          <div className="grid grid-2 admin-entity-list-filters" style={{ marginBottom: 12 }}>
+            <input className="input" id="tableListSearch" aria-label={t("admin.table.search")} value={tableSearch} onChange={e => setTableSearch(e.target.value)} placeholder={t("admin.table.search")} />
             <select className="input" id="tableListStatus" value={tableStatus} onChange={e => setTableStatus(e.target.value)}>
               <option value="all">{t("admin.table.status_all")}</option>
               <option value="active">{t("admin.table.status_active")}</option>
               <option value="inactive">{t("admin.table.status_inactive")}</option>
             </select>
           </div>
-          <div className="admin-table-scroll admin-table-list-scroll" data-horizontal-scroll="true">
+          <div className="admin-table-scroll admin-table-list-scroll admin-desktop-entity-list" data-horizontal-scroll="true">
             <table className="table-list">
               <thead><tr><th>{t("admin.table.header_code")}</th><th>{t("admin.table.header_name")}</th><th>{t("admin.table.header_capacity")}</th><th>{t("admin.table.header_status")}</th><th></th></tr></thead>
               <tbody id="tableRows">
@@ -2119,12 +2128,20 @@ export function AdminPage() {
                   <tr key={item.id} data-active={item.active !== false}>
                     <td><strong>{item.code}</strong></td><td>{item.name}</td><td><strong className="table-capacity">{Math.max(1, Number.parseInt(item.capacity ?? item.seats ?? item.seatCount ?? 4, 10) || 4)}</strong></td>
                     <td>{item.active !== false ? <span className="badge">{t("admin.table.active")}</span> : <span className="badge dark">{t("admin.table.closed")}</span>}</td>
-                    <td><button className="btn btn-sm" type="button" data-edit-table={item.id} data-admin-button-icon="pencil-square" aria-label={t("admin.common.edit")} title={t("admin.common.edit")} onClick={() => openTable(item)}><i className="bi bi-pencil-square app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.edit")}</span></button>{" "}<button className="btn btn-danger btn-sm" type="button" data-delete-table={item.id} data-admin-button-icon="trash3" aria-label={t("admin.common.delete")} title={t("admin.common.delete")} onClick={() => removeTable(item)}><i className="bi bi-trash3 app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.delete")}</span></button></td>
+                    <td><button className="btn btn-sm" type="button" data-edit-table={item.id} data-admin-button-icon="edit" aria-label={t("admin.common.edit")} title={t("admin.common.edit")} onClick={() => openTable(item)}><i className="fi fi-rr-edit app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.edit")}</span></button>{" "}<button className="btn btn-danger btn-sm" type="button" data-delete-table={item.id} data-admin-button-icon="trash3" aria-label={t("admin.common.delete")} title={t("admin.common.delete")} onClick={() => removeTable(item)}><i className="bi bi-trash3 app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.common.delete")}</span></button></td>
                   </tr>
                 )) : <tr><td colSpan="5"><div className="empty">{t("admin.pagination.no_results")}</div></td></tr>}
               </tbody>
             </table>
           </div>
+          <AdminMobileEntityList
+            kind="table"
+            items={visibleTables}
+            t={t}
+            intlLocale={intlLocale}
+            onEdit={openTable}
+            onDelete={removeTable}
+          />
           {tablePages > 1 ? <nav id="tableListPagination" className="menu-pagination" aria-label={t("admin.table.pagination_aria")}>
             <button type="button" className="menu-page-button menu-page-direction" disabled={currentTablePage === 1} aria-label={t("admin.pagination.previous")} onClick={() => goToListPage("table", currentTablePage - 1)}><i className="bi bi-chevron-left" aria-hidden="true"></i></button>
             {tablePaginationPages.map(page => <button type="button" className={"menu-page-button" + (page === currentTablePage ? " active" : "")} aria-label={t("admin.pagination.page", { page })} aria-current={page === currentTablePage ? "page" : undefined} onClick={() => goToListPage("table", page)} key={page}>{page}</button>)}

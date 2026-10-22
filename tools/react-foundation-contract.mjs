@@ -284,12 +284,15 @@ assert(adminPage.includes('form={isTable ? "tableForm" : "menuForm"}'),"Admin me
 assert(adminPage.includes('<form id="menuForm" className="grid" noValidate')&&adminPage.includes('<form id="tableForm" className="grid" noValidate'),"Admin menu/table forms must use shared validation UI instead of native browser bubbles");
 const adminMobileTableCss=read("react-app/public/parity/css/admin-mobile-table.css");
 assert(
-  adminPage.includes('className="admin-table-scroll admin-table-list-scroll" data-horizontal-scroll="true"')
-  &&adminMobileTableCss.includes("body.admin-vr-page .admin-table-scroll")
-  &&adminMobileTableCss.includes("overflow-x: auto !important;")
-  &&adminMobileTableCss.includes("body.admin-vr-page .admin-table-list-scroll .table-list")
-  &&adminMobileTableCss.includes("min-width: 600px !important;"),
-  "Admin table list must keep a horizontally scrollable mobile viewport"
+  adminPage.includes('className="admin-table-scroll admin-table-list-scroll admin-desktop-entity-list"')
+  && adminPage.includes('className="admin-table-scroll admin-menu-table-scroll admin-desktop-entity-list"')
+  && adminPage.includes('<AdminMobileEntityList')
+  && adminPage.includes('kind="table"')
+  && adminPage.includes('kind="menu"')
+  && adminMobileTableCss.includes("body.admin-vr-page .admin-desktop-entity-list")
+  && adminMobileTableCss.includes("body.admin-vr-page .admin-mobile-entity-list")
+  && adminMobileTableCss.includes(".admin-mobile-entity-status"),
+  "Admin Menu and Table must share complete mobile cards with visible status while retaining desktop tables"
 );
 assert(
   adminPage.includes('className="admin-sales-report-spotlight"')
