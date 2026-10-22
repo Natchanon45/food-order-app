@@ -8,11 +8,11 @@ const sources = [
   "functions/tenant-lalamove-wallet.js",
 ];
 
-test("All Slip2Go REST calls send raw Secret Key per official Authentication guide", () => {
+test("All Slip2Go REST calls send Bearer Secret Key per Slip2Go account Authentication examples", () => {
   for (const filename of sources) {
     const source = readFileSync(filename, "utf8");
-    assert.match(source, /Authorization: secret/, filename);
-    assert.doesNotMatch(source, /Authorization:\s*`Bearer \$\{secret\}`/, filename);
+    assert.match(source, /Authorization: `Bearer \${secret}`/, filename);
+    assert.ok(!source.includes("Authorization: secret"), filename);
   }
 });
 

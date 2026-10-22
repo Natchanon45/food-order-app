@@ -359,7 +359,7 @@ async function inspectTopupSlip(buffer, mime, filename, expectedAmount) {
     form.append("payload", JSON.stringify(payload));
     const response = await fetch(`${apiUrl}/api/verify-slip/qr-image/info`, {
       method: "POST",
-      headers: { Accept: "application/json", Authorization: secret },
+      headers: { Accept: "application/json", Authorization: `Bearer ${secret}` },
       body: form,
       signal: AbortSignal.timeout(30000),
     });
