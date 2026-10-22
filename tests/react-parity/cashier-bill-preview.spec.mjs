@@ -48,3 +48,31 @@ test("Delivery, takeaway and walk-in preview use net total; table bills retain t
   assert.equal(dict.th.cashier.bill_preview.net_total, "ยอดรวมสุทธิ");
   assert.ok(dict.th.cashier.table.total.includes("โต๊ะ"));
 });
+
+
+test("Cashier Delivery card shows Kitchen matching food and delivery fee breakdown", () => {
+  const start = page.indexOf("function DeliveryCard(");
+  const end = page.indexOf("function TakeawayCard(");
+  assert.ok(start >= 0 && end > start);
+  const delivery = page.slice(start, end);
+  assert.match(delivery, /className="card cashier-delivery-fee-summary"/);
+  assert.match(delivery, /t\("kitchen\.order\.delivery_zone"\)/);
+  assert.match(delivery, /order\.deliveryZoneLabel \|\| "-"/);
+  assert.match(delivery, /t\("cashier\.bill_preview\.subtotal"\)/);
+  assert.match(delivery, /order\.subtotalAmount \?\? \(Number\(order\.totalAmount \|\| 0\) - Number\(order\.deliveryFee \|\| 0\)\)/);
+  assert.match(delivery, /t\("cashier\.bill_preview\.delivery_fee"\)/);
+  assert.match(delivery, /money\(order\.deliveryFee \|\| 0\)/);
+  assert.match(delivery, /money\(order\.totalAmount\)/);
+  assert.ok(delivery.indexOf("cashier-delivery-fee-summary") < delivery.indexOf('t("cashier.delivery.net_total")'));
+  assert.ok(delivery.indexOf('t("cashier.delivery.net_total")') < delivery.indexOf("<LalamoveDispatch"));
+  // A paid 354 THB Delivery order must remain 295 food + 59 delivery = 354 total.
+  const order = { subtotalAmount: 295, deliveryFee: 59, totalAmount: 354 };
+  const food = order.subtotalAmount ?? (order.totalAmount - order.deliveryFee);
+  assert.equal(food, 295);
+  assert.equal(food + order.deliveryFee, order.totalAmount);
+  for (const locale of ["th", "en", "my", "lo", "km"]) {
+    assert.ok(dict[locale].kitchen.order.delivery_zone, locale);
+    assert.ok(dict[locale].cashier.bill_preview.subtotal, locale);
+    assert.ok(dict[locale].cashier.bill_preview.delivery_fee, locale);
+  }
+});

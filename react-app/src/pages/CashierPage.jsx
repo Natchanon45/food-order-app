@@ -262,6 +262,11 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
     </div> : null}
     <ItemRows order={order} t={t} money={money} />
     <OrderNote order={order} t={t} />
+    <div className="card cashier-delivery-fee-summary" style={{ marginTop: 10, padding: "10px 12px", boxShadow: "none", background: "#f8fbf9" }}>
+      <div className="receipt-row"><span>{t("kitchen.order.delivery_zone")}</span><strong>{order.deliveryZoneLabel || "-"}</strong></div>
+      <div className="receipt-row"><span>{t("cashier.bill_preview.subtotal")}</span><strong>{money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} {t("cashier.common.baht")}</strong></div>
+      <div className="receipt-row"><span>{t("cashier.bill_preview.delivery_fee")}</span><strong>{money(order.deliveryFee || 0)} {t("cashier.common.baht")}</strong></div>
+    </div>
     <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.delivery.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
     <LalamoveDispatch order={order} t={t} money={money} busy={busy} onQuote={actions.quote} onPlace={actions.place} onRefresh={actions.refresh} onCancel={actions.cancelLalamove} />
     <div className="order-actions" style={{ marginTop: 12 }}>
