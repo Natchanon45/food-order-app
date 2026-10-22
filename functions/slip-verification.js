@@ -138,6 +138,8 @@ function fallbackResult(primary, fallback, expectedAmount) {
     referenceId: primary?.referenceId ?? null,
     transRef: primary?.transRef ?? null,
     fallbackAllowed: false,
+    primaryReason: String(primary?.reason || ""),
+    primaryCode: String(primary?.code || ""),
     primary,
     fallback,
   };

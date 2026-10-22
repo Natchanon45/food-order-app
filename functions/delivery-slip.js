@@ -188,9 +188,14 @@ exports.verifyDeliveryPaymentSlip = onCall(
       providerOverride: "slip2go", allowConfiguredFallback: true, receiverOverride,
     });
     const status = slipDecision(result);
+    // An API-level success without a validated amount or a bank transaction
+    // reference is NOT a verified payment. Preserve the exact reason.
+    const reviewReason = status === "manual_review" && result.status === MATCHED
+      ? "slip2go_verified_payload_incomplete" : clean(result.reason);
     console.info("DELIVERY_SLIP_CHECK_RESULT", {
-      status, reason: clean(result.reason), provider: clean(result.provider),
-      code: clean(result.code),
+      status, reason: reviewReason, provider: clean(result.provider),
+      code: clean(result.primaryCode || result.code),
+      primaryReason: clean(result.primaryReason || result.reason),
     });
     if (["duplicate", "mismatch", "invalid", "receiver_mismatch"].includes(status)) {
       return { status, reason: clean(result.reason) };
@@ -201,7 +206,9 @@ exports.verifyDeliveryPaymentSlip = onCall(
       tenantId, orderId, slipPath, amountCents: amountCents(amount),
       foodCents, feeCents, itemsSignature,
       status: finalStatus, provider: clean(result.provider),
-      reason: clean(result.reason),
+      reason: reviewReason,
+      primaryReason: clean(result.primaryReason || ""),
+      providerCode: clean(result.primaryCode || result.code || ""),
       checkedAt: FieldValue.serverTimestamp(), transRef,
     };
     if (finalStatus === MATCHED) {
@@ -220,7 +227,7 @@ exports.verifyDeliveryPaymentSlip = onCall(
     } else {
       await proofRef.set(proofData);
     }
-    return { status: finalStatus, reason: clean(result.reason), verification: finalStatus === MATCHED ? "slip2go" : "cashier", proofId: orderId };
+    return { status: finalStatus, reason: reviewReason, verification: finalStatus === MATCHED ? "slip2go" : "cashier", proofId: orderId };
   },
 );
 
@@ -259,6 +266,8 @@ exports.finalizeDeliveryPaymentSlip = onDocumentCreated(
           slipVerificationStatus: "manual_review",
           paymentReviewRequired: true,
           paymentReviewReason: clean(proof.reason),
+          paymentReviewPrimaryReason: clean(proof.primaryReason || ""),
+          paymentReviewProviderCode: clean(proof.providerCode || "", 30),
           updatedAt: FieldValue.serverTimestamp(),
         });
       }

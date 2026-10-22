@@ -28,6 +28,7 @@ import {
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useLalamoveAutoRefresh } from "@/hooks/useLalamoveAutoRefresh";
+import { cashierSlipReviewSummary } from "@/utils/cashierSlipReview";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
 import { deliveryDriverMapsUrl, isSelfDeliveryOrder } from "@/utils/deliveryDriverShare";
@@ -404,6 +405,7 @@ function CashierBillPreviewModal({ preview, slipUrls, t, money, formatTime, onCl
   const total = rows.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
   const ids = rows.map(order => String(order.id || "")).filter(Boolean);
   const previewSlipUrl = preview.slipUrl || first.paymentSlipUrl || slipUrls[first.id] || "";
+  const slipReview = cashierSlipReviewSummary(first, t);
   const receiptUrl = cashierRoute(rows.length > 1
     ? "/receipt/?orders=" + encodeURIComponent(ids.join(","))
     : "/receipt/?order=" + encodeURIComponent(ids[0] || ""));
@@ -458,6 +460,19 @@ function CashierBillPreviewModal({ preview, slipUrls, t, money, formatTime, onCl
           {first.orderType === "delivery" && (previewSlipUrl || first.paymentSlipPath) ? (
             <div className="cashier-bill-preview-slip">
               <h3><i className="bi bi-file-earmark-image app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.slip")}</span></h3>
+              {slipReview ? (
+                <div data-cashier-slip-review-reason role="status" style={{
+                  margin: "8px 0 12px", padding: "10px 12px", borderRadius: 11,
+                  border: "1px solid #e9d5a2", background: "#fff9eb",
+                  color: "#5d420d", lineHeight: 1.45, overflowWrap: "anywhere",
+                }}>
+                  <strong>{t("cashier.payment.slip_manual_pending")}</strong>
+                  <p style={{ margin: "5px 0" }}>{slipReview.text}</p>
+                  <small style={{ display: "block", opacity: .8 }}>
+                    {slipReview.reason}{slipReview.code ? " · Slip2Go " + slipReview.code : ""}
+                  </small>
+                </div>
+              ) : null}
               {previewSlipUrl
                 ? <img src={previewSlipUrl} loading="lazy" alt={t("cashier.bill_preview.slip")} />
                 : <p className="menu-category">{t("cashier.payment.loading_slip")}</p>}

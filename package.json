@@ -72,7 +72,7 @@
     "test:delivery-opening-hours": "node --test tests/react-parity/delivery-opening-hours.spec.mjs",
     "test:delivery-server-guard": "node --test tests/react-parity/delivery-server-guard.spec.mjs",
     "test:delivery-qr-checkout-quickorder-receipt": "node --test tests/react-parity/delivery-qr-checkout-quickorder-receipt.spec.mjs",
-    "test:delivery-slip2go": "node --test tests/react-parity/delivery-slip2go-flow.spec.mjs tests/react-parity/delivery-kitchen-gate.spec.mjs",
+    "test:delivery-slip2go": "node --test tests/react-parity/delivery-slip2go-flow.spec.mjs tests/react-parity/delivery-kitchen-gate.spec.mjs tests/react-parity/cashier-slip-review.spec.mjs",
     "test:delivery-receipt-presentation": "node --test tests/react-parity/delivery-receipt-presentation.spec.mjs",
     "test:admin-menu-autosave": "node --test tests/react-parity/admin-menu-sort-autosave.spec.mjs",
     "test:master-business-access": "node --test tests/react-parity/master-business-access.spec.mjs"
