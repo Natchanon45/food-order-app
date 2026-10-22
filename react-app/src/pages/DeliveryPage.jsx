@@ -26,6 +26,7 @@ import { generatePromptPayPayload } from "@/utils/promptPay";
 import { qrDataUrl } from "@/utils/localQr";
 import { svgQrPngBlob } from "@/utils/downloadQrPng";
 import { validDeliveryLocation as normalizeLocation, matchGpsSavedAddress, validatedGpsFix } from "@/utils/deliveryLocationPolicy";
+import { refreshLalamoveCheckoutQuote } from "@/utils/lalamoveCheckoutQuote";
 import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
@@ -680,6 +681,30 @@ export function DeliveryPage() {
     setSubmitting(true);
     try {
       await checkDeliveryStoreIsOpen(tenant);
+      // Lalamove quotations last five minutes. Refresh the authoritative
+      // server quote after the customer pays, without changing the amount
+      // already shown in the PromptPay QR.
+      let checkoutQuote = routeState.quote;
+      if (usesLalamove && paymentMethod === "promptpay") {
+        const latest = await refreshLalamoveCheckoutQuote({
+          quote: checkoutQuote,
+          lockedFee: baseDeliveryFee,
+          requestQuote: quotePublicLalamoveDelivery,
+          request: {
+            slug: tenant.slug || slug,
+            latitude: deliveryLocation.latitude,
+            longitude: deliveryLocation.longitude,
+            paymentMethod,
+            address: deliveryAddress.trim(),
+          },
+        });
+        checkoutQuote = latest.quote;
+        if (latest.refreshed) {
+          console.info("DELIVERY_LALAMOVE_QUOTE_REFRESHED");
+        } else if (latest.reason !== "still_valid") {
+          console.info("DELIVERY_LALAMOVE_QUOTE_REFRESH_RESULT", latest.reason);
+        }
+      }
       const slip = paymentMethod === "promptpay" ? await uploadPublicPaymentSlip(tenant, slipFile, orderId) : { path: "" };
       let slipCheckStatus = "";
       if (paymentMethod === "promptpay") {
@@ -688,7 +713,7 @@ export function DeliveryPage() {
           deliveryFee, items: cart.map(item => ({ id: item.id, qty: item.qty })),
           deliveryProvider: usesLalamove ? "lalamove" : "self",
           latitude: deliveryLocation.latitude, longitude: deliveryLocation.longitude,
-          quotationId: usesLalamove ? String(routeState.quote?.quotationId || "") : "",
+          quotationId: usesLalamove ? String(checkoutQuote?.quotationId || "") : "",
           zoneId: selectedZone.id,
         });
         const result = response?.data || {};
@@ -752,7 +777,7 @@ export function DeliveryPage() {
         deliveryLatitude: deliveryLocation.latitude, deliveryLongitude: deliveryLocation.longitude,
       };
       if (usesLalamove) {
-        const quote = routeState.quote || {};
+        const quote = checkoutQuote || {};
         const quotedFee = Math.max(0, Number(quote.fee || baseDeliveryFee) || 0);
         payload.deliveryDistanceKm = Number(Number(routeDistance || 0).toFixed(3));
         payload.deliveryDistanceMeters = Math.max(0, Number(quote.distanceMeters || Math.round(Number(routeDistance || 0) * 1000)) || 0);

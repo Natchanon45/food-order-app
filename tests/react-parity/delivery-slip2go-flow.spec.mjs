@@ -2,9 +2,69 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createRequire } from "node:module";
+import { lalamoveQuoteNeedsRefresh, lalamoveQuoteMatchesPayment, refreshLalamoveCheckoutQuote } from "../../react-app/src/utils/lalamoveCheckoutQuote.js";
 
 const require = createRequire(import.meta.url);
 const policy = require("../../functions/delivery-slip-policy.js");
+
+test("expired Lalamove quotation refreshes before verifying a paid PromptPay receipt", async () => {
+  const now = Date.parse("2026-10-22T11:53:00.000Z");
+  const old = { quotationId: "old-five-minute-quote", fee: 59, currency: "THB", expiresAt: new Date(now - 2 * 60 * 1000).toISOString() };
+  const refreshed = { quotationId: "new-valid-quote", fee: 59, currency: "THB", expiresAt: new Date(now + 5 * 60 * 1000).toISOString() };
+  assert.equal(lalamoveQuoteNeedsRefresh(old, now), true);
+  let calls = 0;
+  const result = await refreshLalamoveCheckoutQuote({
+    quote: old, lockedFee: 59, now, request: { paymentMethod: "promptpay" },
+    requestQuote: async input => {
+      calls++;
+      assert.equal(input.paymentMethod, "promptpay");
+      return { data: { item: refreshed } };
+    },
+  });
+  assert.equal(calls, 1);
+  assert.equal(result.refreshed, true);
+  assert.equal(result.quote.quotationId, "new-valid-quote");
+  assert.equal(result.quote.fee, 59);
+  assert.equal(lalamoveQuoteMatchesPayment(refreshed, 59, now), true);
+  const checkout = fs.readFileSync("react-app/src/pages/DeliveryPage.jsx", "utf8");
+  assert.ok(checkout.includes('await refreshLalamoveCheckoutQuote({'));
+  assert.ok(checkout.indexOf('await refreshLalamoveCheckoutQuote({') < checkout.indexOf('await uploadPublicPaymentSlip(tenant, slipFile, orderId)'));
+  assert.match(checkout, /quotationId: usesLalamove \? String\(checkoutQuote\?\.quotationId \|\| ""\)/);
+  assert.match(checkout, /const quote = checkoutQuote \|\| \{\};/);
+});
+
+test("a fresh quotation is retained without a needless Lalamove request", async () => {
+  const now = Date.parse("2026-10-22T11:53:00.000Z");
+  const current = { quotationId: "still-valid", fee: 59, expiresAt: new Date(now + 4 * 60 * 1000).toISOString() };
+  const result = await refreshLalamoveCheckoutQuote({
+    quote: current, lockedFee: 59, now,
+    requestQuote: async () => { throw new Error("SHOULD_NOT_REQUEST"); },
+  });
+  assert.equal(result.reason, "still_valid");
+  assert.equal(result.quote, current);
+});
+
+test("re-quote price changes, unavailable service and invalid expiry cannot auto-approve mismatched amounts", async () => {
+  const now = Date.parse("2026-10-22T11:53:00.000Z");
+  const old = { quotationId: "old", fee: 59, expiresAt: new Date(now - 10_000).toISOString() };
+  const different = await refreshLalamoveCheckoutQuote({
+    quote: old, lockedFee: 59, now,
+    requestQuote: async () => ({ data: { item: {
+      quotationId: "updated", fee: 99, expiresAt: new Date(now + 5 * 60 * 1000).toISOString(),
+    } } }),
+  });
+  assert.equal(different.refreshed, false);
+  assert.equal(different.reason, "fee_changed_or_quote_invalid");
+  assert.equal(different.quote, old);
+  assert.equal(lalamoveQuoteMatchesPayment({ quotationId: "bad", fee: 59, expiresAt: "unknown" }, 59), false);
+  const unavailable = await refreshLalamoveCheckoutQuote({
+    quote: old, lockedFee: 59, now,
+    requestQuote: async () => { throw new Error("NETWORK_UNAVAILABLE"); },
+  });
+  assert.equal(unavailable.refreshed, false);
+  assert.equal(unavailable.reason, "refresh_failed");
+  assert.equal(unavailable.quote, old);
+});
 
 test("Slip2Go auto-match requires trusted amount + transaction reference", () => {
   assert.equal(policy.slipDecision({
