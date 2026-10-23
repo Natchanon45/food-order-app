@@ -1,5 +1,15 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-24 — Phase 9 closed tenant invoice evidence UX, UAT on Mac pending
+
+- User confirmed Phase 8 Functions Emulator passed, but no attached result log or precise case counts in this turn; Mac Remote Desktop Commander was offline. Treat Phase 8 as owner-confirmed, not independently measured.
+- New `/reports/hybrid-billing` issued invoice history shows per-invoice Prepare slip only for actual `issued` or `rejected` ledger records with valid ID/positive cent-accurate amount; `paid`/`pending_review` never offer it. Preview projections remain nonpayable.
+- Added `react-app/src/components/HybridTenantProofPanel.jsx` with Thai/English local file selection, max 10MiB and JPEG/PNG/WebP/PDF restriction, selected name/size feedback, prominent warning NOT to transfer funds, disabled submit button. No backend function, Storage upload, bank payment, invoice status update, account instructions or localStorage persistence.
+- Added `react-app/src/data/hybridTenantPaymentDraft.js` pure eligible-invoice/file validation and fail-closed `submitHybridTenantProof`; new `HYBRID_TENANT_PROOF_SUBMISSION_READY=false`. Prior server `HYBRID_PAYMENT_CALLABLE_READY=false`, React `HYBRID_PAYMENT_UI_READY=false`, invoice issuance off, no production callable export.
+- CSS `react-app/public/parity/css/hybrid-billing-review.css` extended for mobile. `tests/react-parity/hybrid-tenant-proof-ui.spec.mjs` six tests (eligible, file types/size, local-only draft, submission hard lock, page integration, responsiveness/locale) PASSED in isolated JS harness 6/6; not native Mac. Added `npm run test:hybrid-tenant-proof` and included spec in `npm run test:hybrid-billing`.
+- Mac commands after git pull: `npm run test:hybrid-tenant-proof`, `npm run test:hybrid-billing`, `npm run test:react-parity`, `npm run build:react`. Do not reset/clean dirty `public/**/index.html`, do not deploy. Full guide `docs/HYBRID_PHASE9_TENANT_EVIDENCE_PREVIEW_20261024.md`.
+- Next release gates include true App Check, trusted beneficiary/bank verification, server-generated unique attempt IDs, full authenticated upload/Callable, receipt/credit note/refund, debt-only suspension, historical cross-channel shared claim reconciliation, before approving any Production financial release.
+
 ## 2026-10-24 — Phase 8 third Mac run reveals two missing discovery flags; custom dotenv-only solution awaiting native rerun
 
 - Mac after ebd939bd: `test:hybrid-functions-safety` **10/10 PASS**, JDK21 and demo project correct; Functions discovery still blocked with `[failed checks: explicitDemoFlag, localFunctions]`. It received demo project plus Auth/Firestore/Storage loopback, but CLI child dropped custom shell flag `HYBRID_DEMO_FUNCTIONS_ONLY` and reserved `FIREBASE_FUNCTIONS_EMULATOR_HOST`; 8 integration tests `functions/not-found` 0/8 because no endpoint registered, no financial service reached.
