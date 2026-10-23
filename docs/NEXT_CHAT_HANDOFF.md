@@ -1,5 +1,15 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Phase 5 shared finance slip dedupe + read-only Invoice UI (NOT DEPLOYED)
+
+- Owner said universal activation-anniversary billing for all stores; owner removes TEST transactional Firestore data, never master tenant/menu/product/config. Changes only to `feature/react-firebase-port`, no production Firebase Deploy.
+- New `functions/finance-slip-claims.js`: SHA-256 of slip bytes and shared bank reference/transRef fingerprint under `financeSlipClaims`. Global claims are created in the same Firestore transactions as Wallet topups (`functions/tenant-lalamove-wallet.js`), Revenue Share slip payment (`functions/revenue-share.js`) and Hybrid pending-proof (`functions/hybrid-billing-payment.js`). Browser Firestore Rules deny all access to this root collection. Historical legacy records predating these changes are NOT automatically backfilled.
+- Hybrid remains private; no Cloud Callable for proof approval, `HYBRID_INVOICE_ISSUANCE_READY=false`, `HYBRID_REGISTRATION_READY=false`, no invoice issuance/collection, no automatic account unlock.
+- Super Admin read-only review added at `/platform/hybrid-invoices` via `react-app/src/pages/HybridBillingReviewPage.jsx` and Platform nav. Tenant owner/admin now sees actual issued invoice history on `/reports/hybrid-billing`, distinctly below its nonpayable estimate. Paginated Firestore client reads in `react-app/src/data/hybridInvoiceReviewData.js`. Thai/English and responsive CSS. No approval/payment/upload buttons.
+- Tests: `npm run test:finance-slip-claims`, `npm run test:hybrid-invoice-payment`, `npm run test:hybrid-invoice-review-ui`, plus `npm run test:hybrid-billing`, `npm run test:react-parity`, `npm run build:react`. V8 simulated tests passed 6/6 shared claims, 11/11 Hybrid payment, 9/9 payment-service, 5/5 review UI static. Mac Node/npm/Vite and Firebase Emulator NOT run because connected Mac mini offline.
+- Deployment blocker: modified Wallet, Revenue Share and Hybrid server code must be rolled out together with restrictive Rules AFTER emulator/UAT; otherwise another channel could accept a slip outside the new registry. Existing test payments need verified cleanup/backfill. Do not deploy this increment piecemeal.
+- Full plan: `docs/HYBRID_FINANCE_SHARED_CLAIMS_PHASE5_20261023.md`. Next implement verified payment UI/callable and controlled invoice issuer, then refund notes/suspension/recovery/quota and emulator tests.
+
 ## 2026-10-23 — Phase 4 Hybrid Invoice Payment service (private, not deployed)
 
 - Added pure bank-slip payment policy (`functions/hybrid-billing-payment-policy.js`), transactional proof staging / manual review (`functions/hybrid-billing-payment.js`), authenticated tenant admin and Super Admin private service (`functions/hybrid-billing-payment-service.js`).
