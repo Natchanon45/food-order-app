@@ -54,7 +54,10 @@ function paidDeliveryByDay(orders, month) {
   const map = new Map();
   for (const order of orders) {
     const sale = paidDeliverySale(order);
-    if (!sale || !sale.date.startsWith(month + "-")) continue;
+    const inWindow = typeof month === "string"
+      ? sale?.date.startsWith(month + "-")
+      : sale && sale.date >= month.startDate && sale.date < month.endExclusiveDate;
+    if (!inWindow) continue;
     map.set(sale.date, (map.get(sale.date) || 0) + Math.round(sale.amount * 100));
   }
   return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
