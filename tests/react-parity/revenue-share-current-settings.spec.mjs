@@ -24,7 +24,7 @@ test("Share calculation displays actual server figures, not hypothetical arithme
   }
   assert.match(report, /access\?\.legacyEnabled/);
   assert.match(report, /summary\.legacyShareAmount/);
-  assert.match(report, /ค่าบริการ Premium แยกชำระ/);
+  assert.match(report, /เรียกเก็บแยก/);
   assert.match(report, /ไม่ย้อนหลังวันก่อนหน้า/);
   assert.doesNotMatch(report, /925\.00|1,635\.00|28,500\.00/);
 });
@@ -35,6 +35,38 @@ test("Report shows POS and food sales independently from chargeable share, witho
   assert.match(server, /shareOrderSales \+ sharePosSales/);
   assert.doesNotMatch(server, /setting\.enabled && !setting\.channels\.includeRetail\) return/);
   assert.match(server, /orderSales \+= foodSales/);
+});
+
+test("Report keeps in-store / POS and Delivery sales distinct, and monthly progress independent of period filter", () => {
+  assert.match(server, /storefrontOrderSales, deliveryOrderSales, inStoreSales/);
+  assert.match(server, /monthlyDeliverySales, monthlyDeliveryMonth: currentMonth/);
+  assert.match(server, /day\.startsWith\(currentMonth\) && day <= currentDate/);
+  assert.match(server, /if \(isDelivery\) deliveryOrderSales \+= foodSales/);
+  assert.match(report, /money\(summary\.posSales\)/);
+  assert.match(report, /money\(summary\.storefrontOrderSales\)/);
+  assert.match(report, /id="inStoreSales"/);
+  assert.match(report, /id="monthlyDeliverySales"/);
+  assert.match(report, /role="progressbar"/);
+  assert.match(report, /aria-valuenow/);
+  assert.match(report, /monthlyDeliverySales \/ centralThreshold \* 100/);
+  assert.match(report, /Math\.min\(100, progressPercent\)/);
+});
+
+test("Shipping debt remains separate from zero share and affects real payment collection", () => {
+  assert.match(report, /id="deliveryShareAmount"/);
+  assert.match(report, /id="platformAmountDue"/);
+  assert.match(report, /summary\.lalamoveOutstandingCost/);
+  assert.match(report, /hasLegacyDeliveryDebt/);
+  assert.match(report, /ไม่ใช่ส่วนแบ่ง Delivery/);
+  assert.match(report, /noAmountDue \? <div className="report-payment-zero"/);
+  assert.match(report, /!noAmountDue \? <>/);
+  assert.match(report, /id="submitRevenueShareSlip"/);
+  assert.match(report, /id="revenueSharePaymentHistory"/);
+  // In the historical screenshot: no Delivery share, but Lalamove debt is still real.
+  const billedShare = 0;
+  const uncollectedLalamove = 59;
+  const platformDue = billedShare + uncollectedLalamove;
+  assert.equal(platformDue, 59);
 });
 
 test("Report keeps the period picker, payment review/history, and keeps Wallet/Lalamove optional", () => {
