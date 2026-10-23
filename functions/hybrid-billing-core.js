@@ -52,17 +52,23 @@ function validDate(s) {
 function nextDate(s) { return new Date(Date.parse(validDate(s) + "T00:00:00Z") + 86400000).toISOString().slice(0, 10); }
 function roundSatang(baht) { return Math.round((baht + Number.EPSILON) * 100) / 100; }
 
-function calculateMonth({ month, firstMonth = false, dailyDeliverySales = [], settings = {} }) {
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(month || ""))) throw new RangeError("Invalid billing month");
+function calculateCycle({
+  cycleStartDate, cycleEndExclusiveDate, month, firstMonth = false,
+  dailyDeliverySales = [], settings = {}, invoicePrefix,
+}) {
+  const start = validDate(cycleStartDate);
+  const endExclusive = validDate(cycleEndExclusiveDate);
+  if (start >= endExclusive) throw new RangeError("Billing cycle dates must increase");
   if (typeof firstMonth !== "boolean" || !Array.isArray(dailyDeliverySales)) throw new TypeError("Invalid inputs");
   const config = normalizeSettings(settings);
   const sales = new Map();
   for (const item of dailyDeliverySales) {
     const day = validDate(item?.date);
-    if (!day.startsWith(month + "-")) throw new RangeError("Daily sale outside month");
+    if (day < start || day >= endExclusive) throw new RangeError("Daily sale outside billing cycle");
     const amount = validateMoney(item?.amount, "dailyDeliverySales.amount");
     sales.set(day, (sales.get(day) || 0) + Math.round(amount * 100));
   }
+  const key = invoicePrefix || start;
   let cumulativeCents = 0, triggerDate = null, totalShareCents = 0;
   const thresholdCents = Math.round(config.deliveryThreshold * 100), invoices = [], days = [];
   for (const [date, cents] of [...sales.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
@@ -79,7 +85,7 @@ function calculateMonth({ month, firstMonth = false, dailyDeliverySales = [], se
     const shareCents = Math.round(baseCents * config.deliveryShareRate / 100);
     totalShareCents += shareCents;
     if (kind && shareCents > 0) invoices.push({
-      id: kind === "delivery_threshold" ? `${month}:delivery:trigger` : `${month}:delivery:${date}`,
+      id: kind === "delivery_threshold" ? key + ":delivery:trigger" : key + ":delivery:" + date,
       kind, date, dueDate: date, suspendFrom: nextDate(date),
       calculationBase: baseCents / 100, amount: shareCents / 100
     });
@@ -88,22 +94,35 @@ function calculateMonth({ month, firstMonth = false, dailyDeliverySales = [], se
   }
   const mode = triggerDate ? "delivery_share" : firstMonth ? "trial_free" : "fixed_monthly";
   const fixedFee = mode === "fixed_monthly" ? config.monthlyFee : 0;
-  if (fixedFee > 0) {
-    const [y, m] = month.split("-").map(Number);
-    const lastDate = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-    invoices.push({ id: `${month}:monthly:fixed`, kind: "fixed_monthly", date: lastDate,
-      dueDate: lastDate, suspendFrom: nextDate(lastDate), calculationBase: fixedFee,
-      amount: fixedFee, issueAtMonthClose: true });
-  }
+  const lastDate = new Date(Date.parse(endExclusive + "T00:00:00Z") - 86400000).toISOString().slice(0, 10);
+  if (fixedFee > 0) invoices.push({
+    id: key + ":monthly:fixed", kind: "fixed_monthly", date: lastDate,
+    dueDate: lastDate, suspendFrom: nextDate(lastDate), calculationBase: fixedFee,
+    amount: fixedFee, issueAtMonthClose: true
+  });
   const shareFee = roundSatang(totalShareCents / 100);
-  return { month, firstMonth, mode, triggerDate, totalDeliverySales: cumulativeCents / 100,
+  return {
+    month: month || start.slice(0, 7), cycleStartDate: start, cycleEndDate: lastDate,
+    cycleEndExclusiveDate: endExclusive, firstMonth, mode, triggerDate,
+    totalDeliverySales: cumulativeCents / 100,
     fixedFee, deliveryShareFee: shareFee, totalFee: roundSatang(fixedFee + shareFee),
     slipUnlimited: Boolean(triggerDate), slipQuota: triggerDate ? null : config.monthlySlipQuota,
-    invoices, days, config };
+    invoices, days, config,
+  };
+}
+function calculateMonth({ month, firstMonth = false, dailyDeliverySales = [], settings = {} }) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(month || ""))) throw new RangeError("Invalid billing month");
+  const [year, m] = month.split("-").map(Number);
+  const nextMonth = m === 12 ? String(year + 1) + "-01"
+    : String(year) + "-" + String(m + 1).padStart(2, "0");
+  return calculateCycle({
+    month, cycleStartDate: month + "-01", cycleEndExclusiveDate: nextMonth + "-01",
+    invoicePrefix: month, firstMonth, dailyDeliverySales, settings,
+  });
 }
 function overdueInvoices({ invoices = [], paidIds = [], onDate }) {
   const day = validDate(onDate), paid = new Set(paidIds);
   return invoices.filter(invoice => Number(invoice.amount) > 0
     && invoice.suspendFrom <= day && !paid.has(invoice.id));
 }
-module.exports = { DEFAULT_SETTINGS, normalizeSettings, calculateMonth, overdueInvoices, dateKey, validDate };
+module.exports = { DEFAULT_SETTINGS, normalizeSettings, calculateMonth, calculateCycle, overdueInvoices, dateKey, validDate };
