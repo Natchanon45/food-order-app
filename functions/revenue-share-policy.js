@@ -1,3 +1,4 @@
+const { cycleForDate } = require("./billing-anniversary");
 const BILLING_MODES = new Set(["subscription", "revenue_share", "hybrid"]);
 const BUSINESS_TYPES = new Set(["restaurant_cafe", "retail", "both"]);
 const RESTAURANT_SCOPES = new Set(["delivery_only", "storefront_only", "all"]);
@@ -85,7 +86,7 @@ function revenueShareChannels(tenant = {}) {
 // Only paid Delivery goods count toward the monthly threshold.
 // The day the monthly threshold is reached (100%) and later days qualify;
 // previous days are never charged.
-function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000) {
+function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, anchorDate = null) {
   const money = Number(threshold);
   if (!Number.isFinite(money) || money < 0 || money > 1000000000
     || Math.abs(money * 100 - Math.round(money * 100)) > 0.00001) {
@@ -104,9 +105,11 @@ function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000) {
   const monthlyTotals = new Map();
   const days = new Set();
   for (const [date, cents] of [...byDay].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const month = date.slice(0, 7);
-    const total = (monthlyTotals.get(month) || 0) + cents;
-    monthlyTotals.set(month, total);
+    const cycle = anchorDate ? cycleForDate(anchorDate, date) : null;
+    if (anchorDate && !cycle) continue; // Ignore sales before activation.
+    const cycleId = cycle ? cycle.startDate : date.slice(0, 7);
+    const total = (monthlyTotals.get(cycleId) || 0) + cents;
+    monthlyTotals.set(cycleId, total);
     if (cents > 0 && total >= thresholdCents) days.add(date);
   }
   return days;
