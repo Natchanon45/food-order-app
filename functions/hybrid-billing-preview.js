@@ -47,8 +47,9 @@ async function assertViewer(request, db) {
   }
   const tenantRef = db.collection("tenants").doc(tenantId);
   const snap = await tenantRef.get();
-  if (!snap.exists || snap.data()?.billingPolicyVersion !== "hybrid_v1") {
-    throw new HttpsError("failed-precondition", "Hybrid billing is not enabled for this tenant");
+  if (!snap.exists) throw new HttpsError("not-found", "Tenant not found");
+  if (!tenantAnchorDate(snap.data())) {
+    throw new HttpsError("failed-precondition", "Tenant activation date is required for billing preview");
   }
   // Admin SDK trusted reads remain available to tenant owners during suspension.
   return { tenantId, tenantRef, tenant: snap.data(), superAdmin };
@@ -77,6 +78,7 @@ async function paidOrdersInWindow(tenantRef, start, end) {
 
 async function previewHybridMonth(tenantRef, tenant, month, db) {
   const anchor = tenantAnchorDate(tenant);
+  if (!anchor) throw new HttpsError("failed-precondition", "Tenant activation date is required");
   const { start, end, startDate, endExclusiveDate } = monthWindow(month, anchor);
   const periodSnap = await tenantRef.collection("hybridBillingPeriods").doc(month).get();
   const locked = periodSnap.exists && periodSnap.data()?.configSnapshot;
@@ -90,7 +92,7 @@ async function previewHybridMonth(tenantRef, tenant, month, db) {
   const daySales = paidDeliveryByDay(orders, { startDate, endExclusiveDate });
   const result = calculateCycle({
     month, cycleStartDate: startDate, cycleEndExclusiveDate: endExclusiveDate,
-    firstMonth: month === tenant.hybridTrialMonth,
+    firstMonth: month === anchor.slice(0, 7),
     dailyDeliverySales: daySales, settings: config,
   });
   const now = new Date();
@@ -114,7 +116,7 @@ exports.getTenantHybridBillingPreview = onCall({ region: REGION, timeoutSeconds:
   const month = String(request.data?.month || dateKey(new Date()).slice(0, 7));
   const todayMonth = dateKey(new Date()).slice(0, 7);
   // Prevent high-volume unrestricted historical order scans through callable requests.
-  const minMonth = String(tenant.hybridTrialMonth || "");
+  const minMonth = tenantAnchorDate(tenant)?.slice(0, 7) || "";
   if (!minMonth || month < minMonth || month > todayMonth) {
     throw new HttpsError("invalid-argument", "Month outside tenant billing history");
   }
