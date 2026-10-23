@@ -517,7 +517,7 @@ export function RevenueShareReportPage() {
         </section>
 
         <section className="report-summary-grid report-summary-essential" aria-label={t("revenue_share_report.summary.aria")}>
-          <article className="report-summary-card order"><span>{t("revenue_share_report.summary.order_sales")}</span><strong id="orderSales">{money(summary.orderSales)}</strong><small id="orderCount">{t("revenue_share_report.common.orders", { count: formatNumber(summary.orderCount || 0) })}</small></article>
+          <article className="report-summary-card order"><span>{rc("ยอดขายออร์เดอร์อาหาร (ไม่รวมค่าส่ง)", "Food orders (excluding delivery fees)")}</span><strong id="orderSales">{money(summary.orderSales)}</strong><small id="orderCount">{t("revenue_share_report.common.orders", { count: formatNumber(summary.orderCount || 0) })}</small></article>
           <article className="report-summary-card pos"><span>{t("revenue_share_report.summary.pos_sales")}</span><strong id="posSales">{money(summary.posSales)}</strong><small id="posCount">{t("revenue_share_report.common.receipts", { count: formatNumber(summary.posCount || 0) })}</small></article>
           <article className="report-summary-card total"><span>{rc("ฐานยอด Delivery ที่เข้าเกณฑ์", "Eligible Delivery base")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
           <article className="report-summary-card share"><span id="shareRateLabel">{rc("ส่วนแบ่งทั้งหมด", "Total revenue share")}</span><strong id="revenueShare">{money(summary.revenueShare)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
