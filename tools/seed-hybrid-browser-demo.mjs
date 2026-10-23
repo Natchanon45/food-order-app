@@ -31,6 +31,7 @@ const app = initializeApp({ projectId: PROJECT, storageBucket: PROJECT + ".appsp
   "local-hybrid-browser-demo-seed");
 const db = getFirestore(app);
 const email = "hybrid-owner@demo.invalid";
+const reviewerEmail = "hybrid-reviewer@demo.invalid";
 const password = "EmulatorOnly123!";
 const tenantId = "demo-hybrid-browser";
 const invoiceId = "2026-10-24:monthly:fixed";
@@ -45,6 +46,21 @@ try {
     if (error.code !== "auth/user-not-found") throw error;
     owner = await auth.createUser({ email, password, emailVerified: true });
   }
+  // Only local Emulator identities; never expose live credentials.
+  let reviewer;
+  try {
+    reviewer = await auth.getUserByEmail(reviewerEmail);
+    await auth.updateUser(reviewer.uid, { password, disabled: false, emailVerified: true });
+  } catch (error) {
+    if (error.code !== "auth/user-not-found") throw error;
+    reviewer = await auth.createUser({
+      email: reviewerEmail, password, emailVerified: true,
+    });
+  }
+  await db.collection("users").doc(reviewer.uid).set({
+    role: "super_admin", tenantId: "", active: true,
+    email: reviewerEmail, updatedAt: FieldValue.serverTimestamp(),
+  }, { merge: true });
   await db.collection("users").doc(owner.uid).set({
     role: "owner", tenantId, tenantSlug: tenantId,
     tenantName: "PENGUIN Demo Hybrid Browser",
@@ -69,6 +85,7 @@ try {
   // This prints ONLY fixed synthetic emulator credentials; never any API key.
   process.stdout.write("DEMO_ONLY_FIREBASE_PROJECT: " + PROJECT + "\n");
   process.stdout.write("DEMO_LOGIN: " + email + "\n");
+  process.stdout.write("DEMO_REVIEWER: " + reviewerEmail + "\n");
   process.stdout.write("DEMO_PASSWORD: " + password + "\n");
   process.stdout.write("DEMO_INVOICE: " + invoiceId + "\n");
   process.stdout.write("INVOICE_STATE: " + (existing.exists ? "preserved" : "seeded") + "\n");

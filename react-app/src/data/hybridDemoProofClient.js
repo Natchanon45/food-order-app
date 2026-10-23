@@ -7,6 +7,7 @@ import { submitDemoHybridEvidence } from "./hybridDemoProofTransport.js";
 
 const DEMO_ENDPOINTS = Object.freeze({
   prepare: "demoHybridPrepareUpload", submit: "demoHybridSubmitProof",
+  review: "demoHybridReviewProof",
 });
 
 export async function submitHybridDemoProof({ tenantId, invoice, file, isCurrent, onStep }) {
@@ -35,4 +36,28 @@ export async function submitHybridDemoProof({ tenantId, invoice, file, isCurrent
       return result.data;
     },
   });
+}
+
+export async function reviewHybridDemoPayment({
+  tenantId, invoiceId, attemptId, action, note, verifiedExternally,
+}) {
+  if (!isHybridDemoMode || firebaseConfig.projectId !== "demo-penguin-hybrid") {
+    throw new Error("HYBRID_DEMO_ONLY_LOCAL_EMULATOR");
+  }
+  if (!["approve", "reject"].includes(action)
+    || typeof tenantId !== "string" || typeof invoiceId !== "string"
+    || typeof attemptId !== "string" || typeof note !== "string") {
+    throw new Error("HYBRID_DEMO_INVALID_REVIEW");
+  }
+  const response = await httpsCallable(functions, DEMO_ENDPOINTS.review)({
+    tenantId, invoiceId, attemptId, action, note,
+    verifiedExternally: verifiedExternally === true,
+  });
+  const status = action === "approve" ? "paid" : "rejected";
+  if (response.data?.status !== status
+    || response.data?.invoiceId !== invoiceId
+    || response.data?.attemptId !== attemptId) {
+    throw new Error("HYBRID_DEMO_UNEXPECTED_FINANCIAL_RESULT");
+  }
+  return { status, invoiceId, attemptId };
 }
