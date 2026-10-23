@@ -9,10 +9,12 @@ const boot = fs.readFileSync("functions/bootstrap.js", "utf8");
 const privateIssuer = fs.readFileSync("functions/hybrid-billing-reconciler.js", "utf8");
 const registry = fs.readFileSync("functions/finance-slip-claims.js", "utf8");
 const storageRules = fs.readFileSync("storage.rules", "utf8");
+const javaGuard = fs.readFileSync("tools/check-firebase-emulator-java.mjs", "utf8");
 
 test("emulator script always targets an explicitly named demo project and not production", () => {
   const script = pkg.scripts["test:firebase-hybrid-emulator"];
   assert.ok(script);
+  assert.match(script, /^node tools\/check-firebase-emulator-java\.mjs && /);
   assert.match(script, /--project demo-penguin-hybrid\b/);
   assert.match(script, /--config firebase\.hybrid-emulator\.json/);
   assert.match(script, /--only auth,firestore,storage/);
@@ -63,4 +65,11 @@ test("production automatic issuer and privileged public endpoints remain disable
   assert.match(privateIssuer, /const HYBRID_INVOICE_ISSUANCE_READY = false/);
   assert.doesNotMatch(boot, /hybrid-billing-(payment|reconciler|persistence)/);
   assert.doesNotMatch(registry, /onCall\(|onSchedule\(/);
+});
+
+test("Firebase Emulator refuses JDK 17 before starting Firebase CLI", () => {
+  assert.match(javaGuard, /spawnSync\("java", \["-version"\]/);
+  assert.match(javaGuard, /major < 21/);
+  assert.match(javaGuard, /brew install openjdk@21/);
+  assert.match(javaGuard, /process\.exit\(1\)/);
 });
