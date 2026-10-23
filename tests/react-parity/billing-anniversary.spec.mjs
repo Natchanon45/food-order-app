@@ -144,9 +144,9 @@ test("All active shops reset on their own renewal dates with no cutover approval
   ].map(([date, cents]) => ({ date, cents }));
   const actual = eligibleDeliveryShareDays(daily, 10000, "2026-06-21");
   assert.deepEqual([...actual], [
-    "2026-11-10", "2026-11-20", "2026-11-21",
-    "2026-11-22", "2026-12-01", "2026-12-21",
-  ].filter(date => date !== "2026-11-10" && date !== "2026-11-20"));
+    "2026-11-10", "2026-11-20", "2026-11-22",
+    "2026-12-01", "2026-12-21",
+  ]);
 });
 
 test("Missing activation cannot silently generate paid Delivery share", () => {
