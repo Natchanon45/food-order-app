@@ -18,7 +18,18 @@ test("Functions Emulator uses a separate test-only source and demo project", () 
   assert.match(cmd, /--project demo-penguin-hybrid\b/);
   assert.match(cmd, /--config firebase\.hybrid-functions-emulator\.json/);
   assert.match(cmd, /--only auth,firestore,storage,functions/);
-  assert.match(cmd, /HYBRID_DEMO_FUNCTIONS_ONLY=1 firebase emulators:exec/);
+  assert.match(cmd, /HYBRID_DEMO_FUNCTIONS_ONLY=1/);
+  assert.match(cmd, /GCLOUD_PROJECT=demo-penguin-hybrid/);
+  assert.match(cmd, /GCP_PROJECT=demo-penguin-hybrid/);
+  for (const [name, address] of Object.entries({
+    FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+    FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
+    FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
+    FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
+  })) {
+    assert.ok(cmd.includes(name + "=" + address),
+      "Demo runner must set " + name + " BEFORE Functions discovery");
+  }
   assert.doesNotMatch(cmd, /firebase deploy|chat-45754/);
   assert.equal(config.functions.source, "functions/emulator-hybrid");
   assert.equal(demoPackage.main, "index.cjs");
@@ -40,10 +51,12 @@ test("demo loader rejects any real project, nonlocal service or missing explicit
   assert.match(entrypoint, /project !== "demo-penguin-hybrid"/);
   assert.match(entrypoint, /HYBRID_DEMO_FUNCTIONS_ONLY/);
   for (const key of ["FIRESTORE_EMULATOR_HOST",
-    "FIREBASE_AUTH_EMULATOR_HOST", "FIREBASE_STORAGE_EMULATOR_HOST"]) {
+    "FIREBASE_AUTH_EMULATOR_HOST", "FIREBASE_STORAGE_EMULATOR_HOST",
+    "FIREBASE_FUNCTIONS_EMULATOR_HOST"]) {
     assert.ok(entrypoint.includes('localHost("' + key + '")'));
   }
   assert.match(entrypoint, /HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS/);
+  assert.match(entrypoint, /knownProjects.some\(value => value !== "demo-penguin-hybrid"\)/);
   const initAt = entrypoint.indexOf("initializeApp({");
   const guardAt = entrypoint.indexOf("throw new Error(");
   assert.ok(guardAt > 0 && initAt > guardAt, "Safety check must occur before Admin SDK initialization");
@@ -76,6 +89,9 @@ test("real Firebase client transport includes Auth and has negative and positive
   assert.match(transport, /actual Callable transport denies unsigned, cashier, inactive and cross-tenant submit/);
   assert.match(transport, /only Super Admin can settle once/);
   assert.match(transport, /global SHA-256 claim prevents reuse/);
+  assert.match(transport, /function reviewData\(submission, action, note,/);
+  assert.match(transport, /const \{ tenantId, invoiceId, attemptId \} = submission/);
+  assert.doesNotMatch(transport, /review\("super-admin", \{ \.\.\.payload,/);
   assert.match(transport, /tenant\.subscriptionStatus, "suspended"/);
   assert.doesNotMatch(transport, /chat-45754|firebase deploy/);
 });
@@ -109,9 +125,13 @@ test("runtime guard fails before loading Firebase modules for real project or no
     FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
     FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
     FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
+    FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
   };
   evaluate({ ...baseline, GCLOUD_PROJECT: "chat-45754" });
   evaluate({ ...baseline, HYBRID_DEMO_FUNCTIONS_ONLY: "" });
   evaluate({ ...baseline, FIRESTORE_EMULATOR_HOST: "production.example:443" });
   evaluate({ ...baseline, FIREBASE_STORAGE_EMULATOR_HOST: "" });
+  evaluate({ ...baseline, FIREBASE_FUNCTIONS_EMULATOR_HOST: "prod.example:443" });
+  evaluate({ ...baseline, GCP_PROJECT: "chat-45754" });
+  evaluate({ ...baseline, FIREBASE_CONFIG: '{"projectId":"chat-45754"}' });
 });
