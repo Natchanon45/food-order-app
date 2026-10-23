@@ -11,6 +11,7 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { isHybridDemoMode } from "@/firebase/client";
 import {
   listHybridTenants, listHybridInvoices, listHybridPaymentAttempts,
+  listHybridPaymentReviewEvents,
 } from "@/data/hybridInvoiceReviewData";
 
 const label = (th, en, isThai) => isThai ? th : en;
@@ -47,6 +48,9 @@ export function HybridBillingReviewPage() {
   const [selectedId, setSelectedId] = useState("");
   const [invoices, setInvoices] = useState([]);
   const [attempts, setAttempts] = useState([]);
+  const [reviewEvents, setReviewEvents] = useState([]);
+  const [eventCursor, setEventCursor] = useState(null);
+  const [moreEvents, setMoreEvents] = useState(false);
   const [invoiceCursor, setInvoiceCursor] = useState(null);
   const [attemptCursor, setAttemptCursor] = useState(null);
   const [moreInvoices, setMoreInvoices] = useState(false);
@@ -89,16 +93,29 @@ export function HybridBillingReviewPage() {
     if (!selectedId || auth.profile?.role !== "super_admin") {
       setInvoices([]);
       setAttempts([]);
+      setReviewEvents([]);
+      setEventCursor(null);
+      setMoreEvents(false);
       return;
     }
     let cancelled = false;
     setLoadingDetails(true);
     setError("");
-    Promise.all([listHybridInvoices(selectedId), listHybridPaymentAttempts(selectedId)])
-      .then(([invoicePage, attemptPage]) => {
+    // Do not display a previous shop's financial data while changing tenants.
+    setInvoices([]);
+    setAttempts([]);
+    setReviewEvents([]);
+    Promise.all([
+      listHybridInvoices(selectedId),
+      listHybridPaymentAttempts(selectedId),
+      listHybridPaymentReviewEvents(selectedId),
+    ]).then(([invoicePage, attemptPage, eventPage]) => {
         if (cancelled) return;
         setInvoices(invoicePage.items);
         setAttempts(attemptPage.items);
+        setReviewEvents(eventPage.items);
+        setEventCursor(eventPage.cursor);
+        setMoreEvents(eventPage.hasMore);
         setInvoiceCursor(invoicePage.cursor);
         setAttemptCursor(attemptPage.cursor);
         setMoreInvoices(invoicePage.hasMore);
@@ -258,6 +275,55 @@ export function HybridBillingReviewPage() {
                 {label("แบบฟอร์มอนุมัติถูกล็อกไว้ จนกว่าจะทดสอบ Callable และอนุมัติเปิดใช้งานระบบการเงินจริง",
                   "Review controls remain locked until callable UAT and explicit financial release approval.", thai)}
               </p>
+            </section>
+            <section className="card hybrid-report-details hybrid-review-audit" aria-label={
+              label("ประวัติการตรวจสอบการเงิน", "Finance review audit trail", thai)
+            }>
+              <h2>{label("ประวัติการตรวจสอบการเงิน", "Finance review audit trail", thai)}</h2>
+              <p className="hybrid-report-notice">{label(
+                "รายการนี้มาจาก Audit Event ที่ Server บันทึกไว้แบบแก้ไขไม่ได้ ไม่มีข้อมูลบัญชีหรือสลิปดิบ",
+                "Immutable server-written audit events; raw slips and bank account data are not displayed.",
+                thai
+              )}</p>
+              <div className="hybrid-report-table-scroll">
+                <table>
+                  <thead><tr>
+                    <th>{label("รหัสบิล", "Invoice", thai)}</th>
+                    <th>{label("วันที่ตรวจ", "Reviewed at", thai)}</th>
+                    <th>{label("ผล", "Decision", thai)}</th>
+                    <th>{label("ผู้ตรวจ", "Reviewer", thai)}</th>
+                    <th>{label("วิธียืนยัน", "Confirmation", thai)}</th>
+                    <th>{label("หมายเหตุ", "Audit note", thai)}</th>
+                  </tr></thead>
+                  <tbody>{reviewEvents.length ? reviewEvents.map(event => (
+                    <tr key={event.id}>
+                      <td className="hybrid-review-id">{event.invoiceId}</td>
+                      <td>{recordDate(event.reviewedAt, intlLocale)}</td>
+                      <td><span className={"hybrid-review-status " + event.resultStatus}>
+                        {statusLabel(event.resultStatus, thai)}</span></td>
+                      <td className="hybrid-review-id">{event.reviewerId || "-"}</td>
+                      <td>{event.bankVerified
+                        ? (isHybridDemoMode ? label("จำลอง", "Simulated", thai)
+                          : label("ธนาคารยืนยัน", "Bank verified", thai))
+                        : event.verifiedExternally
+                          ? label("ตรวจอิสระ", "Independent confirmation", thai)
+                          : label("ไม่ได้ยืนยัน", "Not verified", thai)}</td>
+                      <td className="hybrid-review-audit-note">{event.notePreview || "-"}</td>
+                    </tr>
+                  )) : <tr><td colSpan={6}>{label(
+                    "ยังไม่มีประวัติการตรวจสอบ", "No finance review events", thai
+                  )}</td></tr>}</tbody>
+                </table>
+              </div>
+              {moreEvents ? <button type="button" className="btn btn-sm" disabled={loadingDetails}
+                onClick={() => listHybridPaymentReviewEvents(selectedId, { cursor: eventCursor })
+                  .then(next => {
+                    setReviewEvents(prev => [...prev, ...next.items]);
+                    setEventCursor(next.cursor);
+                    setMoreEvents(next.hasMore);
+                  }).catch(e => setError(e.message))}>
+                {label("โหลดประวัติเพิ่มเติม", "Load more audit events", thai)}
+              </button> : null}
             </section>
           </>
         ) : null}

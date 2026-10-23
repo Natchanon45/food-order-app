@@ -53,3 +53,18 @@ test("Localized page and responsive layout show only whitelisted bank metadata",
   assert.match(style, /@media\(max-width:760px\)/);
   assert.match(style, /hybrid-review-status\.pending_review/);
 });
+
+test("Super Admin finance audit reads only whitelisted immutable review events", () => {
+  assert.match(data, /export async function listHybridPaymentReviewEvents\(/);
+  assert.match(data, /collection\(db, "tenants", tenantId, "hybridBillingPaymentEvents"\)/);
+  assert.match(data, /orderBy\("reviewedAt", "desc"\)/);
+  assert.match(data, /notePreview: String\(event\.note \|\| ""\)\.slice\(0, 160\)/);
+  assert.match(data, /reviewerId: String\(event\.reviewerId \|\| ""\)/);
+  assert.doesNotMatch(data, /rawVerification|referenceId: event|transRef: event|slipPath: event/);
+  assert.match(admin, /listHybridPaymentReviewEvents\(selectedId\)/);
+  assert.match(admin, /Finance review audit trail/);
+  assert.match(admin, /setReviewEvents\(\[\]\)/);
+  assert.match(admin, /listHybridPaymentReviewEvents\(selectedId, \{ cursor: eventCursor \}\)/);
+  assert.match(rules, /match \/hybridBillingPaymentEvents\/\{eventId\}/);
+  assert.doesNotMatch(admin, /setDoc\(|updateDoc\(|deleteDoc\(/);
+});

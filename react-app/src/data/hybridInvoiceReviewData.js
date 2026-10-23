@@ -53,3 +53,45 @@ export async function listHybridPaymentAttempts(tenantId, { cursor = null, pageS
     }),
   };
 }
+
+/**
+ * Server-written immutable payment review events. The browser may read only
+ * its authorized tenant via Firestore Rules and cannot edit audit documents.
+ * Exclude raw bank refs, Storage paths, OCR, personal bank data and full notes.
+ */
+export async function listHybridPaymentReviewEvents(tenantId, {
+  cursor = null, pageSize = 30,
+} = {}) {
+  normalizeId(tenantId);
+  if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 50) {
+    throw new RangeError("INVALID_LIMIT");
+  }
+  const constraints = [orderBy("reviewedAt", "desc"),
+    ...(cursor ? [startAfter(cursor)] : []), queryLimit(pageSize)];
+  const result = await getDocs(query(
+    collection(db, "tenants", tenantId, "hybridBillingPaymentEvents"), ...constraints,
+  ));
+  return {
+    cursor: result.docs.at(-1) || null,
+    hasMore: result.size === pageSize,
+    items: result.docs.map(doc => {
+      const event = doc.data() || {};
+      return {
+        id: doc.id,
+        invoiceId: String(event.invoiceId || "").slice(0, 80),
+        attemptId: String(event.attemptId || "").slice(0, 80),
+        action: event.action === "approve" ? "approve"
+          : event.action === "reject" ? "reject" : "unknown",
+        resultStatus: ["paid", "rejected"].includes(event.resultStatus)
+          ? event.resultStatus : "unknown",
+        reviewerId: String(event.reviewerId || "").slice(0, 80),
+        bankVerified: event.bankVerified === true,
+        verifiedExternally: event.verifiedExternally === true,
+        reviewedAt: event.reviewedAt || null,
+        // Expose only the first 160 characters of a reviewer note, never
+        // a raw provider response, bank reference or full sensitive payload.
+        notePreview: String(event.note || "").slice(0, 160),
+      };
+    }),
+  };
+}
