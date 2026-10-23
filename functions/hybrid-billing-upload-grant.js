@@ -4,7 +4,7 @@
 // Not referenced by functions/index.js/bootstrap.js and not a Production callable.
 // Storage Rules do not yet enforce these grants: no browser upload UI is enabled.
 const { randomBytes } = require("node:crypto");
-const { tenantAdmin } = require("./hybrid-billing-payment-service");
+// Lazy import prevents the private payment service/transaction cycle.
 const { satang, validInvoiceId, validId, validateEvidencePath } =
   require("./hybrid-billing-payment-policy");
 const { LEDGER_VERSION } = require("./hybrid-billing-ledger");
@@ -84,6 +84,7 @@ async function issueTrustedHybridUploadGrant({
   const { tenantId, invoiceId, contentType, fileSize } = validatePrepareRequest(input);
   // The current billing owner/admin role is verified from trusted Firestore,
   // never the browser's claims about tenant or finance permissions.
+  const { tenantAdmin } = require("./hybrid-billing-payment-service");
   await tenantAdmin(db, auth, tenantId);
   const attemptId = generateAttemptId();
   try { validId(attemptId, "ATTEMPT_ID"); }
