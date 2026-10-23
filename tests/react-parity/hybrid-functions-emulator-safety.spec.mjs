@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { runInNewContext } from "node:vm";
 
 const read = path => fs.readFileSync(path, "utf8");
 const config = JSON.parse(read("firebase.hybrid-functions-emulator.json"));
@@ -86,4 +87,31 @@ test("test-only source is not part of the configured production Functions direct
     ? liveConfig.functions.source : "";
   assert.notEqual(prodSrc, "functions/emulator-hybrid");
   assert.notEqual(read("functions/package.json").includes('"main": "bootstrap.js"'), false);
+});
+
+test("runtime guard fails before loading Firebase modules for real project or nonlocal emulator", () => {
+  function evaluate(env) {
+    const imported = [];
+    const fakeRequire = name => {
+      imported.push(name);
+      throw new Error("TEST_GUARD_MUST_PRECEDE_MODULE_LOAD");
+    };
+    assert.throws(() => runInNewContext(entrypoint, {
+      process: { env },
+      require: fakeRequire,
+      exports: {},
+    }), /HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS/);
+    assert.deepEqual(imported, [], "No Firebase Admin, Storage or payment modules may load");
+  }
+  const baseline = {
+    GCLOUD_PROJECT: "demo-penguin-hybrid",
+    HYBRID_DEMO_FUNCTIONS_ONLY: "1",
+    FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+    FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
+    FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
+  };
+  evaluate({ ...baseline, GCLOUD_PROJECT: "chat-45754" });
+  evaluate({ ...baseline, HYBRID_DEMO_FUNCTIONS_ONLY: "" });
+  evaluate({ ...baseline, FIRESTORE_EMULATOR_HOST: "production.example:443" });
+  evaluate({ ...baseline, FIREBASE_STORAGE_EMULATOR_HOST: "" });
 });
