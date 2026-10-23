@@ -5,6 +5,7 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
+import { HybridReviewDecisionPanel } from "@/components/HybridReviewDecisionPanel";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import {
@@ -221,6 +222,7 @@ export function HybridBillingReviewPage() {
                     <th>{label("ยอด", "Amount", thai)}</th>
                     <th>{label("ธนาคารยืนยัน", "Bank verified", thai)}</th>
                     <th>{label("สถานะ", "Status", thai)}</th>
+                    <th>{label("ผลการตรวจ", "Review action", thai)}</th>
                   </tr></thead>
                   <tbody>{attempts.length ? attempts.map(row => (
                     <tr key={row.id}>
@@ -230,8 +232,11 @@ export function HybridBillingReviewPage() {
                       <td>{row.bankVerified ? label("ใช่", "Yes", thai) : label("ยังไม่ยืนยัน", "Unverified", thai)}</td>
                       <td><span className={"hybrid-review-status " + row.status}>
                         {statusLabel(row.status, thai)}</span></td>
+                      <td><HybridReviewDecisionPanel key={row.id + ":" + selectedId}
+                        tenantId={selectedId} payment={row} thai={thai}
+                        onReviewed={() => setRevision(value => value + 1)} /></td>
                     </tr>
-                  )) : <tr><td colSpan={5}>{label("ยังไม่มีสลิปที่ส่ง", "No submitted slips", thai)}</td></tr>}</tbody>
+                  )) : <tr><td colSpan={6}>{label("ยังไม่มีสลิปที่ส่ง", "No submitted slips", thai)}</td></tr>}</tbody>
                 </table>
               </div>
               {moreAttempts ? <button type="button" className="btn btn-sm" disabled={loadingDetails}
@@ -243,8 +248,8 @@ export function HybridBillingReviewPage() {
                 {label("โหลดสลิปเพิ่มเติม", "Load more slips", thai)}
               </button> : null}
               <p className="hybrid-report-notice">
-                {label("การอนุมัติสลิปจะเปิดหลังทดสอบระบบชำระเงินจริงและสิทธิ์ Super Admin บน Emulator",
-                  "Approval will be enabled after emulator payment and Super Admin authorization tests.", thai)}
+                {label("แบบฟอร์มอนุมัติถูกล็อกไว้ จนกว่าจะทดสอบ Callable และอนุมัติเปิดใช้งานระบบการเงินจริง",
+                  "Review controls remain locked until callable UAT and explicit financial release approval.", thai)}
               </p>
             </section>
           </>
