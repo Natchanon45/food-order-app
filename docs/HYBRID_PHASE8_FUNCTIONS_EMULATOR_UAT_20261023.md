@@ -104,3 +104,28 @@ npm run test:hybrid-functions-emulator
 ```
 
 If and only if the actual demo transport Emulator test completes without failures, continue to `npm run test:hybrid-billing`, `npm run test:react-parity` and `npm run build:react`. Avoid all deploy and reset/clean operations. Production receipt issuance, collection, Callable exports, and shop Master data are unchanged.
+
+## 24 October 2026 — Second Mac rerun: diagnose Firebase CLI function discovery
+
+The user's second Mac run after commit `40a4f8b6` passed **9/9 static safety checks**, then failed again while Firebase CLI was analyzing `functions/emulator-hybrid/index.cjs` with `HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS` (line 27). Although the npm script explicitly supplied the demo project and all four loopback host values, the Firebase CLI's child discovery process did not pass the module's import-time guard. Thus it registered **zero** demo Callable endpoints; all 8 transport tests failed with `functions/not-found` (0/8). **No payment transaction reached the backend.** The test host process itself advanced through fixture setup, showing at least its emulator variables were present.
+
+To safely isolate the precise missing or conflicting condition, the test-only entrypoint now computes `demoConditions` and throws the SAME fail-closed error followed by **failed condition names only**: `demoProject`, `noConflictingProject`, `explicitDemoFlag`, `localFirestore`, `localAuth`, `localStorage`, `localFunctions`. It does not print project identifiers, hostnames, environment values, secrets, or credentials. No production code, release flag, or deployed project is changed.
+
+The Firebase documentation supports `.env.local` for emulator variables, but specifically reserves ALL environment variable names beginning with `FIREBASE_` and `GCLOUD_PROJECT`/`GCP_PROJECT`; therefore do **not** use `.env.local` to set those names. A brief unverified attempt to add such a file was reverted in GitHub before requesting another Mac run. Keep all emulator hosts in the local-only npm runner and retain the guard until its failing condition is identified.
+
+**Current result:** Phase 8 Functions Emulator real UAT remains **0/8 due to Functions Discovery**. This is not a Billing functional failure; a further Mac run is required to see the safely redacted failed-check name.
+
+Safe rerun:
+
+```bash
+set -e
+cd ~/Desktop/Sites/food-order-app
+git switch feature/react-firebase-port
+git pull --ff-only origin feature/react-firebase-port
+export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+npm run test:hybrid-functions-safety
+npm run test:hybrid-functions-emulator
+```
+
+If the next run still fails during definition discovery, use the exact `[failed checks: ...]` phrase to correct the CLI child environment, **without bypassing the demo-only guard**. No need to run the large React suite until the real Callable transport starts and passes.
