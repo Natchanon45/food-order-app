@@ -558,7 +558,7 @@ export function RevenueShareReportPage() {
         <section className="card report-related-amounts" aria-labelledby="reportRelatedTitle">
           <div className="report-section-heading">
             <div><h2 id="reportRelatedTitle"><i className="bi bi-stack" aria-hidden="true"></i> {rc("ยอดที่เกี่ยวข้องอื่น", "Other related totals")}</h2>
-              <p>{rc("แยกค่าส่ง Lalamove ออกจากค่าส่วนแบ่ง ไม่ทำให้ยอดค้างจริงหายไป", "Lalamove shipping charges are separate from revenue share and actual outstanding balances")}</p></div>
+              <p>{rc("ค่าจัดส่ง Lalamove หักจากเครดิตล่วงหน้า ไม่ถูกนำมาคิดเป็นยอดโอน Platform ซ้ำ", "Lalamove delivery costs are debited from prepaid credits and never added to Platform share payable")}</p></div>
           </div>
           <div className="report-related-grid">
             <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("รวมจากออร์เดอร์ในช่วงรายงาน", "From selected period orders")}</small></div></article>
