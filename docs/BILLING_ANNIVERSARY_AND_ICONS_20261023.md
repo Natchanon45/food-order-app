@@ -1,5 +1,7 @@
 # Billing anniversaries and IconPacks design plan — 2026-10-23
 
+**SUPERSEDED BILLING MIGRATION GUIDANCE:** The owner confirmed the entire database is prelaunch/test with no real customers. The old tenant-by-tenant Cutover/approval plan below is retained only as historical discussion and MUST NOT block the universal activation-anniversary policy. Follow `docs/UNIVERSAL_BILLING_PRELAUNCH_20261023.md` instead. IconPacks research is unaffected.
+
 Branch: `feature/react-firebase-port`. GitHub code changes only; not deployed.
 
 ## Confirmed billing requirement
