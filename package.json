@@ -78,7 +78,8 @@
     "test:master-business-access": "node --test tests/react-parity/master-business-access.spec.mjs",
     "test:lalamove-prepaid-atomic": "node --test tests/react-parity/lalamove-prepaid-atomic.spec.mjs",
     "test:billing-anniversary": "node --test tests/react-parity/billing-anniversary.spec.mjs",
-    "test:billing-anniversary-audit": "node --test tests/react-parity/billing-anniversary-audit.spec.mjs"
+    "test:billing-anniversary-audit": "node --test tests/react-parity/billing-anniversary-audit.spec.mjs tests/react-parity/billing-anniversary-cutover-plan.spec.mjs",
+    "test:billing-cutover-plan": "node --test tests/react-parity/billing-anniversary-cutover-plan.spec.mjs"
   },
   "repository": {
     "type": "git",
