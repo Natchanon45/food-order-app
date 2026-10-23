@@ -1,5 +1,13 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Mac Firebase Emulator Java runtime blocker
+
+- Mac test log: `npm run test:hybrid-emulator-safety` passed 5/5; `java -version` was Temurin 17.0.20.1, `firebase --version` was 15.34.0; `npm run test:firebase-hybrid-emulator` stopped before emulator startup with `firebase-tools no longer supports Java version before 21`. `set -e` prevented subsequent tests/build.
+- Added `tools/check-firebase-emulator-java.mjs` preflight, prepended to `test:firebase-hybrid-emulator` npm script. Fail fast on Java <21 with Homebrew install/session-only `JAVA_HOME` instructions. Does not affect production Firebase or application runtime.
+- Updated `docs/HYBRID_FIREBASE_EMULATOR_UAT_PHASE6_20261023.md`, and `tests/react-parity/hybrid-emulator-safety.spec.mjs` now covers JDK version guard; 6/6 static preflight assertions passed in isolated V8, Java 17 reject / 21 & 22 allow simulated successfully.
+- Mac commands: `brew install openjdk@21`; `export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"`; `export PATH="$JAVA_HOME/bin:$PATH"`; `java -version`; `git pull --ff-only origin feature/react-firebase-port`; `npm run test:hybrid-emulator-safety`; `npm run test:firebase-hybrid-emulator`. Use JDK21 only in current Terminal; do not uninstall JDK17; no `reset --hard`/`clean` for dirty public HTML.
+- Real Emulator UAT still NOT run; next wait for native log, address any SDK/rules failures, and only then run `npm run test:react-parity` plus `npm run build:react`. No production deployments or financial data changes.
+
 ## 2026-10-23 — Phase 6 local-only Firebase Emulator UAT (NOT RUN ON MAC)
 
 - User asked to continue after Phase 5 crypto fixture regression. Mac mini Remote Desktop Commander was OFFLINE. No native Node.js, React build or Firebase Emulator run in this turn.
