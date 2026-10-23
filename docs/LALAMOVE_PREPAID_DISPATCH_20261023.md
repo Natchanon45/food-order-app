@@ -100,3 +100,37 @@ functions or Hosting as a side effect of this fix.
 
 This GitHub update does not connect to production Firestore, deploy Firebase,
 reconcile historical payments, or issue refunds automatically.
+
+## 2026-10-23 follow-up: why THB 59 still showed on the live report
+
+The previous deployment command targeted **only**
+`functions:placeTenantLalamoveDispatch`. It did not deploy the revenue-share
+callables or the Hosting frontend. The old live report could therefore still
+compute a THB 59 delivery debit-stamp gap as a Platform payable, although
+`summary.revenueShare` was THB 0.
+
+Additional defense in `react-app/src/pages/RevenueShareReportPage.jsx` now
+renders the current payable and slip availability strictly from
+`summary.revenueShare`, never `summary.platformAmountDue` returned by a
+stale backend. Historical slip records that included delivery in the recorded
+amount remain auditable but are **not** presented as a current share debt.
+No historical payments are deleted or silently rewritten.
+
+To roll out the **corrected report** (as a separate release decision from
+Lalamove dispatch), from the clean feature branch run:
+
+```bash
+npm run test:revenue-payment-bank-picker
+npm run test:lalamove-auto-status
+npm run build:react
+firebase deploy --only functions:getTenantRevenueShareSummary,functions:getPlatformRevenueShareSummary,functions:submitTenantRevenueSharePayment,functions:reconcileRevenueShare,functions:syncRevenueShareTenants --project chat-45754
+firebase deploy --only hosting:foodapp --project chat-45754
+```
+
+**Release caution**: Hosting builds from this branch also contain work-in-progress
+Hybrid Billing screens. Its registration flag must remain
+`HYBRID_REGISTRATION_READY=false`. Validate the generated build and report
+UI before executing the Hosting deploy; do not deploy other Functions/Rules.
+The production tenant's exact THB 59 payment records are not verifiable from
+GitHub alone; if a historical pending payment exists, reconcile it from
+Firestore with audit history rather than deleting an order or Wallet ledger.
