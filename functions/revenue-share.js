@@ -2,6 +2,8 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
+const { createHash } = require("node:crypto");
+const { claimRefs, checkClaimsInTransaction, createClaimsInTransaction } = require("./finance-slip-claims");
 const { inspectSlip } = require("./slip-verification");
 const { loadPricing, calculatePricing } = require("./subscription-pricing-core");
 const {
@@ -736,6 +738,11 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
   }
   const ref = tenantRef.collection("revenueSharePayments").doc(id);
   if ((await ref.get()).exists) throw new HttpsError("already-exists", "Payment ID already exists");
+  const [slipBytes] = await file.download();
+  if (!Buffer.isBuffer(slipBytes) || slipBytes.length !== size) {
+    throw new HttpsError("failed-precondition", "REVENUE_SHARE_SLIP_BYTES_INVALID");
+  }
+  const slipSha256 = createHash("sha256").update(slipBytes).digest("hex");
   const verification = await inspectRevenueShareSlip(file, mime, summary.platformAmountDue);
   const verificationStatus = String(verification?.status || "manual_review");
   const verificationReason = String(verification?.reason || "");
@@ -776,7 +783,8 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
     && verification?.amountMatched === true
     && Boolean(referenceId || transRef);
 
-  await ref.set({
+  const sharedClaims = claimRefs(getFirestore(), { sha256: slipSha256, referenceId, transRef });
+  const paymentRecord = {
     id,
     tenantId: tenant.id,
     periodType: period.type,
@@ -812,6 +820,16 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
     reviewedAt: autoApproved ? FieldValue.serverTimestamp() : null,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp()
+  };
+  await getFirestore().runTransaction(async transaction => {
+    // Existing payment and global claims MUST be read before any creates.
+    const paymentSnap = await transaction.get(ref);
+    if (paymentSnap.exists) throw new HttpsError("already-exists", "Payment ID already exists");
+    await checkClaimsInTransaction(transaction, sharedClaims);
+    transaction.create(ref, paymentRecord);
+    createClaimsInTransaction(transaction, sharedClaims, {
+      channel: "revenue_share", tenantId: tenant.id, recordId: id,
+    }, FieldValue.serverTimestamp());
   });
 
   let tenantAccess = null;
