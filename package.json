@@ -27,7 +27,7 @@
     "test:admin-mobile-menu-table": "node --test tests/react-parity/admin-mobile-menu-table.spec.mjs",
     "test:global-initial-readiness": "node --test tests/react-parity/global-initial-readiness.spec.mjs",
     "test:signup-billing-revenue-share": "node --test tests/react-parity/signup-billing-revenue-share.spec.mjs",
-    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs tests/react-parity/hybrid-invoice-review-ui.spec.mjs tests/react-parity/hybrid-emulator-safety.spec.mjs",
+    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs tests/react-parity/hybrid-invoice-review-ui.spec.mjs tests/react-parity/hybrid-emulator-safety.spec.mjs tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",
@@ -86,7 +86,8 @@
     "test:finance-slip-claims": "node --test tests/react-parity/finance-slip-claims.spec.mjs",
     "test:hybrid-invoice-review-ui": "node --test tests/react-parity/hybrid-invoice-review-ui.spec.mjs",
     "test:firebase-hybrid-emulator": "node tools/check-firebase-emulator-java.mjs && firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-emulator.json --only auth,firestore,storage \"node --test tests/firebase-emulator/hybrid-finance-security.spec.mjs\"",
-    "test:hybrid-emulator-safety": "node --test tests/react-parity/hybrid-emulator-safety.spec.mjs"
+    "test:hybrid-emulator-safety": "node --test tests/react-parity/hybrid-emulator-safety.spec.mjs",
+    "test:hybrid-payment-callables": "node --test tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs"
   },
   "repository": {
     "type": "git",
