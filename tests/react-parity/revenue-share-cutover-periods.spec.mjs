@@ -60,67 +60,62 @@ function serverAt(day, orders = []) {
   );
   return m.exports;
 }
-const tenant = (effective = null) => ({
-  billingMode: "subscription", businessType: "both",
+const tenant = (billingMode = "subscription") => ({
+  billingMode, businessType: "both",
   createdAt: "2026-06-21T00:00:00+07:00",
-  ...(effective ? { billingAnniversaryEffectiveAt: effective + "T00:00:00+07:00" } : {}),
+  // No billingAnniversaryEffectiveAt or legacy migration flag is necessary.
 });
 
-test("unapproved legacy store retains calendar-month reports and November threshold", async () => {
+test("all existing stores use their anniversary months even without cutover flags", async () => {
   const server = serverAt("2026-11-20", [
     paid("2026-11-01", 6000), paid("2026-11-10", 4000), paid("2026-11-20", 1000),
   ]);
-  const t = tenant();
-  const s = server.__revenueSetting(t, pricing);
-  assert.equal(s.billingAnniversaryEffectiveDate, null);
-  const p = server.__periodFromData({ period: "monthly", month: "2026-11" }, t);
-  assert.equal(p.startDate, "2026-11-01");
-  assert.equal(p.endDate, "2026-11-30");
-  const sum = await server.__summaryForTenant("legacy", p, s);
-  assert.equal(sum.monthlyDeliveryStartDate, "2026-11-01");
+  const t = tenant(), s = server.__revenueSetting(t, pricing);
+  assert.equal(s.billingAnchorDate, "2026-06-21");
+  const p = server.__periodFromData({ period: "monthly", month: "2026-10" }, t);
+  assert.deepEqual([p.startDate, p.endDate], ["2026-10-21", "2026-11-20"]);
+  const sum = await server.__summaryForTenant("store", p, s);
+  assert.equal(sum.monthlyDeliveryStartDate, "2026-10-21");
+  assert.equal(sum.monthlyDeliveryEndDate, "2026-11-20");
   assert.equal(sum.monthlyDeliverySales, 11000);
   assert.equal(sum.revenueShare, 250);
 });
 
-test("authorized future cutover does not rewrite October or November pre-cutover revenue", async () => {
-  const server = serverAt("2026-11-20", [
-    paid("2026-11-01", 6000), paid("2026-11-10", 4000), paid("2026-11-20", 1000),
-  ]);
-  const t = tenant("2026-11-21");
-  const s = server.__revenueSetting(t, pricing);
-  assert.equal(s.billingAnniversaryEffectiveDate, "2026-11-21");
-  const before = server.__periodFromData({ period: "monthly", month: "2026-10" }, t);
-  assert.deepEqual([before.startDate, before.endDate], ["2026-10-01", "2026-10-31"]);
-  const november = server.__periodFromData({ period: "custom",
-    startDate: "2026-11-01", endDate: "2026-11-20" }, t);
-  const sum = await server.__summaryForTenant("legacy", november, s);
-  assert.equal(sum.revenueShare, 250);
-  assert.equal(sum.monthlyDeliveryStartDate, "2026-11-01");
-  assert.equal(server.__previousPeriod("monthly", t).startDate, "2026-10-01");
-});
-
-test("on cutover only post-cutover sales enter first anniversary cycle", async () => {
+test("next store anniversary resets the threshold regardless of its previous billing mode", async () => {
   const rows = [
     paid("2026-11-01", 6000), paid("2026-11-10", 4000), paid("2026-11-20", 1000),
     paid("2026-11-21", 6000), paid("2026-11-22", 4000),
   ];
-  const server = serverAt("2026-11-22", rows), t = tenant("2026-11-21");
-  const p = server.__periodFromData({ period: "monthly", month: "2026-11" }, t);
-  assert.deepEqual([p.startDate, p.endDate], ["2026-11-21", "2026-12-20"]);
-  const sum = await server.__summaryForTenant("premium", p, server.__revenueSetting(t, pricing));
-  assert.equal(sum.monthlyDeliveryStartDate, "2026-11-21");
-  assert.equal(sum.monthlyDeliveryEndDate, "2026-12-20");
-  assert.equal(sum.monthlyDeliverySales, 10000);
-  assert.equal(sum.revenueShare, 200);
-  assert.equal(server.__previousPeriod("monthly", t), null,
-    "A partially completed new cycle must not become a payable monthly invoice");
+  const server = serverAt("2026-11-22", rows);
+  for (const mode of ["subscription", "", "revenue_share"]) {
+    const t = tenant(mode);
+    const p = server.__periodFromData({ period: "monthly", month: "2026-11" }, t);
+    assert.deepEqual([p.startDate, p.endDate], ["2026-11-21", "2026-12-20"]);
+    const sum = await server.__summaryForTenant("store", p, server.__revenueSetting(t, pricing));
+    assert.equal(sum.monthlyDeliveryStartDate, "2026-11-21");
+    assert.equal(sum.monthlyDeliveryEndDate, "2026-12-20");
+    assert.equal(sum.monthlyDeliverySales, 10000);
+    // Only paid qualifying Delivery merchandise enters the new period.
+    assert.equal(sum.deliveryShareBase, 4000);
+  }
 });
 
-test("first completed post-cutover period is collectible only from the following anniversary", () => {
-  const server = serverAt("2026-12-21"), t = tenant("2026-11-21");
-  const previous = server.__previousPeriod("monthly", t);
+test("first completed anniversary cycle is collectible at the following anniversary", () => {
+  const before = serverAt("2026-07-20");
+  assert.equal(before.__previousPeriod("monthly", tenant()), null);
+  const server = serverAt("2026-12-21");
+  const previous = server.__previousPeriod("monthly", tenant());
   assert.deepEqual([previous.startDate, previous.endDate], ["2026-11-21", "2026-12-20"]);
-  const daily = server.__previousPeriod("daily", t);
-  assert.equal(daily.startDate, "2026-12-20",
-    "Legacy daily share collection remains daily even after threshold reset");
+  assert.equal(server.__previousPeriod("daily", tenant()).startDate, "2026-12-20");
+});
+
+test("missing store activation fails closed, never fabricates a monthly invoice", async () => {
+  const server = serverAt("2026-11-22", [paid("2026-11-22", 15000)]);
+  const noAnchor = { billingMode: "subscription", businessType: "both" };
+  assert.throws(() => server.__periodFromData({ period: "monthly", month: "2026-11" }, noAnchor),
+    /Tenant activation date is required/);
+  assert.equal(server.__previousPeriod("monthly", noAnchor), null);
+  const s = server.__revenueSetting(noAnchor, pricing);
+  const p = server.__periodFromData({ period: "daily", date: "2026-11-22" }, noAnchor);
+  assert.equal((await server.__summaryForTenant("store", p, s)).revenueShare, 0);
 });
