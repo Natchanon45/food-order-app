@@ -157,6 +157,7 @@ async function summaryForTenant(tenantId, period, setting) {
     db.collection("tenants").doc(tenantId).collection("sales").get()
   ]);
   let orderSales = 0, orderCount = 0, posSales = 0, posCount = 0;
+  let storefrontOrderSales = 0, deliveryOrderSales = 0;
   let shareOrderSales = 0, sharePosSales = 0, shareDeliverySales = 0;
   let customerDeliveryFees = 0, lalamoveDeliveryCost = 0, lalamoveWalletCoveredCost = 0, deliverySubsidy = 0;
 
@@ -182,6 +183,12 @@ async function summaryForTenant(tenantId, period, setting) {
     const day = dateKey(paidAt);
     paidDeliveryDaily.set(day, (paidDeliveryDaily.get(day) || 0) + cents);
   });
+  // Progress is always the current Bangkok calendar month, independent of the
+  // daily/monthly/custom report filter. Only paid goods excluding shipping count.
+  const currentMonth = dateKey(new Date()).slice(0, 7);
+  const currentDate = dateKey(new Date());
+  const monthDeliveryCents = [...paidDeliveryDaily].reduce((cents, [day, amount]) =>
+    day.startsWith(currentMonth) && day <= currentDate ? cents + amount : cents, 0);
   const eligibleDeliveryDays = eligibleDeliveryShareDays(
     [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
     setting.deliveryThreshold,
@@ -214,6 +221,8 @@ async function summaryForTenant(tenantId, period, setting) {
 
     // Report every paid restaurant sale, even when it is not subject to platform share.
     orderSales += foodSales;
+    if (isDelivery) deliveryOrderSales += foodSales;
+    else storefrontOrderSales += foodSales;
     orderCount += 1;
     if (!isDelivery && setting.legacyEnabled && setting.channels.includeRestaurant
       && restaurantOrderEligible(orderType, setting.channels.restaurantScope)) {
@@ -250,12 +259,16 @@ async function summaryForTenant(tenantId, period, setting) {
 
   const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
   orderSales = roundMoney(orderSales);
+  storefrontOrderSales = roundMoney(storefrontOrderSales);
+  deliveryOrderSales = roundMoney(deliveryOrderSales);
   posSales = roundMoney(posSales);
   customerDeliveryFees = roundMoney(customerDeliveryFees);
   lalamoveDeliveryCost = roundMoney(lalamoveDeliveryCost);
   lalamoveWalletCoveredCost = roundMoney(lalamoveWalletCoveredCost);
   deliverySubsidy = roundMoney(deliverySubsidy);
   const combinedSales = roundMoney(orderSales + posSales);
+  const inStoreSales = roundMoney(storefrontOrderSales + posSales);
+  const monthlyDeliverySales = roundMoney(monthDeliveryCents / 100);
   const legacyShareBase = setting.legacyEnabled ? roundMoney(shareOrderSales + sharePosSales) : 0;
   const deliveryShareBase = roundMoney(shareDeliverySales);
   const deliveryShareAmount = setting.centralDeliveryShare
@@ -270,6 +283,8 @@ async function summaryForTenant(tenantId, period, setting) {
 
   return {
     orderSales, orderCount, posSales, posCount, combinedSales,
+    storefrontOrderSales, deliveryOrderSales, inStoreSales,
+    monthlyDeliverySales, monthlyDeliveryMonth: currentMonth,
     customerDeliveryFees, lalamoveDeliveryCost, lalamoveWalletCoveredCost,
     lalamoveOutstandingCost, deliverySubsidy,
     revenueShareEnabled: setting.legacyEnabled ?? setting.enabled,
