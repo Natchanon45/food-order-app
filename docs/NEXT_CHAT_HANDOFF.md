@@ -1,5 +1,18 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Three-tenant anniversary cutover dry run and legacy-date safeguard
+
+- Native Mac parity tests passed before this iteration. Read-only Firestore inventory of 3 tenants showed only two flags per shop: missing explicit approved anchor and missing authorized cutover. No `revenueSharePayments` or overlaps; scan not truncated.
+- Anonymous SHOP_1: revenue share DAILY, active, original anchor 2026-06-21. Next possible reset 2026-11-21; still needs manual approval. Subscription expiry is separate.
+- SHOP_2: legacy yearly Premium, `billingMode` empty, suspended with a reason, anchor 2026-07-04. Candidate 2026-11-04 BLOCKED until subscription classification, suspension, and expiry are reviewed; never activate automatically.
+- SHOP_3: legacy monthly Premium, `billingMode` empty, active, anchor 2026-06-22. Candidate 2026-11-22 BLOCKED until existing Premium entitlement and expiry are reviewed.
+- Added pure local-only dry run `tools/billing-anniversary-cutover-plan-core.mjs`, CLI `tools/plan-billing-anniversary-cutover.mjs`, tests `tests/react-parity/billing-anniversary-cutover-plan.spec.mjs`. Planner reads existing JSON, writes new private JSON outside Git, checks stale/incomplete audits, overlap, ambiguous billing mode, pending slips and suspension. NO Cloud connections, no changes to Firestore, no auto approvals.
+- Corrected `functions/revenue-share-policy.js` and `functions/revenue-share.js` so pre-cutover dates stay on legacy calendar-month threshold rules. Only after a recorded effective cutover does threshold grouping/reset switch to tenant anniversary, and incomplete monthly transition cycles are not charged as new monthly invoices. Daily share slip billing stays daily; Premium expiry/status unchanged.
+- Tests in V8 simulated harness: anniversary 10/10, cutover dry run 9/9, revenue report static 7/7 and existing Premium pricing mock passed. Native npm suite for these NEW changes not yet run, no production Firebase deployment or migration.
+- Mac commands: `git pull --ff-only origin feature/react-firebase-port`; `npm run test:billing-anniversary-audit`; `npm run test:billing-anniversary`; `npm run test:react-parity`; optionally run cutover plan CLI against Desktop's audit-20261023-191156.json.
+- Before deploying or migrating: reread live invoice/payment history near the cutover date; reconcile billing rights and future sales; obtain explicit sign-off on a non-overlapping per-tenant transition; implement separate idempotent audited migration. In particular preserve SHOP_2's suspension and both Premium expiries.
+- Plan: `docs/BILLING_ANNIVERSARY_AND_ICONS_20261023.md`.
+
 ## 2026-10-23 — Anniversary billing instead of calendar-month threshold; IconPacks research (not deployed)
 
 - User confirmed current THB 59 payment report fixed in live UI; new request: each store's billing period and Delivery threshold reset **on its own signup/activation anniversary date**, e.g., day 5/8/11/15/16/22, not on the 1st.
