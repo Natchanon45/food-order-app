@@ -1,5 +1,16 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Owner overrides all former legacy Cutover restrictions: UNIVERSAL NEW BILLING
+
+- IMPORTANT FINAL DECISION: No real customers and no real sales in Firebase. ALL old and future stores use the activation-date monthly anniversary cycle now. SHOP_1/2/3 must not be blocked from calendar reset by legacy billingMode, yearly plan, or suspended status; access suspension is independent and must not be lifted implicitly.
+- `functions/revenue-share.js` removed `billingAnniversaryEffectiveAt` migration guard; monthly reports, prior monthly periods and Delivery threshold progress now use `tenantAnchorDate` for every store. Missing anchor fails closed; empty legacy `billingMode` no longer exempts eligible Delivery-capable store from central threshold rules.
+- `functions/revenue-share-policy.js` no longer branches on effectiveDate. `functions/public-signup.js` persists one stable `billingCycleAnchorAt`; it no longer creates redundant cutover approval metadata.
+- `functions/hybrid-billing-preview.js` now allows any anchored tenant (no hybrid_v1 tenant flag gate); first billing cycle and minimum month derive from original activation. Hybrid preview report and Home Dashboard now expose the preview to all owner/admin stores. **Preview does not issue invoices or process payments.**
+- HYBRID_REGISTRATION_READY remains false; operational Hybrid charges, ledger, Slip2Go collection, refund and suspension/recovery have NOT been released. Do not double-collect via Revenue Share and Hybrid preview.
+- OWNER will manually delete only selected TEST operational Firestore data. Do not run bulk deletes or delete tenant and product/menu master from this chat.
+- `docs/UNIVERSAL_BILLING_PRELAUNCH_20261023.md` is canonical and supersedes ALL earlier cutover dry-run plans. Do not require approval or wait for future specific tenant dates to use the shared calendar rules.
+- Mac full npm tests / React build still need execution after these commits; GitHub changes are not deployed.
+
 ## 2026-10-23 — Three-tenant anniversary cutover dry run and legacy-date safeguard
 
 - Native Mac parity tests passed before this iteration. Read-only Firestore inventory of 3 tenants showed only two flags per shop: missing explicit approved anchor and missing authorized cutover. No `revenueSharePayments` or overlaps; scan not truncated.
