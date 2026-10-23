@@ -78,6 +78,14 @@ service firebase.storage {
         || userTenantProductAdmin(tenantId)
         || membershipTenantProductAdmin(tenantId);
     }
+    function tenantBillingAdmin(tenantId) {
+      return hasRole(['super_admin'])
+        || tenantOwner(tenantId)
+        || (signedIn()
+          && staffProfile().active == true
+          && staffProfile().tenantId == tenantId
+          && staffProfile().role in ['owner', 'admin']);
+    }
 
     match /platform-branding/{fileName} {
       allow read: if true;
@@ -115,6 +123,18 @@ service firebase.storage {
       allow read: if staffRole();
       allow update: if false;
       allow delete: if hasRole(['owner', 'super_admin']);
+    }
+
+    // Proof is scoped to exactly one invoice and one unique submission.
+    // No browser may replace or delete a submitted banking record.
+    match /tenants/{tenantId}/hybrid-billing-slips/{invoiceId}/{attemptId}/{fileName} {
+      allow read: if tenantBillingAdmin(tenantId);
+      allow create: if tenantBillingAdmin(tenantId)
+        && invoiceId.matches('20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:(delivery:.*|monthly:fixed)')
+        && attemptId.matches('[A-Za-z0-9_-]{16,80}')
+        && fileName.matches('[A-Za-z0-9_.-]{1,160}')
+        && validRevenueShareSlip(10 * 1024 * 1024);
+      allow update, delete: if false;
     }
 
     match /tenants/{tenantId}/revenue-share-slips/{paymentId}/{fileName} {
