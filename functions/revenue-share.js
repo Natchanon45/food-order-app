@@ -3,7 +3,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { inspectSlip } = require("./slip-verification");
-const { loadPricing } = require("./subscription-pricing-core");
+const { loadPricing, calculatePricing } = require("./subscription-pricing-core");
 const {
   normalizeBusinessType,
   normalizeRestaurantScope,
@@ -631,8 +631,13 @@ async function tenantLalamoveFailures(tenantId, period) {
 
 exports.getTenantRevenueShareAccess = onCall({ region: REGION }, async request => {
   const { tenant } = await assertTenantAdmin(request.auth);
+  const pricing = await loadPricing(getFirestore());
+  const membership = calculatePricing(pricing);
   return {
-    ...revenueSetting(tenant, await loadPricing(getFirestore())),
+    ...revenueSetting(tenant, pricing),
+    // Membership charges are separate from revenue-share settlements.
+    premiumMonthlyPrice: membership.monthly.payable,
+    premiumAnnualPrice: membership.annual.payable,
     suspended: tenant.revenueShareSuspended === true,
     suspensionReason: String(tenant.revenueShareSuspensionReason || ""),
     suspendedAt: asDate(tenant.revenueShareSuspendedAt)?.toISOString() || null,
