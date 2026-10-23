@@ -17,14 +17,24 @@ const project = process.env.GCLOUD_PROJECT ||
   process.env.GCP_PROJECT || firebaseConfig.projectId;
 const knownProjects = [process.env.GCLOUD_PROJECT,
   process.env.GCP_PROJECT, firebaseConfig.projectId].filter(Boolean);
-if (project !== "demo-penguin-hybrid"
-  || knownProjects.some(value => value !== "demo-penguin-hybrid")
-  || process.env.HYBRID_DEMO_FUNCTIONS_ONLY !== "1"
-  || !localHost("FIRESTORE_EMULATOR_HOST")
-  || !localHost("FIREBASE_AUTH_EMULATOR_HOST")
-  || !localHost("FIREBASE_STORAGE_EMULATOR_HOST")
-  || !localHost("FIREBASE_FUNCTIONS_EMULATOR_HOST")) {
-  throw new Error("HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS");
+// Classify failed conditions without logging environment variable values,
+// project names, tokens, credentials, or service-account paths. Firebase CLI's
+// definition discovery can override some values in its child process.
+// Reporting the NAMES of failed checks lets UAT diagnose this safely.
+const demoConditions = {
+  demoProject: project === "demo-penguin-hybrid",
+  noConflictingProject: !knownProjects.some(value => value !== "demo-penguin-hybrid"),
+  explicitDemoFlag: process.env.HYBRID_DEMO_FUNCTIONS_ONLY === "1",
+  localFirestore: localHost("FIRESTORE_EMULATOR_HOST"),
+  localAuth: localHost("FIREBASE_AUTH_EMULATOR_HOST"),
+  localStorage: localHost("FIREBASE_STORAGE_EMULATOR_HOST"),
+  localFunctions: localHost("FIREBASE_FUNCTIONS_EMULATOR_HOST"),
+};
+const unsafe = Object.entries(demoConditions)
+  .filter(([, valid]) => !valid).map(([check]) => check);
+if (unsafe.length) {
+  throw new Error("HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS"
+    + " [failed checks: " + unsafe.join(", ") + "]");
 }
 
 const { createHash } = require("node:crypto");
