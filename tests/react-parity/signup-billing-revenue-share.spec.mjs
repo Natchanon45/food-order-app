@@ -281,10 +281,10 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   const span = (day, next) => ({ start: new Date(day + "T00:00:00+07:00"), end: new Date(next + "T00:00:00+07:00") });
   const expected = [
     ["2026-10-01", "2026-10-02", 0],
-    ["2026-10-02", "2026-10-03", 0],
+    ["2026-10-02", "2026-10-03", 300],
     ["2026-10-03", "2026-10-04", 25],
     ["2026-10-04", "2026-10-05", 50],
-    ["2026-10-01", "2026-11-01", 75],
+    ["2026-10-01", "2026-11-01", 375],
   ];
   for (const [from, to, amount] of expected) {
     const actual = await loaded.exports.__summary("premium", span(from, to), setting);
@@ -306,7 +306,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   assert.equal(legacy.centralDeliveryShare, true);
   assert.equal(legacy.rate, 10, "Historical non-Delivery rate remains unchanged");
   const legacyMonth = await loaded.exports.__summary("legacy", span("2026-10-01", "2026-11-01"), legacy);
-  assert.equal(legacyMonth.deliveryShareAmount, 75, "Legacy Delivery must also use 5% central");
+  assert.equal(legacyMonth.deliveryShareAmount, 375, "Legacy Delivery must also use 5% central at 100% threshold");
   assert.equal(legacyMonth.legacyShareAmount, 500, "Old POS/table charges remain under original historical contract");
   assert.equal(legacy.channels.includeRetail, true);
   assert.equal(loaded.exports.__setting(tenant).enabled, false, "Legacy suspension scheduler never activates Premium");
