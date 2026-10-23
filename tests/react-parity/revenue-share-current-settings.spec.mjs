@@ -41,7 +41,8 @@ test("Report shows POS and food sales independently from chargeable share, witho
 test("Report keeps in-store / POS and Delivery sales distinct, and monthly progress independent of period filter", () => {
   assert.match(server, /storefrontOrderSales, deliveryOrderSales, inStoreSales/);
   assert.match(server, /monthlyDeliverySales, monthlyDeliveryMonth: currentMonth/);
-  assert.match(server, /day\.startsWith\(currentMonth\) && day <= currentDate/);
+  assert.match(server, /day >= cycleStart && day <= currentDate && day <= cycleEnd/);
+  assert.match(server, /monthlyDeliveryStartDate: cycleStart, monthlyDeliveryEndDate: cycleEnd/);
   assert.match(server, /if \(isDelivery\) deliveryOrderSales \+= foodSales/);
   assert.match(report, /money\(summary\.posSales\)/);
   assert.match(report, /money\(summary\.storefrontOrderSales\)/);
