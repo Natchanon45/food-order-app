@@ -23,7 +23,7 @@ Both definitions use **Firebase App Check enforcement** and reject unauthenticat
 
 ## UI prepared
 
-`/platform/hybrid-invoices` remains a Super Admin-only, paginated, tenant-scoped read-only ledger. Pending-review proof rows now render a bilingual responsive finance note/independent bank verification form with **disabled** Approve/Reject buttons. `react-app/src/data/hybridPaymentActions.js` includes the future authenticated HTTPS Callable adapter but `HYBRID_PAYMENT_UI_READY=false` rejects any calls locally. It contains no Firestore client mutations.
+`/platform/hybrid-invoices` remains a Super Admin-only, paginated, tenant-scoped read-only ledger. Pending-review proof rows now render a bilingual responsive finance note/independent bank verification form with **disabled** Approve/Reject buttons. `react-app/src/data/hybridPaymentActions.js` contains an explicitly **non-operational** action that always rejects with `HYBRID_PAYMENT_NOT_RELEASED` or `HYBRID_PAYMENT_CALLABLE_UNREGISTERED`. It deliberately has **no `httpsCallable` reference** to an endpoint not exported from `functions/index.js`; no financial client mutations are possible. Adding the real adapter and its matching authorized backend export is a separate, gated release.
 
 Approve requires actual verified bank evidence, or separately verified external confirmation with a substantive note; reject needs a reason. The backend revalidates all of these independently. Buttons are not clickable before release.
 
@@ -60,3 +60,11 @@ npm run build:react
 5. Obtain explicit approval before flipping **both** server and UI release locks, exporting named callables through the Functions entrypoint, or deploying any Firebase project. No background/automatic invoice issuance until its separate release review.
 
 **No Firebase Hosting, Functions, Firestore, Storage Rules or Production billing deployment occurred in Phase 7.**
+
+## 23 October 2026 — React Callable Contract correction
+
+Mac regression reported `test:hybrid-payment-callables` **11/11 PASS** and `test:hybrid-billing` **113/113 PASS**, then `npm run test:react-parity` failed at `test:react-callables` for the unregistered client reference `reviewHybridInvoicePaymentProof` in `react-app/src/data/hybridPaymentActions.js`. The shell used `set -e`, so `npm run build:react` did **not run** in that attempt. Cause: `tools/react-callable-contract.mjs` correctly requires all client `httpsCallable(functions, 'name')` calls to be backed by an exported `functions/index.js` entry. The payment Callable module is deliberately private and must NOT be prematurely exported.
+
+**Fix:** Removed the unreleased `httpsCallable` import/reference from the locked React adapter, retained a fail-closed `reviewHybridPayment()` that always rejects, and strengthened `tests/react-parity/hybrid-payment-review-ui.spec.mjs` to require no unregistered endpoint refs. All five review UI tests passed an isolated JavaScript harness. No production funds can move; the server gate and the UI gate remain false. Native Mac `npm run test:react-callables`, full parity and production build are still **pending rerun** after this fix.
+
+Safe Mac checks: `npm run test:hybrid-payment-callables`, `npm run test:react-callables`, `npm run test:react-parity`, `npm run build:react`. Never bypass this contract by constructing dynamic Callable names, nor add a production Function export just to satisfy a static check.
