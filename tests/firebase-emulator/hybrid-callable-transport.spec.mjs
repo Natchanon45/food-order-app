@@ -80,6 +80,12 @@ function requestData(store, suffix, attemptId) {
     attemptId, slipPath: evidencePath(store, suffix, attemptId),
   };
 }
+// Review request has a DIFFERENT strict allowlist from the upload request:
+// slipPath is forbidden during approval and would return invalid-argument.
+function reviewData(submission, action, note, verifiedExternally = false) {
+  const { tenantId, invoiceId, attemptId } = submission;
+  return { tenantId, invoiceId, attemptId, action, note, verifiedExternally };
+}
 function callable(name, endpoint, data) {
   const client = clients.get(name);
   if (!client) throw new Error("TEST_UNKNOWN_CLIENT_" + name);
@@ -180,8 +186,9 @@ test("owner uploads once, submits via authenticated Callable and only creates pe
 });
 
 test("real Auth token prevents owner/admin approval; only Super Admin can settle once", async () => {
-  const payload = { ...requestData("demo-shop-a", "trigger", "attempt_owner_123456789"),
-    action: "approve", note: "Emulator proof confirmed", verifiedExternally: false };
+  const payload = reviewData(
+    requestData("demo-shop-a", "trigger", "attempt_owner_123456789"),
+    "approve", "Emulator proof confirmed");
   await assert.rejects(review("owner-a", payload), fails("permission-denied"));
   await assert.rejects(review("admin-a", payload), fails("permission-denied"));
   await assert.rejects(review("anonymous", payload), fails("unauthenticated"));
@@ -205,11 +212,11 @@ test("admin may submit but cannot approve; Super Admin rejection is final for on
   await upload("admin-a", "demo-shop-a", "2026-10-25", attemptId, "unique-transfer-2");
   const payload = requestData("demo-shop-a", "2026-10-25", attemptId);
   assert.equal((await submit("admin-a", payload)).data.status, "pending_review");
-  await assert.rejects(review("admin-a", { ...payload, action: "reject",
-    note: "Bank reference invalid" }), fails("permission-denied"));
-  const outcome = await review("super-admin", {
-    ...payload, action: "reject", note: "Bank reference invalid",
-  });
+  await assert.rejects(review("admin-a",
+    reviewData(payload, "reject", "Bank reference invalid")),
+  fails("permission-denied"));
+  const outcome = await review("super-admin",
+    reviewData(payload, "reject", "Bank reference invalid"));
   assert.equal(outcome.data.status, "rejected");
   assert.equal((await invoiceDoc("demo-shop-a", "2026-10-25").get()).data().status, "rejected");
 });
@@ -231,8 +238,9 @@ test("global SHA-256 claim prevents reuse of exact synthetic slip across stores"
 
 test("invoice cannot be paid via forged review body, and a rejected invoice accepts new proof", async () => {
   const old = requestData("demo-shop-a", "2026-10-25", "attempt_admin_123456789");
-  await assert.rejects(review("super-admin", { ...old,
-    action: "approve", amount: 0, status: "paid",
+  await assert.rejects(review("super-admin", {
+    ...reviewData(old, "approve", "Emulator fake bank verification"),
+    amount: 0, status: "paid",
   }), fails("invalid-argument"));
 
   const freshAttempt = "attempt_newproof_123456789";
