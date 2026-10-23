@@ -57,6 +57,8 @@ test("Prepaid Lalamove wallet discrepancy is diagnostic only, never billed to Pl
   assert.match(report, /id="platformAmountDue"/);
   assert.match(server, /const lalamoveOutstandingCost = roundMoney\(Math\.max\(0, lalamoveDeliveryCost - lalamoveWalletCoveredCost\)\)/);
   assert.match(server, /const platformAmountDue = setting\.enabled \? revenueShare : 0/);
+  assert.match(server, /if \(!\(summary\.platformAmountDue > 0\)\)/);
+  assert.match(server, /REVENUE_SHARE_NO_AMOUNT_DUE/);
   assert.doesNotMatch(report, /hasLegacyDeliveryDebt|รวมต้นทุน Lalamove ที่ยังไม่หัก Wallet/);
   assert.match(report, /เฉพาะส่วนแบ่งยอดขาย ไม่รวมค่าขนส่งที่ตัดเครดิตแล้ว/);
   assert.match(report, /noAmountDue \? <div className="report-payment-zero"/);
