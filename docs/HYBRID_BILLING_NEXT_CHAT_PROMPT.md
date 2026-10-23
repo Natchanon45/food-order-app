@@ -1,5 +1,27 @@
 # คำสั่งเริ่มแชทใหม่ — PENGUIN Hybrid Billing
 
+## UPDATE 2026-10-23 — Billing anniversary overrides old calendar-month assumptions
+
+The user explicitly confirmed that monthly billing, threshold accumulation,
+monthly resets and invoice boundaries are anchored to each store's **actual
+activation date**, e.g. 5th, 8th, 11th, 15th, 16th, 22nd. Original day-of-month
+is retained across short months (31 Jan → 28 Feb → 31 Mar). Do **not** revert
+this to calendar-month grouping even if earlier sections say month start = 1st.
+
+- Shared helper `functions/billing-anniversary.js` and tests `tests/react-parity/billing-anniversary.spec.mjs`.
+- Operational revenue-share report and future Hybrid preview now respect the
+  tenant anniversary; progress displays actual cycle bounds.
+- New Premium signup stores `billingCycleAnchorAt` and
+  `billingAnniversaryEffectiveAt` at server-side activation.
+- Existing tenants need audited cutover to prevent overlaps; the legacy
+  revenue-share suspension scheduler **does not auto-enforce** an anniversary
+  period without an explicit `billingAnniversaryEffectiveAt`.
+- Hybrid signup remains retired/fail-closed, no invoices/payments enabled.
+- No Firebase production deployment performed. Native Mac tests pending.
+- IconPacks adoption is just a design proposal; no icon assets installed.
+- Full details: `docs/BILLING_ANNIVERSARY_AND_ICONS_20261023.md`.
+
+
 > คัดลอกข้อความด้านล่างไปวางใน ChatGPT แชทใหม่ แล้วสั่ง "ต่อครับ" ได้เลย
 > อัปเดต 2026-10-19 (Asia/Bangkok), candidate Version 0.4.296 Build 2026.10.19.526
 
