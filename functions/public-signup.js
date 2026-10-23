@@ -191,6 +191,9 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
       revenueShareEnabled: signupBilling.billingMode === "revenue_share",
       revenueShareRate: 0,
       revenueShareBillingCycle: "monthly",
+      // Immutable activation-day anchor for anniversary billing; not the signup request date.
+      billingCycleAnchorAt: now,
+      billingAnniversaryEffectiveAt: now,
       revenueShareBusinessType: signupBilling.businessType,
       revenueShareRestaurantScope: signupBilling.restaurantRevenueShareScope,
       signupBilling: { ...signupBilling },
