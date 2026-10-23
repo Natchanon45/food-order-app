@@ -716,3 +716,34 @@
 @media(prefers-reduced-motion:reduce){
   .revenue-share-dashboard .report-progress-fill{transition:none}
 }
+
+
+/* Keep the receipt/payment line inside the related-totals card as in the approved mockup. */
+.revenue-share-dashboard .report-related-amounts > .report-payment-card{
+  margin:12px 0 0;
+  border:0;
+  border-top:1px solid #e6ede9;
+  border-radius:0;
+  padding:12px 0 0;
+  background:transparent;
+  box-shadow:none;
+}
+.revenue-share-dashboard .report-related-amounts > .report-payment-card-zero{
+  margin-top:12px;
+  border-top:0;
+  padding:0;
+}
+.revenue-share-dashboard .report-related-amounts > .report-payment-card-zero > .report-payment-zero{
+  min-height:43px;
+  margin:0;
+  padding:10px 13px;
+  border-radius:11px;
+  background:#f1f4f5;
+  border:1px solid #e7ebee;
+  font-size:.78rem;
+  color:#5a7064;
+}
+.revenue-share-dashboard .report-related-amounts > .report-payment-card:not(.report-payment-card-zero){
+  padding:13px 0 0;
+  border-top:1px solid #e6ede9;
+}
