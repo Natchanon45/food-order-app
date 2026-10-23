@@ -747,3 +747,29 @@
   padding:13px 0 0;
   border-top:1px solid #e6ede9;
 }
+
+
+/* Custom two-date range keeps both native date controls usable without overflow. */
+@media(min-width:1041px){
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])){
+    grid-template-columns:minmax(185px,1fr) auto 38px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-period-controls{
+    grid-column:1/-1;grid-row:2;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period{
+    width:min(100%,620px);
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-filter-refresh{
+    grid-column:3;grid-row:1;
+  }
+}
+@media(max-width:700px){
+  .revenue-share-dashboard .report-custom-period{
+    grid-template-columns:1fr;
+    width:100%;
+  }
+  .revenue-share-dashboard .report-custom-period .input{
+    width:100%;font-size:.78rem;
+  }
+}
