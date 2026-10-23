@@ -134,7 +134,12 @@ service firebase.storage {
     // No browser may replace or delete a submitted banking record.
     match /tenants/{tenantId}/hybrid-billing-slips/{invoiceId}/{attemptId}/{fileName} {
       allow read: if tenantBillingAdmin(tenantId);
-      allow create: if tenantBillingAdmin(tenantId)
+      // A second upload to the same Storage path may still be evaluated as
+      // CREATE (Firebase Storage SDK/Emulator behavior). Explicitly require
+      // that no object existed before this write; update:false alone is
+      // insufficient to guarantee immutable bank evidence.
+      allow create: if resource == null
+        && tenantBillingAdmin(tenantId)
         && hybridInvoiceAcceptsEvidence(tenantId, invoiceId)
         && invoiceId.matches('20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:(delivery:.*|monthly:fixed)')
         && attemptId.matches('[A-Za-z0-9_-]{16,80}')
