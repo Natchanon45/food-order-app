@@ -11,6 +11,7 @@ const {
   restaurantOrderEligible,
   eligibleDeliveryShareDays,
 } = require("./revenue-share-policy");
+const { tenantAnchorDate, cycleFromMonth, cycleForDate, previousCompletedCycle } = require("./billing-anniversary");
 
 const REGION = "asia-southeast1";
 const TZ_OFFSET = "+07:00";
@@ -42,12 +43,15 @@ function addDays(date, days) {
   return new Date(date.getTime() + Number(days || 0) * 86400000);
 }
 
-function periodFromData(data = {}) {
+function periodFromData(data = {}, tenant = {}) {
   const now = new Date();
   const today = dateKey(now);
   const period = ["daily", "monthly", "yearly", "custom"].includes(String(data.period || "")) ? String(data.period) : "daily";
   if (period === "monthly") {
     const month = /^\d{4}-\d{2}$/.test(String(data.month || "")) ? String(data.month) : today.slice(0, 7);
+    const anchor = tenantAnchorDate(tenant);
+    if (anchor) return { type: period, ...cycleFromMonth(anchor, month) };
+    // Accounts missing trusted activation timestamps retain calendar months.
     const [year, monthNo] = month.split("-").map(Number);
     const start = new Date(`${month}-01T00:00:00${TZ_OFFSET}`);
     const nextMonth = monthNo === 12 ? `${year + 1}-01` : `${year}-${String(monthNo + 1).padStart(2, "0")}`;
@@ -123,6 +127,7 @@ function revenueSetting(tenant = {}, premiumPricing = null) {
       : Number(tenant.revenueShareDeliveryThreshold ?? 10000),
     billingCycle: premiumDeliveryShare ? "monthly"
       : (tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly"),
+    billingAnchorDate: tenantAnchorDate(tenant),
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
     businessType,
     restaurantScope: channels.restaurantScope,
@@ -183,15 +188,20 @@ async function summaryForTenant(tenantId, period, setting) {
     const day = dateKey(paidAt);
     paidDeliveryDaily.set(day, (paidDeliveryDaily.get(day) || 0) + cents);
   });
-  // Progress is always the current Bangkok calendar month, independent of the
-  // daily/monthly/custom report filter. Only paid goods excluding shipping count.
-  const currentMonth = dateKey(new Date()).slice(0, 7);
+  // Each tenant threshold resets on its original activation-day anniversary.
+  // Report filters cannot reset cumulative delivery progress.
   const currentDate = dateKey(new Date());
+  const currentMonth = currentDate.slice(0, 7);
+  const anniversary = setting.billingAnchorDate;
+  const activeCycle = anniversary ? cycleForDate(anniversary, currentDate) : null;
+  const calendarCycle = cycleFromMonth("2000-01-01", currentMonth);
+  const cycleStart = activeCycle?.startDate || calendarCycle.startDate;
+  const cycleEnd = activeCycle?.endDate || calendarCycle.endDate;
   const monthDeliveryCents = [...paidDeliveryDaily].reduce((cents, [day, amount]) =>
-    day.startsWith(currentMonth) && day <= currentDate ? cents + amount : cents, 0);
+    day >= cycleStart && day <= currentDate && day <= cycleEnd ? cents + amount : cents, 0);
   const eligibleDeliveryDays = eligibleDeliveryShareDays(
     [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
-    setting.deliveryThreshold,
+    setting.deliveryThreshold, anniversary,
   );
 
   ordersSnapshot.docs.forEach(snapshot => {
@@ -288,6 +298,7 @@ async function summaryForTenant(tenantId, period, setting) {
     orderSales, orderCount, posSales, posCount, combinedSales,
     storefrontOrderSales, deliveryOrderSales, inStoreSales,
     monthlyDeliverySales, monthlyDeliveryMonth: currentMonth,
+    monthlyDeliveryStartDate: cycleStart, monthlyDeliveryEndDate: cycleEnd,
     customerDeliveryFees, lalamoveDeliveryCost, lalamoveWalletCoveredCost,
     lalamoveOutstandingCost, deliverySubsidy,
     revenueShareEnabled: setting.legacyEnabled ?? setting.enabled,
@@ -467,12 +478,17 @@ function overrideMatches(tenant = {}, startDate, endDate) {
   return overrides.some(item => item && item.periodStart === startDate && item.periodEnd === endDate);
 }
 
-function previousPeriod(cycle) {
+function previousPeriod(cycle, tenant = {}) {
   const today = dateKey(new Date());
   if (cycle === "daily") {
     const start = addDays(dateAtBangkok(today), -1);
     const key = dateKey(start);
     return { type: "daily", startDate: key, endDate: key, start, end: addDays(start, 1) };
+  }
+  const anchor = tenantAnchorDate(tenant);
+  if (anchor) {
+    const previous = previousCompletedCycle(anchor, today);
+    return previous ? { type: "monthly", ...previous } : null;
   }
   const [year, month] = today.slice(0, 7).split("-").map(Number);
   const py = month === 1 ? year - 1 : year;
@@ -528,7 +544,18 @@ async function reconcileTenant(tenantId, centralPricing = null) {
     await mirrorTenantAccess(tenantRef, tenant, { active: true, revenueShareSuspended: false, revenueShareSuspendedAt: FieldValue.delete(), revenueShareSuspendedPeriodType: FieldValue.delete(), revenueShareSuspendedPeriodStart: FieldValue.delete(), revenueShareSuspendedPeriodEnd: FieldValue.delete(), revenueShareSuspensionReason: FieldValue.delete() });
     tenant = { ...tenant, active: true, revenueShareSuspended: false };
   }
-  const due = previousPeriod(setting.billingCycle);
+  const due = previousPeriod(setting.billingCycle, tenant);
+  if (!due) return { state: "first_cycle", action: "none" };
+  // Do not automatically suspend older tenants for overlapping legacy
+  // calendar-month invoices. Finance must explicitly establish cutover.
+  if (setting.billingCycle === "monthly" && setting.billingAnchorDate
+    && !asDate(tenant.billingAnniversaryEffectiveAt)) {
+    return { state: "anniversary_migration_pending", action: "none" };
+  }
+  if (setting.billingCycle === "monthly" && asDate(tenant.billingAnniversaryEffectiveAt)
+    && due.start < asDate(tenant.billingAnniversaryEffectiveAt)) {
+    return { state: "pre_anniversary_cutover", action: "none" };
+  }
   if (overrideMatches(tenant, due.startDate, due.endDate)) return { state: "manual_override", action: "none" };
   const payment = await latestPaymentForPeriod(tenantRef, due.startDate, due.endDate);
   if (payment?.data().status === "approved") return { state: "approved", action: "none" };
@@ -669,7 +696,7 @@ exports.getTenantRevenueShareSummary = onCall({ region: REGION }, async request 
   const { tenant } = await assertTenantAdmin(request.auth);
   const setting = revenueSetting(tenant, await loadPricing(getFirestore()));
   if (!setting.enabled) throw new HttpsError("permission-denied", "Revenue share is disabled");
-  const period = periodFromData(request.data || {});
+  const period = periodFromData(request.data || {}, tenant);
   const [summary, wallet, lalamoveFailures] = await Promise.all([
     summaryForTenant(tenant.id, period, setting),
     tenantWalletReport(tenant.id, period),
@@ -694,7 +721,7 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
   const { profile, tenantRef, tenant } = await assertTenantAdmin(request.auth);
   const setting = revenueSetting(tenant, await loadPricing(getFirestore()));
   if (!setting.enabled) throw new HttpsError("failed-precondition", "Revenue share is disabled");
-  const period = periodFromData(request.data || {});
+  const period = periodFromData(request.data || {}, tenant);
   if (period.type !== setting.billingCycle) throw new HttpsError("failed-precondition", `Billing cycle is ${setting.billingCycle}`);
   const existing = await latestPaymentForPeriod(tenantRef, period.startDate, period.endDate);
   if (existing && ["pending", "approved"].includes(existing.data().status)) throw new HttpsError("already-exists", "This period already has a pending or approved payment");
@@ -863,7 +890,9 @@ exports.getPlatformRevenueShareSummary = onCall({ region: REGION }, async reques
   };
   for (const snapshot of tenants) {
     const tenant = { id: snapshot.id, ...snapshot.data() };
-    const summary = await summaryForTenant(tenant.id, period, revenueSetting(tenant, premiumPricing));
+    const tenantPeriod = period.type === "monthly"
+      ? periodFromData(request.data || {}, tenant) : period;
+    const summary = await summaryForTenant(tenant.id, tenantPeriod, revenueSetting(tenant, premiumPricing));
     result[tenant.id] = summary;
     Object.keys(totals).forEach(key => { totals[key] += Number(summary[key] || 0); });
   }
