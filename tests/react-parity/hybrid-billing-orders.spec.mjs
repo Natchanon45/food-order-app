@@ -108,7 +108,8 @@ test("read-only tenant preview uses stored period snapshot, ignores POS and neve
         set: () => changes.push("set"),
       }) },
   };
-  const result = await previewHybridMonth(tenantRef, { hybridTrialMonth: "2026-10" }, "2026-10", {});
+  const result = await previewHybridMonth(tenantRef, { hybridTrialMonth: "2026-10",
+    createdAt: "2026-10-01T00:00:00+07:00" }, "2026-10", {});
   assert.equal(result.priceLocked, true);
   assert.equal(result.source, "billing_snapshot");
   assert.equal(result.config.monthlyFee, 777);
