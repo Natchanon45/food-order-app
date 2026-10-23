@@ -9,6 +9,8 @@ const {
   cycleForDate, previousCompletedCycle,
 } = require("../../functions/billing-anniversary.js");
 const { eligibleDeliveryShareDays } = require("../../functions/revenue-share-policy.js");
+const { calculateCycle } = require("../../functions/hybrid-billing-core.js");
+const { paidDeliveryByDay } = require("../../functions/hybrid-billing-orders.js");
 const revenueServer = fs.readFileSync("functions/revenue-share.js", "utf8");
 const report = fs.readFileSync("react-app/src/pages/RevenueShareReportPage.jsx", "utf8");
 
@@ -83,4 +85,51 @@ test("Revenue report, payable slip and scheduled reconciliation use same anchor"
   assert.match(report, /monthlyDeliveryStartDate/);
   assert.match(report, /monthlyDeliveryEndDate/);
   assert.match(report, /Progress ยอด Delivery สะสมรอบบิลนี้/);
+});
+
+test("Hybrid projected trigger spans calendar months but its threshold restarts on renewal", () => {
+  const cycle = cycleFromMonth("2026-10-22", "2026-10");
+  const result = calculateCycle({
+    month: cycle.month, cycleStartDate: cycle.startDate,
+    cycleEndExclusiveDate: cycle.endExclusiveDate,
+    firstMonth: true, dailyDeliverySales: [
+      { date: "2026-10-31", amount: 6000 },
+      { date: "2026-11-01", amount: 5000 },
+      { date: "2026-11-02", amount: 1000 },
+    ],
+  });
+  assert.equal(result.triggerDate, "2026-11-01");
+  assert.equal(result.cycleStartDate, "2026-10-22");
+  assert.equal(result.cycleEndDate, "2026-11-21");
+  assert.deepEqual(result.invoices.map(row => row.amount), [500, 50]);
+  assert.equal(result.totalFee, 550);
+  const renewal = cycleFromMonth("2026-10-22", "2026-11");
+  const next = calculateCycle({
+    cycleStartDate: renewal.startDate, cycleEndExclusiveDate: renewal.endExclusiveDate,
+    dailyDeliverySales: [{ date: "2026-11-22", amount: 1000 }],
+  });
+  assert.equal(next.mode, "fixed_monthly");
+  assert.equal(next.invoices[0].date, "2026-12-21");
+  assert.equal(next.invoices[0].id, "2026-11-22:monthly:fixed");
+});
+
+test("Hybrid paid order projection filters by anniversary boundaries without client date tampering", () => {
+  const mk = (iso, amount) => ({
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    paidAt: { toDate: () => new Date(iso) },
+    totalAmount: amount + 40, deliveryFee: 40, subtotalAmount: amount,
+  });
+  const rows = [
+    mk("2026-10-21T16:59:59Z", 1000), // just before 22nd Bangkok midnight
+    mk("2026-10-21T17:00:00Z", 4000), // 22nd Bangkok midnight
+    mk("2026-11-21T16:59:59Z", 6000), // 21st Bangkok
+    mk("2026-11-21T17:00:00Z", 9000), // next cycle
+  ];
+  const daily = paidDeliveryByDay(rows, {
+    startDate: "2026-10-22", endExclusiveDate: "2026-11-22",
+  });
+  assert.deepEqual(daily, [
+    { date: "2026-10-22", amount: 4000 },
+    { date: "2026-11-21", amount: 6000 },
+  ]);
 });
