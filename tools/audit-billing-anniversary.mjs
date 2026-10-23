@@ -63,7 +63,9 @@ async function run(argv = process.argv.slice(2)) {
   for (const doc of docs) {
     const tenant = doc.data() || {};
     const paymentsRef = doc.ref.collection("revenueSharePayments");
-    const paymentDocs = await paymentsRef.orderBy("createdAt", "desc").limit(limit + 1).get();
+    // Do not order by createdAt: older legacy payment documents can lack
+    // that field and Firestore orderBy would silently exclude them.
+    const paymentDocs = await paymentsRef.limit(limit + 1).get();
     const paymentsCapped = paymentDocs.size > limit;
     const payments = paymentDocs.docs.slice(0, limit)
       .map(payment => ({ id: payment.id, ...(payment.data() || {}) }));
