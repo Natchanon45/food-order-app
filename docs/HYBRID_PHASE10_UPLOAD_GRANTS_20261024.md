@@ -62,3 +62,5 @@ Do not reset, clean, merge to main or deploy Production. `build:react` can regen
 - Real Storage Emulator suite revised to seed server-owned grants and reject direct forged paths, expired grants and owner/admin grant theft.
 - ***Status: source committed to branch; full native Mac tests and Firebase Emulator runs remain PENDING because Mac mini was offline.*** No Production App Check/Slip2Go end-to-end proof, no React Upload enabled, no Firebase deploy/merge.
 - The user explicitly requested Phase 10 be the FINAL phase: do not add further subphase names. Remaining final acceptance includes App Check, receiver-bank config, manual finance audit, refund/credit controls, suspension/recovery logic, and complete native mobile/desktop UAT.
+
+- Added simultaneous double-Submit test for one reserved grant on a separate demo invoice: exactly one Callable succeeds, the other fails; only one pending invoice/attempt and one consumed grant are expected. Native Emulator verification is pending.

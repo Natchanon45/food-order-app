@@ -144,7 +144,7 @@ before(async () => {
     ownerUid: clients.get("owner-b").uid, shopName: "Demo B",
     subscriptionStatus: "active", active: true,
   });
-  for (const suffix of ["trigger", "2026-10-25", "2026-10-26", "2026-10-27"]) {
+  for (const suffix of ["trigger", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28"]) {
     await seed("demo-shop-a", suffix);
   }
   await seed("demo-shop-b", "trigger");
@@ -316,4 +316,27 @@ test("demo transport denies unreserved upload, grant theft, expired grant and fo
     attemptId: grant.attemptId, slipPath: grant.slipPath,
   }), fails("failed-precondition"));
   assert.equal((await invoiceDoc("demo-shop-a", "2026-10-27").get()).data().status, "issued");
+});
+
+test("concurrent submit calls consume exactly one grant and create exactly one payment", async () => {
+  const { payload } = await reserveAndUpload(
+    "owner-a", "demo-shop-a", "2026-10-28", "concurrent-unique-transfer");
+  const results = await Promise.allSettled([
+    submit("owner-a", payload), submit("owner-a", payload),
+  ]);
+  const successes = results.filter(result => result.status === "fulfilled");
+  const failures = results.filter(result => result.status === "rejected");
+  assert.equal(successes.length, 1);
+  assert.equal(failures.length, 1);
+  assert.equal(successes[0].value.data.status, "pending_review");
+  assert.ok(["functions/failed-precondition", "functions/already-exists"].includes(
+    failures[0].reason.code));
+  const grant = (await db.doc("tenants/demo-shop-a/hybridBillingUploadGrants/" +
+    payload.attemptId).get()).data();
+  assert.equal(grant.status, "consumed");
+  assert.equal((await invoiceDoc("demo-shop-a", "2026-10-28").get()).data().status,
+    "pending_review");
+  const attempt = await db.doc("tenants/demo-shop-a/hybridBillingPaymentAttempts/" +
+    payload.attemptId).get();
+  assert.equal(attempt.exists, true);
 });
