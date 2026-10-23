@@ -52,21 +52,23 @@ test("Report keeps in-store / POS and Delivery sales distinct, and monthly progr
   assert.match(report, /Math\.min\(100, progressPercent\)/);
 });
 
-test("Shipping debt remains separate from zero share and affects real payment collection", () => {
+test("Prepaid Lalamove wallet discrepancy is diagnostic only, never billed to Platform", () => {
   assert.match(report, /id="deliveryShareAmount"/);
   assert.match(report, /id="platformAmountDue"/);
-  assert.match(report, /summary\.lalamoveOutstandingCost/);
-  assert.match(report, /hasLegacyDeliveryDebt/);
-  assert.match(report, /ไม่ใช่ส่วนแบ่ง Delivery/);
+  assert.match(server, /const lalamoveOutstandingCost = roundMoney\(Math\.max\(0, lalamoveDeliveryCost - lalamoveWalletCoveredCost\)\)/);
+  assert.match(server, /const platformAmountDue = setting\.enabled \? revenueShare : 0/);
+  assert.doesNotMatch(report, /hasLegacyDeliveryDebt|รวมต้นทุน Lalamove ที่ยังไม่หัก Wallet/);
+  assert.match(report, /เฉพาะส่วนแบ่งยอดขาย ไม่รวมค่าขนส่งที่ตัดเครดิตแล้ว/);
   assert.match(report, /noAmountDue \? <div className="report-payment-zero"/);
   assert.match(report, /!noAmountDue \? <>/);
   assert.match(report, /id="submitRevenueShareSlip"/);
   assert.match(report, /id="revenueSharePaymentHistory"/);
-  // In the historical screenshot: no Delivery share, but Lalamove debt is still real.
+  // Even if old order rows omit their wallet debit stamps, no second charge.
   const billedShare = 0;
-  const uncollectedLalamove = 59;
-  const platformDue = billedShare + uncollectedLalamove;
-  assert.equal(platformDue, 59);
+  const missingWalletStampCost = 59;
+  const platformDue = billedShare;
+  assert.equal(missingWalletStampCost, 59);
+  assert.equal(platformDue, 0);
 });
 
 test("Report keeps the period picker, payment review/history, and keeps Wallet/Lalamove optional", () => {
