@@ -10,6 +10,8 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getHybridBillingPreview } from "@/data/hybridBillingReport";
 import { listHybridInvoices } from "@/data/hybridInvoiceReviewData";
+import { HybridTenantProofPanel } from "@/components/HybridTenantProofPanel";
+import { isEligibleHybridInvoice } from "@/data/hybridTenantPaymentDraft";
 
 const BANGKOK = "Asia/Bangkok";
 function bangkokMonth(date = new Date()) {
@@ -50,6 +52,7 @@ export function HybridBillingReportPage() {
   const [moreInvoices, setMoreInvoices] = useState(false);
   const [invoiceLoading, setInvoiceLoading] = useState(true);
   const [invoiceError, setInvoiceError] = useState("");
+  const [proofInvoiceId, setProofInvoiceId] = useState("");
   const stylesReady = useParityPage({
     title: t("hybrid_report.title"),
     bodyClass: "revenue-share-report-page hybrid-report-page",
@@ -75,6 +78,7 @@ export function HybridBillingReportPage() {
   useEffect(() => {
     if (!tenant?.id || !["owner", "admin"].includes(auth.profile?.role)) return;
     let cancelled = false;
+    setProofInvoiceId("");
     setInvoiceLoading(true);
     setInvoiceError("");
     setIssuedInvoices([]);
@@ -103,6 +107,8 @@ export function HybridBillingReportPage() {
     }).format(parsed);
   };
   const monthly = useMemo(() => data?.invoices || [], [data?.invoices]);
+  const chosenInvoice = issuedInvoices.find(invoice =>
+    invoice.id === proofInvoiceId && isEligibleHybridInvoice(invoice)) || null;
 
   if (!stylesReady || auth.status === "loading" || tenantState.status === "loading") {
     return <PageReadyOverlay />;
@@ -214,6 +220,7 @@ export function HybridBillingReportPage() {
                   <th>{t("hybrid_report.date")}</th>
                   <th>{t("hybrid_report.amount")}</th>
                   <th>{intlLocale.startsWith("th") ? "สถานะ" : "Status"}</th>
+                  <th>{intlLocale.startsWith("th") ? "หลักฐาน" : "Evidence"}</th>
                 </tr></thead>
                 <tbody>{issuedInvoices.length ? issuedInvoices.map(invoice => (
                   <tr key={invoice.id}>
@@ -226,8 +233,18 @@ export function HybridBillingReportPage() {
                         paid: intlLocale.startsWith("th") ? "ชำระแล้ว" : "Paid",
                         rejected: intlLocale.startsWith("th") ? "ปฏิเสธ" : "Rejected" })[invoice.status] || invoice.status || "-"}
                     </span></td>
+                    <td>{isEligibleHybridInvoice(invoice) ? (
+                      <button type="button" className="btn btn-sm"
+                        aria-expanded={proofInvoiceId === invoice.id}
+                        onClick={() => setProofInvoiceId(value =>
+                          value === invoice.id ? "" : invoice.id)}>
+                        <i className="bi bi-file-earmark-arrow-up app-icon" aria-hidden="true"></i>
+                        <span>{intlLocale.startsWith("th") ? "เตรียมสลิป" : "Prepare slip"}</span>
+                      </button>
+                    ) : <span aria-label={intlLocale.startsWith("th")
+                      ? "ไม่รับหลักฐานเพิ่มเติม" : "No further evidence allowed"}>-</span>}</td>
                   </tr>
-                )) : <tr><td colSpan={4}>{intlLocale.startsWith("th") ? "ยังไม่มีบิลจริง" : "No issued invoices yet"}</td></tr>}</tbody>
+                )) : <tr><td colSpan={5}>{intlLocale.startsWith("th") ? "ยังไม่มีบิลจริง" : "No issued invoices yet"}</td></tr>}</tbody>
               </table>
             </div>
             {moreInvoices ? <button type="button" className="btn btn-sm" disabled={invoiceLoading}
@@ -244,6 +261,11 @@ export function HybridBillingReportPage() {
               {intlLocale.startsWith("th") ? "โหลดบิลเพิ่มเติม" : "Load more invoices"}
             </button> : null}
           </div>
+          {chosenInvoice ? <HybridTenantProofPanel
+            key={tenant.id + ":" + chosenInvoice.id}
+            tenantId={tenant.id} invoice={chosenInvoice}
+            thai={intlLocale.startsWith("th")} money={currency}
+            onClose={() => setProofInvoiceId("")} /> : null}
         </section>
       </main>
       <ParityFooter />
