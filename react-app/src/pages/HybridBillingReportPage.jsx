@@ -19,6 +19,22 @@ function bangkokMonth(date = new Date()) {
   return `${map.year}-${map.month}`;
 }
 
+function tenantAnniversaryMonth(tenant) {
+  for (const value of [
+    tenant?.billingCycleAnchorAt, tenant?.revenueShareCycleAnchorAt,
+    tenant?.hybridBillingActivatedAt, tenant?.trialStartsAt,
+    tenant?.activatedAt, tenant?.createdAt,
+  ]) {
+    if (!value) continue;
+    const date = typeof value.toDate === "function" ? value.toDate()
+      : value instanceof Date ? value
+      : typeof value.seconds === "number" ? new Date(value.seconds * 1000)
+      : new Date(value);
+    if (Number.isFinite(date.getTime())) return bangkokMonth(date);
+  }
+  return "";
+}
+
 export function HybridBillingReportPage() {
   const auth = useAuth();
   const tenantState = useTenant();
@@ -90,7 +106,7 @@ export function HybridBillingReportPage() {
         </section>
         <section className="card hybrid-report-toolbar">
           <label htmlFor="hybridReportMonth">{t("hybrid_report.month")}</label>
-          <input id="hybridReportMonth" type="month" min={tenant.hybridTrialMonth || ""}
+          <input id="hybridReportMonth" type="month" min={tenantAnniversaryMonth(tenant)}
             max={bangkokMonth()} value={month} onChange={event => setMonth(event.target.value)} />
           <button className="btn btn-sm" type="button" onClick={reload} disabled={loading}>
             <i className="bi bi-arrow-clockwise app-icon" aria-hidden="true"></i>
