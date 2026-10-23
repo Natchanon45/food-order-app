@@ -1,3 +1,13 @@
+## 2026-10-24 — FINAL Phase 10: Strict Hybrid Slip2Go beneficiary and HTTP provenance
+
+- User confirmed preceding Mac tests on HEAD `c9c0b319` passed and approved continuation. Mac mini connector still OFFLINE; **changes after this HEAD have not been natively tested**.
+- Reconciled a critical go-live gap: shared `functions/slip-verification.js` previously allowed receiver config with only a name or only an account number, and accepted a body claiming `200200` regardless of failed HTTP status. Added opt-in `requireVerifiedReceiver: true` for **Hybrid only**: requires 6–20 digit beneficiary account number and populated account name before provider request, and returns a trusted receiverValidated flag ONLY for a successful HTTP response with code `200200`.
+- `prepareHybridInvoiceProof` requests strict Hybrid verification, and the private `evaluateSlipVerification` policy rejects `status: matched` without receiverValidated provenance. Review still manual Super Admin; nothing auto pays or unlocks a store. Old Delivery recipient behavior is retained except universal rejection of false success on non-2xx HTTP.
+- Guarded Emulator-only fake verifier advertises receiverValidated=true for SYNTHETIC demo testing; not bank evidence. Updated pure proof tests and bank mock fixtures. New `test:hybrid-receiver-verification` (6 cases) added to `test:hybrid-billing` and tests malformed/missing recipient, true positive, HTTP spoofed `200200`, ambiguous bank status, fake provenance and dev-only gates.
+- Direct source V8 test with injected fake provider and Firestore: **24/24 assertions passed**, not a native Node/Firebase Emulator run.
+- Real beneficiary owner/receiver must still be validated operationally and the account configured in `platformPrivateSettings/slipVerification` (server private) before Production. An account name/number being syntactically valid does NOT prove account ownership, and the strict check does not perform a live payout or bank reconciliation.
+- Remaining final Phase 10: real App Check, Slip2Go provider acceptance/UAT against the intended platform receiving bank, finance exception/refund/credit and suspension recovery acceptance, latest full Emulator/Browser UAT and owner release approval. Four Production payment/issuer/UI gates all remain FALSE; no deploy or main merge.
+
 ## 2026-10-24 — FINAL Phase 10: reviewer revocation safety + immutable finance audit UI
 
 - User confirmed all tests on the previous GitHub HEAD `19ef9d37` passed on Mac. The Mac Remote Desktop Commander connection still reports OFFLINE, so **changes in this commit range require a new native Mac and Emulator verification**.

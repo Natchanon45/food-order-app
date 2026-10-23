@@ -89,3 +89,11 @@ After pulling the most recent `feature/react-firebase-port` commit:
 6. Production mode must still show disabled submit/review controls and no demo finance endpoint. The demo does not prove a real bank transfer or App Check integration.
 
 The new code has source-level checks but has **not** been run on the Mac in this turn; all older owner-confirmed test results apply only to preceding commits. Do not deploy Production until real receiving-bank/App Check/Slip2Go, credit/refund/reversal and suspension/recovery policy UAT is complete.
+
+## 24 October 2026 — Receiver verification and HTTP fail-closed tests
+
+1. Ensure `platformPrivateSettings/slipVerification` is configured via the existing trusted Super Admin channel with a genuine account number **and** the correct beneficiary account name, plus real Slip2Go API credentials. Do not paste bank credentials into logs/PRs, and do not import an actual banking record into demo storage.
+2. Run `npm run test:hybrid-receiver-verification`; this mocks provider HTTP responses and must never call Slip2Go or any real endpoint. The whole `npm run test:hybrid-billing` suite now includes it.
+3. For an actual UAT environment (not demo), validate provider account ownership with the platform finance team, successful `200200` under receiver and amount/date/duplicate checks, and negative `200000`, `200401`, duplicate, invalid beneficiary, and HTTP error responses. `200200` alone on an HTTP failure must never become bankVerified.
+4. The DEV-only demo uses synthetic verification with receiverValidated=true to simulate the success case; a synthetic record or code does NOT prove a bank transfer. Do not enable Production until real integration and independent finance review are signed off.
+5. Every Production release gate remains false. If a recipient configuration is missing, Hybrid proof submission should fail closed instead of choosing a different, legacy bank account.

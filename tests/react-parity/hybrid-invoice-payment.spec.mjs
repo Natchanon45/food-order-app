@@ -153,6 +153,16 @@ test("only genuine Slip2Go code 200200 plus exact amount and reference earns ban
     /AMOUNT_MISMATCH/);
 });
 
+test("Hybrid never stages proof from a matching amount without verified receiver", async () => {
+  const env = memory();
+  await assert.rejects(env.prepare({
+    verification: { ...paidBank(), receiverValidated: false },
+  }), /HYBRID_PAYMENT_RECEIVER_UNVERIFIED/);
+  assert.equal(env.getInvoice().status, "issued");
+  assert.equal(env.getPayment(), undefined);
+  assert.equal(env.countClaims(), 0);
+});
+
 test("bank verification only stages pending_review, never marks invoice as paid", async () => {
   const env = memory(), prepared = await env.prepare();
   assert.equal(prepared.verification.bankVerified, true);
