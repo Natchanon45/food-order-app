@@ -1,3 +1,14 @@
+## 2026-10-24 — FINAL Phase 10: Demo-only browser Owner → Review → Paid/Rejected
+
+- User confirmed prior Mac test suite passed and asked to continue. Mac mini connector remained OFFLINE this turn. **New code in this turn is not Mac/Emulator/UAT verified**.
+- Added DEV-only dual opt-in Firebase App config in `react-app/src/firebase/client.js`, isolated `demo-penguin-hybrid` project, instance-scoped emulator-connection guard.
+- Added pure `react-app/src/data/hybridDemoProofTransport.js` plus SDK adapter `hybridDemoProofClient.js` calling only Emulator endpoints, validating grant/path/expiry/bytes/tenant/session and accepting **pending_review only**.
+- Tenant React panel now presents Emulator-only upload button with progress, error, privacy warning and invoice refresh, while Production UI remains hard-disabled. Demo report skips the Production preview Callable entirely.
+- Super Admin review panel has Emulator-only Approve/Reject backed by demo Review Callable. Production review buttons & flags remain false. Seed script `tools/seed-hybrid-browser-demo.mjs` creates demo-only owner/reviewer identities, tenant and immutable invoice, requires all loopback hosts.
+- New `npm run test:hybrid-demo-browser` added to the hybrid suite. Source-level V8 mocked checks 19/19 passed before reviewer UX changes; NOT native Node/npm tests.
+- Complete step-by-step Mac and browser UAT: `docs/HYBRID_PHASE10_BROWSER_EMULATOR_UAT_20261024.md`. No Prod deploy, no main merge, preserve dirty public HTML.
+- **NEXT:** Native test/Emulator/React Build and real Owner+Super Admin browser UAT on Mac, then real App Check/receiving bank/Slip2Go failure modes/finance audit/credit+refund/recovery controls before Production release approval. Phase 10 is FINAL; no more subphase numbering.
+
 ## 2026-10-24 — Phase 10 continuation: grant-enforced Storage + atomic submit (native tests pending)
 
 - Owner explicitly requested finishing in Phase 10, without adding Phase 10A/10B/C or Phase 11. Source already committed on feature/react-firebase-port; check latest HEAD.

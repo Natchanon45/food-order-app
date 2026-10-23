@@ -1,0 +1,74 @@
+# Phase 10 — React Owner / Super Admin browser emulator UAT
+
+Date: 24 October 2026. Branch: `feature/react-firebase-port`. This remains the **FINAL Phase 10**, not a new numbered phase.
+
+## Important isolation
+
+- Owner confirmed the previous native security/Functions/React tests passed at commit `7fd22aa` (user confirmation; no log attached this turn).
+- The **new browser UI changes have NOT been run in a real browser or on the Mac yet**. The Mac mini remote connector was offline. Do not claim they pass until these latest code changes are verified.
+- Vite must be DEV (production `build:react` has `import.meta.env.DEV === false`) AND both `VITE_USE_FIREBASE_EMULATORS=true` AND `VITE_HYBRID_DEMO_PAYMENT_E2E=true`. Only then does the React Firebase App use project `demo-penguin-hybrid` with Auth/Firestore/Storage/Functions on loopback ports. A mismatched Firebase App project **throws**.
+- `functions/emulator-hybrid/index.cjs` requires the guarded demo project and fake bank verifier; ONLY this entrypoint exports `demoHybridPrepareUpload`, `demoHybridSubmitProof`, `demoHybridReviewProof`. Production `functions/index.js` and `functions/bootstrap.js` still do not export payment writes.
+- **Never upload an actual personal bank-transfer slip.** Use an invented PNG/PDF (e.g. harmless synthetic sample). The emulator verifier intentionally pretends a bank match and does not prove any real payment. Demo `paid` records exist only in the disposable emulator.
+- Production release gates `HYBRID_PAYMENT_UI_READY`, `HYBRID_PAYMENT_CALLABLE_READY`, `HYBRID_TENANT_PROOF_SUBMISSION_READY`, `HYBRID_INVOICE_ISSUANCE_READY` are **false**. No Production deploy or merge.
+
+## Mac instructions: two separate terminals
+
+Before starting, `git status --short` and preserve any intentional dirty `public/**/index.html`. Do not `reset --hard` or `clean -fd`.
+
+**Terminal A — start local demo Auth/Firestore/Storage/Functions:**
+
+```bash
+cd ~/Desktop/Sites/food-order-app
+git switch feature/react-firebase-port
+git pull --ff-only origin feature/react-firebase-port
+export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+export HYBRID_DEMO_FUNCTIONS_ONLY=1
+export HYBRID_DEMO_FUNCTIONS_HOST=127.0.0.1:5001
+export GCLOUD_PROJECT=demo-penguin-hybrid
+export GCP_PROJECT=demo-penguin-hybrid
+export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+export FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099
+export FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199
+export FIREBASE_FUNCTIONS_EMULATOR_HOST=127.0.0.1:5001
+firebase emulators:start --project demo-penguin-hybrid --config firebase.hybrid-functions-emulator.json --only auth,firestore,storage,functions
+```
+
+**Terminal B — same loopback variables, seed only demo identities/ledger, launch DEV React:**
+
+```bash
+cd ~/Desktop/Sites/food-order-app
+export HYBRID_DEMO_FUNCTIONS_ONLY=1
+export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+export FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099
+export FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199
+export FIREBASE_FUNCTIONS_EMULATOR_HOST=127.0.0.1:5001
+export GCLOUD_PROJECT=demo-penguin-hybrid
+export GCP_PROJECT=demo-penguin-hybrid
+npm run seed:hybrid-demo-browser
+npm run test:hybrid-demo-browser
+npm run test:hybrid-billing
+npm run test:react-callables
+VITE_USE_FIREBASE_EMULATORS=true VITE_HYBRID_DEMO_PAYMENT_E2E=true npm run dev:react
+```
+
+The seed script refuses nonlocal service hosts, inconsistent project values and missing demo flag **before importing firebase-admin**. It makes only synthetic data:
+- Owner: `hybrid-owner@demo.invalid`
+- Reviewer: `hybrid-reviewer@demo.invalid` (Super Admin)
+- Password for both: `EmulatorOnly123!`
+- Store: `demo-hybrid-browser`
+- Immutable demo invoice: `2026-10-24:monthly:fixed` / 590 THB synthetic
+- Re-running the seed preserves an existing invoice and its payment status; restart the disposable emulator without persistence to reset the demo.
+
+## Browser walkthrough
+
+1. Open `http://localhost:5174/react/login?next=%2Freports%2Fhybrid-billing`, log in as demo Owner. Navigate to `/react/reports/hybrid-billing` if not redirected. A blue **Emulator-only** banner must be visible; actual issued invoices are read directly from the demo Firestore.
+2. Select the synthetic invoice, choose a **synthetic** JPG/PNG/WebP/PDF (1 byte to 10 MiB), click **Submit to Emulator**. UI displays grant/upload/submit steps and refreshes. The invoice must now be `pending_review`. There must be an immutable Storage object, consumed grant, pending attempt and shared proof claim; verify in Emulator UI.
+3. Sign out; sign in as `hybrid-reviewer@demo.invalid`. Open `/react/platform/hybrid-invoices`, choose `demo-hybrid-browser`, review the pending attempt and press **Approve in Emulator** or **Reject in Emulator** (provide required rejection note). The invoice must update to `paid` or `rejected` **only inside the emulator**. A second decision on the same attempt must be rejected.
+4. Sign out; sign in as Owner again. Verify the refreshed invoice status. A paid invoice must not present the Upload option. For an alternate rejection workflow, restart the disposable emulator (fresh data) or use a new synthetic invoice.
+5. Browser negative tests: direct unreserved path upload, other user's grant, expired grant, mismatched MIME/size, duplicate content, upload overwrite, double submit and role revocation. Server-side tests already cover these cases, but confirm latest revision in real Emulator.
+6. Repeat `npm run test:hybrid-functions-emulator`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity` and `npm run build:react` after stopping conflicting emulator ports where required. Production build must **never** enable the demo.
+
+## Remaining work before completion
+
+Real App Check validation, real bank receiving account configuration/confirmation (without exposing secrets), actual Slip2Go provider and failure/duplicate coverage (not fake verifier), finance audit and credit/refund/suspension-recovery acceptance, responsive browser UAT, approval of release gating, and then separate owner-authorized Production deployment. Do not mistake a synthetic `paid` for a verified transfer.

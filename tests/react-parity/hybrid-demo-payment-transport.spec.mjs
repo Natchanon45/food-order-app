@@ -133,3 +133,19 @@ test("demo is excluded from Production and immutable release flags remain disabl
   assert.match(seed, /FIRESTORE_EMULATOR_HOST/);
   assert.doesNotMatch(seed, /chat-45754|firebase deploy/);
 });
+
+test("Super Admin review wiring is emulator-only; real review adapter remains hard-disabled", () => {
+  const client = fs.readFileSync("react-app/src/data/hybridDemoProofClient.js", "utf8");
+  const panel = fs.readFileSync("react-app/src/components/HybridReviewDecisionPanel.jsx", "utf8");
+  const page = fs.readFileSync("react-app/src/pages/HybridBillingReviewPage.jsx", "utf8");
+  const seed = fs.readFileSync("tools/seed-hybrid-browser-demo.mjs", "utf8");
+  const real = fs.readFileSync("react-app/src/data/hybridPaymentActions.js", "utf8");
+  assert.match(client, /httpsCallable\(functions, DEMO_ENDPOINTS\.review\)/);
+  assert.match(client, /HYBRID_DEMO_ONLY_LOCAL_EMULATOR/);
+  assert.match(panel, /isHybridDemoMode \? \(/);
+  assert.match(panel, /reviewHybridDemoPayment\(payload\)/);
+  assert.match(page, /isHybridDemoMode/);
+  assert.match(seed, /hybrid-reviewer@demo\.invalid/);
+  assert.match(real, /HYBRID_PAYMENT_UI_READY = false/);
+  assert.match(real, /HYBRID_PAYMENT_NOT_RELEASED/);
+});

@@ -64,3 +64,7 @@ Do not reset, clean, merge to main or deploy Production. `build:react` can regen
 - The user explicitly requested Phase 10 be the FINAL phase: do not add further subphase names. Remaining final acceptance includes App Check, receiver-bank config, manual finance audit, refund/credit controls, suspension/recovery logic, and complete native mobile/desktop UAT.
 
 - Added simultaneous double-Submit test for one reserved grant on a separate demo invoice: exactly one Callable succeeds, the other fails; only one pending invoice/attempt and one consumed grant are expected. Native Emulator verification is pending.
+
+## Phase 10 browser UAT extension (still the same Phase 10)
+
+See `docs/HYBRID_PHASE10_BROWSER_EMULATOR_UAT_20261024.md` for the DEV-only owner + reviewer React Browser workflow, seeded demo identities, loopback-only server requirements and UAT exit conditions. Production payment callables, real bank verification and UI remain OFF. No real Mac/browser validation after these changes; previous owner's confirmation covered the earlier grant-bound commit.
