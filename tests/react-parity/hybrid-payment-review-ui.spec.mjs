@@ -22,8 +22,12 @@ test("UI and server both hard-lock approval, not configurable from Firestore", (
 });
 
 test("Super Admin form never gets to patch Firestore status or client-defined amount", () => {
-  assert.match(actions, /httpsCallable\(functions, "reviewHybridInvoicePaymentProof"\)/);
-  assert.match(actions, /tenantId, invoiceId, attemptId, action, note, verifiedExternally/);
+  // The browser must not reference a Cloud Function that is deliberately
+  // absent from functions/index.js. A fake or dynamically built name would
+  // only hide the contract failure instead of fixing the release boundary.
+  assert.doesNotMatch(actions, /httpsCallable\(|reviewHybridInvoicePaymentProof/);
+  assert.match(actions, /HYBRID_PAYMENT_NOT_RELEASED/);
+  assert.match(actions, /HYBRID_PAYMENT_CALLABLE_UNREGISTERED/);
   assert.doesNotMatch(actions + panel, /setDoc\(|updateDoc\(|deleteDoc\(|runTransaction\(/);
   assert.doesNotMatch(actions + panel, /amount:|status: "paid"|walletBalance|subscriptionStatus/);
   assert.match(panel, /onReviewed\?\.\(\)/);
@@ -47,4 +51,13 @@ test("Finance approval UX is responsive, bilingual and clearly disabled", () => 
   assert.match(panel, /Reject/);
   assert.match(styles, /hybrid-review-decision/);
   assert.match(styles, /@media\(max-width:760px\)/);
+});
+
+test("unreleased payment callable must not be referenced in any client adapter", () => {
+  const index = read("functions/index.js");
+  assert.doesNotMatch(index, /exports\.reviewHybridInvoicePaymentProof\s*=/);
+  assert.doesNotMatch(index, /exports\.submitTenantHybridPaymentProof\s*=/);
+  assert.doesNotMatch(actions, /httpsCallable\(|call\(\s*["']reviewHybridInvoicePaymentProof/);
+  assert.match(actions, /HYBRID_PAYMENT_UI_READY = false/);
+  assert.match(backend, /HYBRID_PAYMENT_CALLABLE_READY = false/);
 });
