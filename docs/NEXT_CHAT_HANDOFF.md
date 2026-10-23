@@ -1,5 +1,13 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Emulator Storage overwrite security regression resolved in source (not yet rerun)
+
+- User Mac now has Java 21 and Firebase CLI 15.34.0; `npm run test:hybrid-emulator-safety` 6/6 passed and the real demo-only `npm run test:firebase-hybrid-emulator` started. Real Emulator result **7/8**: all Firestore permission, cross-product claim, invoice replay, payment review tests passed; one Storage test failed because uploading the same object path twice was wrongly allowed.
+- Cause: Storage uploader treats overwrites as CREATE, so `allow update: if false` by itself does not prevent overwriting (Firebase Tools issue #10302, confirmed also in production behavior).
+- FIX COMMITTED: Hybrid slip Storage Rule `allow create` now includes `resource == null`, preserving tenant/issued-or-rejected-invoice/MIME/size checks; reuploads to an existing object must fail even when classified CREATE. `tests/firebase-emulator/hybrid-finance-security.spec.mjs` now tests identical overwrite, modified overwrite, metadata tampering, delete and compares originally uploaded bytes. Static preflight asserts `resource == null` and updated test coverage.
+- JS static safety checks 6/6 and emulator test script parse 1/1 passed; **real Emulator NOT rerun after fix**. Need `git pull --ff-only origin feature/react-firebase-port`, session `JAVA_HOME` set to Homebrew JDK21, `npm run test:hybrid-emulator-safety`, `npm run test:firebase-hybrid-emulator`; if green, `npm run test:react-parity` and `npm run build:react`.
+- No production Firebase Hosting/Functions/Rules deploy or Firestore writes; preserve dirty generated `public/**/index.html` and shop Master data. See `docs/HYBRID_FIREBASE_EMULATOR_UAT_PHASE6_20261023.md`.
+
 ## 2026-10-23 — Mac Firebase Emulator Java runtime blocker
 
 - Mac test log: `npm run test:hybrid-emulator-safety` passed 5/5; `java -version` was Temurin 17.0.20.1, `firebase --version` was 15.34.0; `npm run test:firebase-hybrid-emulator` stopped before emulator startup with `firebase-tools no longer supports Java version before 21`. `set -e` prevented subsequent tests/build.
