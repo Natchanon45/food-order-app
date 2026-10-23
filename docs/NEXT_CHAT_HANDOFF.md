@@ -1,3 +1,11 @@
+## 2026-10-24 — Phase 10: Mac validation log received; one stale test fixed
+
+- Mac terminal log received 2026-10-24: demo-browser npm script was missing LOCALLY because the Mac checkout was older than the GitHub feature HEAD. The latest GitHub `package.json` includes `test:hybrid-demo-browser`; **git pull --ff-only** is necessary after inspecting/preserving local dirty HTML.
+- Mac `test:hybrid-billing`: 145 tests, **144 pass, 1 fail**. The sole failure was a source-text safety guard falsely matching the word `financeSlipClaims` **inside a comment** of the private upload-grant service; no real financial write was shown by that failure. Adjusted the assertion to ignore comment-only lines while retaining explicit executable-source checks for forbidden write/callable/upload operations.
+- The older Mac React Production build ran and generated build-contract PASS, but does not validate latest GitHub Browser DEV demo changes. React parity invocation stopped at the same 1 failing Hybrid test before completing later suites.
+- Latest Branch must be pulled and fresh `npm run test:hybrid-demo-browser`, `npm run test:hybrid-functions-safety`, `npm run test:hybrid-billing`, `npm run test:react-parity`, `npm run build:react` rerun. Browser/Emulator UAT is pending and Mac connector offline.
+- Maintain all four release flags FALSE, no Production deploy/merge, keep Phase 10 as the sole remaining final phase.
+
 ## 2026-10-24 — FINAL Phase 10: Demo-only browser Owner → Review → Paid/Rejected
 
 - User confirmed prior Mac test suite passed and asked to continue. Mac mini connector remained OFFLINE this turn. **New code in this turn is not Mac/Emulator/UAT verified**.

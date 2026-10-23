@@ -72,3 +72,7 @@ The seed script refuses nonlocal service hosts, inconsistent project values and 
 ## Remaining work before completion
 
 Real App Check validation, real bank receiving account configuration/confirmation (without exposing secrets), actual Slip2Go provider and failure/duplicate coverage (not fake verifier), finance audit and credit/refund/suspension-recovery acceptance, responsive browser UAT, approval of release gating, and then separate owner-authorized Production deployment. Do not mistake a synthetic `paid` for a verified transfer.
+
+## 24 October 2026 — Uploaded Mac log follow-up
+
+The owner uploaded a Mac terminal log reporting `Missing script: "test:hybrid-demo-browser"` and `test:hybrid-billing` at **144/145** with one safety assertion failure. The Mac checkout is older than the GitHub feature branch (its package hybrid test arguments did not include the new demo browser spec). Pull the branch latest safely and rerun. The failing test matched a forbidden-operation keyword in a *comment*, not a real mutation; source-only guard was repaired and remains fail-closed. The Mac log did show an older React Production build and build-contract PASS, not latest React demo validation.

@@ -1,8 +1,9 @@
 "use strict";
 
-// Phase 10A: private SERVER-issued upload reservations.
-// Not referenced by functions/index.js/bootstrap.js and not a Production callable.
-// Storage Rules do not yet enforce these grants: no browser upload UI is enabled.
+// Final Phase 10: private SERVER-issued upload reservations.
+// Production index/bootstrap never publish this as a payment Callable.
+// Storage Rules require this grant; only isolated demo browser uploads are enabled.
+// Production Tenant UI and all payment release flags remain hard-disabled.
 const { randomBytes } = require("node:crypto");
 // Lazy import prevents the private payment service/transaction cycle.
 const { satang, validInvoiceId, validId, validateEvidencePath } =
@@ -126,12 +127,12 @@ async function issueTrustedHybridUploadGrant({
       expiresAt, invoiceSignature: invoice.signature,
     });
   });
-  // A reservation is NOT payment proof or a bank transfer. It neither
-  // touches the invoice nor allocates a financeSlipClaims document.
+  // A reservation is NOT payment proof or a bank transfer. It never
+  // changes the invoice or allocates any shared financial claim.
   return {
     tenantId, invoiceId, attemptId, slipPath, contentType,
     maxSize: fileSize, expiresAt: expiresAt.toISOString(),
-    uploadEnabled: false, // Production UI and Storage enforcement still locked.
+    uploadEnabled: false, // No real payment release; only DEV demo may use this grant.
   };
 }
 

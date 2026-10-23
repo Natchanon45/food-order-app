@@ -237,7 +237,7 @@ test("Firebase discovery with omitted reserved host and shell flag succeeds only
   assert.equal(env.FIREBASE_FUNCTIONS_EMULATOR_HOST, undefined);
 });
 
-test("Phase 10A upload grant exists only behind test-only authenticated Callable", () => {
+test("Phase 10 upload grant exists only behind test-only authenticated Callable", () => {
   assert.match(entrypoint, /exports\.demoHybridPrepareUpload = onCall\(options/);
   assert.match(entrypoint, /if \(!request\.auth\?\.uid\)/);
   assert.match(entrypoint, /issueTrustedHybridUploadGrant\(/);
@@ -248,7 +248,14 @@ test("Phase 10A upload grant exists only behind test-only authenticated Callable
   assert.match(uploadGrant, /tx\.create\(grantRef,/);
   assert.match(uploadGrant, /uploadEnabled: false/);
   assert.match(firestoreRules, /match \/hybridBillingUploadGrants\/\{attemptId\} \{\s*allow read, write: if false;/);
-  assert.doesNotMatch(uploadGrant, /uploadBytes\(|financeSlipClaims|onCall\(/);
+  // Source comments may describe why global claims are intentionally NOT
+  // touched. Scan executable source, not comments, for forbidden operations.
+  const executableGrant = uploadGrant.replace(/^\s*\/\/.*$/gm, "");
+  assert.doesNotMatch(executableGrant, /\buploadBytes\s*\(|\bonCall\s*\(|financeSlipClaims/);
+  // Preserve the positive boundary: grants are private Firestore reservations
+  // only, never a financial claim or an unregistered Callable.
+  assert.match(executableGrant, /tx\.create\(grantRef,/);
+  assert.doesNotMatch(executableGrant, /\btx\.(?:create|set|update)\s*\([^)]*financeSlipClaims/);
 });
 
 test("trusted proof submit requires unexpired grant before verification and consumes it atomically", () => {
