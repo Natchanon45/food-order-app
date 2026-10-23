@@ -199,12 +199,32 @@ test("unknown provider outcome retains funds and blocks automatic retry to avoid
   assert.equal(h.transactions().filter(row => row.type === "delivery_refund").length, 0);
 });
 
-test("provider fee mismatch never fabricates a payable: keep reservation for manual review", async () => {
+test("provider final fee increase is atomically taken from available Wallet funds", async () => {
   const h = harness({ finalFee: 60 });
+  const result = await h.api.placeTenantLalamoveDispatch(h.request());
+  assert.equal(result.created, true);
+  assert.deepEqual(h.postedBalances, [41]);
+  assert.equal(h.docs.get(h.walletPath).balance, 40);
+  assert.equal(h.docs.get(h.path).lalamoveWalletDebitedAmount, 60);
+  assert.equal(h.docs.get(h.path).lalamoveDispatchReservation, undefined);
+  assert.equal(h.transactions().filter(row => row.type === "delivery_debit" && row.status === "settled").length, 2);
+});
+
+test("provider final fee decrease is refunded to the prepaid Wallet exactly once", async () => {
+  const h = harness({ finalFee: 58 });
+  await h.api.placeTenantLalamoveDispatch(h.request());
+  assert.equal(h.docs.get(h.walletPath).balance, 42);
+  assert.equal(h.docs.get(h.path).lalamoveWalletDebitedAmount, 58);
+  assert.equal(h.transactions().filter(row => row.type === "delivery_refund").length, 1);
+});
+
+test("insufficient Wallet for provider final fee increase requires review without debt", async () => {
+  const h = harness({ balance: 59, finalFee: 60 });
   await assert.rejects(h.api.placeTenantLalamoveDispatch(h.request()), /LALAMOVE_DISPATCH_RECONCILIATION_REQUIRED/);
-  assert.equal(h.docs.get(h.walletPath).balance, 41);
+  assert.equal(h.docs.get(h.walletPath).balance, 0);
   assert.equal(h.docs.get(h.path).lalamoveDispatchReservation.state, "review_required");
   assert.equal(h.posts.length, 1);
+  assert.equal(h.transactions().filter(row => row.type === "delivery_refund").length, 0);
 });
 
 test("tenant's own Lalamove account remains independent of central prepaid wallet", async () => {
