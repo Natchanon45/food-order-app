@@ -28,7 +28,9 @@ const invoice = (overrides = {}) => ({
 });
 
 function memory() {
-  const store = new Map();
+  const store = new Map([
+    ["users/superadmin_1234", { role: "super_admin", tenantId: "", active: true }],
+  ]);
   const doc = key => ({
     key, id: key.slice(key.lastIndexOf("/") + 1),
     get: async () => ({

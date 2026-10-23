@@ -195,7 +195,17 @@ async function reviewHybridInvoiceProof({
     throw new TypeError("Trusted Super Admin and Admin transaction required");
   }
   const { invoiceRef, attemptRef, reviewRef } = refs(tenantRef, invoiceId, attemptId);
+  const reviewerRef = db.collection("users").doc(reviewerId);
   return db.runTransaction(async tx => {
+    // The Super Admin can be deactivated/demoted between the callable's
+    // preflight role check and the finance transaction. Re-read that actor
+    // atomically with the invoice/attempt to make revocation effective.
+    const reviewerSnap = await tx.get(reviewerRef);
+    const reviewerProfile = reviewerSnap.exists ? reviewerSnap.data() : null;
+    if (!reviewerProfile || reviewerProfile.active === false
+      || reviewerProfile.role !== "super_admin") {
+      throw new Error("HYBRID_PAYMENT_SUPER_ADMIN_REQUIRED");
+    }
     const invoiceSnap = await tx.get(invoiceRef);
     const attemptSnap = await tx.get(attemptRef);
     const eventSnap = await tx.get(reviewRef);
@@ -203,8 +213,17 @@ async function reviewHybridInvoiceProof({
       throw new Error("HYBRID_PAYMENT_REVIEW_RECORD_NOT_FOUND");
     }
     if (eventSnap.exists) throw new Error("HYBRID_PAYMENT_ALREADY_REVIEWED");
-    const invoice = { ...invoiceSnap.data(), id: invoiceId };
-    const attempt = { ...attemptSnap.data(), id: attemptId };
+    const rawInvoice = invoiceSnap.data() || {};
+    const rawAttempt = attemptSnap.data() || {};
+    // Never mask corrupted stored identity with the document reference.
+    if (rawInvoice.id !== invoiceId || rawInvoice.version !== LEDGER_VERSION
+      || !/^[a-f0-9]{64}$/.test(String(rawInvoice.signature || ""))
+      || rawAttempt.id !== attemptId || rawAttempt.invoiceId !== invoiceId
+      || (rawInvoice.tenantId != null && rawInvoice.tenantId !== tenantRef.id)) {
+      throw new Error("HYBRID_PAYMENT_REVIEW_LEDGER_INVALID");
+    }
+    const invoice = { ...rawInvoice };
+    const attempt = { ...rawAttempt };
     if (attempt.tenantId !== tenantRef.id || attempt.invoiceSignature !== invoice.signature
       || satang(attempt.amount) !== satang(invoice.amount)) {
       throw new Error("HYBRID_PAYMENT_REVIEW_FINANCIAL_MISMATCH");

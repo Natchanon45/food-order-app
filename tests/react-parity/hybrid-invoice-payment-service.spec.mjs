@@ -117,6 +117,41 @@ function fixture() {
   };
 }
 
+test("reviewer revocation after preflight cannot settle an invoice", async () => {
+  const env = fixture();
+  await env.submit("owner-1");
+  const originalRun = env.db.runTransaction;
+  env.db.runTransaction = async callback => {
+    env.dbRecords.set("users/super-1", user("cashier", "store-1", true));
+    return originalRun(callback);
+  };
+  await assert.rejects(env.review("super-1"), /HYBRID_PAYMENT_SUPER_ADMIN_REQUIRED/);
+  assert.equal(env.invoice().status, "pending_review");
+  assert.equal(env.payment().status, "pending_review");
+  assert.equal(env.dbRecords.has("tenants/store-1/hybridBillingPaymentEvents/" + attemptId + "-review"), false);
+});
+
+test("ledger identity/version and attempt record tampering block financial review", async () => {
+  for (const [property, value] of [
+    ["id", "another-invoice"], ["version", "fake-ledger-v9"],
+    ["signature", "not-a-ledger-signature"], ["tenantId", "store-2"],
+  ]) {
+    const env = fixture();
+    await env.submit("owner-1");
+    const path = "tenants/store-1/hybridBillingInvoices/" + invoiceId;
+    env.dbRecords.set(path, { ...env.invoice(), [property]: value });
+    await assert.rejects(env.review("super-1"), /HYBRID_PAYMENT_REVIEW_LEDGER_INVALID/);
+    assert.equal(env.invoice().status, "pending_review");
+    assert.equal(env.payment().status, "pending_review");
+  }
+  const env = fixture();
+  await env.submit("owner-1");
+  const record = "tenants/store-1/hybridBillingPaymentAttempts/" + attemptId;
+  env.dbRecords.set(record, { ...env.payment(), id: "tampered-attempt" });
+  await assert.rejects(env.review("super-1"), /HYBRID_PAYMENT_REVIEW_LEDGER_INVALID/);
+  assert.equal(env.invoice().status, "pending_review");
+});
+
 test("tenant owner and admin submit their own bank slip but are never allowed to approve", async () => {
   const env = fixture();
   const result = await env.submit("owner-1");

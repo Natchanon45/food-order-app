@@ -272,3 +272,13 @@ test("trusted proof submit requires unexpired grant before verification and cons
   assert.match(transport, /reserveAndUpload\(/);
   assert.doesNotMatch(transport, /await upload\(/);
 });
+
+test("Finance approval rechecks active Super Admin and immutable ledger inside transaction", () => {
+  const payment = read("functions/hybrid-billing-payment.js");
+  assert.match(payment, /const reviewerSnap = await tx\.get\(reviewerRef\)/);
+  assert.match(payment, /reviewerProfile\.active === false/);
+  assert.match(payment, /reviewerProfile\.role !== "super_admin"/);
+  assert.match(payment, /rawInvoice\.id !== invoiceId/);
+  assert.match(payment, /rawInvoice\.version !== LEDGER_VERSION/);
+  assert.match(payment, /rawAttempt\.id !== attemptId/);
+});

@@ -103,6 +103,10 @@ before(async () => {
   await makeUser("inactive-a", "admin", "store-a", false);
   await makeUser("owner-b", "owner", "store-b");
   await makeUser("super-admin", "super_admin", "");
+  // Direct private-function transactions use a separate synthetic actor.
+  await adminDb.collection("users").doc("test-super-admin").set({
+    role: "super_admin", tenantId: "", active: true,
+  });
   identities.set("anonymous", web("anonymous"));
   const batch = adminDb.batch();
   batch.set(adminDb.collection("tenants").doc("store-a"), {
