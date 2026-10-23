@@ -9,6 +9,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getHybridBillingPreview } from "@/data/hybridBillingReport";
+import { listHybridInvoices } from "@/data/hybridInvoiceReviewData";
 
 const BANGKOK = "Asia/Bangkok";
 function bangkokMonth(date = new Date()) {
@@ -44,10 +45,15 @@ export function HybridBillingReportPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [issuedInvoices, setIssuedInvoices] = useState([]);
+  const [invoiceCursor, setInvoiceCursor] = useState(null);
+  const [moreInvoices, setMoreInvoices] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(true);
+  const [invoiceError, setInvoiceError] = useState("");
   const stylesReady = useParityPage({
     title: t("hybrid_report.title"),
     bodyClass: "revenue-share-report-page hybrid-report-page",
-    styles: ["app.css", "icons.css", "revenue-share-report.css", "hybrid-billing-report.css"],
+    styles: ["app.css", "icons.css", "revenue-share-report.css", "hybrid-billing-report.css", "hybrid-billing-review.css"],
   });
   const reload = () => {
     setLoading(true);
@@ -65,6 +71,25 @@ export function HybridBillingReportPage() {
     if (tenant?.id
       && ["owner", "admin"].includes(auth.profile?.role)) reload();
   }, [tenant?.id, auth.profile?.role, month]);
+
+  useEffect(() => {
+    if (!tenant?.id || !["owner", "admin"].includes(auth.profile?.role)) return;
+    let cancelled = false;
+    setInvoiceLoading(true);
+    setInvoiceError("");
+    setIssuedInvoices([]);
+    listHybridInvoices(tenant.id).then(page => {
+      if (cancelled) return;
+      setIssuedInvoices(page.items);
+      setInvoiceCursor(page.cursor);
+      setMoreInvoices(page.hasMore);
+    }).catch(err => {
+      if (!cancelled) setInvoiceError(String(err.message || "INVOICE_LIST_FAILED"));
+    }).finally(() => {
+      if (!cancelled) setInvoiceLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [tenant?.id, auth.profile?.role]);
 
   const number = value => formatNumber(Number(value || 0), {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -172,6 +197,54 @@ export function HybridBillingReportPage() {
             </section>
           </>
         ) : null}
+        <section className="hybrid-review-inline" aria-label={intlLocale.startsWith("th") ? "บิลที่ออกจริง" : "Issued invoices"}>
+          <div className="card hybrid-report-details">
+            <h2>{intlLocale.startsWith("th") ? "รายการบิลจริงของร้าน" : "Your issued invoices"}</h2>
+            <p className="hybrid-report-notice">
+              {intlLocale.startsWith("th")
+                ? "แสดงเฉพาะรายการที่ออกบิลแล้ว ไม่ใช่ยอดคาดการณ์ด้านบน ระบบรับชำระ Hybrid ยังไม่เปิดใช้งาน"
+                : "Only previously issued ledger records are shown, separate from projections above. Hybrid payments remain disabled."}
+            </p>
+            {invoiceLoading ? <p role="status">{t("hybrid_report.loading")}</p> : null}
+            {invoiceError ? <p role="alert" className="hybrid-report-status error">{invoiceError}</p> : null}
+            <div className="hybrid-report-table-scroll">
+              <table>
+                <thead><tr>
+                  <th>{intlLocale.startsWith("th") ? "รหัสบิล" : "Invoice ID"}</th>
+                  <th>{t("hybrid_report.date")}</th>
+                  <th>{t("hybrid_report.amount")}</th>
+                  <th>{intlLocale.startsWith("th") ? "สถานะ" : "Status"}</th>
+                </tr></thead>
+                <tbody>{issuedInvoices.length ? issuedInvoices.map(invoice => (
+                  <tr key={invoice.id}>
+                    <td className="hybrid-review-id">{invoice.id}</td>
+                    <td>{date(invoice.date)}</td>
+                    <td>{currency(invoice.amount)}</td>
+                    <td><span className={`hybrid-review-status ${invoice.status || "issued"}`}>
+                      {({ issued: intlLocale.startsWith("th") ? "ออกบิลแล้ว" : "Issued",
+                        pending_review: intlLocale.startsWith("th") ? "รอตรวจสลิป" : "Pending review",
+                        paid: intlLocale.startsWith("th") ? "ชำระแล้ว" : "Paid",
+                        rejected: intlLocale.startsWith("th") ? "ปฏิเสธ" : "Rejected" })[invoice.status] || invoice.status || "-"}
+                    </span></td>
+                  </tr>
+                )) : <tr><td colSpan={4}>{intlLocale.startsWith("th") ? "ยังไม่มีบิลจริง" : "No issued invoices yet"}</td></tr>}</tbody>
+              </table>
+            </div>
+            {moreInvoices ? <button type="button" className="btn btn-sm" disabled={invoiceLoading}
+              onClick={() => {
+                setInvoiceLoading(true);
+                listHybridInvoices(tenant.id, { cursor: invoiceCursor })
+                  .then(page => {
+                    setIssuedInvoices(prev => [...prev, ...page.items]);
+                    setInvoiceCursor(page.cursor);
+                    setMoreInvoices(page.hasMore);
+                  }).catch(err => setInvoiceError(String(err.message || "INVOICE_LIST_FAILED")))
+                  .finally(() => setInvoiceLoading(false));
+              }}>
+              {intlLocale.startsWith("th") ? "โหลดบิลเพิ่มเติม" : "Load more invoices"}
+            </button> : null}
+          </div>
+        </section>
       </main>
       <ParityFooter />
     </>
