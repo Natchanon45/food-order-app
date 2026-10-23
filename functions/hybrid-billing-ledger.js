@@ -126,6 +126,12 @@ function prepareInvoiceLedger({
     cycleEndExclusiveDate: cycleEnd,
     asOfDate: today,
     configSnapshot: fixedSettings,
+    // Transaction writers must recheck the exact period revision read when
+    // this plan was built; concurrent issuers may otherwise double-issue.
+    priorPeriodSeal: existingPeriod
+      ? { sealedBeforeDate: existingPeriod.sealedBeforeDate || null,
+        sealedSalesDigest: existingPeriod.sealedSalesDigest || null }
+      : null,
     sealedBeforeDate: completeThrough,
     sealedSalesDigest: dailyDigest,
     mode: result.mode,
