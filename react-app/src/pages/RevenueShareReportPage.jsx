@@ -87,6 +87,7 @@ export function RevenueShareReportPage() {
   const dialogRef = useRef(null);
 
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const rc = (th, en) => intlLocale.startsWith("th") ? th : en;
   const displayDate = value => {
     if (!value) return "-";
     const parsed = new Date(`${value}T00:00:00`);
@@ -200,6 +201,9 @@ export function RevenueShareReportPage() {
   const initialReady = initialAccessReady && initialHistoryReady && initialReportReady;
   const summary = report.summary || {};
   const wallet = report.wallet || {};
+  const centralShare = access?.centralDeliveryShare === true;
+  const centralThreshold = Number(access?.deliveryThreshold ?? summary.revenueShareDeliveryThreshold ?? 0);
+  const centralRate = Number(access?.deliveryShareRate ?? summary.deliveryShareRate ?? 0);
   const failures = report.lalamoveFailures || [];
   const billingCycle = summary.revenueShareBillingCycle === "daily"
     ? "daily" : (access?.billingCycle === "daily" ? "daily" : "monthly");
@@ -406,19 +410,6 @@ export function RevenueShareReportPage() {
     return { text: t(key, params), variant };
   };
 
-  const explanation = summary.revenueShareEnabled === true
-    ? t("revenue_share_report.explanation.enabled", {
-        sales: money(summary.combinedSales),
-        rate: money(summary.revenueShareRate),
-        share: money(summary.revenueShare),
-        customerDelivery: money(summary.customerDeliveryFees),
-        deliveryCost: money(summary.lalamoveDeliveryCost),
-        walletCovered: money(summary.lalamoveWalletCoveredCost),
-        outstanding: money(summary.lalamoveOutstandingCost),
-        subsidy: money(summary.deliverySubsidy),
-        due: money(summary.platformAmountDue),
-      })
-    : t("revenue_share_report.explanation.disabled");
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (["owner", "admin"].includes(profile?.role) && tenant?.id && !initialReady)) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
@@ -487,17 +478,55 @@ export function RevenueShareReportPage() {
           </div>
         </section>
 
-        <section className="report-summary-grid" aria-label={t("revenue_share_report.summary.aria")}>
-          <article className="report-summary-card order"><span>{t("revenue_share_report.summary.order_sales")}</span><strong id="orderSales">{money(summary.orderSales)}</strong><small id="orderCount">{t("revenue_share_report.common.orders", { count: formatNumber(summary.orderCount || 0) })}</small></article>
-          <article className="report-summary-card pos"><span>{t("revenue_share_report.summary.pos_sales")}</span><strong id="posSales">{money(summary.posSales)}</strong><small id="posCount">{t("revenue_share_report.common.receipts", { count: formatNumber(summary.posCount || 0) })}</small></article>
-          <article className="report-summary-card total"><span>{t("revenue_share_report.summary.combined_sales")}</span><strong id="combinedSales">{money(summary.combinedSales)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card share"><span id="shareRateLabel">{summary.revenueShareEnabled ? t("revenue_share_report.summary.revenue_share_rate", { rate: money(summary.revenueShareRate) }) : t("revenue_share_report.summary.revenue_share")}</span><strong id="revenueShare">{money(summary.revenueShare)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card delivery-customer"><span>{t("revenue_share_report.summary.customer_delivery_fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card delivery-cost"><span>{t("revenue_share_report.summary.lalamove_delivery_cost")}</span><strong id="lalamoveDeliveryCost">{money(summary.lalamoveDeliveryCost)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card subsidy"><span>{t("revenue_share_report.summary.delivery_subsidy")}</span><strong id="deliverySubsidy">{money(summary.deliverySubsidy)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card amount-due"><span>{t("revenue_share_report.summary.platform_amount_due")}</span><strong id="platformAmountDue">{money(summary.platformAmountDue)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
+
+        <section className="card report-rules" aria-labelledby="reportRulesTitle">
+          <div className="report-section-heading">
+            <div><h2 id="reportRulesTitle"><i className="bi bi-sliders2" aria-hidden="true"></i> {rc("รูปแบบค่าบริการปัจจุบัน", "Current service fee model")}</h2>
+              <p>{rc("ข้อมูลจากส่วนกลางที่ Super Admin กำหนด ไม่ใช่ตัวเลขตัวอย่าง", "Live centrally configured settings, not sample values")}</p></div>
+            <span className="report-rule-state">{access?.premiumDeliveryShare ? "Premium / Delivery" : access?.legacyEnabled ? rc("เงื่อนไขเดิม", "Legacy agreement") : centralShare ? "Delivery" : rc("ไม่คิดส่วนแบ่ง", "Inactive")}</span>
+          </div>
+          <div className="report-rules-grid">
+            <article className="report-rule-item"><div><i className="bi bi-gem" aria-hidden="true"></i><span>{rc("สมาชิก Premium รายเดือน", "Premium monthly membership")}</span></div>
+              <strong>{access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} <small>{rc("บาท/เดือน", "THB/month")}</small></strong>
+              <p>{rc("รายปี", "Annual")}: {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท", "THB")}</p></article>
+            <article className="report-rule-item"><div><i className="bi bi-truck" aria-hidden="true"></i><span>{rc("เกณฑ์ยอด Delivery สะสมรายเดือน", "Monthly Delivery threshold")}</span></div>
+              <strong>{money(centralThreshold)} <small>{rc("บาท", "THB")}</small></strong>
+              <p>{rc("เฉพาะยอดสินค้าที่ชำระแล้ว ไม่รวมค่าส่ง", "Paid merchandise only, excluding delivery fees")}</p></article>
+            <article className="report-rule-item"><div><i className="bi bi-percent" aria-hidden="true"></i><span>{rc("อัตราส่วนแบ่ง Delivery ส่วนกลาง", "Central Delivery revenue-share rate")}</span></div>
+              <strong>{money(centralRate)} <small>%</small></strong>
+              <p>{centralShare ? rc("เริ่มคิดตั้งแต่วันที่ยอดสะสมเกินเกณฑ์ ไม่คิดย้อนหลังวันก่อนหน้า", "Charged from the day the threshold is exceeded; never retroactive to earlier days") : rc("ร้านนี้ไม่ได้ใช้เงื่อนไข Delivery ส่วนกลาง", "Central Delivery share is not active for this tenant")}</p></article>
+          </div>
+          <p className="report-rule-note"><i className="bi bi-info-circle" aria-hidden="true"></i>{rc("ค่าบริการ Premium แยกชำระ ไม่รวมในยอดส่วนแบ่งของรายงานนี้ และ Retail POS / ค่าส่งไม่อยู่ในฐานคิด % Delivery", "Premium membership is billed separately. Retail POS and shipping are excluded from the Delivery share base.")}</p>
         </section>
 
+        <section className="card report-share-math" aria-labelledby="reportShareMathTitle">
+          <div className="report-section-heading">
+            <div><h2 id="reportShareMathTitle"><i className="bi bi-calculator" aria-hidden="true"></i> {rc("ผลการคิดส่วนแบ่ง Delivery จริง", "Actual Delivery revenue-sharing calculation")}</h2>
+              <p>{rc("อิงออร์เดอร์ที่เข้าเกณฑ์ตามช่วงรายงาน", "Eligible orders for the selected period")}: {periodLabel}</p></div>
+          </div>
+          <div className="report-share-equation">
+            <div><span>{rc("ฐานยอด Delivery เข้าเกณฑ์", "Eligible Delivery base")}</span><strong>{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div>
+            <b aria-hidden="true">×</b>
+            <div><span>{rc("อัตราส่วนแบ่ง", "Share rate")}</span><strong>{money(centralRate)} <small>%</small></strong></div>
+            <b aria-hidden="true">=</b>
+            <div className="result"><span>{rc("ค่าส่วนแบ่ง Delivery", "Delivery share")}</span><strong>{money(summary.deliveryShareAmount)} <small>{rc("บาท", "THB")}</small></strong></div>
+          </div>
+          <p className="report-rule-note" id="shareExplanation"><i className="bi bi-shield-check" aria-hidden="true"></i>
+            {rc("เพดานเป็นเงื่อนไขเริ่มคิด ไม่ใช่เงินที่หักจากยอดของวันที่เลือก: ระบบคิดยอดสินค้าในวันที่ยอดสะสมเกินเกณฑ์และวันถัดไป ไม่ย้อนหลังวันก่อนหน้า", "The monthly threshold triggers charging; it is not deducted from the selected period. Eligible paid merchandise starts on the crossing date, never earlier days.")}</p>
+          {Number(summary.legacyShareAmount || 0) > 0 ? <p className="report-legacy-share">{rc("ส่วนแบ่งตามสัญญาเดิม:", "Legacy share:")} <strong>{money(summary.legacyShareAmount)} {rc("บาท", "THB")}</strong></p> : null}
+        </section>
+
+        <section className="report-summary-grid report-summary-essential" aria-label={t("revenue_share_report.summary.aria")}>
+          <article className="report-summary-card order"><span>{t("revenue_share_report.summary.order_sales")}</span><strong id="orderSales">{money(summary.orderSales)}</strong><small id="orderCount">{t("revenue_share_report.common.orders", { count: formatNumber(summary.orderCount || 0) })}</small></article>
+          <article className="report-summary-card pos"><span>{t("revenue_share_report.summary.pos_sales")}</span><strong id="posSales">{money(summary.posSales)}</strong><small id="posCount">{t("revenue_share_report.common.receipts", { count: formatNumber(summary.posCount || 0) })}</small></article>
+          <article className="report-summary-card total"><span>{rc("ฐานยอด Delivery ที่เข้าเกณฑ์", "Eligible Delivery base")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
+          <article className="report-summary-card share"><span id="shareRateLabel">{rc("ส่วนแบ่งทั้งหมด", "Total revenue share")}</span><strong id="revenueShare">{money(summary.revenueShare)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
+          <article className="report-summary-card delivery-customer"><span>{t("revenue_share_report.summary.customer_delivery_fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
+          <article className="report-summary-card amount-due"><span>{t("revenue_share_report.summary.platform_amount_due")}</span><strong id="platformAmountDue">{money(summary.platformAmountDue)}</strong><small>{rc("ไม่รวมค่าบริการ Premium ที่ชำระแยก", "Premium membership billed separately")}</small></article>
+        </section>
+
+        <details className="report-extra">
+          <summary><i className="bi bi-wallet2" aria-hidden="true"></i> {rc("รายละเอียด Wallet และ Lalamove (เพิ่มเติม)", "Wallet and Lalamove details (optional)")} <i className="bi bi-chevron-down" aria-hidden="true"></i></summary>
         <section className="card report-wallet-card" aria-labelledby="reportWalletTitle">
           <div className="report-section-heading report-wallet-heading">
             <div><h2 id="reportWalletTitle"><i className="bi bi-wallet2" aria-hidden="true"></i> {t("revenue_share_report.wallet.title")}</h2><p>{t("revenue_share_report.wallet.description")}</p></div>
@@ -553,10 +582,7 @@ export function RevenueShareReportPage() {
           </div>
         </section>
 
-        <section className="card report-explanation">
-          <div className="report-explanation-icon"><i className="bi bi-calculator" aria-hidden="true"></i></div>
-          <div><h2>{t("revenue_share_report.explanation.title")}</h2><p id="shareExplanation">{loading ? t("revenue_share_report.explanation.loading") : explanation}</p></div>
-        </section>
+        </details>
 
         <section className="card report-payment-card" aria-labelledby="reportPaymentTitle">
           <div className="report-section-heading">
