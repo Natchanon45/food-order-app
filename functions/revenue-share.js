@@ -277,9 +277,12 @@ async function summaryForTenant(tenantId, period, setting) {
     ? roundMoney(legacyShareBase * setting.rate / 100) : 0;
   const revenueShareBase = roundMoney(legacyShareBase + deliveryShareBase);
   const revenueShare = roundMoney(deliveryShareAmount + legacyShareAmount);
+  // Diagnostic only: a missing or stale per-order Wallet debit stamp is NOT
+  // proof that the tenant owes the Platform for a Lalamove delivery. The actual
+  // Wallet debit is handled by the prepaid wallet ledger during dispatch.
+  // Never convert a bookkeeping gap into a second payment request.
   const lalamoveOutstandingCost = roundMoney(Math.max(0, lalamoveDeliveryCost - lalamoveWalletCoveredCost));
-  const platformAmountDue = setting.premiumDeliveryShare ? revenueShare
-    : (setting.enabled ? roundMoney(revenueShare + lalamoveOutstandingCost) : 0);
+  const platformAmountDue = setting.enabled ? revenueShare : 0;
 
   return {
     orderSales, orderCount, posSales, posCount, combinedSales,
