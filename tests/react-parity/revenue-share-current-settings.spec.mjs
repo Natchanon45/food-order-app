@@ -85,7 +85,7 @@ test("Approved report design keeps the compact dashboard hierarchy and responsiv
   const ordered = [
     "revenue-share-hero", "report-filter-card", "report-channel-overview",
     "report-month-progress", "report-share-math", "report-related-amounts",
-    "report-extra", "report-payment-card", "report-history-disclosure",
+    "report-payment-card", "report-extra", "report-history-disclosure",
   ];
   let previous = -1;
   for (const block of ordered) {
@@ -101,6 +101,7 @@ test("Approved report design keeps the compact dashboard hierarchy and responsiv
   assert.match(report, /report-share-month/);
   assert.match(report, /report-related-platform/);
   assert.match(report, /report-payment-card-zero/);
+  assert.match(report, /report-related-amounts[\s\S]+report-payment-card[\s\S]+report-extra/);
   assert.match(css, /REVENUE_REPORT_APPROVED_DASHBOARD_20261023/);
   assert.match(css, /\.revenue-share-dashboard \.report-filter-card\{/);
   assert.match(css, /\.revenue-share-dashboard \.report-share-math \.report-share-equation\{/);
