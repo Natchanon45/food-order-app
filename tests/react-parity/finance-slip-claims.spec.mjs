@@ -84,7 +84,7 @@ test("parallel stale transactions cannot both commit the same finance claim docu
 test("invalid claim metadata, amountless proof and forged SHA values fail closed", () => {
   assert.throws(() => claimIds({ sha256: "" }), /SHA256_REQUIRED/);
   assert.throws(() => claimIds({ sha256: "abc" }), /SHA256_REQUIRED/);
-  assert.throws(() => claimIds({ sha256: fileHash("x"), referenceId: "x\n" }), /INVALID_REFERENCE/);
+  assert.throws(() => claimIds({ sha256: fileHash("x"), referenceId: "x\nbroken" }), /INVALID_REFERENCE/);
   assert.throws(() => createClaimsInTransaction({ create: () => {} }, [], {
     channel: "client_defined", tenantId: "tenant-1", recordId: "x",
   }, "now"), /INVALID_CLAIM_METADATA/);
