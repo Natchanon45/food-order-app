@@ -15,6 +15,7 @@ import { AdminSalesReportPage } from "@/pages/AdminSalesReportPage";
 import { AdminQrPage } from "@/pages/AdminQrPage";
 import { RevenueShareReportPage } from "@/pages/RevenueShareReportPage";
 import { HybridBillingReportPage } from "@/pages/HybridBillingReportPage";
+import { HybridBillingReviewPage } from "@/pages/HybridBillingReviewPage";
 import { KitchenPage } from "@/pages/KitchenPage";
 import { CashierPage } from "@/pages/CashierPage";
 import { CashierReceiptPage } from "@/pages/CashierReceiptPage";
@@ -170,6 +171,7 @@ export default function App() {
       <Route path="/admin/revenue-share" element={<RevenueShareReportPage />} />
       <Route path="/reports/revenue-share" element={<RevenueShareReportPage />} />
       <Route path="/reports/hybrid-billing" element={<HybridBillingReportPage />} />
+      <Route path="/platform/hybrid-invoices" element={<HybridBillingReviewPage />} />
       <Route path="/kitchen" element={<KitchenPage />} />
       <Route path="/cashier" element={<CashierPage />} />
       <Route path="/cashier/quick-order" element={<QuickOrderPage />} />
