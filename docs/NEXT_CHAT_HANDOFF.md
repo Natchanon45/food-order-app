@@ -1,5 +1,14 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — User Mac Phase 6 UAT SUCCESS; Storage optional ownerEmail safe-read follow-up
+
+- The user supplied full Mac terminal log in Markdown attachment: `npm run test:hybrid-emulator-safety` 6/6; **real** `npm run test:firebase-hybrid-emulator` 8/8 with exit 0 and proper emulator shutdown; `npm run test:hybrid-billing` 101/101; `npm run test:react-parity` completed; `npm run build:react` completed with `verify:react-build` PASS build 2026.10.19.526 /react/assets/index-DRAJQJOM.js.
+- Denied Firestore Writes in log are expected assertions. Three `storage.rules` warnings line 58 `Property ownerEmail is undefined on object` originated from `tenantOwner()` accessing optional tenant `ownerEmail` directly. Follow-up commit changed tenantOwner to use guarded `firestore.exists(tenantPath)`, `data.get('ownerUid', '')`, `data.get('ownerEmail', '')`, nonblank auth token email; this does NOT intentionally grant new access.
+- Extended `tests/react-parity/hybrid-emulator-safety.spec.mjs` to assert optional-field safeguards; **7/7 static tests passed simulated after update.** Real Emulator 8/8 was BEFORE this follow-up Rules change. MUST rerun once to verify the latest version; do not claim the warning fixed in real emulator until that run.
+- Warnings from Vite CSS references/build chunk size were non-blocking; JS index chunk about 3.74 MB minified (784 kB gzip). React matrix reports verified actions 0/54 despite contract PASS; plan manual route/action UAT separately.
+- No Firebase production deployment. Hybrid automatic invoice issuance/payment Callable intentionally remain off. Continue with explicit, permission-scoped review Callables only after latest emulator UAT and safety review, plus refund/credit notes, quota and suspension/recovery. Never reset local dirty `public/**/index.html`.
+- Verification: `npm run test:hybrid-emulator-safety`, `npm run test:firebase-hybrid-emulator` (JDK21), then `npm run test:react-parity`/`npm run build:react` as necessary.
+
 ## 2026-10-23 — Emulator Storage overwrite security regression resolved in source (not yet rerun)
 
 - User Mac now has Java 21 and Firebase CLI 15.34.0; `npm run test:hybrid-emulator-safety` 6/6 passed and the real demo-only `npm run test:firebase-hybrid-emulator` started. Real Emulator result **7/8**: all Firestore permission, cross-product claim, invoice replay, payment review tests passed; one Storage test failed because uploading the same object path twice was wrongly allowed.
