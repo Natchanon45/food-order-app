@@ -13,6 +13,7 @@ import { listHybridInvoices } from "@/data/hybridInvoiceReviewData";
 import { HybridTenantProofPanel } from "@/components/HybridTenantProofPanel";
 import { isEligibleHybridInvoice } from "@/data/hybridTenantPaymentDraft";
 import { mergeHybridTenantInvoicePage } from "@/data/hybridTenantInvoicePaging";
+import { isHybridDemoMode } from "@/firebase/client";
 
 const BANGKOK = "Asia/Bangkok";
 function bangkokMonth(date = new Date()) {
@@ -83,6 +84,13 @@ export function HybridBillingReportPage() {
     setPreviewLoading(true);
     setPreviewError("");
     setPreviewData(null);
+    // The isolated demo Functions source has no production preview Callable.
+    // Never call Production for projected financial figures in demo mode.
+    if (isHybridDemoMode) {
+      setPreviewDataScope(requestScope);
+      setPreviewLoading(false);
+      return;
+    }
     getHybridBillingPreview(month)
       .then(result => {
         if (token !== previewRequestRef.current) return;
@@ -184,7 +192,12 @@ export function HybridBillingReportPage() {
             <p>{t("hybrid_report.subtitle")}</p>
           </div>
         </section>
-        <section className="card hybrid-report-toolbar">
+        {isHybridDemoMode ? <p className="card hybrid-demo-banner" role="status">
+          {intlLocale.startsWith("th")
+            ? "พื้นที่ทดลอง Firebase Emulator เท่านั้น • ข้อมูลบิลและสลิปเป็นข้อมูลจำลอง ไม่ใช่การเรียกเก็บเงินจริง"
+            : "Firebase Emulator only • Invoices and proofs are synthetic. No real payment is requested."}
+        </p> : null}
+        {!isHybridDemoMode ? <section className="card hybrid-report-toolbar">
           <label htmlFor="hybridReportMonth">{t("hybrid_report.month")}</label>
           <input id="hybridReportMonth" type="month" min={tenantAnniversaryMonth(tenant)}
             max={bangkokMonth()} value={month} onChange={event => setMonth(event.target.value)} />
@@ -192,7 +205,7 @@ export function HybridBillingReportPage() {
             <i className="bi bi-arrow-clockwise app-icon" aria-hidden="true"></i>
             <span>{t("hybrid_report.refresh")}</span>
           </button>
-        </section>
+        </section> : null}
         {loading ? <p role="status" className="card hybrid-report-status">{t("hybrid_report.loading")}</p> : null}
         {error ? <p role="alert" className="card hybrid-report-status error">{error}</p> : null}
         {data && !loading ? (
@@ -312,7 +325,8 @@ export function HybridBillingReportPage() {
             key={tenant.id + ":" + chosenInvoice.id + ":" + chosenInvoice.status + ":" + chosenInvoice.amount}
             tenantId={tenant.id} invoice={chosenInvoice}
             thai={intlLocale.startsWith("th")} money={currency}
-            onClose={() => setProofInvoiceId("")} /> : null}
+            onClose={() => setProofInvoiceId("")}
+            onSubmitted={() => setInvoiceRefreshKey(value => value + 1)} /> : null}
         </section>
       </main>
       <ParityFooter />

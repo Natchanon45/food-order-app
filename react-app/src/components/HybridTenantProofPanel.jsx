@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { isHybridDemoMode } from "@/firebase/client";
+import { submitHybridDemoProof } from "@/data/hybridDemoProofClient";
 import {
   HYBRID_TENANT_PROOF_SUBMISSION_READY, HYBRID_PROOF_ACCEPT,
   MAX_HYBRID_PROOF_BYTES, describeLocalHybridProof,
@@ -7,19 +9,28 @@ import {
 
 const tr = (thai, en, isThai) => isThai ? thai : en;
 
-export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose }) {
+export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose, onSubmitted }) {
   const [file, setFile] = useState(null);
   const [localError, setLocalError] = useState("");
+  const [demoBusy, setDemoBusy] = useState(false);
+  const [demoStep, setDemoStep] = useState("");
+  const [demoError, setDemoError] = useState("");
+  const sessionRef = useRef(0);
 
   // Never retain a slip selected for a previous invoice, tenant or session.
   useEffect(() => {
     setFile(null);
     setLocalError("");
+    setDemoStep("");
+    setDemoError("");
+    sessionRef.current += 1;
+    return () => { sessionRef.current += 1; };
   }, [tenantId, invoice?.id, invoice?.status, invoice?.amount]);
 
   if (!isEligibleHybridInvoice(invoice)) return null;
 
   function selectLocalFile(event) {
+    if (demoBusy) return;
     const selected = event.target.files?.[0] || null;
     // The input is not persisted; never create a Storage file or bank claim.
     event.target.value = "";
@@ -39,6 +50,33 @@ export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose
     : null;
   const validDraft = draft?.ok === true;
 
+  async function runDemoSubmission() {
+    if (!isHybridDemoMode || !validDraft || demoBusy) return;
+    const token = ++sessionRef.current;
+    setDemoBusy(true);
+    setDemoStep("");
+    setDemoError("");
+    try {
+      await submitHybridDemoProof({
+        tenantId, invoice, file,
+        isCurrent: () => sessionRef.current === token,
+        onStep: step => {
+          if (sessionRef.current === token) setDemoStep(step);
+        },
+      });
+      if (sessionRef.current !== token) return;
+      setFile(null);
+      setDemoStep("");
+      onSubmitted?.();
+    } catch (error) {
+      if (sessionRef.current === token) {
+        setDemoError(String(error?.code || error?.message || "HYBRID_DEMO_FAILED"));
+      }
+    } finally {
+      if (sessionRef.current === token) setDemoBusy(false);
+    }
+  }
+
   return (
     <section className="hybrid-tenant-proof card" aria-label={tr(
       "แบบฟอร์มเตรียมหลักฐานการชำระบิล", "Prepare invoice payment evidence", thai
@@ -48,7 +86,7 @@ export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose
           <h3>{tr("เตรียมหลักฐานการชำระ", "Prepare payment evidence", thai)}</h3>
           <p className="hybrid-review-id">{invoice.id}</p>
         </div>
-        <button type="button" className="btn btn-sm" onClick={onClose}>
+        <button type="button" className="btn btn-sm" onClick={onClose} disabled={demoBusy}>
           <i className="bi bi-x-lg app-icon" aria-hidden="true"></i>
           <span>{tr("ปิด", "Close", thai)}</span>
         </button>
@@ -65,17 +103,25 @@ export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose
           thai
         )}</span>
       </p>
-      <p className="hybrid-tenant-proof-explain">{tr(
-        "เลือกไฟล์สลิปเพื่อทดลองตรวจรูปแบบในเครื่องเท่านั้น ระบบจะไม่อัปโหลดหรือเก็บไฟล์นี้",
-        "Select an evidence file to preview local validation only. It will not be uploaded or stored.",
-        thai
-      )}</p>
+      {isHybridDemoMode ? (
+        <p className="hybrid-demo-banner" role="status">{tr(
+          "โหมดทดสอบ Emulator เท่านั้น • ใช้ไฟล์ตัวอย่าง ห้ามใช้สลิปโอนเงินจริง • ระบบธนาคารจำลองและไม่มีการรับเงินจริง",
+          "Local Emulator test only • Use synthetic files, never real transfer slips • Bank verification is simulated; no real payment is collected.",
+          thai
+        )}</p>
+      ) : (
+        <p className="hybrid-tenant-proof-explain">{tr(
+          "เลือกไฟล์สลิปเพื่อทดลองตรวจรูปแบบในเครื่องเท่านั้น ระบบจะไม่อัปโหลดหรือเก็บไฟล์นี้",
+          "Select an evidence file to preview local validation only. It will not be uploaded or stored.",
+          thai
+        )}</p>
+      )}
       <label htmlFor="hybridTenantProofFile">
         {tr("เลือกไฟล์หลักฐาน", "Choose evidence file", thai)}
       </label>
       <input id="hybridTenantProofFile" type="file"
         accept={HYBRID_PROOF_ACCEPT}
-        onChange={selectLocalFile}
+        onChange={selectLocalFile} disabled={demoBusy}
         aria-describedby="hybridTenantProofHelp" />
       <small id="hybridTenantProofHelp">
         {tr("รองรับ JPG, PNG, WebP หรือ PDF ไม่เกิน 10 MB",
@@ -96,13 +142,33 @@ export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose
         </div>
       </div> : null}
       <div className="hybrid-tenant-proof-actions">
-        <button type="button" className="btn btn-sm" disabled={
-          !HYBRID_TENANT_PROOF_SUBMISSION_READY || !validDraft
-        }>
-          <i className="bi bi-cloud-arrow-up app-icon" aria-hidden="true"></i>
-          <span>{tr("ส่งหลักฐานชำระ", "Submit evidence", thai)}</span>
-        </button>
+        {isHybridDemoMode ? (
+          <button type="button" className="btn btn-sm"
+            disabled={!validDraft || demoBusy} onClick={runDemoSubmission}>
+            <i className="bi bi-cloud-arrow-up app-icon" aria-hidden="true"></i>
+            <span>{demoBusy
+              ? tr("กำลังทดลองส่ง...", "Submitting demo...", thai)
+              : tr("ทดสอบส่งเข้า Emulator", "Submit to Emulator", thai)}</span>
+          </button>
+        ) : (
+          <button type="button" className="btn btn-sm" disabled={
+            !HYBRID_TENANT_PROOF_SUBMISSION_READY || !validDraft
+          }>
+            <i className="bi bi-cloud-arrow-up app-icon" aria-hidden="true"></i>
+            <span>{tr("ส่งหลักฐานชำระ", "Submit evidence", thai)}</span>
+          </button>
+        )}
       </div>
+      {isHybridDemoMode && demoBusy ? (
+        <small className="hybrid-demo-step" role="status">{({
+          reserving: tr("กำลังขอสิทธิ์จาก Server", "Requesting server grant", thai),
+          uploading: tr("กำลังส่งไฟล์เข้า Storage Emulator", "Uploading to Storage Emulator", thai),
+          submitting: tr("กำลังส่งตรวจเข้า Functions Emulator", "Submitting to Functions Emulator", thai),
+        })[demoStep] || tr("กำลังดำเนินการ", "Working", thai)}</small>
+      ) : null}
+      {isHybridDemoMode && demoError ? (
+        <p className="hybrid-tenant-proof-error" role="alert">{demoError}</p>
+      ) : null}
       <small className="hybrid-review-closed">
         {tr(
           "ปุ่มส่งหลักฐานถูกล็อกไว้จนกว่าจะผ่านการอนุมัติเปิดระบบการเงินจริง",
@@ -111,11 +177,14 @@ export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose
         )}
       </small>
       <small className="hybrid-tenant-proof-private">
-        {tr(
-          "ไม่มีการบันทึกไฟล์ การตรวจธนาคาร หรือการเปลี่ยนสถานะบิลจากหน้าทดลองนี้",
-          "This preview does not store files, verify bank transfers or change invoice status.",
-          thai
-        )}
+        {isHybridDemoMode
+          ? tr("ระบบจำลองจะเปลี่ยนเป็นรอตรวจสอบเท่านั้น ไม่มีการตรวจธนาคารหรือโอนเงินจริง",
+            "The demo can only stage pending review; no real bank verification or transfer is performed.", thai)
+          : tr(
+            "ไม่มีการบันทึกไฟล์ การตรวจธนาคาร หรือการเปลี่ยนสถานะบิลจากหน้าทดลองนี้",
+            "This preview does not store files, verify bank transfers or change invoice status.",
+            thai
+          )}
       </small>
     </section>
   );

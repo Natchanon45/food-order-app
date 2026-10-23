@@ -66,3 +66,9 @@
 .hybrid-review-list-heading h2{margin:0}
 .hybrid-review-list-heading .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px}
 @media(max-width:760px){.hybrid-review-list-heading{align-items:stretch;flex-direction:column}.hybrid-review-list-heading .btn{width:100%}}
+
+/* Financial upload controls appear only with two DEV-only emulator opt-ins. */
+.hybrid-demo-banner{border:1px solid #91bed5;background:#edf7ff;color:#13466b;border-radius:10px;padding:12px 14px;line-height:1.55;margin:0}
+.hybrid-demo-step{display:block;color:#184b68;font-weight:650}
+.hybrid-tenant-proof .hybrid-demo-banner{font-size:13px}
+@media(max-width:760px){.hybrid-demo-banner{padding:10px 12px}}
