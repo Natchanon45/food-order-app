@@ -57,3 +57,7 @@ See `docs/HYBRID_INVOICE_LEDGER_PHASE3_20261023.md`. Test using `npm run test:hy
 - Private payment modules absent from `functions/bootstrap.js`, issuance remains hard off. 11/11 and 9/9 test cases passed in isolated V8 mocks; native Mac npm and Rules Emulator pending.
 - New specs `tests/react-parity/hybrid-invoice-payment.spec.mjs` and `hybrid-invoice-payment-service.spec.mjs`, script `npm run test:hybrid-invoice-payment` wired into `test:hybrid-billing` and overall parity suite.
 - Full notes `docs/HYBRID_PAYMENT_PHASE4_20261023.md`. Next implement shared cross-product atomic reference registry, authenticated Cloud callable and Super Admin payment-review UX; then refund/credits and recovery, emulator UAT. Do not bulk delete Firestore master.
+
+## Phase 5 prelaunch update
+
+Cross-product immutable finance-slip references are now reserved atomically in Wallet, Revenue Share and Hybrid payment transactions in source code, and tenant/Super Admin read-only invoice history views are present. Historical test proofs predating this claim format have not been migrated. Firebase Rules/Functions/Hosting are **not deployed**, and Hybrid remains financially inert. See `docs/HYBRID_FINANCE_SHARED_CLAIMS_PHASE5_20261023.md`.
