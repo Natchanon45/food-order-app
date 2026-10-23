@@ -234,7 +234,9 @@ export function HybridBillingReviewPage() {
                       <td className="hybrid-review-id">{row.invoiceId}</td>
                       <td>{recordDate(row.submittedAt, intlLocale)}</td>
                       <td>{money(row.amount, intlLocale)}</td>
-                      <td>{row.bankVerified ? label("ใช่", "Yes", thai) : label("ยังไม่ยืนยัน", "Unverified", thai)}</td>
+                      <td>{row.bankVerified
+                        ? (isHybridDemoMode ? label("จำลอง", "Simulated", thai) : label("ใช่", "Yes", thai))
+                        : label("ยังไม่ยืนยัน", "Unverified", thai)}</td>
                       <td><span className={"hybrid-review-status " + row.status}>
                         {statusLabel(row.status, thai)}</span></td>
                       <td><HybridReviewDecisionPanel key={row.id + ":" + selectedId}
