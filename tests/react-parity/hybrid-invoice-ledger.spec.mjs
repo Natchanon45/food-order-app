@@ -195,3 +195,15 @@ test("invoice writer is private and not exported as a Firebase callable or sched
   assert.doesNotMatch(bootstrap, /hybrid-billing-persistence|hybrid-billing-ledger/);
   assert.doesNotMatch(source, /onCall|onSchedule|https\.onRequest/);
 });
+
+test("Firestore browser access is tenant-scoped and never mutates invoice or period ledgers", () => {
+  const rules = fs.readFileSync("firestore.rules", "utf8");
+  for (const col of ["hybridBillingPeriods", "hybridBillingInvoices"]) {
+    const marker = "match /" + col + "/{";
+    const at = rules.indexOf(marker);
+    assert.ok(at > 0, "Missing billing security rule " + col);
+    const snippet = rules.slice(at, at + 225);
+    assert.match(snippet, /allow get, list: if tenantAdminRole\(tenantId\) \|\| superAdminRole\(\)/);
+    assert.match(snippet, /allow create, update, delete: if false/);
+  }
+});
