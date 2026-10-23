@@ -9,13 +9,21 @@ function localHost(name) {
 let firebaseConfig = {};
 try { firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG || "{}"); }
 catch { /* invalid config is rejected by project assertion below */ }
+// During Firebase CLI function-discovery, emulator hosts and the selected
+// project are not guaranteed to be injected automatically. The npm script
+// explicitly sets them before starting the CLI. A conflicting project from
+// any source still fails CLOSED even when another source says "demo".
 const project = process.env.GCLOUD_PROJECT ||
   process.env.GCP_PROJECT || firebaseConfig.projectId;
+const knownProjects = [process.env.GCLOUD_PROJECT,
+  process.env.GCP_PROJECT, firebaseConfig.projectId].filter(Boolean);
 if (project !== "demo-penguin-hybrid"
+  || knownProjects.some(value => value !== "demo-penguin-hybrid")
   || process.env.HYBRID_DEMO_FUNCTIONS_ONLY !== "1"
   || !localHost("FIRESTORE_EMULATOR_HOST")
   || !localHost("FIREBASE_AUTH_EMULATOR_HOST")
-  || !localHost("FIREBASE_STORAGE_EMULATOR_HOST")) {
+  || !localHost("FIREBASE_STORAGE_EMULATOR_HOST")
+  || !localHost("FIREBASE_FUNCTIONS_EMULATOR_HOST")) {
   throw new Error("HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS");
 }
 
