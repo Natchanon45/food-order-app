@@ -175,3 +175,18 @@ entitlement review, finance cutover authorization, a separate audited
 data migration and staging/UAT are complete. This work never overwrites
 `subscriptionExpiresAt`, `planCode`, `subscriptionStatus`,
 `revenueShareSuspended`, Wallet entries or any paid invoice.
+
+## Additional backend safety regression (2026-10-23)
+
+- `tests/react-parity/revenue-share-cutover-periods.spec.mjs` exercises
+  the actual callable module functions with mocked Firestore and a Bangkok
+  clock at 2026-11-20, 2026-11-22 and 2026-12-21.
+- It validates that a tenant without cutover retains November 1–30 legacy
+  reporting, an effective date of November 21 does not rewrite earlier
+  November/October share, the first anniversary cycle starts November 21
+  and counts only its own paid Delivery goods, and monthly collection is
+  deferred until the cycle has completed December 20.
+- The test is included in `test:billing-anniversary` and
+  `test:revenue-payment-bank-picker` / `test:react-parity`.
+- This is an in-memory integration harness, **not a production Firestore**
+  reconciliation or deploy authorization.
