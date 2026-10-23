@@ -5,6 +5,7 @@ import fs from "node:fs";
 const report = fs.readFileSync("react-app/src/pages/RevenueShareReportPage.jsx", "utf8");
 const server = fs.readFileSync("functions/revenue-share.js", "utf8");
 const css = fs.readFileSync("public/react/parity/css/revenue-share-report.css", "utf8");
+const sourceCss = fs.readFileSync("react-app/public/parity/css/revenue-share-report.css", "utf8");
 
 test("Revenue report reads central monthly, yearly, threshold and rate from authenticated access", () => {
   assert.match(server, /const pricing = await loadPricing\(getFirestore\(\)\)/);
@@ -44,5 +45,6 @@ test("Report keeps the period picker, payment review/history, and keeps Wallet/L
   assert.match(report, /id="submitRevenueShareSlip"/);
   assert.match(report, /id="revenueSharePaymentHistory"/);
   assert.match(css, /\.report-rules-grid\{display:grid/);
+  assert.equal(css, sourceCss, "built parity CSS must match canonical React source");
   assert.match(css, /@media\(max-width:620px\)/);
 });
