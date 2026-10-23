@@ -1,5 +1,17 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Anniversary billing instead of calendar-month threshold; IconPacks research (not deployed)
+
+- User confirmed current THB 59 payment report fixed in live UI; new request: each store's billing period and Delivery threshold reset **on its own signup/activation anniversary date**, e.g., day 5/8/11/15/16/22, not on the 1st.
+- Added `functions/billing-anniversary.js` pure Bangkok calendar anniversary helper, 29/30/31 clamp without drift (Jan 31 → Feb 28 → Mar 31), future `billingCycleAnchorAt` captured on new tenant activation in `public-signup.js`.
+- `revenue-share-policy.js` Delivery eligible days now bucket by anchor cycle; `revenue-share.js` cumulative progress, monthly filter, and previous billed period use the same tenant anchor. React revenue report displays the cycle's **start and end dates**, even when the cycle crosses calendar months.
+- **Migration safety**: existing legacy calendar-month invoices must not silently create overlap or accidental suspensions. Existing legacy tenant scheduler skips anniversary suspension unless a verified `billingAnniversaryEffectiveAt` is explicitly set following audit/cutover. This remains pending; do not backfill production records without approved mapping.
+- Hybrid billing preview calculator now accepts cycle start/end, paid-at query aligned to tenant cycle, frontend preview shows cycle dates. Compatibility wrapper `calculateMonth` retains old tests. `HYBRID_REGISTRATION_READY=false`; still no live invoicing engine.
+- Added `tests/react-parity/billing-anniversary.spec.mjs` (8 mocked unit/static cases pass in connector V8), wired into both `test:revenue-payment-bank-picker` and `test:hybrid-billing`. Native Mac Node/npm, staging emulator, deployment, migration, and production data verification **not performed** because Remote Desktop Mac offline.
+- Iconpacks.net motorcycle icons commercial terms checked: use/download individually selected SVG/PNG in websites/apps, no attribution required; no standalone redistribution, resale, icon-platform competition or bulk scraping. **No assets or UI changed** yet; proposed pilot Delivery scooter icon, store icon, takeaway icon. See `docs/BILLING_ANNIVERSARY_AND_ICONS_20261023.md`.
+- Legacy 30-day subscription trial and manual administrator subscription extensions are **not changed** by this anniversary-share update: separate policy and cutover validation needed before modifying existing membership commitments.
+
+
 ## 2026-10-23 17:54 — THB 59 still visible after dispatch-only deploy (corrected report code; deploy pending)
 
 - User supplied production screenshots for `/reports/revenue-share` dated 22/10/2026: Delivery goods THB 690, eligible share THB 0, Lalamove THB 118, yet the old live report still showed THB 59 Platform due and requested a payment slip. Last deployment was only `functions:placeTenantLalamoveDispatch`, so it did **not** change live `getTenantRevenueShareSummary`, `submitTenantRevenueSharePayment`, `getPlatformRevenueShareSummary`, reconciliation callables, or Hosting.
