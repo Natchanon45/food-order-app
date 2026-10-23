@@ -32,8 +32,8 @@ test("Tenant and Super Admin lists use page cursors and Firestore tenant-scoped 
   assert.match(data, /startAfter\(cursor\)/);
   assert.match(data, /queryLimit\(pageSize\)/);
   assert.match(admin, /loadMoreTenants\(tenantCursor\)/);
-  assert.match(admin, /listHybridInvoices\(selectedId, \{ cursor: invoiceCursor \}\)/);
-  assert.match(admin, /listHybridPaymentAttempts\(selectedId, \{ cursor: attemptCursor \}\)/);
+  assert.match(admin, /loadMoreDetails\("invoices", invoiceCursor,/);
+  assert.match(admin, /loadMoreDetails\("attempts", attemptCursor,/);
 });
 
 test("Browser invoice UI does not approve, pay, upload proofs or mutate financial state", () => {
@@ -64,7 +64,19 @@ test("Super Admin finance audit reads only whitelisted immutable review events",
   assert.match(admin, /listHybridPaymentReviewEvents\(selectedId\)/);
   assert.match(admin, /Finance review audit trail/);
   assert.match(admin, /setReviewEvents\(\[\]\)/);
-  assert.match(admin, /listHybridPaymentReviewEvents\(selectedId, \{ cursor: eventCursor \}\)/);
+  assert.match(admin, /loadMoreDetails\("events", eventCursor,/);
   assert.match(rules, /match \/hybridBillingPaymentEvents\/\{eventId\}/);
   assert.doesNotMatch(admin, /setDoc\(|updateDoc\(|deleteDoc\(/);
+});
+
+test("all three finance page types block stale tenant/refresh results and duplicates", () => {
+  assert.match(admin, /detailScope = selectedId \+ ":" \+ revision/);
+  assert.match(admin, /detailScopeRef\.current = detailScope/);
+  assert.match(admin, /loadedDetailScope === detailScope/);
+  assert.match(admin, /const visibleInvoices = detailsReady \? invoices : \[\]/);
+  assert.match(admin, /const visibleAttempts = detailsReady \? attempts : \[\]/);
+  assert.match(admin, /const visibleReviewEvents = detailsReady \? reviewEvents : \[\]/);
+  assert.match(admin, /detailScopeRef\.current !== expectedScope/);
+  assert.match(admin, /const seen = new Set\(previous\.map\(item => item\.id\)\)/);
+  assert.match(admin, /setLoadedDetailScope\(detailScope\)/);
 });

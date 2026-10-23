@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -59,6 +59,16 @@ export function HybridBillingReviewPage() {
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
+  const [loadedDetailScope, setLoadedDetailScope] = useState("");
+  const [pageBusyScope, setPageBusyScope] = useState("");
+  const detailScope = selectedId + ":" + revision;
+  const detailScopeRef = useRef(detailScope);
+  detailScopeRef.current = detailScope;
+  // Never display a prior tenant or refresh generation's finance records.
+  const detailsReady = Boolean(selectedId) && loadedDetailScope === detailScope;
+  const visibleInvoices = detailsReady ? invoices : [];
+  const visibleAttempts = detailsReady ? attempts : [];
+  const visibleReviewEvents = detailsReady ? reviewEvents : [];
   const stylesReady = useParityPage({
     title: label("ตรวจสอบบิล Hybrid", "Hybrid Invoice Review", thai),
     bodyClass: "revenue-share-report-page hybrid-report-page",
@@ -91,6 +101,7 @@ export function HybridBillingReviewPage() {
 
   useEffect(() => {
     if (!selectedId || auth.profile?.role !== "super_admin") {
+      setLoadedDetailScope("");
       setInvoices([]);
       setAttempts([]);
       setReviewEvents([]);
@@ -99,6 +110,7 @@ export function HybridBillingReviewPage() {
       return;
     }
     let cancelled = false;
+    setLoadedDetailScope("");
     setLoadingDetails(true);
     setError("");
     // Do not display a previous shop's financial data while changing tenants.
@@ -120,11 +132,37 @@ export function HybridBillingReviewPage() {
         setAttemptCursor(attemptPage.cursor);
         setMoreInvoices(invoicePage.hasMore);
         setMoreAttempts(attemptPage.hasMore);
+        setLoadedDetailScope(detailScope);
       })
       .catch(err => { if (!cancelled) setError(err.message || "BILLING_LIST_FAILED"); })
       .finally(() => { if (!cancelled) setLoadingDetails(false); });
     return () => { cancelled = true; };
   }, [selectedId, auth.profile?.role, revision]);
+
+  function loadMoreDetails(kind, cursor, getPage, setRows, setCursor, setMore) {
+    if (!detailsReady || !cursor || loadingDetails || pageBusyScope) return;
+    const expectedScope = detailScope;
+    const requestScope = expectedScope + ":" + kind;
+    setPageBusyScope(requestScope);
+    getPage(selectedId, { cursor }).then(next => {
+      if (detailScopeRef.current !== expectedScope) return;
+      setRows(previous => {
+        const seen = new Set(previous.map(item => item.id));
+        return [...previous, ...next.items.filter(item => {
+          if (seen.has(item.id)) return false;
+          seen.add(item.id);
+          return true;
+        })];
+      });
+      setCursor(next.cursor);
+      setMore(next.hasMore);
+    }).catch(error => {
+      if (detailScopeRef.current === expectedScope)
+        setError(error.message || "BILLING_PAGE_FAILED");
+    }).finally(() => {
+      setPageBusyScope(current => current === requestScope ? "" : current);
+    });
+  }
 
   if (!stylesReady || auth.status === "loading" || (auth.profile?.role === "super_admin" && busy)) return <PageReadyOverlay />;
   if (!auth.profile) return <Navigate to="/login?next=%2Fplatform%2Fhybrid-invoices" replace />;
@@ -132,7 +170,7 @@ export function HybridBillingReviewPage() {
 
   const title = label("ตรวจสอบบิล Hybrid", "Hybrid Invoice Review", thai);
   const selected = tenants.find(tenant => tenant.id === selectedId);
-  const unreviewed = attempts.filter(attempt => attempt.status === "pending_review").length;
+  const unreviewed = visibleAttempts.filter(attempt => attempt.status === "pending_review").length;
   return (
     <>
       <header className="app-header super-admin-header">
@@ -188,10 +226,10 @@ export function HybridBillingReviewPage() {
             {[
               [label("ร้านค้า", "Store", thai),
                 selected.name || selected.shopName || selected.slug || selectedId],
-              [label("จำนวนบิลที่โหลด", "Invoices loaded", thai), invoices.length],
+              [label("จำนวนบิลที่โหลด", "Invoices loaded", thai), visibleInvoices.length],
               [label("สลิปรอตรวจที่โหลด", "Pending slips loaded", thai), unreviewed],
               [label("ชำระแล้วในรายการที่โหลด", "Paid in loaded invoices", thai),
-                money(invoices.filter(row => row.status === "paid").reduce((sum, row) => sum + Number(row.amount || 0), 0), intlLocale)],
+                money(visibleInvoices.filter(row => row.status === "paid").reduce((sum, row) => sum + Number(row.amount || 0), 0), intlLocale)],
             ].map(([key, value]) => (
               <div key={key} className="card hybrid-report-metric">
                 <small>{key}</small><strong>{value}</strong>
@@ -214,7 +252,7 @@ export function HybridBillingReviewPage() {
                     <th>{label("ยอดเงิน", "Amount", thai)}</th>
                     <th>{label("สถานะ", "Status", thai)}</th>
                   </tr></thead>
-                  <tbody>{invoices.length ? invoices.map(row => (
+                  <tbody>{visibleInvoices.length ? visibleInvoices.map(row => (
                     <tr key={row.id}>
                       <td className="hybrid-review-id">{row.id}</td>
                       <td>{row.date || "-"}</td>
@@ -225,12 +263,10 @@ export function HybridBillingReviewPage() {
                   )) : <tr><td colSpan={4}>{label("ยังไม่มีบิลที่ออกจริง", "No issued invoices", thai)}</td></tr>}</tbody>
                 </table>
               </div>
-              {moreInvoices ? <button type="button" className="btn btn-sm" disabled={loadingDetails}
-                onClick={() => listHybridInvoices(selectedId, { cursor: invoiceCursor })
-                  .then(next => {
-                    setInvoices(prev => [...prev, ...next.items]);
-                    setInvoiceCursor(next.cursor); setMoreInvoices(next.hasMore);
-                  }).catch(e => setError(e.message))}>
+              {moreInvoices && detailsReady ? <button type="button" className="btn btn-sm"
+                disabled={loadingDetails || Boolean(pageBusyScope)}
+                onClick={() => loadMoreDetails("invoices", invoiceCursor,
+                  listHybridInvoices, setInvoices, setInvoiceCursor, setMoreInvoices)}>
                 {label("โหลดบิลเพิ่มเติม", "Load more invoices", thai)}
               </button> : null}
             </section>
@@ -246,7 +282,7 @@ export function HybridBillingReviewPage() {
                     <th>{label("สถานะ", "Status", thai)}</th>
                     <th>{label("ผลการตรวจ", "Review action", thai)}</th>
                   </tr></thead>
-                  <tbody>{attempts.length ? attempts.map(row => (
+                  <tbody>{visibleAttempts.length ? visibleAttempts.map(row => (
                     <tr key={row.id}>
                       <td className="hybrid-review-id">{row.invoiceId}</td>
                       <td>{recordDate(row.submittedAt, intlLocale)}</td>
@@ -263,12 +299,10 @@ export function HybridBillingReviewPage() {
                   )) : <tr><td colSpan={6}>{label("ยังไม่มีสลิปที่ส่ง", "No submitted slips", thai)}</td></tr>}</tbody>
                 </table>
               </div>
-              {moreAttempts ? <button type="button" className="btn btn-sm" disabled={loadingDetails}
-                onClick={() => listHybridPaymentAttempts(selectedId, { cursor: attemptCursor })
-                  .then(next => {
-                    setAttempts(prev => [...prev, ...next.items]);
-                    setAttemptCursor(next.cursor); setMoreAttempts(next.hasMore);
-                  }).catch(e => setError(e.message))}>
+              {moreAttempts && detailsReady ? <button type="button" className="btn btn-sm"
+                disabled={loadingDetails || Boolean(pageBusyScope)}
+                onClick={() => loadMoreDetails("attempts", attemptCursor,
+                  listHybridPaymentAttempts, setAttempts, setAttemptCursor, setMoreAttempts)}>
                 {label("โหลดสลิปเพิ่มเติม", "Load more slips", thai)}
               </button> : null}
               <p className="hybrid-report-notice">
@@ -295,7 +329,7 @@ export function HybridBillingReviewPage() {
                     <th>{label("วิธียืนยัน", "Confirmation", thai)}</th>
                     <th>{label("หมายเหตุ", "Audit note", thai)}</th>
                   </tr></thead>
-                  <tbody>{reviewEvents.length ? reviewEvents.map(event => (
+                  <tbody>{visibleReviewEvents.length ? visibleReviewEvents.map(event => (
                     <tr key={event.id}>
                       <td className="hybrid-review-id">{event.invoiceId}</td>
                       <td>{recordDate(event.reviewedAt, intlLocale)}</td>
@@ -315,13 +349,10 @@ export function HybridBillingReviewPage() {
                   )}</td></tr>}</tbody>
                 </table>
               </div>
-              {moreEvents ? <button type="button" className="btn btn-sm" disabled={loadingDetails}
-                onClick={() => listHybridPaymentReviewEvents(selectedId, { cursor: eventCursor })
-                  .then(next => {
-                    setReviewEvents(prev => [...prev, ...next.items]);
-                    setEventCursor(next.cursor);
-                    setMoreEvents(next.hasMore);
-                  }).catch(e => setError(e.message))}>
+              {moreEvents && detailsReady ? <button type="button" className="btn btn-sm"
+                disabled={loadingDetails || Boolean(pageBusyScope)}
+                onClick={() => loadMoreDetails("events", eventCursor,
+                  listHybridPaymentReviewEvents, setReviewEvents, setEventCursor, setMoreEvents)}>
                 {label("โหลดประวัติเพิ่มเติม", "Load more audit events", thai)}
               </button> : null}
             </section>
