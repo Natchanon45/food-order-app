@@ -40,6 +40,10 @@ function serverAt(day, orders = []) {
     "firebase-functions/v2/scheduler": { onSchedule: (_options, fn) => fn },
     "firebase-admin/firestore": { getFirestore: () => db, FieldValue: {} },
     "firebase-admin/storage": { getStorage: () => ({}) },
+    // The shared financial slip registry adds pure SHA256 dependencies to
+    // the Revenue Share module even when this test only checks billing dates.
+    "node:crypto": require("node:crypto"),
+    "./finance-slip-claims": require("../../functions/finance-slip-claims.js"),
     "./slip-verification": { inspectSlip: async () => ({}) },
     "./subscription-pricing-core": {
       loadPricing: async () => pricing, calculatePricing: () => ({ monthly: {}, annual: {} }),
