@@ -20,3 +20,17 @@
   .hybrid-review-shell .hybrid-report-table-scroll{-webkit-overflow-scrolling:touch}
   .hybrid-review-inline .hybrid-report-table-scroll table{min-width:520px}
 }
+
+/* Phase 7: finance review controls are visible in a locked preview state.
+   All mutation paths remain disabled until a separately approved rollout. */
+.hybrid-review-decision{display:flex;flex-direction:column;gap:9px;min-width:250px;max-width:360px}
+.hybrid-review-decision>label:first-child{font-size:12px;font-weight:700}
+.hybrid-review-decision textarea{width:100%;box-sizing:border-box;min-height:64px;resize:vertical;border:1px solid #d4e3d9;border-radius:10px;padding:9px 11px;font:inherit}
+.hybrid-review-decision textarea:disabled{opacity:.65;background:#f6f8f7;cursor:not-allowed}
+.hybrid-review-confirm{display:flex;align-items:start;gap:7px;font-size:12px;line-height:1.5}
+.hybrid-review-confirm input{margin-top:3px}
+.hybrid-review-actions{display:flex;gap:8px}
+.hybrid-review-actions .btn{flex:1;display:inline-flex;justify-content:center;align-items:center;min-height:35px}
+.hybrid-review-actions .btn:disabled{opacity:.48;cursor:not-allowed}
+.hybrid-review-closed{font-size:12px;line-height:1.5;color:#687770}
+@media(max-width:760px){.hybrid-review-decision{min-width:215px;max-width:260px}}
