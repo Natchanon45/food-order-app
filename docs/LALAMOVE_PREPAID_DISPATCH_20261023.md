@@ -26,7 +26,10 @@ converted into a second Platform collection.
    requests cannot place a second order while this reservation exists.
 4. On success, atomically persist the provider order, close the reservation,
    stamp the debit on the order, and mark the existing ledger entry `settled`.
-   A final fee differing from the quoted fee requires manual reconciliation.
+   If the final provider fee differs, write an atomic Wallet adjustment: an
+   additional debit when sufficient prepaid funds remain, or a credit/refund
+   when the provider fee is lower. If an increase exceeds available credit,
+   retain the reservation and require manual reconciliation, never a debt.
 5. If the provider **definitively rejects** the booking (4xx except 408, 409
    and 429), one transaction restores the Wallet, marks the original debit
    `reversed`, writes an explicit `delivery_refund` credit and removes the lock.
@@ -63,9 +66,10 @@ Actual production data has not been examined in this GitHub-only update.
 
 ## Regression coverage
 
-`npm run test:lalamove-prepaid-atomic`: 7 cases, including success/pre-debit,
+`npm run test:lalamove-prepaid-atomic`: 9 cases, including success/pre-debit,
 insufficient balance, two concurrent calls, definitive rejection and retry,
-timeout/unknown outcome, provider fee mismatch, and independent Partner mode.
+timeout/unknown outcome, final provider fee increases/decreases, insufficient
+additional credit, and independent Partner mode.
 
 Also run `npm run test:lalamove-auto-status`,
 `npm run test:revenue-payment-bank-picker`, and Node syntax check.
