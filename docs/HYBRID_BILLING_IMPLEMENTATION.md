@@ -64,3 +64,7 @@ The existing hybrid registration gate remains disabled. All production cutover d
 ## Owner update 2026-10-23 — apply NEW calendar universally (prelaunch)
 
 All stores (including ones with empty `billingMode`) now use activation-anniversary monthly threshold periods. The read-only Hybrid estimator is accessible for all tenant owners/admins, even when their old tenant record is not marked `hybrid_v1`. The **billing engine is still preview-only** and `HYBRID_REGISTRATION_READY=false`; secure invoice issuance and payment state must be completed before changing every store's operational charge model. The former migration/cutover plan is superseded. See `docs/UNIVERSAL_BILLING_PRELAUNCH_20261023.md`. The owner handles deletion of selected test transactional data, not the assistant.
+
+## 2026-10-23 Phase 3 progress: private invoice ledger (NOT ENABLED)
+
+The deterministic, period-price-locked SHA-256 invoice ledger planner, closed-day sales seal, transactional idempotent persistence adapter and trusted server read-only coordinator are in place. This code is **not imported by Functions bootstrap**, `HYBRID_INVOICE_ISSUANCE_READY=false`, and no invoices or tenant access states can be changed by it from the deployed app. Client Firestore rules deny write to the new invoice/period subcollections, while providing tenant-admin/Super Admin read scopes (rules not deployed). Real payments, adjustments, suspension/recovery and Slip2Go quota still require implementation. Read `docs/HYBRID_INVOICE_LEDGER_PHASE3_20261023.md`.
