@@ -1,0 +1,22 @@
+/* Read-only Hybrid ledger table: no payable action or unverified slip approval. */
+.hybrid-review-shell{width:min(1240px,calc(100% - 24px));margin-inline:auto}
+.hybrid-review-shell .revenue-share-hero{display:flex;justify-content:space-between;gap:16px}
+.hybrid-review-shell .revenue-share-hero h1{margin-top:14px}
+.hybrid-review-shell .hybrid-report-toolbar select{min-height:42px;min-width:220px;max-width:100%;padding:8px 11px;border:1px solid #d7e5dd;border-radius:10px;background:#fff}
+.hybrid-review-shell .hybrid-report-metrics{margin-block:14px}
+.hybrid-review-shell .hybrid-report-details{margin-block:14px}
+.hybrid-review-shell .hybrid-report-details .btn{justify-self:start}
+.hybrid-review-id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;overflow-wrap:anywhere}
+.hybrid-review-status{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:750;white-space:nowrap;background:#edf1f5;color:#35475a}
+.hybrid-review-status.pending_review{background:#fff5e2;color:#915600}
+.hybrid-review-status.paid{background:#e6f7ed;color:#146b3e}
+.hybrid-review-status.rejected{background:#fff0ef;color:#a23732}
+.hybrid-review-status.issued{background:#e9f1fd;color:#2356a0}
+.hybrid-review-inline{margin-top:16px}
+.hybrid-review-inline .hybrid-report-details{margin:0}
+@media(max-width:760px){
+  .hybrid-review-shell .hybrid-report-toolbar{flex-direction:column;align-items:stretch}
+  .hybrid-review-shell .hybrid-report-toolbar select,.hybrid-review-shell .hybrid-report-toolbar button{width:100%;min-width:0}
+  .hybrid-review-shell .hybrid-report-table-scroll{-webkit-overflow-scrolling:touch}
+  .hybrid-review-inline .hybrid-report-table-scroll table{min-width:520px}
+}
