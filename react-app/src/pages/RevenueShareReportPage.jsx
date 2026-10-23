@@ -569,6 +569,43 @@ export function RevenueShareReportPage() {
           </div>
           {Number(summary.legacyShareAmount || 0) > 0 ? <div className="report-legacy-share">{rc("ส่วนแบ่งรวม Delivery และสัญญาเดิม", "Total Delivery and legacy revenue share")}: <strong>{money(summary.revenueShare)} {rc("บาท", "THB")}</strong> · {rc("เฉพาะสัญญาเดิม", "Legacy portion")}: {money(summary.legacyShareAmount)} {rc("บาท", "THB")}</div> : null}
           {hasLegacyDeliveryDebt ? <p className="report-related-debt-note"><i className="bi bi-info-circle" aria-hidden="true"></i>{rc("ยอดโอน Platform รวมต้นทุน Lalamove ที่ยังไม่หัก Wallet " + money(lalamoveOutstanding) + " บาท ไม่ใช่ส่วนแบ่ง Delivery", "The Platform balance includes " + money(lalamoveOutstanding) + " THB of Lalamove not covered by Wallet, not Delivery revenue share.")}</p> : null}
+        <section className={"card report-payment-card" + (noAmountDue ? " report-payment-card-zero" : "")} aria-labelledby="reportPaymentTitle">
+          <div className="report-section-heading">
+            <div><h2 id="reportPaymentTitle"><i className="bi bi-file-earmark-text" aria-hidden="true"></i> {t("revenue_share_report.payment.title")}</h2><p>{t("revenue_share_report.payment.description")}</p></div>
+            <strong id="paymentBillingCycle">{t("revenue_share_report.payment.billing_cycle", { cycle: cycleLabel })}</strong>
+          </div>
+          <div className="report-payment-summary">
+            <div><span>{t("revenue_share_report.payment.selected_period")}</span><strong id="paymentPeriodLabel">{periodLabel}</strong></div>
+            <div><span>{t("revenue_share_report.payment.amount_due")}</span><strong><span id="paymentAmountDue">{money(summary.platformAmountDue)}</span> {t("revenue_share_report.common.baht")}</strong></div>
+          </div>
+          {noAmountDue ? <div className="report-payment-zero"><i className="bi bi-check-circle" aria-hidden="true"></i><span>{rc("ยังไม่มียอดต้องชำระในช่วงนี้ จึงไม่ต้องแนบสลิป", "No amount due for this period; no payment slip is required.")}</span></div> : null}
+          {!noAmountDue ? <>
+          <form id="revenueSharePaymentForm" className="report-payment-form" onSubmit={submitPayment}>
+            <div className="report-slip-field">
+              <span>{t("revenue_share_report.payment.slip")}</span>
+              <input id="revenueShareSlip" name="slip" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={!canSubmit} onChange={onSlipChange} />
+              <label className={"report-slip-picker" + (!canSubmit ? " is-disabled" : "")} htmlFor="revenueShareSlip"><i className="bi bi-paperclip" aria-hidden="true"></i><strong>{t("revenue_share_report.payment.choose_file")}</strong><small id="revenueShareSlipName">{slip?.name || t("revenue_share_report.payment.no_file")}</small></label>
+              {slipError ? <small className="report-slip-error" id="revenueShareSlipError" role="alert">{slipError}</small> : <small className="report-slip-error" id="revenueShareSlipError" role="alert" hidden></small>}
+              <small>{t("revenue_share_report.payment.slip_help")}</small>
+              <div className="report-slip-selected" id="revenueShareSlipSelected" hidden={!slip}>
+                <div className="report-slip-selected-meta"><i className="bi bi-file-earmark-check" aria-hidden="true"></i><div><strong id="revenueShareSelectedName">{slip?.name || "-"}</strong><small id="revenueShareSelectedSize">{slip ? fileSize(slip.size) : "-"}</small></div></div>
+                <div className="report-slip-selected-actions">
+                  <button className="btn btn-sm" id="previewRevenueShareSlip" type="button" onClick={previewSelectedSlip}><i className="bi bi-eye" aria-hidden="true"></i><span>{t("revenue_share_report.actions.preview_selected")}</span></button>
+                  <button className="btn btn-danger btn-sm" id="removeRevenueShareSlip" type="button" onClick={clearSlip}><i className="bi bi-trash" aria-hidden="true"></i><span>{t("revenue_share_report.actions.remove_selected")}</span></button>
+                </div>
+              </div>
+            </div>
+            <button className="btn btn-primary report-submit-slip" id="submitRevenueShareSlip" type="submit" disabled={!canSubmit} aria-describedby="revenueSharePaymentMessage" title={paymentUnavailableMessage || undefined}>
+              {uploading ? <span className="tenant-button-spinner" aria-hidden="true"></span> : <i className="bi bi-cloud-arrow-up" aria-hidden="true"></i>}
+              <span>{t(uploading ? "revenue_share_report.states.uploading" : "revenue_share_report.actions.submit_slip")}</span>
+            </button>
+          </form>
+          </> : null}
+          {paymentUnavailableMessage ? <div className={"report-payment-message" + (!cycleMatches ? " error" : "")} id="revenueSharePaymentMessage" role="status">{paymentUnavailableMessage}</div>
+            : paymentMessage ? <div className={`report-payment-message${paymentMessageError ? " error" : ""}`} id="revenueSharePaymentMessage" role="status">{paymentMessage}</div>
+              : <div className="report-payment-message" id="revenueSharePaymentMessage" role="status" hidden></div>}
+        </section>
+
         </section>
 
         <details className="report-extra">
@@ -629,43 +666,6 @@ export function RevenueShareReportPage() {
         </section>
 
         </details>
-
-        <section className={"card report-payment-card" + (noAmountDue ? " report-payment-card-zero" : "")} aria-labelledby="reportPaymentTitle">
-          <div className="report-section-heading">
-            <div><h2 id="reportPaymentTitle"><i className="bi bi-file-earmark-text" aria-hidden="true"></i> {t("revenue_share_report.payment.title")}</h2><p>{t("revenue_share_report.payment.description")}</p></div>
-            <strong id="paymentBillingCycle">{t("revenue_share_report.payment.billing_cycle", { cycle: cycleLabel })}</strong>
-          </div>
-          <div className="report-payment-summary">
-            <div><span>{t("revenue_share_report.payment.selected_period")}</span><strong id="paymentPeriodLabel">{periodLabel}</strong></div>
-            <div><span>{t("revenue_share_report.payment.amount_due")}</span><strong><span id="paymentAmountDue">{money(summary.platformAmountDue)}</span> {t("revenue_share_report.common.baht")}</strong></div>
-          </div>
-          {noAmountDue ? <div className="report-payment-zero"><i className="bi bi-check-circle" aria-hidden="true"></i><span>{rc("ยังไม่มียอดต้องชำระในช่วงนี้ จึงไม่ต้องแนบสลิป", "No amount due for this period; no payment slip is required.")}</span></div> : null}
-          {!noAmountDue ? <>
-          <form id="revenueSharePaymentForm" className="report-payment-form" onSubmit={submitPayment}>
-            <div className="report-slip-field">
-              <span>{t("revenue_share_report.payment.slip")}</span>
-              <input id="revenueShareSlip" name="slip" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={!canSubmit} onChange={onSlipChange} />
-              <label className={"report-slip-picker" + (!canSubmit ? " is-disabled" : "")} htmlFor="revenueShareSlip"><i className="bi bi-paperclip" aria-hidden="true"></i><strong>{t("revenue_share_report.payment.choose_file")}</strong><small id="revenueShareSlipName">{slip?.name || t("revenue_share_report.payment.no_file")}</small></label>
-              {slipError ? <small className="report-slip-error" id="revenueShareSlipError" role="alert">{slipError}</small> : <small className="report-slip-error" id="revenueShareSlipError" role="alert" hidden></small>}
-              <small>{t("revenue_share_report.payment.slip_help")}</small>
-              <div className="report-slip-selected" id="revenueShareSlipSelected" hidden={!slip}>
-                <div className="report-slip-selected-meta"><i className="bi bi-file-earmark-check" aria-hidden="true"></i><div><strong id="revenueShareSelectedName">{slip?.name || "-"}</strong><small id="revenueShareSelectedSize">{slip ? fileSize(slip.size) : "-"}</small></div></div>
-                <div className="report-slip-selected-actions">
-                  <button className="btn btn-sm" id="previewRevenueShareSlip" type="button" onClick={previewSelectedSlip}><i className="bi bi-eye" aria-hidden="true"></i><span>{t("revenue_share_report.actions.preview_selected")}</span></button>
-                  <button className="btn btn-danger btn-sm" id="removeRevenueShareSlip" type="button" onClick={clearSlip}><i className="bi bi-trash" aria-hidden="true"></i><span>{t("revenue_share_report.actions.remove_selected")}</span></button>
-                </div>
-              </div>
-            </div>
-            <button className="btn btn-primary report-submit-slip" id="submitRevenueShareSlip" type="submit" disabled={!canSubmit} aria-describedby="revenueSharePaymentMessage" title={paymentUnavailableMessage || undefined}>
-              {uploading ? <span className="tenant-button-spinner" aria-hidden="true"></span> : <i className="bi bi-cloud-arrow-up" aria-hidden="true"></i>}
-              <span>{t(uploading ? "revenue_share_report.states.uploading" : "revenue_share_report.actions.submit_slip")}</span>
-            </button>
-          </form>
-          </> : null}
-          {paymentUnavailableMessage ? <div className={"report-payment-message" + (!cycleMatches ? " error" : "")} id="revenueSharePaymentMessage" role="status">{paymentUnavailableMessage}</div>
-            : paymentMessage ? <div className={`report-payment-message${paymentMessageError ? " error" : ""}`} id="revenueSharePaymentMessage" role="status">{paymentMessage}</div>
-              : <div className="report-payment-message" id="revenueSharePaymentMessage" role="status" hidden></div>}
-        </section>
 
         <details className="report-history-disclosure" open={Boolean(payments?.length)}>
           <summary><i className="bi bi-clock-history" aria-hidden="true"></i><span>{t("revenue_share_report.payment.history_title")} {payments?.length ? "(" + payments.length + ")" : ""}</span><i className="bi bi-chevron-down" aria-hidden="true"></i></summary>
