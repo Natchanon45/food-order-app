@@ -442,17 +442,14 @@ export function RevenueShareReportPage() {
         </div>
       </header>
 
-      <main className="container revenue-share-page">
+      <main className="container revenue-share-page revenue-share-dashboard">
         <section className="hero revenue-share-hero">
-          <div>
-            <span className="report-eyebrow"><i className="bi bi-shield-lock" aria-hidden="true"></i>{t("revenue_share_report.hero.private")}</span>
+          <span className="report-hero-symbol" aria-hidden="true"><i className="bi bi-bar-chart-line-fill"></i></span>
+          <div className="report-hero-content">
             <h1>{t("revenue_share_report.hero.title")}</h1>
-            <p>{t("revenue_share_report.hero.description")}</p>
+            <p>{rc("สรุปยอดขายแยกตามช่องทาง ขายที่ร้าน / POS และ Delivery พร้อมคำนวณส่วนแบ่งตามเกณฑ์ที่กำหนด", "Channel sales, in-store / POS and Delivery, with threshold-based revenue sharing")}</p>
           </div>
-          <button className="btn btn-primary" id="refreshRevenueShare" type="button" disabled={loading} onClick={() => Promise.all([loadAccess(), loadReport(), loadHistory()])}>
-            {loading ? <span className="tenant-button-spinner" aria-hidden="true"></span> : <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>}
-            <span>{t(loading ? "revenue_share_report.states.loading" : "revenue_share_report.actions.refresh")}</span>
-          </button>
+          <div className="report-hero-art" aria-hidden="true"><i className="bi bi-receipt"></i><i className="bi bi-bar-chart-fill"></i><i className="bi bi-pie-chart-fill"></i></div>
         </section>
 
         {access?.suspended === true ? (
@@ -468,7 +465,7 @@ export function RevenueShareReportPage() {
 
         <section className="card report-filter-card" aria-labelledby="reportPeriodTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportPeriodTitle">{t("revenue_share_report.period.title")}</h2><p>{t("revenue_share_report.period.description")}</p></div>
+            <div><h2 id="reportPeriodTitle"><i className="bi bi-graph-up-arrow" aria-hidden="true"></i>{t("revenue_share_report.period.title")}</h2><p>{t("revenue_share_report.period.description")}</p></div>
             <strong id="reportPeriodLabel">{loading ? t("revenue_share_report.states.loading") : periodLabel}</strong>
           </div>
           <div className="report-period-tabs" role="tablist" aria-label={t("revenue_share_report.period.aria")}>
@@ -487,14 +484,15 @@ export function RevenueShareReportPage() {
               <label><span>{t("revenue_share_report.period.end")}</span><input className="input" id="reportEndDate" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} /></label>
             </div>
           </div>
+          <button className="btn report-filter-refresh" id="refreshRevenueShare" type="button" disabled={loading} onClick={() => Promise.all([loadAccess(), loadReport(), loadHistory()])} aria-label={t(loading ? "revenue_share_report.states.loading" : "revenue_share_report.actions.refresh")} title={t("revenue_share_report.actions.refresh")}>
+            {loading ? <span className="tenant-button-spinner" aria-hidden="true"></span> : <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>}
+          </button>
         </section>
-
-
 
         <section className="card report-channel-overview" aria-labelledby="reportChannelsTitle">
           <div className="report-section-heading">
             <div>
-              <h2 id="reportChannelsTitle"><i className="bi bi-shop" aria-hidden="true"></i> {rc("แยกยอดขายร้านอาหาร / คาเฟ่", "Restaurant and café sales by channel")}</h2>
+              <h2 id="reportChannelsTitle"><i className="bi bi-check-circle-fill" aria-hidden="true"></i> {rc("แยกยอดขายร้านอาหาร / คาเฟ่", "Restaurant and café sales by channel")}</h2>
               <p>{rc("ยอดขายอาหารตามช่วงรายงานที่เลือก แยกหน้าร้านและจัดส่งชัดเจน", "Food sales for the selected report period, separated by channel")}: {periodLabel}</p>
             </div>
           </div>
@@ -508,7 +506,7 @@ export function RevenueShareReportPage() {
               </div>
             </article>
             <article className="report-channel-card delivery">
-              <span className="report-channel-icon"><i className="bi bi-truck" aria-hidden="true"></i></span>
+              <span className="report-channel-icon"><i className="bi bi-scooter" aria-hidden="true"></i></span>
               <div><span>{rc("ขาย Delivery", "Delivery sales")}</span>
                 <strong id="orderSales">{money(deliveryTotal)} <small>{rc("บาท", "THB")}</small></strong>
                 <small id="orderCount">{rc("ยอดอาหาร ไม่รวมค่าจัดส่ง", "Merchandise only; delivery fees excluded")}</small>
@@ -520,20 +518,19 @@ export function RevenueShareReportPage() {
 
         <section className="card report-month-progress" aria-labelledby="reportProgressTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportProgressTitle"><i className="bi bi-bullseye" aria-hidden="true"></i> {rc("ความคืบหน้ายอด Delivery สะสมเดือนนี้", "Current month's Delivery progress")}</h2>
+            <div><h2 id="reportProgressTitle"><i className="bi bi-bullseye" aria-hidden="true"></i> {rc("Progress ยอด Delivery สะสมเดือนนี้", "Monthly Delivery progress")}</h2>
               <p>{rc("ติดตามยอดสินค้าที่ชำระแล้ว ไม่รวมค่าส่ง", "Tracks paid merchandise excluding delivery fees")} · {monthLabel}</p></div>
             <span className={"report-progress-state " + (thresholdReached ? "is-reached" : "")}>{thresholdReached ? rc("ครบเกณฑ์แล้ว", "Threshold reached") : rc("ยังไม่ถึงเกณฑ์", "Below threshold")}</span>
           </div>
-          <div className="report-progress-top">
-            <div className="report-progress-amount"><strong id="monthlyDeliverySales">{money(monthlyDeliverySales)}</strong><span> / <strong id="monthlyDeliveryThreshold">{money(centralThreshold)}</strong> {rc("บาท", "THB")}</span></div>
+          <div className="report-progress-barline">
+            <div className="report-progress-track" role="progressbar" aria-label={rc("ยอด Delivery สะสมเดือนนี้", "Current month Delivery total")} aria-valuemin={0} aria-valuemax={Math.max(centralThreshold, 1)} aria-valuenow={Math.min(monthlyDeliverySales, Math.max(centralThreshold, 1))}>
+              <span className="report-progress-fill" style={{ width: Math.max(0, Math.min(100, progressPercent)) + "%" }}></span>
+            </div>
             <strong className="report-progress-percent" id="monthlyDeliveryPercent">{formatNumber(progressPercent, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%</strong>
           </div>
-          <div className="report-progress-track" role="progressbar" aria-label={rc("ยอด Delivery สะสมเดือนนี้", "Current month Delivery total")} aria-valuemin={0} aria-valuemax={Math.max(centralThreshold, 1)} aria-valuenow={Math.min(monthlyDeliverySales, Math.max(centralThreshold, 1))}>
-            <span className="report-progress-fill" style={{ width: Math.max(0, Math.min(100, progressPercent)) + "%" }}></span>
-          </div>
-          <div className="report-progress-bottom">
-            <span>{thresholdReached ? rc("ยอดสะสมครบเกณฑ์แล้ว", "Monthly threshold reached") : rc("เหลืออีก " + money(remainingToThreshold) + " บาท จึงถึงเกณฑ์", money(remainingToThreshold) + " THB remaining to threshold")}</span>
-            <span>{rc("เป้าหมาย", "Target")}: {money(centralThreshold)} {rc("บาท", "THB")}</span>
+          <div className="report-progress-caption">
+            <span><strong id="monthlyDeliverySales">{money(monthlyDeliverySales)}</strong> / <strong id="monthlyDeliveryThreshold">{money(centralThreshold)}</strong> {rc("บาท", "THB")}</span>
+            <small>{thresholdReached ? rc("ครบเกณฑ์แล้ว", "Target reached") : rc("เหลืออีก " + money(remainingToThreshold) + " บาท", money(remainingToThreshold) + " THB remaining")}</small>
           </div>
           <p className="report-progress-note"><i className="bi bi-info-circle" aria-hidden="true"></i>
             {thresholdReached ? rc("ยอดสะสมครบ 100% แล้ว ระบบเริ่มคิดส่วนแบ่งกับยอดสินค้าในวันที่ถึงเกณฑ์และวันต่อไป โดยไม่ย้อนหลังวันก่อนหน้า", "Monthly sales reached 100%. The crossing day and following days qualify, without charging earlier days.")
@@ -547,11 +544,13 @@ export function RevenueShareReportPage() {
             <span className={"report-share-state " + (deliveryShareDue > 0 ? "is-chargeable" : "")}>{deliveryShareDue > 0 ? rc("มีส่วนแบ่ง Delivery", "Delivery share due") : thresholdReached ? rc("เดือนนี้ถึงเกณฑ์แล้ว", "Monthly threshold reached") : rc("ยังไม่ถึงเกณฑ์ จึงไม่มีส่วนแบ่ง", "Below threshold: no share")}</span>
           </div>
           <div className="report-share-equation">
-            <div className="report-share-base"><span>{rc("ฐานยอด Delivery ที่เข้าเกณฑ์", "Eligible Delivery base")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div>
-            <b aria-hidden="true">×</b>
-            <div className="report-share-rate"><span>{rc("อัตราส่วนแบ่ง", "Share rate")}</span><strong>{money(centralRate)} <small>%</small></strong></div>
-            <b aria-hidden="true">=</b>
-            <div className="result"><span>{rc("ค่าส่วนแบ่ง Delivery", "Delivery share")}</span><strong id="deliveryShareAmount">{money(summary.deliveryShareAmount)} <small>{rc("บาท", "THB")}</small></strong></div>
+            <div className="report-share-month"><span className="report-equation-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ยอด Delivery สะสมเดือนนี้", "Monthly Delivery total")}</span><strong>{money(monthlyDeliverySales)} <small>{rc("บาท", "THB")}</small></strong></div></div>
+            <b aria-hidden="true" className="report-equation-operator"><i className="bi bi-arrow-right"></i></b>
+            <div className="report-share-base"><span className="report-equation-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span><div><span>{rc("ยอดที่เข้าเกณฑ์แล้ว", "Eligible amount")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div></div>
+            <b aria-hidden="true" className="report-equation-operator">×</b>
+            <div className="report-share-rate"><span className="report-equation-icon"><i className="bi bi-percent" aria-hidden="true"></i></span><div><span>{rc("อัตราส่วนแบ่ง", "Share rate")}</span><strong>{money(centralRate)} <small>%</small></strong></div></div>
+            <b aria-hidden="true" className="report-equation-operator">=</b>
+            <div className="result"><span className="report-equation-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ค่าส่วนแบ่งที่ต้องชำระ", "Delivery share payable")}</span><strong id="deliveryShareAmount">{money(summary.deliveryShareAmount)} <small>{rc("บาท", "THB")}</small></strong></div></div>
           </div>
           <p className="report-rule-note" id="shareExplanation"><i className="bi bi-shield-check" aria-hidden="true"></i>
             {rc("เพดาน " + money(centralThreshold) + " บาทเป็นจุดเริ่มคิดในแต่ละเดือน ไม่ใช่จำนวนเงินที่หักจากยอดขาย ส่วนแบ่งใช้เฉพาะยอดสินค้าที่ชำระแล้วในวันที่ถึงเกณฑ์และวันถัดไป", "The " + money(centralThreshold) + " THB monthly threshold is a trigger, not a deduction. Only paid merchandise from the day the threshold is reached and onward qualifies.")}</p>
@@ -560,21 +559,16 @@ export function RevenueShareReportPage() {
 
         <section className="card report-related-amounts" aria-labelledby="reportRelatedTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportRelatedTitle"><i className="bi bi-receipt" aria-hidden="true"></i> {rc("ยอดที่เกี่ยวข้องและยอดต้องชำระ", "Related charges and amount due")}</h2>
+            <div><h2 id="reportRelatedTitle"><i className="bi bi-stack" aria-hidden="true"></i> {rc("ยอดที่เกี่ยวข้องอื่น", "Other related totals")}</h2>
               <p>{rc("แยกค่าส่ง Lalamove ออกจากค่าส่วนแบ่ง ไม่ทำให้ยอดค้างจริงหายไป", "Lalamove shipping charges are separate from revenue share and actual outstanding balances")}</p></div>
           </div>
           <div className="report-related-grid">
-            <article className="report-related-tile"><span><i className="bi bi-truck" aria-hidden="true"></i>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong></article>
-            <article className="report-related-tile"><span><i className="bi bi-box-seam" aria-hidden="true"></i>{rc("ต้นทุน Lalamove", "Lalamove delivery cost")}</span><strong>{money(summary.lalamoveDeliveryCost)} <small>{rc("บาท", "THB")}</small></strong></article>
-            <article className="report-related-tile"><span><i className="bi bi-wallet2" aria-hidden="true"></i>{rc("ต้นทุน Lalamove ที่ยังไม่หัก Wallet", "Lalamove not covered by Wallet")}</span><strong>{money(lalamoveOutstanding)} <small>{rc("บาท", "THB")}</small></strong></article>
+            <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("รวมจากออร์เดอร์ในช่วงรายงาน", "From selected period orders")}</small></div></article>
+            <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-box-seam" aria-hidden="true"></i></span><div><span>{rc("ต้นทุน Lalamove", "Lalamove delivery cost")}</span><strong>{money(summary.lalamoveDeliveryCost)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("ไม่ใช่ฐานคิดส่วนแบ่ง", "Not part of revenue share")}</small></div></article>
+            <article className="report-related-tile report-related-platform"><span className="report-related-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ยอดที่ต้องโอนให้ Platform", "Platform amount due")}</span><strong id="platformAmountDue">{money(summary.platformAmountDue)} <small>{rc("บาท", "THB")}</small></strong><small>{Number(summary.platformAmountDue || 0) <= 0 ? rc("ไม่มียอดค้างชำระ", "Nothing due") : rc("รวมยอดค้างที่ต้องชำระจริง", "Includes actual outstanding charges")}</small></div></article>
           </div>
           {Number(summary.legacyShareAmount || 0) > 0 ? <div className="report-legacy-share">{rc("ส่วนแบ่งตามสัญญาเดิม (ไม่ใช่ Delivery ส่วนกลาง)", "Legacy contract share (not central Delivery)")}: <strong>{money(summary.legacyShareAmount)} {rc("บาท", "THB")}</strong></div> : null}
-          <div className="report-settlement">
-            <div><span>{rc("ยอดต้องชำระ Platform ตามรูปแบบบัญชีปัจจุบัน", "Platform amount due under current billing rules")}</span>
-              <strong id="platformAmountDue">{money(summary.platformAmountDue)} <small>{rc("บาท", "THB")}</small></strong></div>
-            <p>{hasLegacyDeliveryDebt ? rc("ยอดนี้รวมต้นทุน Lalamove ที่ยังไม่หัก Wallet " + money(lalamoveOutstanding) + " บาท ไม่ใช่ส่วนแบ่ง Delivery แม้ยอดสะสมยังไม่ถึงเพดาน", "This includes " + money(lalamoveOutstanding) + " THB of Lalamove costs not covered by Wallet. It is not Delivery revenue share, even before the threshold.")
-              : rc("ค่าส่วนแบ่งรวม " + money(summary.revenueShare) + " บาท" + (Number(summary.platformAmountDue || 0) === 0 ? " ยังไม่มีรายการต้องโอนในช่วงนี้" : ""), "Total revenue share: " + money(summary.revenueShare) + " THB" + (Number(summary.platformAmountDue || 0) === 0 ? ". No transfer is due for this period." : ""))}</p>
-          </div>
+          {hasLegacyDeliveryDebt ? <p className="report-related-debt-note"><i className="bi bi-info-circle" aria-hidden="true"></i>{rc("ยอดโอน Platform รวมต้นทุน Lalamove ที่ยังไม่หัก Wallet " + money(lalamoveOutstanding) + " บาท ไม่ใช่ส่วนแบ่ง Delivery", "The Platform balance includes " + money(lalamoveOutstanding) + " THB of Lalamove not covered by Wallet, not Delivery revenue share.")}</p> : null}
         </section>
 
         <details className="report-extra">
@@ -636,9 +630,9 @@ export function RevenueShareReportPage() {
 
         </details>
 
-        <section className="card report-payment-card" aria-labelledby="reportPaymentTitle">
+        <section className={"card report-payment-card" + (noAmountDue ? " report-payment-card-zero" : "")} aria-labelledby="reportPaymentTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportPaymentTitle">{t("revenue_share_report.payment.title")}</h2><p>{t("revenue_share_report.payment.description")}</p></div>
+            <div><h2 id="reportPaymentTitle"><i className="bi bi-file-earmark-text" aria-hidden="true"></i> {t("revenue_share_report.payment.title")}</h2><p>{t("revenue_share_report.payment.description")}</p></div>
             <strong id="paymentBillingCycle">{t("revenue_share_report.payment.billing_cycle", { cycle: cycleLabel })}</strong>
           </div>
           <div className="report-payment-summary">
@@ -673,6 +667,8 @@ export function RevenueShareReportPage() {
               : <div className="report-payment-message" id="revenueSharePaymentMessage" role="status" hidden></div>}
         </section>
 
+        <details className="report-history-disclosure" open={Boolean(payments?.length)}>
+          <summary><i className="bi bi-clock-history" aria-hidden="true"></i><span>{t("revenue_share_report.payment.history_title")} {payments?.length ? "(" + payments.length + ")" : ""}</span><i className="bi bi-chevron-down" aria-hidden="true"></i></summary>
         <section className="card report-history-card" aria-labelledby="reportHistoryTitle">
           <div className="report-section-heading">
             <div>
@@ -715,6 +711,7 @@ export function RevenueShareReportPage() {
               }) : <div className="report-history-empty">{t("revenue_share_report.payment.empty")}</div>}
           </div>
         </section>
+        </details>
 
         {error ? <div className="report-error" id="revenueShareError" role="alert">{error}</div>
           : <div className="report-error" id="revenueShareError" role="alert" hidden></div>}
