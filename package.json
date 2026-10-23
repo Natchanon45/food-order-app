@@ -27,7 +27,7 @@
     "test:admin-mobile-menu-table": "node --test tests/react-parity/admin-mobile-menu-table.spec.mjs",
     "test:global-initial-readiness": "node --test tests/react-parity/global-initial-readiness.spec.mjs",
     "test:signup-billing-revenue-share": "node --test tests/react-parity/signup-billing-revenue-share.spec.mjs",
-    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs",
+    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs tests/react-parity/hybrid-invoice-review-ui.spec.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",
@@ -36,7 +36,7 @@
     "test:cashier-receipt-loading": "node --test tests/react-parity/cashier-receipt-loading.spec.mjs tests/react-parity/cashier-bill-preview.spec.mjs",
     "test:ios-order-alert-audio": "node --test tests/react-parity/ios-order-alert-audio.spec.mjs",
     "test:verify-page-i18n": "node --test tests/react-parity/verify-page-i18n.spec.mjs",
-    "test:revenue-payment-bank-picker": "node --test tests/react-parity/revenue-share-payment-platform-bank.spec.mjs tests/react-parity/revenue-share-current-settings.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/revenue-share-cutover-periods.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs",
+    "test:revenue-payment-bank-picker": "node --test tests/react-parity/revenue-share-payment-platform-bank.spec.mjs tests/react-parity/revenue-share-current-settings.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/revenue-share-cutover-periods.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs",
     "test:pos-users-ui-toast": "node --test tests/react-parity/pos-users-buttons-toast.spec.mjs",
     "test:pos-mobile-header": "node --test tests/react-parity/pos-mobile-header-one-row.spec.mjs",
     "test:pos-floating-developer-badge": "node --test tests/react-parity/pos-floating-developer-badge.spec.mjs",
@@ -82,7 +82,9 @@
     "test:revenue-cutover-periods": "node --test tests/react-parity/revenue-share-cutover-periods.spec.mjs",
     "test:universal-billing": "node --test tests/react-parity/universal-billing-policy.spec.mjs",
     "test:hybrid-invoice-ledger": "node --test tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs",
-    "test:hybrid-invoice-payment": "node --test tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs"
+    "test:hybrid-invoice-payment": "node --test tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs",
+    "test:finance-slip-claims": "node --test tests/react-parity/finance-slip-claims.spec.mjs",
+    "test:hybrid-invoice-review-ui": "node --test tests/react-parity/hybrid-invoice-review-ui.spec.mjs"
   },
   "repository": {
     "type": "git",
