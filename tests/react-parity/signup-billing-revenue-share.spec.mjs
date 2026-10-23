@@ -308,6 +308,20 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   const legacyMonth = await loaded.exports.__summary("legacy", span("2026-10-01", "2026-11-01"), legacy);
   assert.equal(legacyMonth.deliveryShareAmount, 375, "Legacy Delivery must also use 5% central at 100% threshold");
   assert.equal(legacyMonth.legacyShareAmount, 500, "Old POS/table charges remain under original historical contract");
+  assert.equal(legacyMonth.lalamoveDeliveryCost, 80, "Lalamove provider delivery cost is still reported");
+  assert.equal(legacyMonth.lalamoveOutstandingCost, 80, "Missing old debit stamps remain diagnostic only");
+  assert.equal(legacyMonth.platformAmountDue, 875, "Legacy plus Delivery shares never include the 80 THB Lalamove reconciliation gap");
+
+  const legacyDeliveryOnly = loaded.exports.__setting({
+    billingMode: "revenue_share", businessType: "restaurant_cafe",
+    revenueShareRestaurantScope: "delivery_only", revenueShareRate: 0,
+  }, { ...pricing, deliveryThreshold: 50000 });
+  const beforeThreshold = await loaded.exports.__summary(
+    "legacy", span("2026-10-01", "2026-11-01"), legacyDeliveryOnly,
+  );
+  assert.equal(beforeThreshold.revenueShare, 0, "No sales-share fee below central Delivery threshold");
+  assert.equal(beforeThreshold.lalamoveOutstandingCost, 80, "Stale debit stamp may still appear for reconciliation");
+  assert.equal(beforeThreshold.platformAmountDue, 0, "Prepaid Lalamove costs MUST NOT create a payable invoice");
   assert.equal(legacy.channels.includeRetail, true);
   assert.equal(loaded.exports.__setting(tenant).enabled, false, "Legacy suspension scheduler never activates Premium");
   await assert.rejects(
