@@ -19,9 +19,10 @@ test("Revenue report reads central monthly, yearly, threshold and rate from auth
   assert.match(report, /access\?\.centralDeliveryShare/);
 });
 test("Share calculation displays actual server figures, not hypothetical arithmetic or fabricated totals", () => {
-  for (const field of ["deliveryShareBase", "deliveryShareAmount", "revenueShare", "platformAmountDue"]) {
+  for (const field of ["deliveryShareBase", "deliveryShareAmount", "revenueShare"]) {
     assert.ok(report.includes("money(summary." + field + ")"), field);
   }
+  assert.match(report, /money\(platformSharePayable\)/);
   assert.match(report, /summary\.legacyShareAmount/);
   assert.match(report, /summary\.legacyShareAmount/);
   assert.match(report, /เรียกเก็บแยก/);
@@ -71,7 +72,16 @@ test("Prepaid Lalamove wallet discrepancy is diagnostic only, never billed to Pl
   const platformDue = billedShare;
   assert.equal(missingWalletStampCost, 59);
   assert.equal(platformDue, 0);
+  assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.revenueShare \|\| 0\)\) \* 100\) \/ 100/);
+  assert.match(report, /const noAmountDue = !loading && platformSharePayable <= 0/);
+  assert.match(report, /id="platformAmountDue">\{money\(platformSharePayable\)\}/);
+  assert.match(report, /id="paymentAmountDue">\{money\(platformSharePayable\)\}/);
+  assert.doesNotMatch(report, /money\(summary\.platformAmountDue\)/);
+  assert.match(report, /historicalPrepaidGap/);
+  assert.match(report, /"ยอดบันทึกเดิม "/);
+  assert.match(report, /" ไม่ใช่ยอดส่วนแบ่งค้างชำระใหม่"/);
 });
+
 
 test("Report keeps the period picker, payment review/history, and keeps Wallet/Lalamove optional", () => {
   assert.match(report, /data-report-period=\{value\}/);
