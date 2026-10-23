@@ -604,6 +604,7 @@ export function PlatformPage() {
           <Link className="card nav-card" to="/platform/owners"><i className="bi bi-people app-icon" aria-hidden="true"></i><strong>{t("platform.cards.owners.title")}</strong><small>{t("platform.cards.owners.description")}</small></Link>
           <Link className="card nav-card" to="/platform/contact"><i className="bi bi-chat-heart app-icon" aria-hidden="true"></i><strong>{t("platform.cards.contact.title")}</strong><small>{t("platform.cards.contact.description")}</small></Link>
           <Link className="card nav-card" to="/platform/pricing"><i className="bi bi-tags app-icon" aria-hidden="true"></i><strong>{t("platform.cards.pricing.title")}</strong><small>{t("platform.cards.pricing.description")}</small></Link>
+          <Link className="card nav-card" to="/platform/hybrid-invoices"><i className="bi bi-receipt-cutoff app-icon" aria-hidden="true"></i><strong>{intlLocale.startsWith("th") ? "บิล Hybrid และตรวจสลิป" : "Hybrid Invoices & Slips"}</strong><small>{intlLocale.startsWith("th") ? "รายการออกบิลและสลิปสำหรับตรวจสอบ (อ่านอย่างเดียว)" : "Issued invoices and slip review records (read-only)"}</small></Link>
         </section>
 
         <ControlCard titleId="platformBrandingTitle" icon="bi bi-palette" title={t("platform.branding.title")} description={t("platform.branding.description")} badge={t("shared.user_menu.roles.super_admin")} className="platform-branding-card">
