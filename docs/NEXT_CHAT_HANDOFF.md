@@ -1,5 +1,16 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Phase 6 local-only Firebase Emulator UAT (NOT RUN ON MAC)
+
+- User asked to continue after Phase 5 crypto fixture regression. Mac mini Remote Desktop Commander was OFFLINE. No native Node.js, React build or Firebase Emulator run in this turn.
+- New `firebase.hybrid-emulator.json` uses localhost 9099/8080/9199 for Auth/Firestore/Storage, loading real repo Rules. `npm run test:firebase-hybrid-emulator` invokes `firebase emulators:exec --project demo-penguin-hybrid` and guarded code refuses to run without loopback-only FIRESTORE_EMULATOR_HOST, FIREBASE_AUTH_EMULATOR_HOST and FIREBASE_STORAGE_EMULATOR_HOST.
+- New `tests/firebase-emulator/hybrid-finance-security.spec.mjs` tests real Auth identities, cross-tenant Firestore get/list denial, paid status update forbidden even to Super Admin, global finance claim secrecy, Storage upload immutable owner/admin roles, invalid/paid invoice upload denial, concurrent Admin shared proof claims, idempotent invoices, pending-to-paid review exactly once and no shop access mutation.
+- New `tests/react-parity/hybrid-emulator-safety.spec.mjs` enforces demo-only script and storage rules; in `test:hybrid-billing`, standalone `npm run test:hybrid-emulator-safety`.
+- `storage.rules` now allows invoice-scoped proof upload only if a Firestore invoice actually exists and has `issued`/`rejected` status. Prevent paid/pending/nonexistent invoice proof uploads. Rules NOT deployed.
+- V8 static safety tests 5/5 passed; new emulator test JS parsed. Actual Emulator pass/fail unknown pending Mac. No Firestore data, Master data, real payment, Hosting or Cloud Functions changed or deployed.
+- Mac: `npm run test:hybrid-emulator-safety`; ensure functions/node_modules/firebase-admin exists (`npm --prefix functions install --no-package-lock` if absent); `java -version`; `firebase --version`; `npm run test:firebase-hybrid-emulator`; `npm run test:react-parity`; `npm run build:react`. Never reset local modified public HTML.
+- Full guide: `docs/HYBRID_FIREBASE_EMULATOR_UAT_PHASE6_20261023.md`. Next: fix actual emulator failures and implement explicit closed-by-default authenticated payment Callable and reviewed approval UI; issuance stays hard off.
+
 ## 2026-10-23 — Mac Phase 5 npm failure fixed (no deploy)
 
 - User Mac `npm run test:finance-slip-claims` 6/6, `test:hybrid-invoice-payment` 20/20, `test:hybrid-invoice-review-ui` 5/5, `test:hybrid-invoice-ledger` 15/15, and `test:hybrid-billing` 95/95 passed. `test:react-parity` stopped at `test:signup-billing-revenue-share`, assertion `Unexpected dependency node:crypto` (line 273), so `build:react` did not run (shell `set -e`).
