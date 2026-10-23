@@ -29,7 +29,13 @@ const invoice = (overrides = {}) => ({
 
 function memory() {
   const store = new Map();
-  const doc = key => ({ key, id: key.slice(key.lastIndexOf("/") + 1) });
+  const doc = key => ({
+    key, id: key.slice(key.lastIndexOf("/") + 1),
+    get: async () => ({
+      exists: store.has(key),
+      data: () => store.get(key),
+    }),
+  });
   const tenant = id => ({
     id, collection: coll => ({
       doc: id2 => doc("tenants/" + id + "/" + coll + "/" + id2),
