@@ -76,3 +76,16 @@ Real App Check validation, real bank receiving account configuration/confirmatio
 ## 24 October 2026 — Uploaded Mac log follow-up
 
 The owner uploaded a Mac terminal log reporting `Missing script: "test:hybrid-demo-browser"` and `test:hybrid-billing` at **144/145** with one safety assertion failure. The Mac checkout is older than the GitHub feature branch (its package hybrid test arguments did not include the new demo browser spec). Pull the branch latest safely and rerun. The failing test matched a forbidden-operation keyword in a *comment*, not a real mutation; source-only guard was repaired and remains fail-closed. The Mac log did show an older React Production build and build-contract PASS, not latest React demo validation.
+
+## 24 October 2026 — Finance reviewer revocation and immutable audit UAT
+
+After pulling the most recent `feature/react-firebase-port` commit:
+
+1. Verify a synthetic Owner invoice goes from `issued` to `pending_review`; neither a missing/expired grant nor an inactive uploader may submit.
+2. As Super Admin, visit `/react/platform/hybrid-invoices`. The new **Finance review audit trail** initially shows no events on fresh Emulator data.
+3. From the demo Callable tests, revoke the reviewer `users/{uid}` by setting `active:false` or `role:cashier`. A review attempt must reject; the invoice remains `pending_review` and **no review event** is written. Restore the demo reviewer profile after testing.
+4. The real demo Reviewer can approve or reject once after restoring Super Admin permissions. The audit table must show the immutable review time, decision, reviewer UID and simulated confirmation label. The issuer must **not** auto-unlock a store suspended for a separate reason.
+5. Verify switching selected stores or refreshing while a page is still loading never displays prior shop invoices/attempts/audit events. Repeated clicks on Load More should not append duplicate audit IDs. Review notes containing long account-like digit patterns must display a redaction marker.
+6. Production mode must still show disabled submit/review controls and no demo finance endpoint. The demo does not prove a real bank transfer or App Check integration.
+
+The new code has source-level checks but has **not** been run on the Mac in this turn; all older owner-confirmed test results apply only to preceding commits. Do not deploy Production until real receiving-bank/App Check/Slip2Go, credit/refund/reversal and suspension/recovery policy UAT is complete.

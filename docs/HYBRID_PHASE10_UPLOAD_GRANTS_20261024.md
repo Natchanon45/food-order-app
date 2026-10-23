@@ -68,3 +68,9 @@ Do not reset, clean, merge to main or deploy Production. `build:react` can regen
 ## Phase 10 browser UAT extension (still the same Phase 10)
 
 See `docs/HYBRID_PHASE10_BROWSER_EMULATOR_UAT_20261024.md` for the DEV-only owner + reviewer React Browser workflow, seeded demo identities, loopback-only server requirements and UAT exit conditions. Production payment callables, real bank verification and UI remain OFF. No real Mac/browser validation after these changes; previous owner's confirmation covered the earlier grant-bound commit.
+
+## Final Phase 10 finance-review security/audit updates
+
+- Reviews now re-authorize active Super Admin inside the same Firestore transaction as payment approval/rejection and immutable review-event creation; invalid stored invoice signature/version/ID or attempt ID rejects before writes.
+- New Super Admin read-only audit table from `hybridBillingPaymentEvents`, with pagination, tenant+refresh request scoping, masked numeric note patterns and field allowlisting. No payment credentials, slips, OCR or raw bank references are passed into the audit renderer.
+- Local mock/source validation passed, but native Mac and real Emulator/React regression is pending for these changes. **No new Production callable exports or release gate changes.**
