@@ -173,9 +173,10 @@ test("manual finance approval atomically settles one exact invoice without unloc
   assert.equal(env.getInvoice().active, undefined);
   assert.equal(env.getInvoice().subscriptionStatus, undefined);
   await assert.rejects(env.review("tenant-1", attemptId, "approve"), /ALREADY_REVIEWED/);
-  await assert.rejects(env.submit("tenant-1", await (async () => ({
-    ...await env.prepare({ attempt: "attempt_1234567890999999" }),
-  }))()), /ALREADY_PENDING_OR_PAID/);
+  await assert.rejects(
+    env.prepare({ attempt: "attempt_1234567890999999" }),
+    /ALREADY_PENDING_OR_PAID/,
+  );
 });
 
 test("duplicate slip bytes or repeated bank reference cannot pay another store", async () => {
