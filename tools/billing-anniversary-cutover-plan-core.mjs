@@ -77,8 +77,10 @@ export function generateCutoverPlan(audit, today) {
       !Array.isArray(audit.tenants)) throw new Error("Unsupported audit inventory format");
   validDateKey(today);
   validDateKey(audit.asOfBangkok);
-  // Must not use stale or truncated inventory as a migration authorization.
+  // Incomplete or stale inputs cannot even move to manual approval.
   const inputIncomplete = audit.tenantScanTruncated === true;
+  const auditExpired = today < audit.asOfBangkok ||
+    (Date.parse(today + "T00:00:00Z") - Date.parse(audit.asOfBangkok + "T00:00:00Z")) > 7 * 86400000;
   const stores = audit.tenants.map((tenant, i) => {
     const proposal = proposeCutover(tenant, today);
     return {
@@ -90,17 +92,21 @@ export function generateCutoverPlan(audit, today) {
       oldPaymentCount: tenant.paymentCountInspected || 0,
       inputAuditAsOf: audit.asOfBangkok,
       ...proposal,
-      ...(inputIncomplete ? { reviewStatus: "BLOCKED_REVIEW",
+      ...(inputIncomplete || auditExpired ? {
+        reviewStatus: "BLOCKED_REVIEW",
         proposedEffectiveDate: null,
-        blockers: [...proposal.blockers, "tenant_inventory_truncated"].sort() } : {}),
+        blockers: [...new Set([...proposal.blockers,
+          ...(inputIncomplete ? ["tenant_inventory_truncated"] : []),
+          ...(auditExpired ? ["audit_is_stale"] : []),
+        ])].sort(),
+      } : {}),
     };
   });
   return {
     format: "penguin-anniversary-cutover-dry-run-v1",
     auditAsOfBangkok: audit.asOfBangkok,
     plannedAsOfBangkok: today,
-    auditExpired: today < audit.asOfBangkok ||
-      (Date.parse(today + "T00:00:00Z") - Date.parse(audit.asOfBangkok + "T00:00:00Z")) > 7 * 86400000,
+    auditExpired,
     tenantCount: stores.length,
     blocked: stores.filter(t => t.reviewStatus === "BLOCKED_REVIEW").length,
     pendingManualApproval: stores.filter(t => t.reviewStatus === "PENDING_MANUAL_APPROVAL").length,
