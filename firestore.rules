@@ -392,6 +392,11 @@ service cloud.firestore {
         allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
         allow create, update, delete: if false;
       }
+      // Phase 10A: server-only short-lived upload reservations.
+      // Browser/Storage clients never author or list a grant.
+      match /hybridBillingUploadGrants/{attemptId} {
+        allow read, write: if false;
+      }
       match /hybridBillingPaymentAttempts/{attemptId} {
         allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
         allow create, update, delete: if false;

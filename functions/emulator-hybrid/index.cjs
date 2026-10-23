@@ -46,7 +46,7 @@ if (unsafe.length) {
 }
 
 const { createHash } = require("node:crypto");
-const { onCall } = require("firebase-functions/v2/https");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { initializeApp, getApps } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
@@ -58,6 +58,8 @@ if (!getApps().length) initializeApp({
 });
 const { makeHybridPaymentHandlersForTest, HYBRID_PAYMENT_CALLABLE_READY } =
   require("../hybrid-billing-payment-callables");
+const { issueTrustedHybridUploadGrant } =
+  require("../hybrid-billing-upload-grant");
 if (HYBRID_PAYMENT_CALLABLE_READY !== false) {
   throw new Error("HYBRID_PRODUCTION_PAYMENT_GATE_MUST_REMAIN_DISABLED");
 }
@@ -89,3 +91,26 @@ const options = {
 // mistaken for payment endpoints in a real app.
 exports.demoHybridSubmitProof = onCall(options, handlers.submit);
 exports.demoHybridReviewProof = onCall(options, handlers.review);
+
+// Phase 10A test-only upload grant. Never exported from Production bootstrap.
+// This does not upload a file or submit any finance claim.
+exports.demoHybridPrepareUpload = onCall(options, async request => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "HYBRID_UPLOAD_AUTH_REQUIRED");
+  try {
+    return await issueTrustedHybridUploadGrant({
+      db: getFirestore(), auth: request.auth, input: request.data,
+    });
+  } catch (error) {
+    const code = String(error?.message || "");
+    if (/HYBRID_PAYMENT_(TENANT_ADMIN_REQUIRED|SUPER_ADMIN_REQUIRED)/.test(code))
+      throw new HttpsError("permission-denied", "HYBRID_UPLOAD_FORBIDDEN");
+    if (/HYBRID_PAYMENT_(INACTIVE_PROFILE|AUTH_REQUIRED)/.test(code))
+      throw new HttpsError("unauthenticated", "HYBRID_UPLOAD_AUTH_REQUIRED");
+    if (/^HYBRID_UPLOAD_INVALID_|HYBRID_PAYMENT_INVALID_AMOUNT/.test(code))
+      throw new HttpsError("invalid-argument", "HYBRID_UPLOAD_INVALID_REQUEST");
+    if (/^HYBRID_UPLOAD_INVOICE_(?:NOT_FOUND|NOT_PAYABLE)/.test(code))
+      throw new HttpsError("failed-precondition", "HYBRID_UPLOAD_INVOICE_UNAVAILABLE");
+    // No internal stack, raw request, private tenant data or bank details leak.
+    throw new HttpsError("failed-precondition", "HYBRID_UPLOAD_UNAVAILABLE");
+  }
+});

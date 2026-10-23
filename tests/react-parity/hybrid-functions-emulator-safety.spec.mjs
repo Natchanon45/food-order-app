@@ -13,6 +13,8 @@ const transport = read("tests/firebase-emulator/hybrid-callable-transport.spec.m
 const production = read("functions/bootstrap.js") +
   "\n" + read("functions/index.js");
 const callableCode = read("functions/hybrid-billing-payment-callables.js");
+const uploadGrant = read("functions/hybrid-billing-upload-grant.js");
+const firestoreRules = read("firestore.rules");
 
 test("Functions Emulator uses a separate test-only source and demo project", () => {
   const cmd = pkg.scripts["test:hybrid-functions-emulator"];
@@ -233,4 +235,18 @@ test("Firebase discovery with omitted reserved host and shell flag succeeds only
   }), /TEST_STOP_AFTER_LOCAL_DEMO_GUARDS/);
   assert.deepEqual(loaded, ["node:crypto"]);
   assert.equal(env.FIREBASE_FUNCTIONS_EMULATOR_HOST, undefined);
+});
+
+test("Phase 10A upload grant exists only behind test-only authenticated Callable", () => {
+  assert.match(entrypoint, /exports\.demoHybridPrepareUpload = onCall\(options/);
+  assert.match(entrypoint, /if \(!request\.auth\?\.uid\)/);
+  assert.match(entrypoint, /issueTrustedHybridUploadGrant\(/);
+  assert.doesNotMatch(production, /demoHybridPrepareUpload|hybrid-billing-upload-grant/);
+  assert.match(uploadGrant, /randomBytes\(24\)\.toString\("base64url"\)/);
+  assert.match(uploadGrant, /await tenantAdmin\(db, auth, tenantId\)/);
+  assert.match(uploadGrant, /await db\.runTransaction\(async tx =>/);
+  assert.match(uploadGrant, /tx\.create\(grantRef,/);
+  assert.match(uploadGrant, /uploadEnabled: false/);
+  assert.match(firestoreRules, /match \/hybridBillingUploadGrants\/\{attemptId\} \{\s*allow read, write: if false;/);
+  assert.doesNotMatch(uploadGrant, /uploadBytes\(|financeSlipClaims|onCall\(/);
 });

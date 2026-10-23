@@ -1,0 +1,48 @@
+# PENGUIN Hybrid Billing — Phase 10A: Server-issued Evidence Upload Reservations
+
+Date: 24 October 2026  
+Branch: `feature/react-firebase-port`  
+Scope: **demo-only Callable + private trusted grant service**. No Production deploy, bank transfer, invoice issuance or UI submission enabled.
+
+## Implementation
+
+1. New private `functions/hybrid-billing-upload-grant.js` accepts **only** authenticated tenant ID, immutable invoice ID, supported MIME and integral 1–10 MiB size. No browser amount, status, bank account, verifier code, attempt ID or Storage path is accepted.
+2. Reads trusted active owner/admin profile. Inside a Firestore transaction rechecks that profile and issued/rejected immutable invoice `id/version/signature/amount`; a paid/pending/nonexistent invoice rejects. Generates a cryptographic 24-byte random (base64url) attempt ID and deterministic invoice-scoped `evidence.jpg/png/webp/pdf` path. Creates a server-only `hybridBillingUploadGrants/{attemptId}` record with UID, MIME, max size, immutable invoice signature and a 10-minute expiration.
+3. A new `demoHybridPrepareUpload` in the isolated Functions Emulator exercises real Firebase Authentication and Firestore transactions. It has sanitized errors and `enforceAppCheck:false` **only** for demo Auth tests. It is NOT imported/exported by production `functions/index.js` or `bootstrap.js`.
+4. Firestore Rules explicitly deny any browser read/write of upload grants. Existing Storage Rules remain unchanged this round: **grants are not authorization for uploading yet**. Production client submit button remains hard-disabled. `uploadEnabled:false` is returned.
+5. Immutable invoice amount/status, cross-channel `financeSlipClaims`, manual Super Admin review, delivery prepaid wallet and legacy Revenue Share behavior are unchanged.
+
+## Verification / caveats
+
+- New `npm run test:hybrid-upload-grant` exercises allowlists, authorized roles, immutable transaction preconditions, grants with no payment mutations, expiry and account revocation simulation.
+- Integrated into `npm run test:hybrid-billing`. Existing `npm run test:hybrid-functions-emulator` now includes one prepare-transport test with real Auth roles and server-only grant persistence, using `demo-penguin-hybrid` only.
+- Mac mini was OFFLINE when editing. Do NOT report this as full Emulator UAT. GitHub-only source checks do not replace React Build, Security Rules Emulator or actual browser screenshot review.
+- The old Phase 8 Demo Submit accepts client-chosen attempt IDs; this must not be treated as the final authorized upload protocol. A future coordinated Phase 10B release must close that hole **before connecting browser uploads**.
+
+## Next phase (10B)
+
+- Storage Rules: require exact unexpired grant, requester UID, invoice/signature, expected MIME, max size and immutable/no-overwrite object. Reject direct forged paths and cross-tenant/role uploads.
+- Server Submit: require the same grant/owner, uploaded object bytes/MIME and exact invoice snapshot, consume grants transactionally and prevent replay. Keep bank/OCR matching as **pending_review only** and shared Wallet/Revenue/Hybrid dedupe atomic.
+- Extend Auth/Firestore/Storage/Functions Emulator negative and positive tests to cover grant theft, replay, expiration, concurrent submit, changed invoice, and role revocation.
+- UI should stay disabled until App Check verification, beneficiary bank configuration, finance audit/refund/credit-note requirements and explicit Production release approval.
+
+## Safe Mac commands
+
+```bash
+set -e
+cd ~/Desktop/Sites/food-order-app
+git status --short
+git switch feature/react-firebase-port
+git pull --ff-only origin feature/react-firebase-port
+export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+npm run test:hybrid-upload-grant
+npm run test:hybrid-functions-safety
+npm run test:hybrid-functions-emulator
+npm run test:hybrid-billing
+npm run test:react-parity
+npm run build:react
+git status --short
+```
+
+Do not reset, clean, merge to main or deploy Production. `build:react` can regenerate local public HTML; preserve any intentional Mac-only changes.

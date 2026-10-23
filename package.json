@@ -27,7 +27,7 @@
     "test:admin-mobile-menu-table": "node --test tests/react-parity/admin-mobile-menu-table.spec.mjs",
     "test:global-initial-readiness": "node --test tests/react-parity/global-initial-readiness.spec.mjs",
     "test:signup-billing-revenue-share": "node --test tests/react-parity/signup-billing-revenue-share.spec.mjs",
-    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs tests/react-parity/hybrid-invoice-review-ui.spec.mjs tests/react-parity/hybrid-emulator-safety.spec.mjs tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs tests/react-parity/hybrid-functions-emulator-safety.spec.mjs tests/react-parity/hybrid-tenant-proof-ui.spec.mjs",
+    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs tests/react-parity/hybrid-invoice-review-ui.spec.mjs tests/react-parity/hybrid-emulator-safety.spec.mjs tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs tests/react-parity/hybrid-functions-emulator-safety.spec.mjs tests/react-parity/hybrid-tenant-proof-ui.spec.mjs tests/react-parity/hybrid-upload-grant.spec.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",
@@ -90,7 +90,8 @@
     "test:hybrid-payment-callables": "node --test tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs",
     "test:hybrid-functions-emulator": "node tools/check-firebase-emulator-java.mjs && npm run test:hybrid-functions-safety && GCLOUD_PROJECT=demo-penguin-hybrid GCP_PROJECT=demo-penguin-hybrid HYBRID_DEMO_FUNCTIONS_ONLY=1 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199 FIREBASE_FUNCTIONS_EMULATOR_HOST=127.0.0.1:5001 firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-functions-emulator.json --only auth,firestore,storage,functions \"node --test tests/firebase-emulator/hybrid-callable-transport.spec.mjs\"",
     "test:hybrid-functions-safety": "node --test tests/react-parity/hybrid-functions-emulator-safety.spec.mjs",
-    "test:hybrid-tenant-proof": "node --test tests/react-parity/hybrid-tenant-proof-ui.spec.mjs"
+    "test:hybrid-tenant-proof": "node --test tests/react-parity/hybrid-tenant-proof-ui.spec.mjs",
+    "test:hybrid-upload-grant": "node --test tests/react-parity/hybrid-upload-grant.spec.mjs"
   },
   "repository": {
     "type": "git",

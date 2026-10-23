@@ -91,6 +91,7 @@ function callable(name, endpoint, data) {
   if (!client) throw new Error("TEST_UNKNOWN_CLIENT_" + name);
   return httpsCallable(client.functions, endpoint)(data);
 }
+const prepareUpload = (name, data) => callable(name, "demoHybridPrepareUpload", data);
 const submit = (name, data) => callable(name, "demoHybridSubmitProof", data);
 const review = (name, data) => callable(name, "demoHybridReviewProof", data);
 function fails(code) {
@@ -143,6 +144,35 @@ before(async () => {
 after(async () => {
   await Promise.allSettled(apps.map(app => deleteApp(app)));
   if (adminApp) await adminDelete(adminApp);
+});
+
+test("demo Auth Callable issues short-lived server-generated invoice upload reservation, never payment", async () => {
+  const data = { tenantId: "demo-shop-a", invoiceId: invoiceId("trigger"),
+    contentType: "image/png", fileSize: 800 };
+  await assert.rejects(prepareUpload("anonymous", data), fails("unauthenticated"));
+  await assert.rejects(prepareUpload("cashier-a", data), fails("permission-denied"));
+  await assert.rejects(prepareUpload("inactive-a", data), fails("unauthenticated"));
+  await assert.rejects(prepareUpload("owner-b", data), fails("permission-denied"));
+  for (const forged of [
+    { ...data, amount: 1 }, { ...data, status: "paid" },
+    { ...data, fileSize: 10 * 1024 * 1024 + 1 },
+    { ...data, contentType: "text/html" }, { ...data, invoiceId: "nonexistent" },
+  ]) await assert.rejects(prepareUpload("owner-a", forged), fails("invalid-argument"));
+  const response = (await prepareUpload("owner-a", data)).data;
+  assert.match(response.attemptId, /^[A-Za-z0-9_-]{16,80}$/);
+  assert.equal(response.uploadEnabled, false);
+  assert.equal(response.slipPath, "tenants/demo-shop-a/hybrid-billing-slips/" +
+    invoiceId("trigger") + "/" + response.attemptId + "/evidence.png");
+  const grant = await db.doc("tenants/demo-shop-a/hybridBillingUploadGrants/" +
+    response.attemptId).get();
+  assert.equal(grant.exists, true);
+  assert.equal(grant.data().actorUid, clients.get("owner-a").uid);
+  assert.equal(grant.data().maxSize, 800);
+  assert.equal(grant.data().status, "reserved");
+  assert.equal((await invoiceDoc("demo-shop-a", "trigger").get()).data().status, "issued");
+  const second = (await prepareUpload("owner-a", data)).data;
+  assert.notEqual(second.attemptId, response.attemptId);
+  assert.equal((await invoiceDoc("demo-shop-a", "trigger").get()).data().status, "issued");
 });
 
 test("actual Callable transport denies unsigned, cashier, inactive and cross-tenant submit", async () => {

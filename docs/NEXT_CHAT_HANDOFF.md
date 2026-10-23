@@ -1,3 +1,13 @@
+## 2026-10-24 — Phase 10A server-generated upload reservation (GitHub-only, Emulator UAT pending)
+
+- Owner confirmed Phase 9 Mac tests passed. Current Mac Remote Desktop Commander device remained OFFLINE in this turn.
+- Added private `functions/hybrid-billing-upload-grant.js`: strict allowlist (tenantId, invoiceId, MIME, fileSize), checks owner/admin using trusted users profile, rechecks profile and actual issued/rejected immutable invoice in one Firestore transaction, uses cryptographic 24-byte random attempt IDs, saves a server-only 10-minute upload reservation. Invoice and money status are unchanged.
+- Demo-only `demoHybridPrepareUpload` HTTPS Callable added exclusively to guarded `functions/emulator-hybrid/index.cjs`; production bootstrap/index do not import/export the grant or callable. No Production deployment and no bank payments.
+- `firestore.rules` explicitly denies ALL browser read/write on `hybridBillingUploadGrants`. Storage Rules are **not yet wired to grants**: return `uploadEnabled:false` and keep React Upload/Submit DISABLED until the next coordinated Rules+backend submission UAT phase; client-chosen IDs from Phase 8 test remain accepted in the old demo submit path only.
+- Added pure contract and permission tests in `tests/react-parity/hybrid-upload-grant.spec.mjs`, wired to `test:hybrid-billing` and `test:hybrid-upload-grant`. Extended real Auth/Functions Emulator transport test and static safety tests.
+- Pending native Mac commands: `npm run test:hybrid-upload-grant`, `npm run test:hybrid-functions-safety`, `npm run test:hybrid-functions-emulator` (JDK21), `npm run test:hybrid-billing`, `npm run test:react-parity`, `npm run build:react`. Do not claim passing counts until Mac confirms.
+- Next Phase 10B: link immutable Storage creates to unexpired server grants and exact authenticated uploader UID, enforce grant on submit with byte/MIME reconciliation, update Phase 6/8 Emulator fixtures, then implement Emulator-only client upload end-to-end. Keep every Production payment gate false, no Merge/deploy, preserve dirty public HTML.
+
 ## 2026-10-24 — Phase 9 invoice async isolation hardening (GitHub-only; native Mac re-run pending)
 
 - Owner-provided Mac command log at HEAD `123c207a`: `test:hybrid-tenant-proof` **6/6**, `test:hybrid-billing` **132/132**, full `test:react-parity` command proceeded into successful `build:react`; generated build contract PASS. These are results for **the preceding commit**, NOT post-change tests.
