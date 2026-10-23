@@ -195,7 +195,10 @@ test("Storage rejects invalid MIME, invoice/attempt path and oversized slip", as
   await denied(uploadBytes(storageRef(storage,
     proofPath.replace("attempt_1234567890123456", "tiny")),
   buf, { contentType: "image/png" }));
-  await denied(uploadBytes(storageRef(storage, proofPath.replace("proof.png", "too-big.png")),
+  // Depending on the Storage emulator/SDK version, oversized uploads can
+  // fail as a Rules denial or a transport-level payload-limit error.
+  await assert.rejects(uploadBytes(storageRef(storage,
+    proofPath.replace("proof.png", "too-big.png")),
     new Uint8Array(10 * 1024 * 1024 + 1), { contentType: "image/png" }));
 });
 
