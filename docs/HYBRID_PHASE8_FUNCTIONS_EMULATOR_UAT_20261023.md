@@ -73,3 +73,34 @@ Mac mini Desktop Commander was offline at the time of coding; a JS static safety
 - Add real tenant payment upload UI, finance role approval audit UX, actual bank receiver configuration checks, receipts, credit notes/refunds, quota, and safe debt-only suspension/recovery workflows.
 - Deploy Wallet, Revenue Share, Hybrid and global `financeSlipClaims` together in a reviewed rollout after test record inventory/cleanup; keep all tenant/menu/product/brand Master data unchanged.
 - Never expose demo-only Functions on production, bypass the release gates via dynamic callable names, or enable automatic invoice issuance in this phase.
+
+
+## 24 October 2026 — First Mac Functions Emulator run: startup blocked, fixed in source
+
+The user provided the first real Mac log, synced at Git commit \`d9f57258\`. \`npm run test:hybrid-functions-safety\` passed **8/8**, JDK preflight saw Java 21, and the CLI started the demo Auth/Firestore/Storage/Functions emulators. **The Functions definition could not be analyzed** because the demo guard raised \`HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS\` at module import. The Firebase CLI's function-discovery stage does not reliably inject all emulator-host/project env values into the entrypoint.
+
+The integration test process also halted at its before hook with \`REFUSE_NONLOCAL_EMULATOR_FIREBASE_FUNCTIONS_EMULATOR_HOST\`; its eight tests all failed without reaching the financial scenarios (**0/8**, NOT evidence that eight application workflows were wrong).
+
+### Source fix
+
+- \`test:hybrid-functions-emulator\` now supplies **before CLI discovery**: \`GCLOUD_PROJECT=demo-penguin-hybrid\`, \`GCP_PROJECT=demo-penguin-hybrid\`, \`HYBRID_DEMO_FUNCTIONS_ONLY=1\`, \`FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\`, \`FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099\`, \`FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199\`, \`FIREBASE_FUNCTIONS_EMULATOR_HOST=127.0.0.1:5001\`.
+- The test-only entrypoint now requires **all four** loopback emulator hosts and rejects any conflicting project ID across \`GCLOUD_PROJECT\`, \`GCP_PROJECT\` and \`FIREBASE_CONFIG.projectId\`. It still fails before loading Admin SDK/real bank code if any guard fails. There is no flag change in Production.
+- The transport test's Super Admin approval/rejection payload inadvertently included \`slipPath\` because it reused the submit request body. This would fail the server's strict review allowlist *after the environment problem was fixed*. A \`reviewData()\` helper now sends **only** \`tenantId\`, \`invoiceId\`, \`attemptId\`, \`action\`, \`note\`, \`verifiedExternally\`; a negative test deliberately includes extra amount/status to prove request rejection.
+- Safety suite now covers the explicit host environment, conflicting real-project IDs, malformed hosts, the actual demo guard in JavaScript, and review-body schema. **9/9 isolated checks pass**, and both new test files pass JavaScript syntax parsing. **Real Functions Emulator UAT has NOT been rerun after this fix**.
+
+The Mac log also showed warnings for \`firebase-functions\` version and host Node 26 vs requested Node 22; these are not the errors that caused the observed 0/8 tests. If they become runtime blockers once definitions load, investigate separately. The emulator also warned that ADC credentials exist; keep all four services directed at localhost and never test financial functions against the real project.
+
+### Safe Mac retest
+
+\`\`\`bash
+set -e
+cd ~/Desktop/Sites/food-order-app
+git switch feature/react-firebase-port
+git pull --ff-only origin feature/react-firebase-port
+export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+npm run test:hybrid-functions-safety
+npm run test:hybrid-functions-emulator
+\`\`\`
+
+If and only if the actual demo transport Emulator test completes without failures, continue to \`npm run test:hybrid-billing\`, \`npm run test:react-parity\` and \`npm run build:react\`. Avoid all deploy and reset/clean operations. Production receipt issuance, collection, Callable exports, and shop Master data are unchanged.
