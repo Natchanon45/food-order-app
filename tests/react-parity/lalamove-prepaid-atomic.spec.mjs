@@ -168,8 +168,9 @@ test("concurrent requests can never double-book or double-debit the same order",
     h.api.placeTenantLalamoveDispatch(h.request()),
     h.api.placeTenantLalamoveDispatch(h.request()),
   ]);
-  assert.equal(results.filter(item => item.status === "fulfilled").length, 1);
-  assert.equal(results.filter(item => item.status === "rejected").length, 1);
+  assert.equal(results.filter(item => item.status === "fulfilled" && item.value?.created === true).length, 1);
+  assert.ok(results.every(item => item.status === "rejected"
+    || item.value?.created === true || item.value?.alreadyPlaced === true));
   assert.equal(h.posts.length, 1);
   assert.equal(h.docs.get(h.walletPath).balance, 41);
   assert.equal(h.transactions().filter(item => item.type === "delivery_debit").length, 1);
