@@ -1,5 +1,13 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Mac Phase 5 npm failure fixed (no deploy)
+
+- User Mac `npm run test:finance-slip-claims` 6/6, `test:hybrid-invoice-payment` 20/20, `test:hybrid-invoice-review-ui` 5/5, `test:hybrid-invoice-ledger` 15/15, and `test:hybrid-billing` 95/95 passed. `test:react-parity` stopped at `test:signup-billing-revenue-share`, assertion `Unexpected dependency node:crypto` (line 273), so `build:react` did not run (shell `set -e`).
+- Root cause: Phase 5 `functions/revenue-share.js` added `require('node:crypto')` and `require('./finance-slip-claims')`; older isolated Cloud Function tests did not include these new legitimate dependencies.
+- Updated `tests/react-parity/signup-billing-revenue-share.spec.mjs` to include Node crypto and real pure finance-slip-claims in dependency map; similarly updated `tests/react-parity/revenue-share-cutover-periods.spec.mjs` so its isolated billing fixture won't fail for the same reason.
+- Simulated test execution after commit: previously failing Premium commission test passed; four `revenue-share-cutover-periods` tests passed. **Native Mac suite and React build still must be rerun.** These commits change TESTS ONLY and do not modify financial calculations, runtime code or Firebase.
+- Safe Mac commands: `git switch feature/react-firebase-port`, `git pull --ff-only origin feature/react-firebase-port`, `npm run test:signup-billing-revenue-share`, `npm run test:billing-anniversary`, `npm run test:react-parity`, `npm run build:react`. Local `public/**/index.html` files are modified; NEVER reset/clean them blindly.
+
 ## 2026-10-23 — Phase 5 shared finance slip dedupe + read-only Invoice UI (NOT DEPLOYED)
 
 - Owner said universal activation-anniversary billing for all stores; owner removes TEST transactional Firestore data, never master tenant/menu/product/config. Changes only to `feature/react-firebase-port`, no production Firebase Deploy.
