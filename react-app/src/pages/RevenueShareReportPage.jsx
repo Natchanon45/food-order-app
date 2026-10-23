@@ -520,7 +520,7 @@ export function RevenueShareReportPage() {
           <div className="report-section-heading">
             <div><h2 id="reportProgressTitle"><i className="bi bi-bullseye" aria-hidden="true"></i> {rc("Progress ยอด Delivery สะสมเดือนนี้", "Monthly Delivery progress")}</h2>
               <p>{rc("ติดตามยอดสินค้าที่ชำระแล้ว ไม่รวมค่าส่ง", "Tracks paid merchandise excluding delivery fees")} · {monthLabel}</p></div>
-            <span className={"report-progress-state " + (thresholdReached ? "is-reached" : "")}>{thresholdReached ? rc("ครบเกณฑ์แล้ว", "Threshold reached") : rc("ยังไม่ถึงเกณฑ์", "Below threshold")}</span>
+            <span className="report-progress-asof"><i className="bi bi-calendar-check" aria-hidden="true"></i>{rc("ข้อมูล ณ วันที่ ", "As of ")}{displayDate(today)}</span>
           </div>
           <div className="report-progress-barline">
             <div className="report-progress-track" role="progressbar" aria-label={rc("ยอด Delivery สะสมเดือนนี้", "Current month Delivery total")} aria-valuemin={0} aria-valuemax={Math.max(centralThreshold, 1)} aria-valuenow={Math.min(monthlyDeliverySales, Math.max(centralThreshold, 1))}>
@@ -554,7 +554,7 @@ export function RevenueShareReportPage() {
           </div>
           <p className="report-rule-note" id="shareExplanation"><i className="bi bi-shield-check" aria-hidden="true"></i>
             {rc("เพดาน " + money(centralThreshold) + " บาทเป็นจุดเริ่มคิดในแต่ละเดือน ไม่ใช่จำนวนเงินที่หักจากยอดขาย ส่วนแบ่งใช้เฉพาะยอดสินค้าที่ชำระแล้วในวันที่ถึงเกณฑ์และวันถัดไป", "The " + money(centralThreshold) + " THB monthly threshold is a trigger, not a deduction. Only paid merchandise from the day the threshold is reached and onward qualifies.")}</p>
-          <div className="report-policy-inline"><i className="bi bi-gem" aria-hidden="true"></i><span>{rc("Premium ส่วนกลาง", "Central Premium")}: {access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} {rc("บาท/เดือน", "THB/month")} · {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท/ปี", "THB/year")} <small>{rc("(เรียกเก็บแยก ไม่รวมยอดรายงานนี้)", "(billed separately, not included in this report)")}</small></span></div>
+          <details className="report-pricing-disclosure"><summary><i className="bi bi-gem" aria-hidden="true"></i>{rc("ข้อมูลแพ็กเกจ Premium (เพิ่มเติม)", "Premium pricing (details)")}<i className="bi bi-chevron-down" aria-hidden="true"></i></summary><div className="report-policy-inline"><span>{rc("Premium ส่วนกลาง", "Central Premium")}: {access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} {rc("บาท/เดือน", "THB/month")} · {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท/ปี", "THB/year")} <small>{rc("(เรียกเก็บแยก ไม่รวมยอดรายงานนี้)", "(billed separately, not included in this report)")}</small></span></div></details>
         </section>
 
         <section className="card report-related-amounts" aria-labelledby="reportRelatedTitle">
