@@ -261,6 +261,9 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
     "./slip-verification": { inspectSlip: async () => ({}) },
     "./subscription-pricing-core": { loadPricing: async () => pricing },
     "./revenue-share-policy": policy,
+    // The revenue-share calculator now uses Bangkok anniversary periods.
+    // Supply the real pure helper in this isolated Cloud Functions harness.
+    "./billing-anniversary": require("../../functions/billing-anniversary.js"),
   };
   const loaded = { exports: {} };
   const server = fs.readFileSync("functions/revenue-share.js", "utf8");
