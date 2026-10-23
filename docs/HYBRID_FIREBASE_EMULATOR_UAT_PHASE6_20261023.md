@@ -13,7 +13,7 @@ The Mac mini Remote Desktop Commander was **offline** during implementation, so 
 - `firebase.hybrid-emulator.json`: isolated Auth/Firestore/Storage emulators bound to `127.0.0.1`, on ports 9099, 8080 and 9199. It loads the project's real `firestore.rules`, `storage.rules` and indexes; it does not start Functions or Hosting.
 - `tests/firebase-emulator/hybrid-finance-security.spec.mjs`: actual Firebase Auth, Firestore client, Storage client and Firestore Admin SDK integration tests. Its project ID is hard-coded to `demo-penguin-hybrid` and it **refuses to execute** unless all 3 `*_EMULATOR_HOST` environment variables point to loopback.
 - `tests/react-parity/hybrid-emulator-safety.spec.mjs`: fast offline Node test verifying the demo project, loopback hosts, disabled invoice issuance and critical security-test coverage. This preflight is included in `npm run test:hybrid-billing`.
-- Package scripts: `test:hybrid-emulator-safety` and `test:firebase-hybrid-emulator`.
+- Package scripts: `test:hybrid-emulator-safety` and `test:firebase-hybrid-emulator`. A new `tools/check-firebase-emulator-java.mjs` checks JDK 21+ **before starting Firebase CLI**, fails clearly for Java 17 and does not access Firebase.
 
 ## Emulated scenarios
 
@@ -45,8 +45,14 @@ npm run test:hybrid-emulator-safety
 
 # The integration runner requires a local Firebase CLI, JDK and the
 # existing functions dependencies, including firebase-admin.
+# Firebase CLI 15.34.0 requires Java 21+; Java 17 will fail.
+# Homebrew installs JDK 21 alongside your existing JDK without removing it.
+brew install openjdk@21
+export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
 java -version
 firebase --version
+
 test -d functions/node_modules/firebase-admin || npm --prefix functions install --no-package-lock
 
 # Starts only local demo Auth, Firestore and Storage, runs the test and
@@ -67,3 +73,5 @@ npm run build:react
 - Verify all deployed Wallet and Revenue Share functions use the same `financeSlipClaims` scheme before releasing the ledger, and inventory/clean up old *test* transaction records or backfill their references; old records currently lack shared claims.
 - Invoice issuance and Hybrid payment APIs are still **private and disabled**. Do not enable or deploy separately. Slip2Go bank confirmation, authenticated approval endpoints, quota, refunds/credit notes, invoicing receipts, suspension/recovery, and rollout plan remain incomplete.
 - Explicit Firebase Hosting/Cloud Functions/Firestore/Storage Rules deploy is a separate future step after the owner's go-ahead.
+
+The `JAVA_HOME` and `PATH` commands above affect the current Terminal session only. Other projects using Java 17 may continue using it. If `brew install openjdk@21` reports an unsupported macOS version, install a JDK 21 distribution compatible with your macOS and set `JAVA_HOME` to its actual installation path instead.
