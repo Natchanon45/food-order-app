@@ -60,3 +60,7 @@ npm run verify:react-build
 The monthly calculator now provides `calculateCycle` for tenant activation-anniversary windows while keeping `calculateMonth` as a backwards-compatible calendar-month wrapper. `hybrid-billing-preview.js` obtains `tenantAnchorDate` from the server-recorded activation, calculates cycle start/end via `billing-anniversary.js`, and reads only paid Delivery orders within that span. Invoice IDs use the cycle start date; the February clamp never drifts an original day-29/30/31 anchor. The UI displays explicit cycle boundaries.
 
 The existing hybrid registration gate remains disabled. All production cutover details and IconPacks design phase are in `docs/BILLING_ANNIVERSARY_AND_ICONS_20261023.md`. These changes were committed on GitHub only and **have not been deployed**.
+
+## Owner update 2026-10-23 — apply NEW calendar universally (prelaunch)
+
+All stores (including ones with empty `billingMode`) now use activation-anniversary monthly threshold periods. The read-only Hybrid estimator is accessible for all tenant owners/admins, even when their old tenant record is not marked `hybrid_v1`. The **billing engine is still preview-only** and `HYBRID_REGISTRATION_READY=false`; secure invoice issuance and payment state must be completed before changing every store's operational charge model. The former migration/cutover plan is superseded. See `docs/UNIVERSAL_BILLING_PRELAUNCH_20261023.md`. The owner handles deletion of selected test transactional data, not the assistant.
