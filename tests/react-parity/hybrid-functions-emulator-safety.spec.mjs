@@ -8,6 +8,7 @@ const config = JSON.parse(read("firebase.hybrid-functions-emulator.json"));
 const pkg = JSON.parse(read("package.json"));
 const demoPackage = JSON.parse(read("functions/emulator-hybrid/package.json"));
 const entrypoint = read("functions/emulator-hybrid/index.cjs");
+const demoEnv = read("functions/emulator-hybrid/.env.local");
 const transport = read("tests/firebase-emulator/hybrid-callable-transport.spec.mjs");
 const production = read("functions/bootstrap.js") +
   "\n" + read("functions/index.js");
@@ -51,10 +52,11 @@ test("demo loader rejects any real project, nonlocal service or missing explicit
   assert.match(entrypoint, /demoProject: project === "demo-penguin-hybrid"/);
   assert.match(entrypoint, /HYBRID_DEMO_FUNCTIONS_ONLY/);
   for (const key of ["FIRESTORE_EMULATOR_HOST",
-    "FIREBASE_AUTH_EMULATOR_HOST", "FIREBASE_STORAGE_EMULATOR_HOST",
-    "FIREBASE_FUNCTIONS_EMULATOR_HOST"]) {
+    "FIREBASE_AUTH_EMULATOR_HOST", "FIREBASE_STORAGE_EMULATOR_HOST"]) {
     assert.ok(entrypoint.includes('localHost("' + key + '")'));
   }
+  assert.match(entrypoint, /HYBRID_DEMO_FUNCTIONS_HOST === "127\.0\.0\.1:5001"/);
+  assert.match(entrypoint, /nativeFunctionsHostSafe:/);
   assert.match(entrypoint, /HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS/);
   assert.match(entrypoint, /unsafe\.join\(", "\)/);
   assert.match(entrypoint, /Object\.entries\(demoConditions\)/);
@@ -129,12 +131,14 @@ test("runtime guard fails before loading Firebase modules for real project or no
     FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
     FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
     FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
+    HYBRID_DEMO_FUNCTIONS_HOST: "127.0.0.1:5001",
   };
   evaluate({ ...baseline, GCLOUD_PROJECT: "chat-45754" });
   evaluate({ ...baseline, HYBRID_DEMO_FUNCTIONS_ONLY: "" });
   evaluate({ ...baseline, FIRESTORE_EMULATOR_HOST: "production.example:443" });
   evaluate({ ...baseline, FIREBASE_STORAGE_EMULATOR_HOST: "" });
   evaluate({ ...baseline, FIREBASE_FUNCTIONS_EMULATOR_HOST: "prod.example:443" });
+  evaluate({ ...baseline, HYBRID_DEMO_FUNCTIONS_HOST: "prod.example:443" });
   evaluate({ ...baseline, GCP_PROJECT: "chat-45754" });
   evaluate({ ...baseline, FIREBASE_CONFIG: '{"projectId":"chat-45754"}' });
 });
@@ -151,6 +155,7 @@ test("explicit local demo CLI environment passes guard and reaches ONLY the firs
     FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
     FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
     FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
+    HYBRID_DEMO_FUNCTIONS_HOST: "127.0.0.1:5001",
   };
   assert.throws(() => runInNewContext(entrypoint, {
     process: { env },
@@ -173,6 +178,7 @@ test("unsafe demo discovery errors identify failed checks but never reveal value
     FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
     FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
     FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
+    HYBRID_DEMO_FUNCTIONS_HOST: "127.0.0.1:5001",
   };
   let error;
   try {
@@ -184,6 +190,47 @@ test("unsafe demo discovery errors identify failed checks but never reveal value
     });
   } catch (e) { error = e; }
   assert.ok(error);
-  assert.match(error.message, /localFunctions/);
+  assert.match(error.message, /nativeFunctionsHostSafe/);
   assert.doesNotMatch(error.message, /remote-secret|\\.invalid|443|chat-45754|ADC|token/);
+});
+
+
+test("emulator-only dotenv contains no reserved Firebase keys, credentials or real project", () => {
+  const variables = Object.fromEntries(demoEnv.split("\n")
+    .filter(line => line.trim() && !line.trim().startsWith("#"))
+    .map(line => line.split("=", 2)));
+  assert.deepEqual(variables, {
+    HYBRID_DEMO_FUNCTIONS_ONLY: "1",
+    HYBRID_DEMO_FUNCTIONS_HOST: "127.0.0.1:5001",
+  });
+  for (const name of Object.keys(variables)) {
+    assert.doesNotMatch(name, /^(FIREBASE_|X_GOOGLE_|EXT_|GCP_PROJECT$|GCLOUD_PROJECT$)/);
+  }
+  assert.doesNotMatch(demoEnv, /chat-45754|PRIVATE_KEY|GOOGLE_APPLICATION_CREDENTIALS|secret=/i);
+});
+
+test("Firebase discovery with omitted reserved host and shell flag succeeds only after local dotenv injection", () => {
+  // Real Mac CLI omitted HYBRID_DEMO_FUNCTIONS_ONLY and native Functions
+  // host in function discovery. Firebase loads only the two nonreserved
+  // values above from .env.local; the remaining hosts came from CLI.
+  const env = {
+    GCLOUD_PROJECT: "demo-penguin-hybrid",
+    GCP_PROJECT: "demo-penguin-hybrid",
+    FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+    FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
+    FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
+    ...Object.fromEntries(demoEnv.split("\n")
+      .filter(line => line.trim() && !line.trim().startsWith("#"))
+      .map(line => line.split("=", 2))),
+  };
+  const loaded = [];
+  assert.throws(() => runInNewContext(entrypoint, {
+    process: { env }, require: name => {
+      loaded.push(name);
+      throw new Error("TEST_STOP_AFTER_LOCAL_DEMO_GUARDS");
+    },
+    exports: {},
+  }), /TEST_STOP_AFTER_LOCAL_DEMO_GUARDS/);
+  assert.deepEqual(loaded, ["node:crypto"]);
+  assert.equal(env.FIREBASE_FUNCTIONS_EMULATOR_HOST, undefined);
 });
