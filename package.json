@@ -27,7 +27,7 @@
     "test:admin-mobile-menu-table": "node --test tests/react-parity/admin-mobile-menu-table.spec.mjs",
     "test:global-initial-readiness": "node --test tests/react-parity/global-initial-readiness.spec.mjs",
     "test:signup-billing-revenue-share": "node --test tests/react-parity/signup-billing-revenue-share.spec.mjs",
-    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs",
+    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",
@@ -80,7 +80,8 @@
     "test:billing-anniversary": "node --test tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/revenue-share-cutover-periods.spec.mjs",
     "test:billing-anniversary-audit": "node --test tests/react-parity/billing-anniversary-audit.spec.mjs",
     "test:revenue-cutover-periods": "node --test tests/react-parity/revenue-share-cutover-periods.spec.mjs",
-    "test:universal-billing": "node --test tests/react-parity/universal-billing-policy.spec.mjs"
+    "test:universal-billing": "node --test tests/react-parity/universal-billing-policy.spec.mjs",
+    "test:hybrid-invoice-ledger": "node --test tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs"
   },
   "repository": {
     "type": "git",
