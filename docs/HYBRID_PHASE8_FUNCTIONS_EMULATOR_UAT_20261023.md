@@ -129,3 +129,43 @@ npm run test:hybrid-functions-emulator
 ```
 
 If the next run still fails during definition discovery, use the exact `[failed checks: ...]` phrase to correct the CLI child environment, **without bypassing the demo-only guard**. No need to run the large React suite until the real Callable transport starts and passes.
+
+
+## 24 October 2026 — Third Mac UAT: missing demo-only custom flags in discovery
+
+The owner's third Mac log, after pulling `ebd939bd`, showed **10/10 safety checks passing**, JDK21 ready and the correct `demo-penguin-hybrid` project being used. This time the detailed guard identified exactly two missing values during Functions definition discovery:
+
+```text
+HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS
+[failed checks: explicitDemoFlag, localFunctions]
+```
+
+Firebase CLI's Functions code-analysis worker discarded both the shell-injected custom `HYBRID_DEMO_FUNCTIONS_ONLY` marker and reserved `FIREBASE_FUNCTIONS_EMULATOR_HOST`. The callable functions were therefore not registered; all eight HTTP transport tests returned `functions/not-found` (**0/8**, still no business-handler UAT).
+
+### Corrected emulator-only dotenv mechanism
+
+Firebase officially documents that its Functions Emulator reads `.env.local` for custom configuration, while disallowing `FIREBASE_*`, `GCP_PROJECT` and `GCLOUD_PROJECT` names in dotenv. Reference: https://firebase.google.com/docs/emulator-suite/connect_functions and https://firebase.google.com/docs/functions/config-env
+
+- Created **only** `functions/emulator-hybrid/.env.local` containing `HYBRID_DEMO_FUNCTIONS_ONLY=1` and `HYBRID_DEMO_FUNCTIONS_HOST=127.0.0.1:5001`. No reserved keys, secrets, bank details, service account credentials or production project identifiers are present.
+- The test-only Functions entrypoint still checks the demo project against all supplied project identifiers, plus loopback Auth/Firestore/Storage. Its `explicitDemoFlag` check uses the custom flag now loaded by the emulator from dotenv. Its `localFunctions` check uses the custom dedicated host marker, *not* the reserved `FIREBASE_FUNCTIONS_EMULATOR_HOST` that CLI discovery drops.
+- If the CLI supplies `FIREBASE_FUNCTIONS_EMULATOR_HOST`, a separate `nativeFunctionsHostSafe` check still **rejects any nonlocal or wrong-port host**. This check is conditional because the CLI may omit the reserved key entirely.
+- The real npm script continues to set ALL four actual host variables for the parent/test process before running the CLI; no unconditional check or server-side production payment lock was disabled.
+- New static regression cases validate the exact two allowed dotenv names, non-secret/no-reserved content, and successful JavaScript guard when the two known missing shell values are absent but Firebase loads the two custom values from dotenv. Other safety tests continue to verify rejected real project IDs and malformed hosts.
+- A JavaScript isolated verification passed **12/12** safety checks after the source change. **Firebase Functions Emulator native integration has not yet been rerun** after this change, and passing the static checks does not prove whether the installed CLI loads the local dotenv during discovery.
+
+The previous note recommending against putting reserved `FIREBASE_*` values in `.env.local` **still applies**. This implementation uses custom names only, so it is not a reversal of the reserved-key restriction.
+
+### Mac rerun
+
+```bash
+set -e
+cd ~/Desktop/Sites/food-order-app
+git switch feature/react-firebase-port
+git pull --ff-only origin feature/react-firebase-port
+export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+npm run test:hybrid-functions-safety
+npm run test:hybrid-functions-emulator
+```
+
+If successful, continue to `npm run test:hybrid-billing`, `npm run test:react-parity`, then `npm run build:react`. If `[failed checks: ...]` remains, inspect the Mac log and CLI output; never disable production finance controls or blindly accept a real project/remote host.
