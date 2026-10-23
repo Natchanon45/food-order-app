@@ -77,11 +77,15 @@ test("Revenue report, payable slip and scheduled reconciliation use same anchor"
   assert.match(revenueServer, /const anchor = tenantAnchorDate\(tenant\)/);
   assert.match(revenueServer, /cycleFromMonth\(anchor, month\)/);
   assert.match(revenueServer, /cycleForDate\(anniversary, currentDate\)/);
-  assert.match(revenueServer, /setting\.deliveryThreshold, anniversary/);
+  assert.match(revenueServer, /setting\.deliveryThreshold, anniversary && cutoverDate \? anniversary : null/);
+  assert.match(revenueServer, /const useAnniversary = Boolean\(anniversary && cutoverDate && currentDate >= cutoverDate\)/);
   assert.match(revenueServer, /previousCompletedCycle\(anchor, today\)/);
   assert.match(revenueServer, /const due = previousPeriod\(setting\.billingCycle, tenant\)/);
   assert.match(revenueServer, /periodFromData\(request\.data \|\| \{\}, tenant\)/);
-  assert.match(revenueServer, /anniversary_migration_pending/);
+  assert.match(revenueServer, /if \(anchor && cutover && month >= anchor\.slice\(0, 7\)\)/);
+  assert.match(revenueServer, /if \(!previous \|\| previous\.startDate < cutoverDate\) return null/);
+  assert.match(revenueServer, /billingAnniversaryEffectiveAt/);
+  assert.doesNotMatch(revenueServer, /anniversary_migration_pending/);
   assert.match(report, /monthlyDeliveryStartDate/);
   assert.match(report, /monthlyDeliveryEndDate/);
   assert.match(report, /Progress ยอด Delivery สะสมรอบบิลนี้/);
@@ -132,4 +136,30 @@ test("Hybrid paid order projection filters by anniversary boundaries without cli
     { date: "2026-10-22", amount: 4000 },
     { date: "2026-11-21", amount: 6000 },
   ]);
+});
+
+test("Approved future cutover preserves calendar threshold before the change and resets afterwards", () => {
+  const daily = [
+    ["2026-11-01", 600000], ["2026-11-10", 400000],
+    ["2026-11-20", 50000], ["2026-11-21", 600000],
+    ["2026-11-22", 400000], ["2026-12-01", 10000],
+    ["2026-12-21", 1000000],
+  ].map(([date, cents]) => ({ date, cents }));
+  const actual = eligibleDeliveryShareDays(daily, 10000, "2026-06-21", "2026-11-21");
+  assert.deepEqual([...actual], [
+    "2026-11-10", "2026-11-20", "2026-11-22",
+    "2026-12-01", "2026-12-21",
+  ]);
+});
+
+test("Unapproved activation cannot silently switch earlier charges to anniversary rules", () => {
+  const daily = [
+    { date: "2026-10-31", cents: 800000 },
+    { date: "2026-11-01", cents: 200000 },
+  ];
+  const oldCalendar = eligibleDeliveryShareDays(daily, 10000);
+  // No effectiveAt means the server must pass null as anchor, not an implicit
+  // createdAt timestamp: a historical 8,000 THB cannot unlock a November sale.
+  assert.deepEqual([...oldCalendar], []);
+  assert.match(revenueServer, /anniversary && cutoverDate \? anniversary : null/);
 });
