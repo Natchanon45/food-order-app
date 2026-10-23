@@ -33,8 +33,13 @@ if (isHybridDemoMode && app.options.projectId !== "demo-penguin-hybrid") {
 export const auth = getAuth(app), db = getFirestore(app), storage = getStorage(app);
 export const functions = getFunctions(app, "asia-southeast1");
 const useEmulators = import.meta.env.DEV && String(import.meta.env.VITE_USE_FIREBASE_EMULATORS || "").toLowerCase() === "true";
-if (useEmulators && !globalThis.__FOOD_ORDER_REACT_EMULATORS_CONNECTED__) {
+// A truthy flag from a previous HMR/project session is not proof these SDK
+// instances were connected. Match both the App and Firebase project.
+const emulatorSession = app.name + ":" + firebaseConfig.projectId;
+if (useEmulators && globalThis.__FOOD_ORDER_REACT_EMULATORS_CONNECTED__ !== emulatorSession) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-  connectFirestoreEmulator(db, "127.0.0.1", 8080); connectFunctionsEmulator(functions, "127.0.0.1", 5001); connectStorageEmulator(storage, "127.0.0.1", 9199);
-  globalThis.__FOOD_ORDER_REACT_EMULATORS_CONNECTED__ = true;
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+  connectStorageEmulator(storage, "127.0.0.1", 9199);
+  globalThis.__FOOD_ORDER_REACT_EMULATORS_CONNECTED__ = emulatorSession;
 }
