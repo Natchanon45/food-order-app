@@ -1,5 +1,15 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-24 — Phase 8 Mac Emulator 0/8 (guard/setup failure), source fixed, real rerun pending
+
+- User pasted Mac log after pulling d9f57258: Phase 8 `npm run test:hybrid-functions-safety` 8/8 passed; Firebase CLI JDK preflight 21 OK, started demo emulators. Function discovery failed in `functions/emulator-hybrid/index.cjs` with HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS before server boot. Test before-hook missing FIREBASE_FUNCTIONS_EMULATOR_HOST, so all 8 integration tests failed at setup; **not evidence of 8 failed payment workflows**.
+- Source fix to `package.json`: demo-only `test:hybrid-functions-emulator` explicitly sets GCLOUD_PROJECT and GCP_PROJECT to demo-penguin-hybrid and all four loopback host variables (Firestore 8080, Auth 9099, Storage 9199, Functions 5001) BEFORE Firebase CLI function discovery. Still invokes `--project demo-penguin-hybrid --config firebase.hybrid-functions-emulator.json` and does not deploy.
+- Source fix to `functions/emulator-hybrid/index.cjs`: requires all FOUR loopback hosts, explicit test flag, and rejects conflicting project IDs from GCLOUD_PROJECT/GCP_PROJECT/FIREBASE_CONFIG before loading Admin SDK. No Production payment switch changed.
+- Corrected `tests/firebase-emulator/hybrid-callable-transport.spec.mjs` review requests: review payload MUST OMIT slipPath (allowed for submit only). Added reviewData(...) that accepts only tenantId, invoiceId, attemptId, action, note and verifiedExternally.
+- `tests/react-parity/hybrid-functions-emulator-safety.spec.mjs` now checks all supplied env vars, runtime guard real-project conflicts, valid demo guard, and review payload shape. Verified **9/9 in isolated JavaScript harness** and syntax parse of both source files. **Real Mac Emulator NOT RERUN** after fixes.
+- Mac commands: git pull feature/react-firebase-port; session JDK21 export; npm run test:hybrid-functions-safety; npm run test:hybrid-functions-emulator; only after pass do test:hybrid-billing, test:react-parity, build:react. Protect modified public HTML, do not reset/clean, no Firebase Production deploy.
+- See docs/HYBRID_PHASE8_FUNCTIONS_EMULATOR_UAT_20261023.md for failure analysis and safe retest. Log also warned host Node26 vs functions Node22 and ADC detected, but neither triggered initial guard failure. If later run reaches actual function handlers, diagnose any subsequent emulator/SDK issues using fresh logs.
+
 ## 2026-10-23 — Phase 8 demo-only real Functions Emulator HTTP Callable UAT (PENDING MAC EXECUTION)
 
 - User stated Phase 7 Mac tests/React Build passed after removing the client reference to unexported payment Callable. Phase 6 Auth/Firestore/Storage Emulator UAT earlier passed 8/8. Phase 8 new Functions Emulator tests have NOT been run by Mac because remote Mac mini is offline.
