@@ -2,7 +2,7 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { createHash, createHmac, randomUUID } = require("crypto");
-const { claimRefs, checkClaimsInTransaction, createClaimsInTransaction } = require("./finance-slip-claims");
+const { claimRefs, createClaimsInTransaction } = require("./finance-slip-claims");
 
 const REGION = "asia-southeast1";
 
