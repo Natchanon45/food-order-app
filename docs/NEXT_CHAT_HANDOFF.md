@@ -1,5 +1,14 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Phase 7 Mac `test:react-callables` contract fixed (not yet rerun)
+
+- Mac log: `npm run test:hybrid-payment-callables` **11/11**, `npm run test:hybrid-billing` **113/113**, React Foundation/Migration/Parity Matrix and P0 contract all passed, but `npm run test:react-parity` stopped on `test:react-callables`: missing server export `reviewHybridInvoicePaymentProof` referenced by `react-app/src/data/hybridPaymentActions.js`. Due to `set -e`, React build did not execute.
+- Root cause: Phase 7 intentionally excludes private payment Callable module from `functions/index.js` and `bootstrap.js`, but its UI adapter still had a literal `httpsCallable(functions, 'reviewHybridInvoicePaymentProof')` reference. `tools/react-callable-contract.mjs` correctly enforces all browser Callable references map to exported endpoint names.
+- Safe fix: removed `httpsCallable` from the unpublished React action, retained an always rejecting `reviewHybridPayment()` (`HYBRID_PAYMENT_NOT_RELEASED`/`HYBRID_PAYMENT_CALLABLE_UNREGISTERED`), kept `HYBRID_PAYMENT_UI_READY=false` and `HYBRID_PAYMENT_CALLABLE_READY=false`; server entrypoint STILL does not expose money-changing APIs.
+- Updated `tests/react-parity/hybrid-payment-review-ui.spec.mjs` so a future accidental client ref to an unregistered financial Callable fails. UI tests 5/5 passed isolated JS mock. **Native Mac `test:react-callables`, full Parity and `build:react` PENDING rerun.**
+- Mac safe commands after git pull: `npm run test:hybrid-payment-callables`; `npm run test:react-callables`; `npm run test:react-parity`; `npm run build:react`. Do NOT deploy Firebase or reset dirty generated public HTML.
+- Details `docs/HYBRID_PHASE7_PAYMENT_CALLABLES_20261023.md`. Actual Functions Emulator invocation and strict Super Admin API auth still need separate UAT prior to any release.
+
 ## 2026-10-23 — Phase 7 private Hybrid payment Callable and locked Super Admin review UX (NOT DEPLOYED)
 
 - Latest user Mac **Phase 6** real demo Emulator: safety 7/7, Auth/Firestore/Storage integration 8/8 with exit 0 after optional ownerEmail Rule fix; previous React Parity and build had passed. Do not report Phase 7 Callable UAT as completed; only Phase 6 was run.
