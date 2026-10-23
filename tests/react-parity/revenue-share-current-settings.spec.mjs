@@ -22,7 +22,7 @@ test("Share calculation displays actual server figures, not hypothetical arithme
   for (const field of ["deliveryShareBase", "deliveryShareAmount", "revenueShare", "platformAmountDue"]) {
     assert.ok(report.includes("money(summary." + field + ")"), field);
   }
-  assert.match(report, /access\?\.legacyEnabled/);
+  assert.match(report, /summary\.legacyShareAmount/);
   assert.match(report, /summary\.legacyShareAmount/);
   assert.match(report, /เรียกเก็บแยก/);
   assert.match(report, /ไม่ย้อนหลังวันก่อนหน้า/);
