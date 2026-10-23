@@ -22,7 +22,7 @@
     "preview:react": "vite preview --config vite.react.config.js",
     "test:react-foundation": "node tools/react-foundation-contract.mjs",
     "test:kitchen-lalamove-lock": "node --test tests/react-parity/kitchen-lalamove-lock.spec.mjs",
-    "test:lalamove-auto-status": "node --test tests/react-parity/lalamove-auto-status.spec.mjs tests/react-parity/lalamove-auto-backend.spec.mjs",
+    "test:lalamove-auto-status": "node --test tests/react-parity/lalamove-auto-status.spec.mjs tests/react-parity/lalamove-auto-backend.spec.mjs tests/react-parity/lalamove-prepaid-atomic.spec.mjs",
     "test:admin-store-layout": "node --test tests/react-parity/admin-store-settings-layout.spec.mjs",
     "test:admin-mobile-menu-table": "node --test tests/react-parity/admin-mobile-menu-table.spec.mjs",
     "test:global-initial-readiness": "node --test tests/react-parity/global-initial-readiness.spec.mjs",
@@ -75,7 +75,8 @@
     "test:delivery-slip2go": "node --test tests/react-parity/delivery-slip2go-flow.spec.mjs tests/react-parity/delivery-kitchen-gate.spec.mjs tests/react-parity/cashier-slip-review.spec.mjs tests/react-parity/slip2go-auth-contract.spec.mjs",
     "test:delivery-receipt-presentation": "node --test tests/react-parity/delivery-receipt-presentation.spec.mjs",
     "test:admin-menu-autosave": "node --test tests/react-parity/admin-menu-sort-autosave.spec.mjs",
-    "test:master-business-access": "node --test tests/react-parity/master-business-access.spec.mjs"
+    "test:master-business-access": "node --test tests/react-parity/master-business-access.spec.mjs",
+    "test:lalamove-prepaid-atomic": "node --test tests/react-parity/lalamove-prepaid-atomic.spec.mjs"
   },
   "repository": {
     "type": "git",
