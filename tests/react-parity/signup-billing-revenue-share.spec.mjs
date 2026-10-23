@@ -191,24 +191,24 @@ test("master business and selected scope control Retail POS commission eligibili
   assert.doesNotMatch(backend.slice(backend.indexOf("exports.updateTenantRevenueShare")), /request.data\?\.businessType/);
 });
 
-test("Delivery commission begins only AFTER the paid monthly threshold, including crossing day", () => {
+test("Delivery commission begins AT the paid monthly threshold, with no retroactive previous days", () => {
   const { eligibleDeliveryShareDays } = require("../../functions/revenue-share-policy.js");
   const qualify = (rows, threshold = 10000) => eligibleDeliveryShareDays(rows, threshold);
   const days = qualify([
     { date: "2026-10-01", cents: 300000 }, // 3,000; no retroactive share
-    { date: "2026-10-02", cents: 700000 }, // exactly 10,000: no share
-    { date: "2026-10-03", cents: 1 },      // 10,000.01: crossing day qualifies
+    { date: "2026-10-02", cents: 700000 }, // exactly 10,000: reaches 100% and qualifies
+    { date: "2026-10-03", cents: 1 },      // after threshold continues to qualify
     { date: "2026-10-04", cents: 10000 },
     { date: "2026-11-01", cents: 1000000 }, // next month resets
     { date: "2026-11-02", cents: 1 },
   ]);
-  assert.deepEqual([...days].sort(), ["2026-10-03", "2026-10-04", "2026-11-02"]);
+  assert.deepEqual([...days].sort(), ["2026-10-02", "2026-10-03", "2026-10-04", "2026-11-01", "2026-11-02"]);
   assert.deepEqual([...qualify([
     { date: "2026-10-02", cents: 500000 },
     { date: "2026-10-01", cents: 499999 },
     { date: "2026-10-02", cents: 2 },
   ])], ["2026-10-02"]);
-  assert.deepEqual([...qualify([{ date: "2026-10-01", cents: 10000 }], 100)], []);
+  assert.deepEqual([...qualify([{ date: "2026-10-01", cents: 10000 }], 100)], ["2026-10-01"]);
   assert.deepEqual([...qualify([{ date: "2026-10-01", cents: 10001 }], 100)], ["2026-10-01"]);
   assert.throws(() => qualify([{ date: "bad", cents: 1000 }]));
   assert.throws(() => qualify([], -1));
