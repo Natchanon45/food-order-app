@@ -113,7 +113,7 @@ test("missing store activation fails closed, never fabricates a monthly invoice"
   const server = serverAt("2026-11-22", [paid("2026-11-22", 15000)]);
   const noAnchor = { billingMode: "subscription", businessType: "both" };
   assert.throws(() => server.__periodFromData({ period: "monthly", month: "2026-11" }, noAnchor),
-    /Tenant activation date is required/);
+    /failed-precondition/);
   assert.equal(server.__previousPeriod("monthly", noAnchor), null);
   const s = server.__revenueSetting(noAnchor, pricing);
   const p = server.__periodFromData({ period: "daily", date: "2026-11-22" }, noAnchor);
