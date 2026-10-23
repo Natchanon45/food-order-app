@@ -176,6 +176,22 @@ test("concurrent requests can never double-book or double-debit the same order",
   assert.equal(h.transactions().filter(item => item.type === "delivery_debit").length, 1);
 });
 
+test("two different orders cannot overspend the same shared Wallet balance", async () => {
+  const h = harness({ balance: 100 });
+  h.docs.set("tenants/tenant-one/orders/order-two", {
+    ...h.docs.get(h.path), id: "order-two",
+  });
+  const secondRequest = { auth: { uid: "cashier" }, data: { orderId: "order-two" } };
+  const outcomes = await Promise.allSettled([
+    h.api.placeTenantLalamoveDispatch(h.request()),
+    h.api.placeTenantLalamoveDispatch(secondRequest),
+  ]);
+  assert.equal(outcomes.filter(item => item.status === "fulfilled" && item.value?.created === true).length, 1);
+  assert.equal(h.posts.length, 1, "credit can cover only one delivery");
+  assert.equal(h.docs.get(h.walletPath).balance, 41);
+  assert.equal(h.transactions().filter(item => item.type === "delivery_debit").length, 1);
+});
+
 test("definitive provider rejection reverses reservation exactly once and permits a new attempt", async () => {
   const h = harness({ placeStatus: 422 });
   await assert.rejects(h.api.placeTenantLalamoveDispatch(h.request()), /LALAMOVE_ORDER_CREATE_FAILED/);
