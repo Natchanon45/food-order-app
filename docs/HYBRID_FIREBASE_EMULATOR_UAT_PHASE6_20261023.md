@@ -104,3 +104,23 @@ npm run build:react
 ```
 
 No production Firebase/Storage, credentials, financial data, store Master information or Hosting was accessed or deployed by this change.
+
+## Mac UAT verified — 23 October 2026 (commit d4e57522)
+
+The owner supplied a complete Terminal log from the Mac mini:
+
+| Check | Actual result |
+|---|---|
+| `test:hybrid-emulator-safety` | **6/6 PASS** |
+| `test:firebase-hybrid-emulator` | **8/8 PASS**, `Script exited successfully (code 0)` |
+| `test:hybrid-billing` in React Parity | **101/101 PASS** |
+| `test:react-parity` overall | **Completed successfully** (followed by production build under `set -e`) |
+| `build:react` and `verify:react-build` | **PASS**, build `2026.10.19.526`, `/react/assets/index-DRAJQJOM.js` |
+
+The immutable Storage evidence tests passed on a real Emulator: matching-byte overwrite, altered-byte overwrite, metadata tampering, deletion, and original-file preservation. Actual Firestore role boundaries, wallet/Revenue Share/Hybrid shared claim concurrency, immutable invoices and single payment approval also passed.
+
+Expected `PERMISSION_DENIED` messages were part of assertions that unauthorized browser updates are refused. The log also emitted three Storage Rules evaluation warnings for `ownerEmail` missing in test tenant fixtures (line 58). After this completed UAT, we changed `tenantOwner()` in `storage.rules` to use guarded `data.get('ownerUid','')` / `data.get('ownerEmail','')` and nonempty auth email, preserving existing tenant permissions while avoiding missing-field exceptions. Added a static regression assertion (7/7 static simulated checks passed). **This later optional-field Rules fix has NOT been rerun on a real Emulator; rerun before deployment.**
+
+Vite reported non-fatal warnings for unresolved build-time CSS paths and a `3,741.39 kB` minified `index-DRAJQJOM.js` chunk (784.03 kB gzip). These did not fail `verify:react-build`; visual asset/JS chunk performance review remains a separate task. React Parity Matrix also states `Verified: 0` action inventories: the programmatic contract passed but that is not evidence of 54 routes manually UAT-approved.
+
+**No Firebase Production deploy or real financial change has occurred.** The invoice generator and approval callables are still not active. Next release gates: rerun the Emulator against the missing-ownerEmail safe-read fix, then add separately authorized Firebase Callable and Super Admin review UX, refund/credit notes and billing-only suspension/recovery.
