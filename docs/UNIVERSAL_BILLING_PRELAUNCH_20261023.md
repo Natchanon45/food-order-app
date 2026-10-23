@@ -40,3 +40,9 @@ Firestore documents, Cloud Storage files, Firebase Authentication user accounts,
 ## IconPacks
 
 The optional replacement-icon plan in `docs/BILLING_ANNIVERSARY_AND_ICONS_20261023.md` remains a later UI design task; no icons have been downloaded or replaced in this billing update.
+
+## 2026-10-23 Phase 3: immutable invoice ledger candidate
+
+The server now has a **private, deployment-inert** invoice ledger planner and Firestore Admin transaction writer, plus read-only planning from trusted paid Delivery orders. The invoice issuer is hard-disabled and absent from deployed Functions bootstrap. This is NOT a release of invoice payment, debt collection or suspension. Customer/browser reads of the new invoice collections are restricted by the un-deployed Firestore rules, and all client writes are prohibited. Master data and all existing Firestore operational records remain untouched.
+
+See `docs/HYBRID_INVOICE_LEDGER_PHASE3_20261023.md`. Test using `npm run test:hybrid-invoice-ledger` then `npm run test:hybrid-billing`. Native Mac/emulator UAT pending.
