@@ -204,6 +204,17 @@ export function RevenueShareReportPage() {
   const centralShare = access?.centralDeliveryShare === true;
   const centralThreshold = Number(access?.deliveryThreshold ?? summary.revenueShareDeliveryThreshold ?? 0);
   const centralRate = Number(access?.deliveryShareRate ?? summary.deliveryShareRate ?? 0);
+  const monthlyDeliverySales = Math.max(0, Number(summary.monthlyDeliverySales || 0));
+  const progressPercent = centralThreshold > 0
+    ? Math.min(100, monthlyDeliverySales / centralThreshold * 100) : 100;
+  const thresholdReached = centralThreshold <= 0 || monthlyDeliverySales >= centralThreshold;
+  const monthLabel = displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
+  const remainingToThreshold = Math.max(0, centralThreshold - monthlyDeliverySales);
+  const hasLegacyDeliveryDebt = Number(summary.platformAmountDue || 0) > Number(summary.revenueShare || 0);
+  const inStoreTotal = Number(summary.inStoreSales || 0);
+  const deliveryTotal = Number(summary.deliveryOrderSales || 0);
+  const deliveryShareDue = Number(summary.deliveryShareAmount || 0);
+  const lalamoveOutstanding = Number(summary.lalamoveOutstandingCost || 0);
   const failures = report.lalamoveFailures || [];
   const billingCycle = summary.revenueShareBillingCycle === "daily"
     ? "daily" : (access?.billingCycle === "daily" ? "daily" : "monthly");
@@ -479,50 +490,91 @@ export function RevenueShareReportPage() {
         </section>
 
 
-        <section className="card report-rules" aria-labelledby="reportRulesTitle">
+
+        <section className="card report-channel-overview" aria-labelledby="reportChannelsTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportRulesTitle"><i className="bi bi-sliders2" aria-hidden="true"></i> {rc("รูปแบบค่าบริการปัจจุบัน", "Current service fee model")}</h2>
-              <p>{rc("ข้อมูลจากส่วนกลางที่ Super Admin กำหนด ไม่ใช่ตัวเลขตัวอย่าง", "Live centrally configured settings, not sample values")}</p></div>
-            <span className="report-rule-state">{access?.premiumDeliveryShare ? "Premium / Delivery" : access?.legacyEnabled ? rc("เงื่อนไขเดิม", "Legacy agreement") : centralShare ? "Delivery" : rc("ไม่คิดส่วนแบ่ง", "Inactive")}</span>
+            <div>
+              <h2 id="reportChannelsTitle"><i className="bi bi-shop" aria-hidden="true"></i> {rc("แยกยอดขายร้านอาหาร / คาเฟ่", "Restaurant and café sales by channel")}</h2>
+              <p>{rc("ยอดขายอาหารตามช่วงรายงานที่เลือก แยกหน้าร้านและจัดส่งชัดเจน", "Food sales for the selected report period, separated by channel")}: {periodLabel}</p>
+            </div>
           </div>
-          <div className="report-rules-grid">
-            <article className="report-rule-item"><div><i className="bi bi-gem" aria-hidden="true"></i><span>{rc("สมาชิก Premium รายเดือน", "Premium monthly membership")}</span></div>
-              <strong>{access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} <small>{rc("บาท/เดือน", "THB/month")}</small></strong>
-              <p>{rc("รายปี", "Annual")}: {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท", "THB")}</p></article>
-            <article className="report-rule-item"><div><i className="bi bi-truck" aria-hidden="true"></i><span>{rc("เกณฑ์ยอด Delivery สะสมรายเดือน", "Monthly Delivery threshold")}</span></div>
-              <strong>{money(centralThreshold)} <small>{rc("บาท", "THB")}</small></strong>
-              <p>{rc("เฉพาะยอดสินค้าที่ชำระแล้ว ไม่รวมค่าส่ง", "Paid merchandise only, excluding delivery fees")}</p></article>
-            <article className="report-rule-item"><div><i className="bi bi-percent" aria-hidden="true"></i><span>{rc("อัตราส่วนแบ่ง Delivery ส่วนกลาง", "Central Delivery revenue-share rate")}</span></div>
-              <strong>{money(centralRate)} <small>%</small></strong>
-              <p>{centralShare ? rc("เริ่มคิดตั้งแต่วันที่ยอดสะสมเกินเกณฑ์ ไม่คิดย้อนหลังวันก่อนหน้า", "Charged from the day the threshold is exceeded; never retroactive to earlier days") : rc("ร้านนี้ไม่ได้ใช้เงื่อนไข Delivery ส่วนกลาง", "Central Delivery share is not active for this tenant")}</p></article>
+          <div className="report-channel-grid">
+            <article className="report-channel-card store">
+              <span className="report-channel-icon"><i className="bi bi-shop-window" aria-hidden="true"></i></span>
+              <div><span>{rc("ขายที่ร้าน / POS", "In-store / POS")}</span>
+                <strong id="inStoreSales">{money(inStoreTotal)} <small>{rc("บาท", "THB")}</small></strong>
+                <small>{rc("ออร์เดอร์หน้าร้าน", "In-store orders")}: {money(summary.storefrontOrderSales)} · Retail POS: <span id="posSales">{money(summary.posSales)}</span></small>
+                <p>{rc("ไม่รวมในฐานคิดส่วนแบ่ง Delivery", "Excluded from the Delivery share base")}</p>
+              </div>
+            </article>
+            <article className="report-channel-card delivery">
+              <span className="report-channel-icon"><i className="bi bi-truck" aria-hidden="true"></i></span>
+              <div><span>{rc("ขาย Delivery", "Delivery sales")}</span>
+                <strong id="orderSales">{money(deliveryTotal)} <small>{rc("บาท", "THB")}</small></strong>
+                <small id="orderCount">{rc("ยอดอาหาร ไม่รวมค่าจัดส่ง", "Merchandise only; delivery fees excluded")}</small>
+                <p>{rc("ยอดของช่วงรายงานนี้ ไม่ใช่ยอดสะสมทั้งเดือน", "For this report period; not the monthly cumulative amount")}</p>
+              </div>
+            </article>
           </div>
-          <p className="report-rule-note"><i className="bi bi-info-circle" aria-hidden="true"></i>{rc("ค่าบริการ Premium แยกชำระ ไม่รวมในยอดส่วนแบ่งของรายงานนี้ และ Retail POS / ค่าส่งไม่อยู่ในฐานคิด % Delivery", "Premium membership is billed separately. Retail POS and shipping are excluded from the Delivery share base.")}</p>
+        </section>
+
+        <section className="card report-month-progress" aria-labelledby="reportProgressTitle">
+          <div className="report-section-heading">
+            <div><h2 id="reportProgressTitle"><i className="bi bi-bullseye" aria-hidden="true"></i> {rc("ความคืบหน้ายอด Delivery สะสมเดือนนี้", "Current month's Delivery progress")}</h2>
+              <p>{rc("ติดตามยอดสินค้าที่ชำระแล้ว ไม่รวมค่าส่ง", "Tracks paid merchandise excluding delivery fees")} · {monthLabel}</p></div>
+            <span className={"report-progress-state " + (thresholdReached ? "is-reached" : "")}>{thresholdReached ? rc("ครบเกณฑ์แล้ว", "Threshold reached") : rc("ยังไม่ถึงเกณฑ์", "Below threshold")}</span>
+          </div>
+          <div className="report-progress-top">
+            <div className="report-progress-amount"><strong id="monthlyDeliverySales">{money(monthlyDeliverySales)}</strong><span> / <strong id="monthlyDeliveryThreshold">{money(centralThreshold)}</strong> {rc("บาท", "THB")}</span></div>
+            <strong className="report-progress-percent" id="monthlyDeliveryPercent">{formatNumber(progressPercent, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%</strong>
+          </div>
+          <div className="report-progress-track" role="progressbar" aria-label={rc("ยอด Delivery สะสมเดือนนี้", "Current month Delivery total")} aria-valuemin={0} aria-valuemax={Math.max(centralThreshold, 1)} aria-valuenow={Math.min(monthlyDeliverySales, Math.max(centralThreshold, 1))}>
+            <span className="report-progress-fill" style={{ width: Math.max(0, Math.min(100, progressPercent)) + "%" }}></span>
+          </div>
+          <div className="report-progress-bottom">
+            <span>{thresholdReached ? rc("ยอดสะสมครบเกณฑ์แล้ว", "Monthly threshold reached") : rc("เหลืออีก " + money(remainingToThreshold) + " บาท จึงถึงเกณฑ์", money(remainingToThreshold) + " THB remaining to threshold")}</span>
+            <span>{rc("เป้าหมาย", "Target")}: {money(centralThreshold)} {rc("บาท", "THB")}</span>
+          </div>
+          <p className="report-progress-note"><i className="bi bi-info-circle" aria-hidden="true"></i>
+            {thresholdReached ? rc("ยอดสะสมครบ 100% แล้ว ระบบเริ่มคิดส่วนแบ่งกับยอดสินค้าในวันที่ถึงเกณฑ์และวันต่อไป โดยไม่ย้อนหลังวันก่อนหน้า", "Monthly sales reached 100%. The crossing day and following days qualify, without charging earlier days.")
+              : rc("เริ่มคิดส่วนแบ่งเมื่อยอด Delivery สะสมครบ " + money(centralThreshold) + " บาท (100%) ภายในเดือนเดียวกัน", "Revenue sharing starts when paid Delivery merchandise reaches " + money(centralThreshold) + " THB (100%) in the same month.")}</p>
         </section>
 
         <section className="card report-share-math" aria-labelledby="reportShareMathTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportShareMathTitle"><i className="bi bi-calculator" aria-hidden="true"></i> {rc("ผลการคิดส่วนแบ่ง Delivery จริง", "Actual Delivery revenue-sharing calculation")}</h2>
-              <p>{rc("อิงออร์เดอร์ที่เข้าเกณฑ์ตามช่วงรายงาน", "Eligible orders for the selected period")}: {periodLabel}</p></div>
+            <div><h2 id="reportShareMathTitle"><i className="bi bi-calculator" aria-hidden="true"></i> {rc("ผลการคิดส่วนแบ่ง Delivery", "Delivery revenue-share result")}</h2>
+              <p>{rc("คำนวณจากฐานยอดที่เข้าเกณฑ์ในช่วงรายงาน", "Calculated on eligible merchandise for the selected reporting period")}: {periodLabel}</p></div>
+            <span className={"report-share-state " + (deliveryShareDue > 0 ? "is-chargeable" : "")}>{deliveryShareDue > 0 ? rc("มีส่วนแบ่ง Delivery", "Delivery share due") : thresholdReached ? rc("เดือนนี้ถึงเกณฑ์แล้ว", "Monthly threshold reached") : rc("ยังไม่ถึงเกณฑ์ จึงไม่มีส่วนแบ่ง", "Below threshold: no share")}</span>
           </div>
           <div className="report-share-equation">
-            <div><span>{rc("ฐานยอด Delivery เข้าเกณฑ์", "Eligible Delivery base")}</span><strong>{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div>
+            <div className="report-share-base"><span>{rc("ฐานยอด Delivery ที่เข้าเกณฑ์", "Eligible Delivery base")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div>
             <b aria-hidden="true">×</b>
-            <div><span>{rc("อัตราส่วนแบ่ง", "Share rate")}</span><strong>{money(centralRate)} <small>%</small></strong></div>
+            <div className="report-share-rate"><span>{rc("อัตราส่วนแบ่ง", "Share rate")}</span><strong>{money(centralRate)} <small>%</small></strong></div>
             <b aria-hidden="true">=</b>
-            <div className="result"><span>{rc("ค่าส่วนแบ่ง Delivery", "Delivery share")}</span><strong>{money(summary.deliveryShareAmount)} <small>{rc("บาท", "THB")}</small></strong></div>
+            <div className="result"><span>{rc("ค่าส่วนแบ่ง Delivery", "Delivery share")}</span><strong id="deliveryShareAmount">{money(summary.deliveryShareAmount)} <small>{rc("บาท", "THB")}</small></strong></div>
           </div>
           <p className="report-rule-note" id="shareExplanation"><i className="bi bi-shield-check" aria-hidden="true"></i>
-            {rc("เพดานเป็นเงื่อนไขเริ่มคิด ไม่ใช่เงินที่หักจากยอดของวันที่เลือก: ระบบคิดยอดสินค้าในวันที่ยอดสะสมเกินเกณฑ์และวันถัดไป ไม่ย้อนหลังวันก่อนหน้า", "The monthly threshold triggers charging; it is not deducted from the selected period. Eligible paid merchandise starts on the crossing date, never earlier days.")}</p>
-          {Number(summary.legacyShareAmount || 0) > 0 ? <p className="report-legacy-share">{rc("ส่วนแบ่งตามสัญญาเดิม:", "Legacy share:")} <strong>{money(summary.legacyShareAmount)} {rc("บาท", "THB")}</strong></p> : null}
+            {rc("เพดาน " + money(centralThreshold) + " บาทเป็นจุดเริ่มคิดในแต่ละเดือน ไม่ใช่จำนวนเงินที่หักจากยอดขาย ส่วนแบ่งใช้เฉพาะยอดสินค้าที่ชำระแล้วในวันที่ถึงเกณฑ์และวันถัดไป", "The " + money(centralThreshold) + " THB monthly threshold is a trigger, not a deduction. Only paid merchandise from the day the threshold is reached and onward qualifies.")}</p>
+          <div className="report-policy-inline"><i className="bi bi-gem" aria-hidden="true"></i><span>{rc("Premium ส่วนกลาง", "Central Premium")}: {access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} {rc("บาท/เดือน", "THB/month")} · {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท/ปี", "THB/year")} <small>{rc("(เรียกเก็บแยก ไม่รวมยอดรายงานนี้)", "(billed separately, not included in this report)")}</small></span></div>
         </section>
 
-        <section className="report-summary-grid report-summary-essential" aria-label={t("revenue_share_report.summary.aria")}>
-          <article className="report-summary-card order"><span>{rc("ยอดขายออร์เดอร์อาหาร (ไม่รวมค่าส่ง)", "Food orders (excluding delivery fees)")}</span><strong id="orderSales">{money(summary.orderSales)}</strong><small id="orderCount">{t("revenue_share_report.common.orders", { count: formatNumber(summary.orderCount || 0) })}</small></article>
-          <article className="report-summary-card pos"><span>{t("revenue_share_report.summary.pos_sales")}</span><strong id="posSales">{money(summary.posSales)}</strong><small id="posCount">{t("revenue_share_report.common.receipts", { count: formatNumber(summary.posCount || 0) })}</small></article>
-          <article className="report-summary-card total"><span>{rc("ฐานยอด Delivery ที่เข้าเกณฑ์", "Eligible Delivery base")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card share"><span id="shareRateLabel">{rc("ส่วนแบ่งทั้งหมด", "Total revenue share")}</span><strong id="revenueShare">{money(summary.revenueShare)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card delivery-customer"><span>{t("revenue_share_report.summary.customer_delivery_fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)}</strong><small>{t("revenue_share_report.common.baht")}</small></article>
-          <article className="report-summary-card amount-due"><span>{t("revenue_share_report.summary.platform_amount_due")}</span><strong id="platformAmountDue">{money(summary.platformAmountDue)}</strong><small>{rc("ไม่รวมค่าบริการ Premium ที่ชำระแยก", "Premium membership billed separately")}</small></article>
+        <section className="card report-related-amounts" aria-labelledby="reportRelatedTitle">
+          <div className="report-section-heading">
+            <div><h2 id="reportRelatedTitle"><i className="bi bi-receipt" aria-hidden="true"></i> {rc("ยอดที่เกี่ยวข้องและยอดต้องชำระ", "Related charges and amount due")}</h2>
+              <p>{rc("แยกค่าส่ง Lalamove ออกจากค่าส่วนแบ่ง ไม่ทำให้ยอดค้างจริงหายไป", "Lalamove shipping charges are separate from revenue share and actual outstanding balances")}</p></div>
+          </div>
+          <div className="report-related-grid">
+            <article className="report-related-tile"><span><i className="bi bi-truck" aria-hidden="true"></i>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong></article>
+            <article className="report-related-tile"><span><i className="bi bi-box-seam" aria-hidden="true"></i>{rc("ต้นทุน Lalamove", "Lalamove delivery cost")}</span><strong>{money(summary.lalamoveDeliveryCost)} <small>{rc("บาท", "THB")}</small></strong></article>
+            <article className="report-related-tile"><span><i className="bi bi-wallet2" aria-hidden="true"></i>{rc("ต้นทุน Lalamove ที่ยังไม่หัก Wallet", "Lalamove not covered by Wallet")}</span><strong>{money(lalamoveOutstanding)} <small>{rc("บาท", "THB")}</small></strong></article>
+          </div>
+          {Number(summary.legacyShareAmount || 0) > 0 ? <div className="report-legacy-share">{rc("ส่วนแบ่งตามสัญญาเดิม (ไม่ใช่ Delivery ส่วนกลาง)", "Legacy contract share (not central Delivery)")}: <strong>{money(summary.legacyShareAmount)} {rc("บาท", "THB")}</strong></div> : null}
+          <div className="report-settlement">
+            <div><span>{rc("ยอดต้องชำระ Platform ตามรูปแบบบัญชีปัจจุบัน", "Platform amount due under current billing rules")}</span>
+              <strong id="platformAmountDue">{money(summary.platformAmountDue)} <small>{rc("บาท", "THB")}</small></strong></div>
+            <p>{hasLegacyDeliveryDebt ? rc("ยอดนี้รวมต้นทุน Lalamove ที่ยังไม่หัก Wallet " + money(lalamoveOutstanding) + " บาท ไม่ใช่ส่วนแบ่ง Delivery แม้ยอดสะสมยังไม่ถึงเพดาน", "This includes " + money(lalamoveOutstanding) + " THB of Lalamove costs not covered by Wallet. It is not Delivery revenue share, even before the threshold.")
+              : rc("ค่าส่วนแบ่งรวม " + money(summary.revenueShare) + " บาท" + (Number(summary.platformAmountDue || 0) === 0 ? " ยังไม่มีรายการต้องโอนในช่วงนี้" : ""), "Total revenue share: " + money(summary.revenueShare) + " THB" + (Number(summary.platformAmountDue || 0) === 0 ? ". No transfer is due for this period." : ""))}</p>
+          </div>
         </section>
 
         <details className="report-extra">
@@ -593,6 +645,8 @@ export function RevenueShareReportPage() {
             <div><span>{t("revenue_share_report.payment.selected_period")}</span><strong id="paymentPeriodLabel">{periodLabel}</strong></div>
             <div><span>{t("revenue_share_report.payment.amount_due")}</span><strong><span id="paymentAmountDue">{money(summary.platformAmountDue)}</span> {t("revenue_share_report.common.baht")}</strong></div>
           </div>
+          {noAmountDue ? <div className="report-payment-zero"><i className="bi bi-check-circle" aria-hidden="true"></i><span>{rc("ยังไม่มียอดต้องชำระในช่วงนี้ จึงไม่ต้องแนบสลิป", "No amount due for this period; no payment slip is required.")}</span></div> : null}
+          {!noAmountDue ? <>
           <form id="revenueSharePaymentForm" className="report-payment-form" onSubmit={submitPayment}>
             <div className="report-slip-field">
               <span>{t("revenue_share_report.payment.slip")}</span>
@@ -613,6 +667,7 @@ export function RevenueShareReportPage() {
               <span>{t(uploading ? "revenue_share_report.states.uploading" : "revenue_share_report.actions.submit_slip")}</span>
             </button>
           </form>
+          </> : null}
           {paymentUnavailableMessage ? <div className={"report-payment-message" + (!cycleMatches ? " error" : "")} id="revenueSharePaymentMessage" role="status">{paymentUnavailableMessage}</div>
             : paymentMessage ? <div className={`report-payment-message${paymentMessageError ? " error" : ""}`} id="revenueSharePaymentMessage" role="status">{paymentMessage}</div>
               : <div className="report-payment-message" id="revenueSharePaymentMessage" role="status" hidden></div>}
