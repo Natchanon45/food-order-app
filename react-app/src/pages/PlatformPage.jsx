@@ -144,7 +144,7 @@ function SecretField({
 export function PlatformPage() {
   const authState = useAuth();
   const { profile } = authState;
-  const { t, raw, formatNumber } = useI18n();
+  const { t, raw, formatNumber, intlLocale } = useI18n();
   const stylesReady = useParityPage({
     title: t("platform.meta.title"),
     styles: ["platform-control-center.css", "super-admin-header.css"],
