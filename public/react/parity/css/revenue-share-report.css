@@ -261,3 +261,458 @@
 @media(max-width:800px){.report-related-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.report-settlement{align-items:flex-start;flex-direction:column}}
 @media(max-width:620px){.report-channel-overview,.report-month-progress,.report-related-amounts{padding:14px;border-radius:16px}.report-channel-grid,.report-related-grid{grid-template-columns:1fr}.report-channel-card{padding:15px 13px;gap:11px}.report-channel-icon{width:46px;height:46px;font-size:1.45rem;border-radius:13px}.report-channel-card strong{font-size:1.5rem}.report-progress-top{align-items:flex-end}.report-progress-amount>strong{font-size:1.2rem}.report-progress-percent{font-size:1.4rem}.report-progress-bottom{flex-wrap:wrap}.report-share-state,.report-progress-state{max-width:100%;white-space:normal}.report-related-tile{padding:13px}.report-settlement{padding:14px}.report-settlement strong{font-size:1.5rem}}
 @media(prefers-reduced-motion:reduce){.report-progress-fill{transition:none}}
+
+
+/* REVENUE_REPORT_APPROVED_DASHBOARD_20261023
+ * Layout follows the approved desktop report mockup; calculated values stay server-owned.
+ * Render overrides are deliberately scoped so other tenant/admin pages stay unchanged.
+ */
+.revenue-share-dashboard{
+  width:min(1128px,calc(100% - 32px));
+  padding:14px 0 48px;
+  gap:10px;
+  --report-deep:#09582f;
+  --report-green:#0d9148;
+  --report-border:#e0ebe5;
+  --report-shadow:0 5px 23px rgba(23,74,45,.055);
+}
+.revenue-share-dashboard .card{
+  min-width:0;
+  border:1px solid var(--report-border);
+  border-radius:17px;
+  box-shadow:var(--report-shadow);
+  background:#fff;
+}
+.revenue-share-dashboard .report-section-heading{
+  margin-bottom:12px;gap:12px;
+}
+.revenue-share-dashboard .report-section-heading h2{
+  display:flex;align-items:center;gap:9px;
+  color:#12271b;font-size:1.07rem;line-height:1.35;font-weight:900;
+  letter-spacing:-.015em;
+}
+.revenue-share-dashboard .report-section-heading h2>.bi{
+  display:inline-flex;align-items:center;justify-content:center;
+  color:#10964d;font-size:1.15rem;flex:none;
+}
+.revenue-share-dashboard .report-section-heading p{
+  margin:2px 0 0;font-size:.8rem;color:#667871;line-height:1.45;
+}
+.revenue-share-dashboard .revenue-share-hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  display:grid;grid-template-columns:63px minmax(0,1fr) 240px;
+  align-items:center;gap:17px;
+  min-height:108px;padding:19px 26px;border-radius:19px;
+  background:linear-gradient(104deg,#0b5d34 0%,#0c8142 53%,#118f48 100%);
+  box-shadow:var(--report-shadow);
+}
+.revenue-share-dashboard .report-hero-symbol{
+  display:grid;place-items:center;
+  width:60px;height:60px;border-radius:50%;
+  background:rgba(255,255,255,.1);
+  color:#b8f7d0;font-size:1.85rem;
+}
+.revenue-share-dashboard .report-hero-content{position:relative;z-index:1;min-width:0}
+.revenue-share-dashboard .report-hero-content h1{
+  margin:0 0 5px;color:#fff;
+  font-size:clamp(1.4rem,2.5vw,2rem);line-height:1.16;font-weight:900;
+}
+.revenue-share-dashboard .report-hero-content p{
+  margin:0;color:#def9e8;
+  font-size:.82rem;line-height:1.45;max-width:690px;
+}
+.revenue-share-dashboard .report-hero-art{
+  position:relative;height:77px;align-self:center;
+  color:rgba(255,255,255,.85);
+}
+.revenue-share-dashboard .report-hero-art:before{
+  position:absolute;content:"";inset:9px -16px 0 30px;
+  border-radius:18px;background:rgba(255,255,255,.06);
+  transform:rotate(-7deg);
+}
+.revenue-share-dashboard .report-hero-art>.bi{
+  position:absolute;display:grid;place-items:center;
+  border-radius:11px;background:rgba(216,255,229,.19);
+  border:1px solid rgba(255,255,255,.12);
+  color:#c5fadd;
+}
+.revenue-share-dashboard .report-hero-art>.bi:nth-child(1){
+  left:13px;top:3px;width:75px;height:74px;font-size:3.4rem;
+  transform:rotate(-13deg);background:#f8fff9;color:#85bba1;
+}
+.revenue-share-dashboard .report-hero-art>.bi:nth-child(2){
+  left:109px;top:19px;width:59px;height:54px;font-size:2.5rem;
+}
+.revenue-share-dashboard .report-hero-art>.bi:nth-child(3){
+  left:177px;top:18px;width:61px;height:55px;font-size:2.5rem;
+}
+/* The filter bar is a single aligned row at desktop widths. */
+.revenue-share-dashboard .report-filter-card{
+  display:grid;grid-template-columns:minmax(185px,1fr) auto minmax(205px,255px) 38px;
+  align-items:center;column-gap:13px;row-gap:9px;
+  min-height:73px;padding:12px 15px;
+}
+.revenue-share-dashboard .report-filter-card .report-section-heading{margin:0;min-width:0}
+.revenue-share-dashboard #reportPeriodTitle{white-space:nowrap;font-size:1rem}
+.revenue-share-dashboard #reportPeriodLabel{display:none}
+.revenue-share-dashboard .report-period-tabs{
+  gap:2px;padding:4px;border-radius:13px;background:#f9fcfa;
+  border:1px solid var(--report-border);
+  overflow:visible;
+}
+.revenue-share-dashboard .report-period-tabs button{
+  min-height:36px;padding:7px 9px;
+  font-size:.79rem;gap:6px;border-radius:9px;
+}
+.revenue-share-dashboard .report-period-tabs button.active{
+  background:linear-gradient(120deg,#08873e,#159b4d);
+}
+.revenue-share-dashboard .report-period-controls{
+  display:flex;align-items:center;min-width:0;margin:0;gap:0;
+}
+.revenue-share-dashboard .report-period-controls>label{
+  display:flex;align-items:center;gap:9px;
+  width:100%;min-width:0;margin:0;
+  padding:4px 7px 4px 10px;
+  border-radius:12px;background:#fbfdfc;
+}
+.revenue-share-dashboard .report-period-controls>label>span{white-space:nowrap;color:#253c2c}
+.revenue-share-dashboard .report-period-controls>label>.input{
+  flex:1 1 auto;width:100%;min-width:0;min-height:36px;padding:5px 7px;
+  font-size:.79rem;
+}
+.revenue-share-dashboard .report-custom-period{
+  grid-column:auto;display:grid;grid-template-columns:1fr 1fr;
+  min-width:0;gap:5px;
+}
+.revenue-share-dashboard .report-custom-period label{
+  padding:5px;gap:3px;font-size:.71rem;
+}
+.revenue-share-dashboard .report-custom-period .input{min-height:33px;font-size:.69rem;max-width:100%;padding:5px}
+.revenue-share-dashboard .report-filter-refresh{
+  display:grid;place-items:center;
+  width:36px;height:36px;min-height:36px;
+  padding:0;border:1px solid #d6e9dd;border-radius:11px;
+  background:#f3fbf6;color:#148d47;font-size:1.05rem;
+}
+.revenue-share-dashboard .report-filter-refresh:hover:not(:disabled){background:#e5f6eb}
+.revenue-share-dashboard .report-channel-overview,
+.revenue-share-dashboard .report-month-progress,
+.revenue-share-dashboard .report-share-math,
+.revenue-share-dashboard .report-related-amounts{
+  padding:16px;
+}
+.revenue-share-dashboard .report-channel-card{
+  min-height:104px;
+  display:flex;align-items:center;gap:20px;
+  padding:15px 17px;
+  border-radius:13px;
+  background:linear-gradient(105deg,#f0faf4,#f9fdfb);
+}
+.revenue-share-dashboard .report-channel-card.delivery{background:linear-gradient(105deg,#eff6ff,#f8fbff)}
+.revenue-share-dashboard .report-channel-icon{
+  width:69px;height:69px;border-radius:50%;
+  background:#dff8e9;color:#0a9a52;font-size:2rem;
+}
+.revenue-share-dashboard .report-channel-card.delivery .report-channel-icon{
+  background:#e0efff;color:#187aab;
+}
+.revenue-share-dashboard .report-channel-card>div{gap:3px}
+.revenue-share-dashboard .report-channel-card>div>span{
+  font-size:.91rem;font-weight:900;color:#20503a;
+}
+.revenue-share-dashboard .report-channel-card strong{
+  color:#095a32;font-size:clamp(1.5rem,2.65vw,2rem);
+  font-weight:900;letter-spacing:-.03em;
+}
+.revenue-share-dashboard .report-channel-card p{
+  font-size:.77rem;font-weight:750;color:#66796c;
+  margin:0;
+}
+.revenue-share-dashboard .report-channel-card>div>small{
+  color:#66796c;font-size:.74rem;line-height:1.35;
+}
+.revenue-share-dashboard .report-month-progress{padding:16px 18px 14px}
+.revenue-share-dashboard .report-month-progress .report-section-heading{margin-bottom:13px}
+.revenue-share-dashboard .report-progress-asof{
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;gap:7px;padding:7px 10px;
+  color:#127647;background:#eaf8f0;border-radius:999px;
+  font-size:.77rem;font-weight:800;
+}
+.revenue-share-dashboard .report-progress-barline{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:17px;
+}
+.revenue-share-dashboard .report-progress-track{
+  height:17px;border:0;box-shadow:none;
+  background:#e9ecf0;border-radius:20px;overflow:hidden;
+}
+.revenue-share-dashboard .report-progress-fill{
+  display:block;height:100%;border-radius:20px;
+  background:linear-gradient(90deg,#088c46,#22c36d);
+}
+.revenue-share-dashboard .report-progress-percent{
+  min-width:67px;text-align:right;
+  color:#0a9649;font-size:1.55rem;font-weight:900;
+}
+.revenue-share-dashboard .report-progress-caption{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:1px 0 9px;color:#33483c;
+  font-size:.91rem;
+}
+.revenue-share-dashboard .report-progress-caption strong{font-weight:900;color:#1f4631}
+.revenue-share-dashboard .report-progress-caption small{font-size:.74rem;color:#63816b}
+.revenue-share-dashboard .report-progress-note{
+  margin:0;padding:11px 13px;
+  color:#2c639b;background:#edf5ff;border:1px solid #d2e2ff;
+  line-height:1.4;font-size:.77rem;border-radius:11px;
+}
+.revenue-share-dashboard .report-share-math .report-section-heading{margin-bottom:13px}
+.revenue-share-dashboard .report-share-math .report-share-equation{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) 15px minmax(0,1.12fr) 15px minmax(0,.9fr) 15px minmax(0,1.12fr);
+  align-items:center;gap:8px;
+}
+.revenue-share-dashboard .report-share-equation>div{
+  display:flex;align-items:center;gap:11px;
+  min-height:86px;padding:12px 12px;
+  border:1px solid #cfe5fd;background:#f1f7ff;border-radius:13px;
+}
+.revenue-share-dashboard .report-share-equation>div:nth-of-type(2){
+  background:#f5fbf7;border-color:#cfe9da;
+}
+.revenue-share-dashboard .report-share-equation>div:nth-of-type(3){
+  background:#fff8ec;border-color:#f8e0b5;
+}
+.revenue-share-dashboard .report-share-equation>div.result{
+  background:#edf9f2;border-color:#cbe7d5;
+}
+.revenue-share-dashboard .report-share-equation .report-equation-icon{
+  width:40px;height:40px;flex:none;
+  display:grid;place-items:center;
+  border-radius:50%;font-size:1.2rem;
+  background:#dcecff;color:#1986c1;
+}
+.revenue-share-dashboard .report-share-equation>div:nth-of-type(2) .report-equation-icon{
+  background:#def4e6;color:#13924c;
+}
+.revenue-share-dashboard .report-share-equation>div:nth-of-type(3) .report-equation-icon{
+  background:#ffebc9;color:#bd7f15;
+}
+.revenue-share-dashboard .report-share-equation>div.result .report-equation-icon{
+  background:#d9f5e5;color:#128e49;
+}
+.revenue-share-dashboard .report-share-equation>div>div{
+  display:grid;gap:6px;min-width:0;
+}
+.revenue-share-dashboard .report-share-equation>div>div>span{
+  color:#355343;font-size:.74rem;font-weight:850;line-height:1.35;
+}
+.revenue-share-dashboard .report-share-equation strong{
+  color:#103d28;
+  font-size:clamp(1.1rem,1.9vw,1.56rem);
+  line-height:1.15;font-weight:900;letter-spacing:-.02em;
+}
+.revenue-share-dashboard .report-share-equation strong small{font-size:.67rem}
+.revenue-share-dashboard .report-equation-operator{
+  color:#098e48;font-size:1.2rem;font-weight:900;
+  text-align:center;line-height:1;
+}
+.revenue-share-dashboard .report-share-state{
+  background:#fff0f3;color:#c72c4e;
+  max-width:340px;text-align:center;font-size:.75rem;
+}
+.revenue-share-dashboard .report-share-state.is-chargeable{
+  background:#e9f7ee;color:#126e3a;
+}
+.revenue-share-dashboard .report-share-math .report-rule-note{
+  margin-top:10px;padding:9px 12px;font-size:.74rem;
+  background:#f4faf6;line-height:1.45;
+}
+.revenue-share-dashboard .report-pricing-disclosure{
+  width:100%;margin-top:7px;
+  border-top:1px solid #f0f4f1;
+}
+.revenue-share-dashboard .report-pricing-disclosure>summary{
+  display:flex;align-items:center;gap:7px;cursor:pointer;
+  color:#789084;font-size:.73rem;font-weight:800;padding:8px 3px 1px;
+  list-style:none;
+}
+.revenue-share-dashboard .report-pricing-disclosure summary::-webkit-details-marker{display:none}
+.revenue-share-dashboard .report-pricing-disclosure>summary>.bi:last-child{margin-left:auto}
+.revenue-share-dashboard .report-pricing-disclosure[open]>summary>.bi:last-child{transform:rotate(180deg)}
+.revenue-share-dashboard .report-pricing-disclosure .report-policy-inline{margin:8px 0 2px}
+.revenue-share-dashboard .report-related-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+}
+.revenue-share-dashboard .report-related-tile{
+  display:flex;align-items:center;gap:11px;
+  min-height:94px;padding:13px 14px;border-radius:12px;
+  background:#f0f6ff;border:1px solid #d4e5fc;
+}
+.revenue-share-dashboard .report-related-tile:nth-child(2){
+  background:#fff9ec;border-color:#f7e3bf;
+}
+.revenue-share-dashboard .report-related-tile:nth-child(3){
+  background:#edf9f3;border-color:#cfe8da;
+}
+.revenue-share-dashboard .report-related-icon{
+  display:grid;place-items:center;width:43px;height:43px;flex:none;
+  border-radius:50%;background:#dfeeff;color:#1683c5;font-size:1.25rem;
+}
+.revenue-share-dashboard .report-related-tile:nth-child(2) .report-related-icon{
+  background:#ffebc7;color:#bc831f;
+}
+.revenue-share-dashboard .report-related-tile:nth-child(3) .report-related-icon{
+  background:#ddf3e6;color:#138e48;
+}
+.revenue-share-dashboard .report-related-tile>div{
+  display:grid;gap:4px;min-width:0;
+}
+.revenue-share-dashboard .report-related-tile>div>span{
+  color:#365947;font-size:.78rem;font-weight:900;
+}
+.revenue-share-dashboard .report-related-tile strong{
+  color:#123e28;font-size:clamp(1.13rem,2vw,1.48rem);font-weight:900;
+  letter-spacing:-.02em;
+}
+.revenue-share-dashboard .report-related-tile>div>small{
+  color:#738177;font-size:.72rem;line-height:1.35;
+}
+.revenue-share-dashboard .report-related-debt-note{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 11px;margin:10px 0 0;border-radius:10px;
+  border:1px solid #f3dfb7;background:#fffaf0;
+  color:#84591e;font-size:.75rem;line-height:1.5;
+}
+.revenue-share-dashboard .report-related-debt-note .bi{flex:none;font-size:1.05rem}
+.revenue-share-dashboard .report-payment-card-zero{
+  display:grid;grid-template-columns:minmax(0,1fr);
+  gap:0;padding:0;border:0;background:transparent;box-shadow:none;
+}
+.revenue-share-dashboard .report-payment-card-zero>.report-section-heading,
+.revenue-share-dashboard .report-payment-card-zero>.report-payment-summary,
+.revenue-share-dashboard .report-payment-card-zero>.report-payment-message{
+  display:none;
+}
+.revenue-share-dashboard .report-payment-card-zero>.report-payment-zero{
+  margin:0;padding:12px 16px;
+  border:1px solid #e3e8eb;border-radius:13px;
+  color:#62736a;background:#f3f5f7;font-size:.83rem;
+}
+.revenue-share-dashboard .report-payment-card-zero>.report-payment-zero>.bi{color:#10944a}
+.revenue-share-dashboard .report-payment-card:not(.report-payment-card-zero){
+  padding:15px 17px;
+}
+.revenue-share-dashboard .report-payment-card:not(.report-payment-card-zero) .report-section-heading h2{
+  display:flex;align-items:center;gap:8px;
+}
+.revenue-share-dashboard .report-extra{
+  border-color:#e0eae3;border-radius:13px;box-shadow:none;
+}
+.revenue-share-dashboard .report-extra>summary{
+  min-height:43px;padding:10px 14px;font-size:.79rem;
+}
+.revenue-share-dashboard .report-history-disclosure{
+  border:1px solid #e0ebe5;border-radius:13px;background:#fff;
+  overflow:hidden;box-shadow:var(--report-shadow);
+}
+.revenue-share-dashboard .report-history-disclosure>summary{
+  display:flex;align-items:center;gap:9px;
+  min-height:43px;padding:10px 15px;
+  list-style:none;cursor:pointer;
+  color:#38694b;font-size:.84rem;font-weight:850;
+}
+.revenue-share-dashboard .report-history-disclosure>summary>.bi:last-child{margin-left:auto}
+.revenue-share-dashboard .report-history-disclosure[open]>summary>.bi:last-child{transform:rotate(180deg)}
+.revenue-share-dashboard .report-history-disclosure>summary::-webkit-details-marker{display:none}
+.revenue-share-dashboard .report-history-card{
+  padding:12px 15px 15px;border:0;border-top:1px solid #e7f0ea;
+  border-radius:0;box-shadow:none;
+}
+/* Tablet wraps to two rows; content never runs beneath the viewport. */
+@media(max-width:1040px){
+  .revenue-share-dashboard .report-filter-card{
+    grid-template-columns:minmax(0,1fr) auto 36px;
+    column-gap:12px;
+  }
+  .revenue-share-dashboard .report-filter-card .report-section-heading{grid-column:1/2}
+  .revenue-share-dashboard .report-period-tabs{grid-column:2/3}
+  .revenue-share-dashboard .report-filter-refresh{grid-column:3/4}
+  .revenue-share-dashboard .report-period-controls{grid-column:1/-1;grid-row:2}
+  .revenue-share-dashboard .report-period-controls>label{max-width:380px}
+  .revenue-share-dashboard .report-hero-art{opacity:.7}
+  .revenue-share-dashboard .report-share-math .report-share-equation{
+    grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr);
+    row-gap:10px;
+  }
+  .revenue-share-dashboard .report-share-equation>.report-share-month{grid-column:1}
+  .revenue-share-dashboard .report-share-equation>b:nth-of-type(1){grid-column:2}
+  .revenue-share-dashboard .report-share-equation>.report-share-base{grid-column:3}
+  .revenue-share-dashboard .report-share-equation>b:nth-of-type(2){grid-column:1;text-align:center}
+  .revenue-share-dashboard .report-share-equation>.report-share-rate{grid-column:2/4}
+  .revenue-share-dashboard .report-share-equation>b:nth-of-type(3){grid-column:1}
+  .revenue-share-dashboard .report-share-equation>.result{grid-column:2/4}
+}
+/* Smaller phones put the same hierarchy into one readable column. */
+@media(max-width:700px){
+  .revenue-share-dashboard{width:100%;padding:9px 10px 38px;gap:10px}
+  .revenue-share-dashboard .revenue-share-hero{
+    min-height:0;grid-template-columns:42px minmax(0,1fr);
+    gap:11px;padding:17px 15px;border-radius:15px;
+  }
+  .revenue-share-dashboard .report-hero-symbol{width:42px;height:42px;font-size:1.45rem}
+  .revenue-share-dashboard .report-hero-art{display:none}
+  .revenue-share-dashboard .report-hero-content h1{font-size:1.52rem}
+  .revenue-share-dashboard .report-hero-content p{font-size:.75rem}
+  .revenue-share-dashboard .report-filter-card{
+    display:grid;grid-template-columns:minmax(0,1fr) 36px;
+    gap:9px;padding:12px 13px;
+  }
+  .revenue-share-dashboard .report-filter-card .report-section-heading{grid-column:1/2;grid-row:1}
+  .revenue-share-dashboard .report-filter-refresh{grid-column:2;grid-row:1}
+  .revenue-share-dashboard .report-period-tabs{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .revenue-share-dashboard .report-period-tabs button{padding:7px 2px;gap:3px;min-width:0;font-size:.71rem}
+  .revenue-share-dashboard .report-period-controls{grid-column:1/-1;grid-row:3;width:100%}
+  .revenue-share-dashboard .report-period-controls>label{max-width:none}
+  .revenue-share-dashboard .report-channel-overview,
+  .revenue-share-dashboard .report-month-progress,
+  .revenue-share-dashboard .report-share-math,
+  .revenue-share-dashboard .report-related-amounts{
+    padding:13px 12px;
+  }
+  .revenue-share-dashboard .report-channel-grid{grid-template-columns:1fr;gap:9px}
+  .revenue-share-dashboard .report-channel-card{min-height:92px;padding:13px}
+  .revenue-share-dashboard .report-channel-icon{width:52px;height:52px;font-size:1.5rem}
+  .revenue-share-dashboard .report-channel-card strong{font-size:1.5rem}
+  .revenue-share-dashboard .report-progress-asof{align-self:flex-start;font-size:.7rem}
+  .revenue-share-dashboard .report-progress-percent{min-width:55px;font-size:1.3rem}
+  .revenue-share-dashboard .report-progress-barline{gap:10px}
+  .revenue-share-dashboard .report-progress-caption{flex-wrap:wrap;gap:3px}
+  .revenue-share-dashboard .report-share-math .report-share-equation{
+    grid-template-columns:1fr;gap:5px;
+  }
+  .revenue-share-dashboard .report-share-equation>.report-share-month,
+  .revenue-share-dashboard .report-share-equation>.report-share-base,
+  .revenue-share-dashboard .report-share-equation>.report-share-rate,
+  .revenue-share-dashboard .report-share-equation>.result,
+  .revenue-share-dashboard .report-share-equation>b:nth-of-type(1),
+  .revenue-share-dashboard .report-share-equation>b:nth-of-type(2),
+  .revenue-share-dashboard .report-share-equation>b:nth-of-type(3){grid-column:1;grid-row:auto}
+  .revenue-share-dashboard .report-share-equation>div{min-height:69px;padding:11px 12px}
+  .revenue-share-dashboard .report-share-equation .report-equation-icon{width:35px;height:35px;font-size:1.05rem}
+  .revenue-share-dashboard .report-equation-operator{font-size:1rem}
+  .revenue-share-dashboard .report-related-grid{grid-template-columns:1fr;gap:9px}
+  .revenue-share-dashboard .report-related-tile{min-height:76px;padding:12px}
+  .revenue-share-dashboard .report-related-icon{width:39px;height:39px}
+  .revenue-share-dashboard .report-history-disclosure>summary{font-size:.78rem}
+}
+@media(max-width:390px){
+  .revenue-share-dashboard .report-period-tabs button{font-size:.65rem;flex-direction:column;gap:1px}
+  .revenue-share-dashboard .report-period-tabs .bi{font-size:.94rem}
+  .revenue-share-dashboard .report-hero-content h1{font-size:1.3rem}
+  .revenue-share-dashboard .report-channel-card{gap:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  .revenue-share-dashboard .report-progress-fill{transition:none}
+}
