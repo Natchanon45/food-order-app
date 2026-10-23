@@ -20,6 +20,10 @@ const { claimRefs, checkClaimsInTransaction, createClaimsInTransaction } =
   fnRequire("./finance-slip-claims");
 const { prepareInvoiceLedger } = fnRequire("./hybrid-billing-ledger");
 const { persistHybridInvoiceLedger } = fnRequire("./hybrid-billing-persistence");
+const { stageHybridInvoiceProof, reviewHybridInvoiceProof } =
+  fnRequire("./hybrid-billing-payment");
+const { fingerprintClaims } = fnRequire("./hybrid-billing-payment-policy");
+const { claimIds } = fnRequire("./finance-slip-claims");
 
 let adminApp, adminDb;
 const clients = [];
@@ -102,6 +106,7 @@ before(async () => {
     batch.set(adminDb.doc("tenants/store-a/" + key + "/" + id), {
       tenantId: "store-a", id, status: "issued", amount: 500,
       date: "2026-10-25", signature: "a".repeat(64),
+      version: "hybrid-invoice-v1",
     });
   }
   batch.set(adminDb.collection("financeSlipClaims").doc("file_" + "a".repeat(64)), {
@@ -247,4 +252,54 @@ test("Actual Admin Firestore invoice writer is idempotent and preserves PAID", a
   assert.equal(onceMore.unchanged, true);
   assert.equal((await claimed.get()).data().status, "paid");
   assert.equal((await ref.collection("hybridBillingInvoices").get()).size, 1);
+});
+
+
+test("Real Admin transaction stages slip as pending, then finance review marks paid once", async () => {
+  const tenantRef = adminDb.collection("tenants").doc("store-a");
+  const raw = Buffer.from("proof-file-for-bank-verification-emulator");
+  const verification = {
+    provider: "slip2go", status: "matched", bankVerified: true,
+    referenceId: "emulator-bank-ref-1", transRef: "emulator-bank-tx-1",
+  };
+  const prepared = {
+    tenantId: "store-a", invoiceId,
+    attemptId: "attempt_1234567890123456",
+    slipPath: proofPath, size: raw.length, mime: "image/png",
+    invoiceSignature: "a".repeat(64), invoiceAmount: 500,
+    verification,
+    fingerprintIds: fingerprintClaims(raw, verification),
+    sharedClaimIds: claimIds({
+      sha256: createHash("sha256").update(raw).digest("hex"),
+      referenceId: verification.referenceId, transRef: verification.transRef,
+    }),
+  };
+  const staged = await stageHybridInvoiceProof({
+    db: adminDb, tenantRef, prepared, actorId: "test-owner",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  });
+  assert.equal(staged.status, "pending_review");
+  const invoiceRef = tenantRef.collection("hybridBillingInvoices").doc(invoiceId);
+  assert.equal((await invoiceRef.get()).data().status, "pending_review");
+  const attempts = tenantRef.collection("hybridBillingPaymentAttempts");
+  assert.equal((await attempts.doc(prepared.attemptId).get()).data().status, "pending_review");
+  await assert.rejects(stageHybridInvoiceProof({
+    db: adminDb, tenantRef, prepared, actorId: "test-owner",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  }), /HYBRID_PAYMENT_ALREADY_PENDING_OR_PAID|FINANCE_SLIP_ALREADY_CLAIMED/);
+  const approved = await reviewHybridInvoiceProof({
+    db: adminDb, tenantRef, invoiceId, attemptId: prepared.attemptId,
+    action: "approve", reviewerId: "test-super-admin", note: "Slip2Go bank confirmed",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  });
+  assert.equal(approved.status, "paid");
+  assert.equal((await invoiceRef.get()).data().status, "paid");
+  assert.equal((await invoiceRef.get()).data().amount, 500);
+  assert.equal((await tenantRef.get()).data().subscriptionStatus, "active",
+    "Payment processing never changes unrelated store access");
+  await assert.rejects(reviewHybridInvoiceProof({
+    db: adminDb, tenantRef, invoiceId, attemptId: prepared.attemptId,
+    action: "approve", reviewerId: "test-super-admin",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  }), /HYBRID_PAYMENT_ALREADY_REVIEWED/);
 });
