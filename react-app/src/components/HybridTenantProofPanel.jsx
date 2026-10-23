@@ -15,7 +15,7 @@ export function HybridTenantProofPanel({ tenantId, invoice, thai, money, onClose
   useEffect(() => {
     setFile(null);
     setLocalError("");
-  }, [tenantId, invoice?.id]);
+  }, [tenantId, invoice?.id, invoice?.status, invoice?.amount]);
 
   if (!isEligibleHybridInvoice(invoice)) return null;
 

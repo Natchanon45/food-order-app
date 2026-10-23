@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -12,6 +12,7 @@ import { getHybridBillingPreview } from "@/data/hybridBillingReport";
 import { listHybridInvoices } from "@/data/hybridInvoiceReviewData";
 import { HybridTenantProofPanel } from "@/components/HybridTenantProofPanel";
 import { isEligibleHybridInvoice } from "@/data/hybridTenantPaymentDraft";
+import { mergeHybridTenantInvoicePage } from "@/data/hybridTenantInvoicePaging";
 
 const BANGKOK = "Asia/Bangkok";
 function bangkokMonth(date = new Date()) {
@@ -44,56 +45,104 @@ export function HybridBillingReportPage() {
   const { t, intlLocale, formatNumber } = useI18n();
   const tenant = tenantState.tenant;
   const [month, setMonth] = useState(() => bangkokMonth());
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [issuedInvoices, setIssuedInvoices] = useState([]);
-  const [invoiceCursor, setInvoiceCursor] = useState(null);
-  const [moreInvoices, setMoreInvoices] = useState(false);
-  const [invoiceLoading, setInvoiceLoading] = useState(true);
-  const [invoiceError, setInvoiceError] = useState("");
+  const [previewData, setPreviewData] = useState(null);
+  const [previewDataScope, setPreviewDataScope] = useState("");
+  const [previewError, setPreviewError] = useState("");
+  const [previewLoading, setPreviewLoading] = useState(true);
+  const previewRequestRef = useRef(0);
+  const [invoicePage, setInvoicePage] = useState({
+    scope: "", items: [], cursor: null, hasMore: false,
+  });
+  const [invoiceRefreshKey, setInvoiceRefreshKey] = useState(0);
+  const [invoiceBusyScope, setInvoiceBusyScope] = useState("");
+  const [invoiceErrorState, setInvoiceErrorState] = useState({ scope: "", message: "" });
   const [proofInvoiceId, setProofInvoiceId] = useState("");
+  // Scope both asynchronous result sets to the currently selected tenant.
+  // A late response from the previous shop/month/page must never reappear.
+  const previewScope = tenant?.id ? `${tenant.id}:${month}` : "";
+  const data = previewDataScope === previewScope ? previewData : null;
+  const error = previewDataScope === previewScope ? previewError : "";
+  const loading = previewLoading || previewDataScope !== previewScope;
+  const invoiceScope = tenant?.id && ["owner", "admin"].includes(auth.profile?.role)
+    ? `${tenant.id}:${auth.profile.role}:${invoiceRefreshKey}` : "";
+  const visibleInvoicePage = invoicePage.scope === invoiceScope ? invoicePage : null;
+  const issuedInvoices = visibleInvoicePage?.items || [];
+  const invoiceCursor = visibleInvoicePage?.cursor || null;
+  const moreInvoices = visibleInvoicePage?.hasMore === true;
+  const invoiceError = invoiceErrorState.scope === invoiceScope ? invoiceErrorState.message : "";
+  const invoiceLoading = Boolean(invoiceScope)
+    && (invoiceBusyScope === invoiceScope || (!visibleInvoicePage && !invoiceError));
   const stylesReady = useParityPage({
     title: t("hybrid_report.title"),
     bodyClass: "revenue-share-report-page hybrid-report-page",
     styles: ["app.css", "icons.css", "revenue-share-report.css", "hybrid-billing-report.css", "hybrid-billing-review.css"],
   });
   const reload = () => {
-    setLoading(true);
-    setError("");
+    const token = ++previewRequestRef.current;
+    const requestScope = previewScope;
+    setPreviewLoading(true);
+    setPreviewError("");
+    setPreviewData(null);
     getHybridBillingPreview(month)
-      .then(setData)
-      .catch(err => {
-        console.error("HYBRID_BILLING_PREVIEW_FAILED", err);
-        setData(null);
-        setError(t("hybrid_report.error"));
+      .then(result => {
+        if (token !== previewRequestRef.current) return;
+        setPreviewData(result);
+        setPreviewDataScope(requestScope);
       })
-      .finally(() => setLoading(false));
+      .catch(err => {
+        if (token !== previewRequestRef.current) return;
+        console.error("HYBRID_BILLING_PREVIEW_FAILED", err);
+        setPreviewData(null);
+        setPreviewDataScope(requestScope);
+        setPreviewError(t("hybrid_report.error"));
+      })
+      .finally(() => {
+        if (token === previewRequestRef.current) setPreviewLoading(false);
+      });
   };
   useEffect(() => {
     if (tenant?.id
       && ["owner", "admin"].includes(auth.profile?.role)) reload();
+    return () => { previewRequestRef.current += 1; };
   }, [tenant?.id, auth.profile?.role, month]);
 
   useEffect(() => {
-    if (!tenant?.id || !["owner", "admin"].includes(auth.profile?.role)) return;
+    if (!invoiceScope) return;
     let cancelled = false;
     setProofInvoiceId("");
-    setInvoiceLoading(true);
-    setInvoiceError("");
-    setIssuedInvoices([]);
+    setInvoiceBusyScope(invoiceScope);
+    setInvoiceErrorState({ scope: invoiceScope, message: "" });
     listHybridInvoices(tenant.id).then(page => {
       if (cancelled) return;
-      setIssuedInvoices(page.items);
-      setInvoiceCursor(page.cursor);
-      setMoreInvoices(page.hasMore);
+      setInvoicePage({ scope: invoiceScope, ...page });
     }).catch(err => {
-      if (!cancelled) setInvoiceError(String(err.message || "INVOICE_LIST_FAILED"));
+      if (!cancelled) setInvoiceErrorState({
+        scope: invoiceScope, message: String(err.message || "INVOICE_LIST_FAILED"),
+      });
     }).finally(() => {
-      if (!cancelled) setInvoiceLoading(false);
+      if (!cancelled) setInvoiceBusyScope(current => current === invoiceScope ? "" : current);
     });
     return () => { cancelled = true; };
-  }, [tenant?.id, auth.profile?.role]);
+  }, [invoiceScope]);
+
+  const loadMoreIssuedInvoices = () => {
+    if (!invoiceScope || !moreInvoices || !invoiceCursor || invoiceLoading) return;
+    const requestScope = invoiceScope;
+    const requestCursor = invoiceCursor;
+    setInvoiceBusyScope(requestScope);
+    setInvoiceErrorState({ scope: requestScope, message: "" });
+    listHybridInvoices(tenant.id, { cursor: requestCursor }).then(page => {
+      setInvoicePage(current => mergeHybridTenantInvoicePage(
+        current, requestScope, requestCursor, page
+      ));
+    }).catch(err => {
+      setInvoiceErrorState({
+        scope: requestScope, message: String(err.message || "INVOICE_LIST_FAILED"),
+      });
+    }).finally(() => {
+      setInvoiceBusyScope(current => current === requestScope ? "" : current);
+    });
+  };
 
   const number = value => formatNumber(Number(value || 0), {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -205,7 +254,14 @@ export function HybridBillingReportPage() {
         ) : null}
         <section className="hybrid-review-inline" aria-label={intlLocale.startsWith("th") ? "บิลที่ออกจริง" : "Issued invoices"}>
           <div className="card hybrid-report-details">
-            <h2>{intlLocale.startsWith("th") ? "รายการบิลจริงของร้าน" : "Your issued invoices"}</h2>
+            <div className="hybrid-review-list-heading">
+              <h2>{intlLocale.startsWith("th") ? "รายการบิลจริงของร้าน" : "Your issued invoices"}</h2>
+              <button type="button" className="btn btn-sm" disabled={invoiceLoading}
+                onClick={() => setInvoiceRefreshKey(value => value + 1)}>
+                <i className="bi bi-arrow-clockwise app-icon" aria-hidden="true"></i>
+                <span>{intlLocale.startsWith("th") ? "รีเฟรชรายการบิล" : "Refresh invoices"}</span>
+              </button>
+            </div>
             <p className="hybrid-report-notice">
               {intlLocale.startsWith("th")
                 ? "แสดงเฉพาะรายการที่ออกบิลแล้ว ไม่ใช่ยอดคาดการณ์ด้านบน ระบบรับชำระ Hybrid ยังไม่เปิดใช้งาน"
@@ -248,21 +304,12 @@ export function HybridBillingReportPage() {
               </table>
             </div>
             {moreInvoices ? <button type="button" className="btn btn-sm" disabled={invoiceLoading}
-              onClick={() => {
-                setInvoiceLoading(true);
-                listHybridInvoices(tenant.id, { cursor: invoiceCursor })
-                  .then(page => {
-                    setIssuedInvoices(prev => [...prev, ...page.items]);
-                    setInvoiceCursor(page.cursor);
-                    setMoreInvoices(page.hasMore);
-                  }).catch(err => setInvoiceError(String(err.message || "INVOICE_LIST_FAILED")))
-                  .finally(() => setInvoiceLoading(false));
-              }}>
+              onClick={loadMoreIssuedInvoices}>
               {intlLocale.startsWith("th") ? "โหลดบิลเพิ่มเติม" : "Load more invoices"}
             </button> : null}
           </div>
           {chosenInvoice ? <HybridTenantProofPanel
-            key={tenant.id + ":" + chosenInvoice.id}
+            key={tenant.id + ":" + chosenInvoice.id + ":" + chosenInvoice.status + ":" + chosenInvoice.amount}
             tenantId={tenant.id} invoice={chosenInvoice}
             thai={intlLocale.startsWith("th")} money={currency}
             onClose={() => setProofInvoiceId("")} /> : null}

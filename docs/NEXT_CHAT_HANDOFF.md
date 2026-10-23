@@ -1,3 +1,12 @@
+## 2026-10-24 — Phase 9 invoice async isolation hardening (GitHub-only; native Mac re-run pending)
+
+- Owner-provided Mac command log at HEAD `123c207a`: `test:hybrid-tenant-proof` **6/6**, `test:hybrid-billing` **132/132**, full `test:react-parity` command proceeded into successful `build:react`; generated build contract PASS. These are results for **the preceding commit**, NOT post-change tests.
+- Root cause identified by code review: concurrent invoice pagination could append a stale previous-tenant or previous-refresh response; preview requests could overwrite newer month/store results; `doc.data().id` could override trusted document ID in list adapter.
+- Scoped issued invoice pages to tenant+role+refresh generation; stale page merges require original cursor and scope, duplicate invoice IDs are discarded. Scoped Preview to store+month with request-generation guard. Added a separate **Refresh invoices** button, which clears any selected local proof; the slip panel also resets if invoice status/amount changes.
+- Added `react-app/src/data/hybridTenantInvoicePaging.js`, strengthened `tests/react-parity/hybrid-tenant-proof-ui.spec.mjs` with stale-scope, stale-cursor, dedupe and UI wiring tests. Kept production payment release flags OFF, unchanged Firestore/Storage rules, no uploads, bank requests or financial writes.
+- Remote Desktop Commander reported Mac mini **offline**; therefore post-change native Node/Vite/Playwright/Emulator tests and actual Desktop/Mobile screenshot review are **not independently run**. The prior Mac log is not a substitute.
+- Next Mac run: pull `feature/react-firebase-port`, preserve existing dirty `public/**/index.html`, run `npm run test:hybrid-tenant-proof && npm run test:hybrid-billing && npm run test:react-parity && npm run build:react`. Visually test both breakpoints and changing shop/invoice/month while a list request is delayed. No deploy/merge.
+
 # Next Chat Handoff — React + Firebase Migration
 
 ## 2026-10-24 — Phase 9 closed tenant invoice evidence UX, UAT on Mac pending

@@ -11,7 +11,7 @@ function normalizeId(value) {
   return id;
 }
 const first = (docs, max) => ({
-  items: docs.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+  items: docs.docs.map(doc => ({ ...doc.data(), id: doc.id })),
   cursor: docs.docs.at(-1) || null,
   hasMore: docs.size === max,
 });

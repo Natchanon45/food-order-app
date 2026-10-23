@@ -60,3 +60,9 @@
 .hybrid-tenant-proof-actions .btn:disabled{opacity:.48;cursor:not-allowed}
 .hybrid-tenant-proof-private{color:#5b7366}
 @media(max-width:760px){.hybrid-tenant-proof{padding:14px}.hybrid-tenant-proof-actions .btn{width:100%}.hybrid-tenant-proof-amount strong{font-size:20px}.hybrid-tenant-proof-heading h3{font-size:16px}}
+
+/* Invoice ledger refresh controls remain accessible without crowding mobile. */
+.hybrid-review-list-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hybrid-review-list-heading h2{margin:0}
+.hybrid-review-list-heading .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px}
+@media(max-width:760px){.hybrid-review-list-heading{align-items:stretch;flex-direction:column}.hybrid-review-list-heading .btn{width:100%}}

@@ -64,3 +64,11 @@ Preserve existing locally modified generated `public/**/index.html`. Do not use 
 6. Obtain explicit approval to activate and deploy any new financial payment/issuance workflow.
 
 **No Production Firebase deployment, financial data mutation or bank account instruction was introduced.**
+
+## Phase 9 closeout hardening — 24 October 2026
+
+The asynchronous preview and invoice list were reviewed on the actual GitHub source. A late response from tenant A could previously append to tenant B's paginated list, and old month/tenant preview results could race with new data. These are UI-context isolation issues, not trusted server payment mutations. The updated page scopes invoice lists by tenant/role/refresh-generation and preview results by tenant/month with a monotonic request guard; the invoice list gains its own Refresh control. Pagination only merges for a matching scope and cursor, deduplicates by actual Firestore document ID, and switching invoice status or amount clears the file selection.
+
+**Checks required:** Run the enhanced `test:hybrid-tenant-proof`, `test:hybrid-billing`, `test:react-parity` and `build:react` natively on the Mac (offline at edit time). Inspect desktop/mobile width 320/375/768/desktop, keyboard access, slow request races, invoice selection and disabled submit; these were not rendered as screenshots during GitHub-only review. Previous owner-supplied Mac logs at `123c207a` confirmed 6/6 local-proof tests, 132/132 Hybrid tests and a passing React build **before this hardening**. No claim of rerun is made.
+
+Phase 10 preparation only: issue upload-attempt identity on a trusted authenticated server with App Check; authorize tenant owner/admin and immutable invoice-bound Storage paths; validate file signature/MIME/10 MiB, hash bytes server-side; write shared anti-reuse claims transactionally across Hybrid/Wallet/Revenue Share; reject double submission/changed invoice/tenant suspension; call private server verification and put evidence into `pending_review`, not `paid`; require audited Super Admin external confirmation to approve; test denial/idempotence/rejection/suspension cases against demo emulators before any explicit production release approval. Beneficiary bank-account verification, receipt/refund flows and real App Check UAT remain release blockers.

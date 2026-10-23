@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { mergeHybridTenantInvoicePage } from "../../react-app/src/data/hybridTenantInvoicePaging.js";
 import {
   HYBRID_TENANT_PROOF_SUBMISSION_READY,
   MAX_HYBRID_PROOF_BYTES,
@@ -17,6 +18,7 @@ const model = fs.readFileSync("react-app/src/data/hybridTenantPaymentDraft.js", 
 const css = fs.readFileSync("react-app/public/parity/css/hybrid-billing-review.css", "utf8");
 const callable = fs.readFileSync("functions/hybrid-billing-payment-callables.js", "utf8");
 const adapter = fs.readFileSync("react-app/src/data/hybridPaymentActions.js", "utf8");
+const invoiceAdapter = fs.readFileSync("react-app/src/data/hybridInvoiceReviewData.js", "utf8");
 const invoice = { id: "2026-10-22:delivery:trigger", amount: 590, status: "issued" };
 const file = (values = {}) => ({
   name: "transfer.png", type: "image/png", size: 412000, ...values,
@@ -95,7 +97,7 @@ test("tenant report keeps live invoice history separate from projections and fil
   assert.match(page, /const chosenInvoice = issuedInvoices\.find/);
   assert.match(page, /isEligibleHybridInvoice\(invoice\)/);
   assert.match(page, /<HybridTenantProofPanel/);
-  assert.match(page, /key=\{tenant\.id \+ ":" \+ chosenInvoice\.id\}/);
+  assert.match(page, /key=\{tenant\.id \+ ":" \+ chosenInvoice\.id \+ ":" \+ chosenInvoice\.status \+ ":" \+ chosenInvoice\.amount\}/);
   assert.match(page, /onClose=\{\(\) => setProofInvoiceId\(""\)\}/);
   assert.match(page, /setProofInvoiceId\(""\)/);
   assert.doesNotMatch(page, /submitHybridTenantProof|uploadBytes|confirmPayment|updateDoc\(/);
@@ -113,4 +115,40 @@ test("UI is multilingual, preview-only, responsive and never requests an unverif
   assert.match(css, /hybrid-tenant-proof/);
   assert.match(css, /@media\(max-width:760px\)/);
   assert.doesNotMatch(panel + model, /bankAccountNumber|promptPayNumber|bankRecipientId|setItem\(/);
+});
+
+// Paginated response reconciliation must preserve tenant isolation and immutability.
+test("late invoice pages cannot mix shops or refresh generations", () => {
+  const cursor = { snapshot: "page-one" };
+  const first = { scope: "shop-a:owner:0",
+    items: [{ id: "invoice-a" }], cursor, hasMore: true };
+  const next = { items: [{ id: "invoice-b" }], cursor: { snapshot: "page-two" }, hasMore: false };
+  assert.equal(mergeHybridTenantInvoicePage(first, "shop-b:owner:0", cursor, next), first);
+  assert.equal(mergeHybridTenantInvoicePage(first, "shop-a:owner:1", cursor, next), first);
+  assert.equal(mergeHybridTenantInvoicePage(first, first.scope, {}, next), first);
+  assert.deepEqual(first.items, [{ id: "invoice-a" }]);
+});
+
+test("invoice pagination appends unique ledger IDs only for the matching cursor", () => {
+  const cursor = { snapshot: "first" };
+  const first = { scope: "shop-a:admin:2", items: [{ id: "invoice-a" }], cursor, hasMore: true };
+  const incoming = { items: [
+    { id: "invoice-a", amount: 999999 }, { id: "invoice-b", amount: 30 },
+    { id: "invoice-b", amount: 40 },
+  ], cursor: { snapshot: "second" }, hasMore: false };
+  const result = mergeHybridTenantInvoicePage(first, first.scope, cursor, incoming);
+  assert.deepEqual(result.items, [{ id: "invoice-a" }, { id: "invoice-b", amount: 30 }]);
+  assert.equal(result.hasMore, false);
+  assert.equal(first.items.length, 1);
+});
+
+test("tenant UI scopes both asynchronous lists and refresh clears the slip selector", () => {
+  assert.match(page, /previewDataScope === previewScope/);
+  assert.match(page, /token !== previewRequestRef\.current/);
+  assert.match(page, /invoicePage\.scope === invoiceScope/);
+  assert.match(page, /mergeHybridTenantInvoicePage/);
+  assert.match(page, /setProofInvoiceId\("+"\)/);
+  assert.match(page, /setInvoiceRefreshKey\(value => value \+ 1\)/);
+  assert.match(panel, /invoice\?\.status, invoice\?\.amount/);
+  assert.match(invoiceAdapter, /\{ \.\.\.doc\.data\(\), id: doc\.id \}/);
 });
