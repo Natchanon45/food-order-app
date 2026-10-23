@@ -218,7 +218,11 @@ export function RevenueShareReportPage() {
     ? "daily" : (access?.billingCycle === "daily" ? "daily" : "monthly");
   const cycleLabel = t(`revenue_share_report.payment.cycles.${billingCycle}`);
   const cycleMatches = period === billingCycle;
-  const noAmountDue = !loading && Number(summary.platformAmountDue || 0) <= 0;
+  // Platform settlement covers earned revenue share only. A stale Cloud Function
+  // can still include an old Lalamove Wallet stamp gap in platformAmountDue;
+  // that diagnostic is never a bill, even before backend rollout completes.
+  const platformSharePayable = Math.round(Math.max(0, Number(summary.revenueShare || 0)) * 100) / 100;
+  const noAmountDue = !loading && platformSharePayable <= 0;
   const canSubmit = access?.enabled === true && !loading && !noAmountDue && cycleMatches && !uploading;
   const paymentUnavailableMessage = !cycleMatches
     ? t("revenue_share_report.payment.cycle_mismatch", { cycle: cycleLabel })
@@ -563,7 +567,7 @@ export function RevenueShareReportPage() {
           <div className="report-related-grid">
             <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("รวมจากออร์เดอร์ในช่วงรายงาน", "From selected period orders")}</small></div></article>
             <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-box-seam" aria-hidden="true"></i></span><div><span>{rc("ต้นทุน Lalamove", "Lalamove delivery cost")}</span><strong>{money(summary.lalamoveDeliveryCost)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("ไม่ใช่ฐานคิดส่วนแบ่ง", "Not part of revenue share")}</small></div></article>
-            <article className="report-related-tile report-related-platform"><span className="report-related-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ยอดที่ต้องโอนให้ Platform", "Platform amount due")}</span><strong id="platformAmountDue">{money(summary.platformAmountDue)} <small>{rc("บาท", "THB")}</small></strong><small>{Number(summary.platformAmountDue || 0) <= 0 ? rc("ไม่มีส่วนแบ่งค้างชำระ", "No share payable") : rc("เฉพาะส่วนแบ่งยอดขาย ไม่รวมค่าขนส่งที่ตัดเครดิตแล้ว", "Revenue share only; prepaid delivery is excluded")}</small></div></article>
+            <article className="report-related-tile report-related-platform"><span className="report-related-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ยอดที่ต้องโอนให้ Platform", "Platform amount due")}</span><strong id="platformAmountDue">{money(platformSharePayable)} <small>{rc("บาท", "THB")}</small></strong><small>{platformSharePayable <= 0 ? rc("ไม่มีส่วนแบ่งค้างชำระ", "No share payable") : rc("เฉพาะส่วนแบ่งยอดขาย ไม่รวมค่าขนส่งที่ตัดเครดิตแล้ว", "Revenue share only; prepaid delivery is excluded")}</small></div></article>
           </div>
           {Number(summary.legacyShareAmount || 0) > 0 ? <div className="report-legacy-share">{rc("ส่วนแบ่งรวม Delivery และสัญญาเดิม", "Total Delivery and legacy revenue share")}: <strong>{money(summary.revenueShare)} {rc("บาท", "THB")}</strong> · {rc("เฉพาะสัญญาเดิม", "Legacy portion")}: {money(summary.legacyShareAmount)} {rc("บาท", "THB")}</div> : null}
         <section className={"card report-payment-card" + (noAmountDue ? " report-payment-card-zero" : "")} aria-labelledby="reportPaymentTitle">
@@ -573,7 +577,7 @@ export function RevenueShareReportPage() {
           </div>
           <div className="report-payment-summary">
             <div><span>{t("revenue_share_report.payment.selected_period")}</span><strong id="paymentPeriodLabel">{periodLabel}</strong></div>
-            <div><span>{t("revenue_share_report.payment.amount_due")}</span><strong><span id="paymentAmountDue">{money(summary.platformAmountDue)}</span> {t("revenue_share_report.common.baht")}</strong></div>
+            <div><span>{t("revenue_share_report.payment.amount_due")}</span><strong><span id="paymentAmountDue">{money(platformSharePayable)}</span> {t("revenue_share_report.common.baht")}</strong></div>
           </div>
           {noAmountDue ? <div className="report-payment-zero"><i className="bi bi-check-circle" aria-hidden="true"></i><span>{rc("ยังไม่มียอดต้องชำระในช่วงนี้ จึงไม่ต้องแนบสลิป", "No amount due for this period; no payment slip is required.")}</span></div> : null}
           {!noAmountDue ? <>
@@ -678,6 +682,9 @@ export function RevenueShareReportPage() {
               : payments.length ? payments.map(item => {
                 const status = statusClass(String(item.status || "pending"));
                 const ocr = ocrMessage(item.ocr);
+                const historicalShare = Math.max(0, Number(item.revenueShareAmount || 0));
+                const historicalRecorded = Math.max(0, Number(item.platformAmountDue || 0));
+                const historicalPrepaidGap = historicalRecorded > historicalShare + 0.009;
                 return (
                   <article className="report-history-item" key={item.id}>
                     <div className="report-history-main">
@@ -686,11 +693,13 @@ export function RevenueShareReportPage() {
                     </div>
                     <div className="report-history-value">
                       <span>{t("revenue_share_report.payment.amount_due")}</span>
-                      <strong>{money(item.platformAmountDue)} {t("revenue_share_report.common.baht")}</strong>
-                      <small>{t("revenue_share_report.payment.amount_breakdown", {
-                        share: money(item.revenueShareAmount),
-                        delivery: money(item.lalamoveOutstandingCost),
-                      })}</small>
+                      <strong>{money(historicalShare)} {t("revenue_share_report.common.baht")}</strong>
+                      {historicalPrepaidGap
+                        ? <small>{rc(
+                          "ยอดบันทึกเดิม " + money(historicalRecorded) + " บาท รวมรายการขนส่ง ไม่ใช่ยอดส่วนแบ่งค้างชำระใหม่",
+                          "Historical recorded amount " + money(historicalRecorded) + " THB included delivery; it is not a new revenue-share debt",
+                        )}</small>
+                        : <small>{rc("บันทึกส่วนแบ่งยอดขาย", "Recorded revenue share")}</small>}
                     </div>
                     <div className="report-history-value">
                       <span>{t("revenue_share_report.payment.rate", { rate: money(item.revenueShareRate) })}</span>
