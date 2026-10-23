@@ -1,5 +1,16 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Phase 4 Hybrid Invoice Payment service (private, not deployed)
+
+- Added pure bank-slip payment policy (`functions/hybrid-billing-payment-policy.js`), transactional proof staging / manual review (`functions/hybrid-billing-payment.js`), authenticated tenant admin and Super Admin private service (`functions/hybrid-billing-payment-service.js`).
+- Owner/admin cannot set invoice total/paid status; server reads immutable invoice amount and Storage evidence; Slip2Go `200200` + amount match + bank reference only confirms bank evidence, and **still creates `pending_review`, NEVER auto paid**. OCR/Vision/fallback requires independently confirmed bank proof and substantive admin review note.
+- `hybridBillingSlipReferences` global Hybrid dedupe claims are hashed from actual slip SHA256 and bank reference/transRef. Before stage/approval service also rejects references previously used in legacy Revenue Share or Lalamove Wallet topups via read-only collection-group search. **A shared atomic claim across legacy and Hybrid is STILL REQUIRED before go-live.**
+- Super Admin manual approve/reject writes event and attempt/invoice status together in Firestore transaction; amount/signature unchanged; rejection remains possible even if legacy duplicate discovered; never auto-unlocks a tenant.
+- Rules restrict Firestore hybrid invoices/attempts/events to tenant admin or superadmin read only; deny browser writes. Storage supports immutable invoice-scoped uploads for tenant owner/admin only. **NO Rules deployed**, emulator checks pending.
+- Private payment modules absent from `functions/bootstrap.js`, issuance remains hard off. 11/11 and 9/9 test cases passed in isolated V8 mocks; native Mac npm and Rules Emulator pending.
+- New specs `tests/react-parity/hybrid-invoice-payment.spec.mjs` and `hybrid-invoice-payment-service.spec.mjs`, script `npm run test:hybrid-invoice-payment` wired into `test:hybrid-billing` and overall parity suite.
+- Full notes `docs/HYBRID_PAYMENT_PHASE4_20261023.md`. Next implement shared cross-product atomic reference registry, authenticated Cloud callable and Super Admin payment-review UX; then refund/credits and recovery, emulator UAT. Do not bulk delete Firestore master.
+
 ## 2026-10-23 — Phase 3 Hybrid invoice ledger implementation candidate (NOT DEPLOYED)
 
 - Current GitHub branch: `feature/react-firebase-port`. Owner explicitly chose new activation-anniversary billing for ALL shops before real users; master tenant/menu/product data preserved. No manual cutover approvals or legacy-mode exemptions.
