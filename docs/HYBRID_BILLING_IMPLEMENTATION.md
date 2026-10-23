@@ -10,7 +10,7 @@ Status: **NOT PRODUCTION-READY, DO NOT DEPLOY**. This repository contains the is
 - Unpaid daily invoice on day D suspends account starting day D+1. Settled invoices require trusted server confirmation, not a slip upload alone. Unpaid balance survives anniversary reset.
 - Before threshold: `monthlySlipQuota` per tenant anniversary cycle; at threshold: unlimited product entitlement, subject to provider technical limits.
 - `monthlyFee`, `deliveryThreshold`, `deliveryShareRate`, `monthlySlipQuota` are controlled by Super Admin, never customer supplied. Currency THB; billing day and month Asia/Bangkok.
-- Old Subscription and Revenue Share tenants are NOT migrated silently.
+- Every store now uses the activation-anniversary calendar and may open the **read-only Hybrid preview**, regardless of old billingMode. Existing operational invoices and access statuses are not changed automatically; the new Hybrid payment engine is not launched.
 
 ## Implemented candidate (phase 1 only)
 
