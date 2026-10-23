@@ -8,6 +8,7 @@ const src = fs.readFileSync("tests/firebase-emulator/hybrid-finance-security.spe
 const boot = fs.readFileSync("functions/bootstrap.js", "utf8");
 const privateIssuer = fs.readFileSync("functions/hybrid-billing-reconciler.js", "utf8");
 const registry = fs.readFileSync("functions/finance-slip-claims.js", "utf8");
+const storageRules = fs.readFileSync("storage.rules", "utf8");
 
 test("emulator script always targets an explicitly named demo project and not production", () => {
   const script = pkg.scripts["test:firebase-hybrid-emulator"];
@@ -52,6 +53,10 @@ test("emulator integration checks permission barriers and real Admin claim/invoi
   assert.match(src, /Real Admin transaction stages slip as pending/);
   assert.match(src, /Actual Admin Firestore invoice writer is idempotent/);
   assert.match(src, /FieldValue\.serverTimestamp\(\)/);
+  assert.match(storageRules, /function hybridInvoiceAcceptsEvidence\(tenantId, invoiceId\)/);
+  assert.match(storageRules, /firestore\.exists\(invoicePath\)/);
+  assert.match(storageRules, /\['issued', 'rejected'\]/);
+  assert.match(storageRules, /&& hybridInvoiceAcceptsEvidence\(tenantId, invoiceId\)/);
 });
 
 test("production automatic issuer and privileged public endpoints remain disabled", () => {
