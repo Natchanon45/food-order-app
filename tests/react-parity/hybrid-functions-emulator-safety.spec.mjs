@@ -48,7 +48,7 @@ test("All four emulators bind loopback, Functions on port 5001", () => {
 });
 
 test("demo loader rejects any real project, nonlocal service or missing explicit test flag", () => {
-  assert.match(entrypoint, /project !== "demo-penguin-hybrid"/);
+  assert.match(entrypoint, /demoProject: project === "demo-penguin-hybrid"/);
   assert.match(entrypoint, /HYBRID_DEMO_FUNCTIONS_ONLY/);
   for (const key of ["FIRESTORE_EMULATOR_HOST",
     "FIREBASE_AUTH_EMULATOR_HOST", "FIREBASE_STORAGE_EMULATOR_HOST",
@@ -56,6 +56,9 @@ test("demo loader rejects any real project, nonlocal service or missing explicit
     assert.ok(entrypoint.includes('localHost("' + key + '")'));
   }
   assert.match(entrypoint, /HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS/);
+  assert.match(entrypoint, /unsafe\.join\(", "\)/);
+  assert.match(entrypoint, /Object\.entries\(demoConditions\)/);
+  assert.doesNotMatch(entrypoint, /console\.log\(process\.env|console\.error\(process\.env/);
   assert.match(entrypoint, /knownProjects.some\(value => value !== "demo-penguin-hybrid"\)/);
   const initAt = entrypoint.indexOf("initializeApp({");
   const guardAt = entrypoint.indexOf("throw new Error(");
@@ -158,4 +161,29 @@ test("explicit local demo CLI environment passes guard and reaches ONLY the firs
     exports: {},
   }), /TEST_STOP_BEFORE_LOADING_ANY_DEPENDENCY/);
   assert.deepEqual(imported, ["node:crypto"]);
+});
+
+
+test("unsafe demo discovery errors identify failed checks but never reveal values or tokens", () => {
+  const baseline = {
+    GCLOUD_PROJECT: "demo-penguin-hybrid",
+    GCP_PROJECT: "demo-penguin-hybrid",
+    HYBRID_DEMO_FUNCTIONS_ONLY: "1",
+    FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+    FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
+    FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
+    FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
+  };
+  let error;
+  try {
+    runInNewContext(entrypoint, {
+      process: { env: { ...baseline,
+        FIREBASE_FUNCTIONS_EMULATOR_HOST: "remote-secret.invalid:443" } },
+      require: () => { throw Error("must not reach dependency loading"); },
+      exports: {},
+    });
+  } catch (e) { error = e; }
+  assert.ok(error);
+  assert.match(error.message, /localFunctions/);
+  assert.doesNotMatch(error.message, /remote-secret|\\.invalid|443|chat-45754|ADC|token/);
 });
