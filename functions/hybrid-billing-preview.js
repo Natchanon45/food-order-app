@@ -83,11 +83,12 @@ async function previewHybridMonth(tenantRef, tenant, month, db) {
   const periodSnap = await tenantRef.collection("hybridBillingPeriods").doc(month).get();
   const locked = periodSnap.exists && periodSnap.data()?.configSnapshot;
   // Snapshot is immutable after first billing issuance. Without it, show a prospective estimate only.
+  // Universal policy: immutable already-issued period pricing wins, or
+  // current centrally managed settings for a preview. Do not fall back to
+  // stale tenant Hybrid trial settings left by prelaunch test registrations.
   const config = normalizeSettings(locked
     ? periodSnap.data().configSnapshot
-    : month === tenant.hybridTrialMonth && tenant.hybridBillingSnapshot
-      ? tenant.hybridBillingSnapshot
-      : await loadHybridBillingSettings(db));
+    : await loadHybridBillingSettings(db));
   const orders = await paidOrdersInWindow(tenantRef, start, end);
   const daySales = paidDeliveryByDay(orders, { startDate, endExclusiveDate });
   const result = calculateCycle({
