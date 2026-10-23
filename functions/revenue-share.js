@@ -710,6 +710,11 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
   const size = Number(metadata.size || 0), mime = String(metadata.contentType || "").toLowerCase();
   if (size <= 0 || size > MAX_SLIP_SIZE || !ALLOWED_MIME.has(mime)) throw new HttpsError("invalid-argument", "Slip file is invalid");
   const summary = await summaryForTenant(tenant.id, period, setting);
+  // A prepaid Lalamove debit gap is never an invoice. Reject outdated clients
+  // attempting to upload a payment slip when no actual revenue share is due.
+  if (!(summary.platformAmountDue > 0)) {
+    throw new HttpsError("failed-precondition", "REVENUE_SHARE_NO_AMOUNT_DUE");
+  }
   const ref = tenantRef.collection("revenueSharePayments").doc(id);
   if ((await ref.get()).exists) throw new HttpsError("already-exists", "Payment ID already exists");
   const verification = await inspectRevenueShareSlip(file, mime, summary.platformAmountDue);
