@@ -157,7 +157,7 @@ async function summaryForTenant(tenantId, period, setting) {
     db.collection("tenants").doc(tenantId).collection("sales").get()
   ]);
   let orderSales = 0, orderCount = 0, posSales = 0, posCount = 0;
-  let shareOrderSales = 0, shareDeliverySales = 0;
+  let shareOrderSales = 0, sharePosSales = 0, shareDeliverySales = 0;
   let customerDeliveryFees = 0, lalamoveDeliveryCost = 0, lalamoveWalletCoveredCost = 0, deliverySubsidy = 0;
 
   // Evaluate a whole Bangkok calendar month even for a daily report. Otherwise
@@ -212,15 +212,13 @@ async function summaryForTenant(tenantId, period, setting) {
       ? Math.min(lalamoveCost, Math.max(0, Number(row.lalamoveWalletDebitedAmount)))
       : 0;
 
-    const shareEligibleOrder = !setting.enabled
-      || (setting.channels.includeRestaurant && restaurantOrderEligible(orderType, setting.channels.restaurantScope));
-    if (shareEligibleOrder) {
-      orderSales += foodSales;
-      orderCount += 1;
-      if (!isDelivery && setting.legacyEnabled) {
-        // Preserve historical non-Delivery charges for legacy contracts.
-        shareOrderSales += foodSales;
-      }
+    // Report every paid restaurant sale, even when it is not subject to platform share.
+    orderSales += foodSales;
+    orderCount += 1;
+    if (!isDelivery && setting.legacyEnabled && setting.channels.includeRestaurant
+      && restaurantOrderEligible(orderType, setting.channels.restaurantScope)) {
+      // Preserve the existing non-Delivery legacy charging rules only.
+      shareOrderSales += foodSales;
     }
     if (isDelivery && setting.centralDeliveryShare
       && String(row.paymentStatus || "").toLowerCase() === "paid"
@@ -241,11 +239,13 @@ async function summaryForTenant(tenantId, period, setting) {
     const row = snapshot.data();
     const date = saleDate(row);
     if (!date || date < period.start || date >= period.end || !validSale(row)) return;
-    if (setting.enabled && !setting.channels.includeRetail) return;
     const gross = Number(row.totalAmount ?? row.total ?? 0) || 0;
     const refund = Number(row.refundTotal || 0) || 0;
-    posSales += Math.max(0, gross - refund);
+    const net = Math.max(0, gross - refund);
+    // Retail POS is shown in reporting even when excluded from the share base.
+    posSales += net;
     posCount += 1;
+    if (setting.legacyEnabled && setting.channels.includeRetail) sharePosSales += net;
   });
 
   const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
@@ -256,7 +256,7 @@ async function summaryForTenant(tenantId, period, setting) {
   lalamoveWalletCoveredCost = roundMoney(lalamoveWalletCoveredCost);
   deliverySubsidy = roundMoney(deliverySubsidy);
   const combinedSales = roundMoney(orderSales + posSales);
-  const legacyShareBase = setting.legacyEnabled ? roundMoney(shareOrderSales + posSales) : 0;
+  const legacyShareBase = setting.legacyEnabled ? roundMoney(shareOrderSales + sharePosSales) : 0;
   const deliveryShareBase = roundMoney(shareDeliverySales);
   const deliveryShareAmount = setting.centralDeliveryShare
     ? roundMoney(deliveryShareBase * setting.deliveryShareRate / 100) : 0;
