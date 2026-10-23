@@ -83,7 +83,8 @@ function revenueShareChannels(tenant = {}) {
 }
 
 // Only paid Delivery goods count toward the monthly threshold.
-// A threshold-crossing day and later days qualify, but previous days are never charged.
+// The day the monthly threshold is reached (100%) and later days qualify;
+// previous days are never charged.
 function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000) {
   const money = Number(threshold);
   if (!Number.isFinite(money) || money < 0 || money > 1000000000
@@ -106,7 +107,7 @@ function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000) {
     const month = date.slice(0, 7);
     const total = (monthlyTotals.get(month) || 0) + cents;
     monthlyTotals.set(month, total);
-    if (cents > 0 && total > thresholdCents) days.add(date);
+    if (cents > 0 && total >= thresholdCents) days.add(date);
   }
   return days;
 }
