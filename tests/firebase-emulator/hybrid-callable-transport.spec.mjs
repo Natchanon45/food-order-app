@@ -20,7 +20,7 @@ const { initializeApp: adminInitialize, deleteApp: adminDelete } =
 const { getFirestore: getAdminDb } = requireFunctions("firebase-admin/firestore");
 
 const apps = [], clients = new Map();
-let adminApp, db;
+let adminApp, db, ownerPaidProof, adminRejectedProof;
 
 function guardEnvironment() {
   if (process.env.HYBRID_DEMO_FUNCTIONS_ONLY !== "1") {
@@ -101,12 +101,20 @@ function fails(code) {
     return true;
   };
 }
-async function upload(name, store, suffix, attemptId, text) {
-  const target = storageRef(clients.get(name).storage,
-    evidencePath(store, suffix, attemptId));
+// Browser uses a server-generated, invoice-scoped grant: no self-chosen IDs.
+async function reserveAndUpload(name, store, suffix, text) {
   const bytes = new TextEncoder().encode("demo-penguin-bank-slip:" + text);
-  await uploadBytes(target, bytes, { contentType: "image/png" });
-  return bytes;
+  const grant = (await prepareUpload(name, {
+    tenantId: store, invoiceId: invoiceId(suffix),
+    contentType: "image/png", fileSize: bytes.byteLength,
+  })).data;
+  const payload = {
+    tenantId: store, invoiceId: invoiceId(suffix),
+    attemptId: grant.attemptId, slipPath: grant.slipPath,
+  };
+  await uploadBytes(storageRef(clients.get(name).storage, grant.slipPath),
+    bytes, { contentType: "image/png" });
+  return { payload, bytes };
 }
 async function seed(store, suffix, amount = 500) {
   await invoiceDoc(store, suffix).set({
@@ -198,27 +206,28 @@ test("actual Callable rejects forged client amount/paid status and malformed pro
 });
 
 test("owner uploads once, submits via authenticated Callable and only creates pending_review", async () => {
-  const attemptId = "attempt_owner_123456789";
-  await upload("owner-a", "demo-shop-a", "trigger", attemptId, "unique-transfer-1");
-  const out = await submit("owner-a", requestData("demo-shop-a", "trigger", attemptId));
+  const { payload } = await reserveAndUpload(
+    "owner-a", "demo-shop-a", "trigger", "unique-transfer-1");
+  ownerPaidProof = payload;
+  const out = await submit("owner-a", payload);
   assert.equal(out.data.status, "pending_review");
   assert.equal(out.data.bankVerified, true); // synthetic demo verifier ONLY
   const document = (await invoiceDoc("demo-shop-a", "trigger").get()).data();
   assert.equal(document.status, "pending_review");
   assert.equal(document.amount, 500);
   const saved = (await db.doc("tenants/demo-shop-a/hybridBillingPaymentAttempts/" +
-    attemptId).get()).data();
+    payload.attemptId).get()).data();
   assert.equal(saved.submittedBy, clients.get("owner-a").uid);
   assert.equal(saved.status, "pending_review");
-  assert.equal(saved.verification.provider, "slip2go"); // synthetic result
-  await assert.rejects(submit("owner-a",
-    requestData("demo-shop-a", "trigger", attemptId)), fails("already-exists"));
+  assert.equal(saved.verification.provider, "slip2go");
+  const grant = (await db.doc("tenants/demo-shop-a/hybridBillingUploadGrants/" +
+    payload.attemptId).get()).data();
+  assert.equal(grant.status, "consumed");
+  await assert.rejects(submit("owner-a", payload), fails("failed-precondition"));
 });
 
 test("real Auth token prevents owner/admin approval; only Super Admin can settle once", async () => {
-  const payload = reviewData(
-    requestData("demo-shop-a", "trigger", "attempt_owner_123456789"),
-    "approve", "Emulator proof confirmed");
+  const payload = reviewData(ownerPaidProof, "approve", "Emulator proof confirmed");
   await assert.rejects(review("owner-a", payload), fails("permission-denied"));
   await assert.rejects(review("admin-a", payload), fails("permission-denied"));
   await assert.rejects(review("anonymous", payload), fails("unauthenticated"));
@@ -232,19 +241,18 @@ test("real Auth token prevents owner/admin approval; only Super Admin can settle
   assert.equal(tenant.subscriptionStatus, "suspended");
   assert.equal(tenant.suspensionReason, "manual_review");
   const event = await db.doc("tenants/demo-shop-a/hybridBillingPaymentEvents/" +
-    "attempt_owner_123456789-review").get();
+    ownerPaidProof.attemptId + "-review").get();
   assert.equal(event.exists, true);
   await assert.rejects(review("super-admin", payload), fails("already-exists"));
 });
 
 test("admin may submit but cannot approve; Super Admin rejection is final for one attempt", async () => {
-  const attemptId = "attempt_admin_123456789";
-  await upload("admin-a", "demo-shop-a", "2026-10-25", attemptId, "unique-transfer-2");
-  const payload = requestData("demo-shop-a", "2026-10-25", attemptId);
+  const { payload } = await reserveAndUpload(
+    "admin-a", "demo-shop-a", "2026-10-25", "unique-transfer-2");
+  adminRejectedProof = payload;
   assert.equal((await submit("admin-a", payload)).data.status, "pending_review");
   await assert.rejects(review("admin-a",
-    reviewData(payload, "reject", "Bank reference invalid")),
-  fails("permission-denied"));
+    reviewData(payload, "reject", "Bank reference invalid")), fails("permission-denied"));
   const outcome = await review("super-admin",
     reviewData(payload, "reject", "Bank reference invalid"));
   assert.equal(outcome.data.status, "rejected");
@@ -253,39 +261,59 @@ test("admin may submit but cannot approve; Super Admin rejection is final for on
 
 test("global SHA-256 claim prevents reuse of exact synthetic slip across stores", async () => {
   const proof = "same-transfer-spent-twice";
-  const a = "attempt_dedupe_a_123456789";
-  const b = "attempt_dedupe_b_123456789";
-  const bytes = await upload("owner-a", "demo-shop-a", "2026-10-26", a, proof);
-  const reused = await upload("owner-b", "demo-shop-b", "trigger", b, proof);
-  assert.equal(createHash("sha256").update(bytes).digest("hex"),
-    createHash("sha256").update(reused).digest("hex"));
-  assert.equal((await submit("owner-a",
-    requestData("demo-shop-a", "2026-10-26", a))).data.status, "pending_review");
-  await assert.rejects(submit("owner-b",
-    requestData("demo-shop-b", "trigger", b)), fails("already-exists"));
+  const first = await reserveAndUpload("owner-a", "demo-shop-a", "2026-10-26", proof);
+  const second = await reserveAndUpload("owner-b", "demo-shop-b", "trigger", proof);
+  assert.equal(createHash("sha256").update(first.bytes).digest("hex"),
+    createHash("sha256").update(second.bytes).digest("hex"));
+  assert.equal((await submit("owner-a", first.payload)).data.status, "pending_review");
+  await assert.rejects(submit("owner-b", second.payload), fails("already-exists"));
   assert.equal((await invoiceDoc("demo-shop-b", "trigger").get()).data().status, "issued");
 });
 
 test("invoice cannot be paid via forged review body, and a rejected invoice accepts new proof", async () => {
-  const old = requestData("demo-shop-a", "2026-10-25", "attempt_admin_123456789");
   await assert.rejects(review("super-admin", {
-    ...reviewData(old, "approve", "Emulator fake bank verification"),
+    ...reviewData(adminRejectedProof, "approve", "Emulator fake bank verification"),
     amount: 0, status: "paid",
   }), fails("invalid-argument"));
-
-  const freshAttempt = "attempt_newproof_123456789";
-  await upload("owner-a", "demo-shop-a", "2026-10-25", freshAttempt, "unique-transfer-3");
-  const newer = requestData("demo-shop-a", "2026-10-25", freshAttempt);
-  assert.equal((await submit("owner-a", newer)).data.status, "pending_review");
+  const { payload } = await reserveAndUpload(
+    "owner-a", "demo-shop-a", "2026-10-25", "unique-transfer-3");
+  assert.equal((await submit("owner-a", payload)).data.status, "pending_review");
   assert.equal((await invoiceDoc("demo-shop-a", "2026-10-25").get()).data().status,
     "pending_review");
-  await assert.rejects(submit("owner-a", newer), fails("already-exists"));
+  await assert.rejects(submit("owner-a", payload), fails("failed-precondition"));
 });
 
-test("real authenticated callable refuses to submit a second payment to an already paid invoice", async () => {
-  const attemptId = "attempt_afterpaid_123456789";
-  const payload = requestData("demo-shop-a", "trigger", attemptId);
-  // The Storage Rules reject a NEW proof against a PAID invoice. The
-  // server's financial check independently rejects even without storage.
-  await assert.rejects(submit("owner-a", payload), fails("already-exists"));
+test("paid invoice cannot issue a new grant and unauthorised proof path cannot submit", async () => {
+  await assert.rejects(prepareUpload("owner-a", {
+    tenantId: "demo-shop-a", invoiceId: invoiceId("trigger"),
+    contentType: "image/png", fileSize: 100,
+  }), fails("failed-precondition"));
+  await assert.rejects(submit("owner-a",
+    requestData("demo-shop-a", "trigger", "attempt_afterpaid_123456789")),
+  fails("failed-precondition"));
+});
+
+test("demo transport denies unreserved upload, grant theft, expired grant and forged size", async () => {
+  const owner = clients.get("owner-a"), admin = clients.get("admin-a");
+  const raw = new TextEncoder().encode("demo-no-bank-payout");
+  const noGrant = evidencePath("demo-shop-a", "2026-10-27", "unreserved_1234567890123");
+  await assert.rejects(uploadBytes(storageRef(owner.storage, noGrant),
+    raw, { contentType: "image/png" }));
+  const grant = (await prepareUpload("owner-a", {
+    tenantId: "demo-shop-a", invoiceId: invoiceId("2026-10-27"),
+    contentType: "image/png", fileSize: raw.byteLength,
+  })).data;
+  await assert.rejects(uploadBytes(storageRef(admin.storage, grant.slipPath),
+    raw, { contentType: "image/png" }));
+  await assert.rejects(uploadBytes(storageRef(owner.storage, grant.slipPath),
+    new Uint8Array(raw.byteLength + 1), { contentType: "image/png" }));
+  await db.doc("tenants/demo-shop-a/hybridBillingUploadGrants/" + grant.attemptId)
+    .update({ expiresAt: new Date(Date.now() - 1000) });
+  await assert.rejects(uploadBytes(storageRef(owner.storage, grant.slipPath),
+    raw, { contentType: "image/png" }));
+  await assert.rejects(submit("owner-a", {
+    tenantId: "demo-shop-a", invoiceId: invoiceId("2026-10-27"),
+    attemptId: grant.attemptId, slipPath: grant.slipPath,
+  }), fails("failed-precondition"));
+  assert.equal((await invoiceDoc("demo-shop-a", "2026-10-27").get()).data().status, "issued");
 });
