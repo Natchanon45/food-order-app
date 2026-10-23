@@ -52,10 +52,15 @@ service firebase.storage {
     }
 
     function tenantOwner(tenantId) {
+      let tenantPath = /databases/(default)/documents/tenants/$(tenantId);
+      // ownerEmail is optional in modern tenant documents. Missing optional
+      // fields must not trigger a Storage Rules evaluation exception.
       return signedIn()
+        && firestore.exists(tenantPath)
         && (
-          firestore.get(/databases/(default)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid
-          || firestore.get(/databases/(default)/documents/tenants/$(tenantId)).data.ownerEmail == request.auth.token.email
+          firestore.get(tenantPath).data.get('ownerUid', '') == request.auth.uid
+          || (request.auth.token.get('email', '') != ''
+            && firestore.get(tenantPath).data.get('ownerEmail', '') == request.auth.token.get('email', ''))
         );
     }
 
