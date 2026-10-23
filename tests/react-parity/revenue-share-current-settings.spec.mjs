@@ -27,6 +27,15 @@ test("Share calculation displays actual server figures, not hypothetical arithme
   assert.match(report, /ไม่ย้อนหลังวันก่อนหน้า/);
   assert.doesNotMatch(report, /925\.00|1,635\.00|28,500\.00/);
 });
+test("Report shows POS and food sales independently from chargeable share, without expanding charges", () => {
+  assert.match(server, /sharePosSales/);
+  assert.match(server, /posSales \+= net/);
+  assert.match(server, /if \(setting\.legacyEnabled && setting\.channels\.includeRetail\) sharePosSales \+= net/);
+  assert.match(server, /shareOrderSales \+ sharePosSales/);
+  assert.doesNotMatch(server, /setting\.enabled && !setting\.channels\.includeRetail\) return/);
+  assert.match(server, /orderSales \+= foodSales/);
+});
+
 test("Report keeps the period picker, payment review/history, and keeps Wallet/Lalamove optional", () => {
   assert.match(report, /data-report-period=\{value\}/);
   assert.match(report, /<details className="report-extra">/);
