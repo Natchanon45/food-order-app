@@ -102,6 +102,12 @@ export function HybridBillingReportPage() {
         {data && !loading ? (
           <>
             <p className="hybrid-report-notice" role="status">{t("hybrid_report.preview_only")}</p>
+            {data.cycleStartDate && data.cycleEndDate ? (
+              <p className="hybrid-report-notice" id="hybridBillingAnniversaryRange">
+                {intlLocale.startsWith("th") ? "รอบบิลวันครบรอบร้าน: " : "Store anniversary billing cycle: "}
+                {date(data.cycleStartDate)} – {date(data.cycleEndDate)}
+              </p>
+            ) : null}
             <section className="hybrid-report-metrics" aria-label={t("hybrid_report.title")}>
               {[
                 ["sales", currency(data.totalDeliverySales)],
