@@ -4,8 +4,12 @@ const { tenantAnchorDate, cycleForDate, previousCompletedCycle } =
   require("../functions/billing-anniversary.js");
 
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
-const isDay = value => typeof value === "string" && DAY_KEY.test(value) &&
-  new Date(value + "T00:00:00Z").toISOString().slice(0, 10) === value;
+const isDay = value => {
+  if (typeof value !== "string" || !DAY_KEY.test(value)) return false;
+  const timestamp = new Date(value + "T00:00:00Z");
+  return Number.isFinite(timestamp.getTime())
+    && timestamp.toISOString().slice(0, 10) === value;
+};
 
 function anchorSource(tenant = {}) {
   for (const key of [
