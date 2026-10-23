@@ -274,7 +274,8 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
       return dependencies[key];
     }
   );
-  const tenant = { billingMode: "subscription", businessType: "both", revenueShareRate: 0 };
+  const tenant = { billingMode: "subscription", businessType: "both", revenueShareRate: 0,
+    createdAt: "2026-10-01T00:00:00+07:00" };
   const setting = loaded.exports.__setting(tenant, pricing);
   assert.equal(setting.premiumDeliveryShare, true);
   assert.equal(setting.legacyEnabled, false);
@@ -301,6 +302,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   const legacy = loaded.exports.__setting({
     billingMode: "revenue_share", businessType: "both",
     revenueShareRestaurantScope: "all", revenueShareRate: 10, revenueShareDeliveryThreshold: 20000,
+    createdAt: "2026-10-01T00:00:00+07:00",
   }, pricing);
   assert.equal(legacy.premiumDeliveryShare, false);
   assert.equal(legacy.rate, 10);
@@ -318,6 +320,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   const legacyDeliveryOnly = loaded.exports.__setting({
     billingMode: "revenue_share", businessType: "restaurant_cafe",
     revenueShareRestaurantScope: "delivery_only", revenueShareRate: 0,
+    createdAt: "2026-10-01T00:00:00+07:00",
   }, { ...pricing, deliveryThreshold: 50000 });
   const beforeThreshold = await loaded.exports.__summary(
     "legacy", span("2026-10-01", "2026-11-01"), legacyDeliveryOnly,
@@ -337,6 +340,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   const revised = loaded.exports.__setting(legacy ? {
     billingMode: "revenue_share", businessType: "both", revenueShareRate: 60,
     revenueShareDeliveryThreshold: 999999,
+    createdAt: "2026-10-01T00:00:00+07:00",
   } : {}, { ...pricing, deliveryThreshold: 12000, deliveryShareRate: 3 });
   assert.equal(revised.deliveryThreshold, 12000);
   assert.equal(revised.deliveryShareRate, 3);
