@@ -32,6 +32,17 @@ const invoiceId = "2026-10-22:delivery:trigger";
 const invoicePath = "tenants/store-a/hybridBillingInvoices/" + invoiceId;
 const proofPath = "tenants/store-a/hybrid-billing-slips/" + invoiceId +
   "/attempt_1234567890123456/proof.png";
+const adminProofPath = "tenants/store-a/hybrid-billing-slips/" + invoiceId +
+  "/admin_attempt_123456789/admin.png";
+async function seedDemoUploadGrant(path, actorUid, size = 8) {
+  const attemptId = path.split("/").at(-2);
+  await adminDb.doc("tenants/store-a/hybridBillingUploadGrants/" + attemptId).set({
+    id: attemptId, tenantId: "store-a", invoiceId, actorUid,
+    slipPath: path, contentType: "image/png", maxSize: size,
+    status: "reserved", invoiceSignature: "a".repeat(64),
+    expiresAt: new Date(Date.now() + 3600000),
+  });
+}
 
 function requireEmulators() {
   for (const key of ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST",
@@ -188,8 +199,10 @@ test("Global bank/slip claims cannot be read or forged by any Browser role", asy
 
 test("Storage permits own owner/admin write-once slip, rejects replacement and deletion", async () => {
   const image = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  await seedDemoUploadGrant(proofPath, identities.get("owner-a").uid);
+  await seedDemoUploadGrant(adminProofPath, identities.get("admin-a").uid);
   for (const name of ["owner-a", "admin-a"]) {
-    const path = name === "owner-a" ? proofPath : proofPath.replace("proof.png", "admin.png");
+    const path = name === "owner-a" ? proofPath : adminProofPath;
     const target = storageRef(identities.get(name).storage, path);
     await uploadBytes(target, image, { contentType: "image/png" });
     assert.equal((await getBytes(target)).byteLength, image.byteLength);
@@ -218,6 +231,34 @@ test("Storage permits own owner/admin write-once slip, rejects replacement and d
       proofPath.replace("proof.png", name + ".png")), image,
     { contentType: "image/png" }));
   }
+});
+
+test("Storage refuses unreserved paths, other owner reuse, expired and revoked upload grants", async () => {
+  const owner = identities.get("owner-a");
+  const admin = identities.get("admin-a");
+  const image = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  const randomPath = proofPath.replace("attempt_1234567890123456", "unreserved_attempt_12345678");
+  await denied(uploadBytes(storageRef(owner.storage, randomPath),
+    image, { contentType: "image/png" }), "No self-chosen paths");
+  await denied(uploadBytes(storageRef(admin.storage,
+    proofPath.replace("proof.png", "other.png")),
+    image, { contentType: "image/png" }), "Grant must match exact filename");
+  const expiredPath = proofPath.replace("attempt_1234567890123456", "expired_attempt_12345678");
+  await seedDemoUploadGrant(expiredPath, owner.uid);
+  await adminDb.doc("tenants/store-a/hybridBillingUploadGrants/expired_attempt_12345678")
+    .update({ expiresAt: new Date(Date.now() - 1000) });
+  await denied(uploadBytes(storageRef(owner.storage, expiredPath),
+    image, { contentType: "image/png" }), "Grant expiry is enforced");
+  const stolenPath = proofPath.replace("attempt_1234567890123456", "stolen_attempt_123456789");
+  await seedDemoUploadGrant(stolenPath, owner.uid);
+  await denied(uploadBytes(storageRef(admin.storage, stolenPath),
+    image, { contentType: "image/png" }), "Admin cannot use another owner grant");
+  const revokedPath = proofPath.replace("attempt_1234567890123456", "revoked_attempt_12345678");
+  await seedDemoUploadGrant(revokedPath, owner.uid);
+  await adminDb.collection("users").doc(owner.uid).update({ active: false });
+  await denied(uploadBytes(storageRef(owner.storage, revokedPath),
+    image, { contentType: "image/png" }), "Revoked owner cannot upload");
+  await adminDb.collection("users").doc(owner.uid).update({ active: true });
 });
 
 test("Storage rejects invalid MIME, invoice/attempt path and oversized slip", async () => {
@@ -317,6 +358,7 @@ test("Real Admin transaction stages slip as pending, then finance review marks p
     }),
   };
   const staged = await stageHybridInvoiceProof({
+    requireUploadGrant: false, // Tests only the pre-existing bare transaction mechanics.
     db: adminDb, tenantRef, prepared, actorId: "test-owner",
     serverTimestamp: FieldValue.serverTimestamp(),
   });
@@ -326,6 +368,7 @@ test("Real Admin transaction stages slip as pending, then finance review marks p
   const attempts = tenantRef.collection("hybridBillingPaymentAttempts");
   assert.equal((await attempts.doc(prepared.attemptId).get()).data().status, "pending_review");
   await assert.rejects(stageHybridInvoiceProof({
+    requireUploadGrant: false, // Tests only the pre-existing bare transaction mechanics.
     db: adminDb, tenantRef, prepared, actorId: "test-owner",
     serverTimestamp: FieldValue.serverTimestamp(),
   }), /HYBRID_PAYMENT_ALREADY_PENDING_OR_PAID|FINANCE_SLIP_ALREADY_CLAIMED/);

@@ -102,6 +102,7 @@ function memory() {
       });
     },
     submit: (tenantId, prepared) => stageHybridInvoiceProof({
+    requireUploadGrant: false, // Isolated legacy stage fixture; trusted service requires grants.
       db: env.db, tenantRef: tenant(tenantId), prepared,
       actorId: "owner_1234", serverTimestamp: fakeStamp,
     }),

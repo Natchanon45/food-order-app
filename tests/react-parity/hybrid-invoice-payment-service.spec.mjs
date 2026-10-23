@@ -30,6 +30,12 @@ function fixture() {
       id: invoiceId, status: "issued", amount: 500,
       signature: "a".repeat(64), version: LEDGER_VERSION,
     }],
+    ["tenants/store-1/hybridBillingUploadGrants/" + attemptId, {
+      id: attemptId, tenantId: "store-1", invoiceId,
+      actorUid: "owner-1", slipPath, status: "reserved",
+      contentType: "image/png", maxSize: Buffer.byteLength("trusted bank-slip fixture data"),
+      invoiceSignature: "a".repeat(64), expiresAt: new Date(Date.now() + 3600000),
+    }],
   ]);
   const legacy = new Set();
   const ref = path => ({
@@ -87,10 +93,19 @@ function fixture() {
     };
   } };
   const inspectSlip = async () => bank;
-  const submit = (uid = "owner-1") => submitTrustedHybridProof({
+  const submit = (uid = "owner-1") => {
+    // Each authorized uploader must hold a matching server grant.
+    const grant = dbRecords.get("tenants/store-1/hybridBillingUploadGrants/" + attemptId);
+    // Never override a consumed or stolen grant during repeated submissions.
+    if (uid === "admin-1" && grant?.status === "reserved") {
+      dbRecords.set("tenants/store-1/hybridBillingUploadGrants/" + attemptId,
+        { ...grant, actorUid: uid });
+    }
+    return submitTrustedHybridProof({
     db, bucket, auth: { uid }, tenantId: "store-1", invoiceId, attemptId,
     slipPath, inspectSlip, serverTimestamp: "SERVER_TIME",
   });
+  };
   const review = (uid = "super-1", action = "approve") =>
     reviewTrustedHybridProof({ db, auth: { uid }, tenantId: "store-1",
       invoiceId, attemptId, action, note: "Finance confirmed by bank",
@@ -107,6 +122,8 @@ test("tenant owner and admin submit their own bank slip but are never allowed to
   const result = await env.submit("owner-1");
   assert.equal(result.status, "pending_review");
   assert.equal(env.invoice().status, "pending_review");
+  assert.equal(env.dbRecords.get("tenants/store-1/hybridBillingUploadGrants/" + attemptId).status,
+    "consumed", "The upload grant must be consumed atomically with pending_review");
   await assert.rejects(env.review("owner-1"), /SUPER_ADMIN_REQUIRED/);
   await assert.rejects(env.review("admin-1"), /SUPER_ADMIN_REQUIRED/);
   assert.equal(env.invoice().status, "pending_review");
@@ -119,6 +136,21 @@ test("Super Admin approves only after existing pending evidence and authenticate
   assert.equal((await env.review()).status, "paid");
   assert.equal(env.invoice().status, "paid");
   assert.equal(env.payment().status, "paid");
+});
+
+test("missing, stolen, expired or consumed grant fails before bank verification", async () => {
+  const env = fixture();
+  const grantPath = "tenants/store-1/hybridBillingUploadGrants/" + attemptId;
+  const baseline = env.dbRecords.get(grantPath);
+  env.dbRecords.delete(grantPath);
+  await assert.rejects(env.submit(), /HYBRID_UPLOAD_GRANT_NOT_FOUND_OR_FORBIDDEN/);
+  env.dbRecords.set(grantPath, { ...baseline, actorUid: "admin-1" });
+  await assert.rejects(env.submit(), /HYBRID_UPLOAD_GRANT_NOT_FOUND_OR_FORBIDDEN/);
+  env.dbRecords.set(grantPath, { ...baseline, expiresAt: new Date(Date.now() - 1000) });
+  await assert.rejects(env.submit(), /HYBRID_UPLOAD_GRANT_EXPIRED/);
+  env.dbRecords.set(grantPath, { ...baseline, status: "consumed" });
+  await assert.rejects(env.submit(), /HYBRID_UPLOAD_GRANT_NOT_FOUND_OR_FORBIDDEN/);
+  assert.equal(env.invoice().status, "issued");
 });
 
 test("cashier and cross-tenant users cannot attach billing proof", async () => {
