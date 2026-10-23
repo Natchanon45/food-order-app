@@ -644,8 +644,11 @@ async function holdUncertainDispatch(context, attempt, reason) {
 
 async function settleDispatch(context, attempt, patch, placed) {
   const central = attempt.accountMode === "fod_central";
-  const ledgerRef = central
-    ? context.tenantRef.collection("lalamoveWalletTransactions").doc(attempt.transactionId) : null;
+  const txRef = id => context.tenantRef.collection("lalamoveWalletTransactions").doc(id);
+  const walletRef = context.tenantRef.collection("settings").doc("lalamoveWallet");
+  const ledgerRef = central ? txRef(attempt.transactionId) : null;
+  let settledAmount = central ? attempt.amount : null;
+  let finalBalance = attempt.balanceAfter;
   await getFirestore().runTransaction(async tx => {
     const latest = await tx.get(context.orderRef);
     if (latest.data()?.lalamoveDispatchReservation?.id !== attempt.id
@@ -653,16 +656,45 @@ async function settleDispatch(context, attempt, patch, placed) {
       throw new HttpsError("failed-precondition", "LALAMOVE_DISPATCH_RECONCILIATION_REQUIRED");
     }
     if (central) {
-      // The accepted quotation is the amount pre-authorized and debited.
-      // A different final provider amount needs review, not an unpaid invoice.
-      if (Number.isFinite(Number(placed.fee))
-        && Math.abs(money(placed.fee) - attempt.amount) >= 0.01) {
-        throw new HttpsError("failed-precondition", "LALAMOVE_FEE_MISMATCH_REVIEW_REQUIRED");
+      // Use the provider's accepted fee. A difference from the quote must be
+      // settled against prepaid funds here, never invoiced as Platform debt.
+      const actualFee = Number.isFinite(Number(placed.fee)) && Number(placed.fee) > 0
+        ? money(placed.fee) : attempt.amount;
+      const delta = money(actualFee - attempt.amount);
+      settledAmount = actualFee;
+      if (Math.abs(delta) >= 0.01) {
+        const wallet = await tx.get(walletRef);
+        const before = money(wallet.data()?.balance);
+        if (delta > 0 && before + 0.009 < delta) {
+          // Provider accepted the job: retain the existing reservation and
+          // require reconciliation rather than create negative credit or debt.
+          throw new HttpsError("failed-precondition", "LALAMOVE_FEE_MISMATCH_REVIEW_REQUIRED", {
+            requiredAdditionalAmount: delta, walletBalance: before,
+          });
+        }
+        finalBalance = money(before - delta);
+        tx.set(walletRef, {
+          balance: finalBalance, updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+        tx.set(txRef("adjust_" + attempt.id), {
+          type: delta > 0 ? "delivery_debit" : "delivery_refund",
+          direction: delta > 0 ? "debit" : "credit",
+          status: "settled", amount: Math.abs(delta),
+          balanceBefore: before, balanceAfter: finalBalance, currency: "THB",
+          orderId: latest.id, quotationId: attempt.quotationId,
+          lalamoveOrderId: placed.orderId,
+          reference: "LALAMOVE-PRICE-ADJUST:" + placed.orderId,
+          metadata: { attemptId: attempt.id, quotedFee: attempt.amount, actualFee },
+          note: "Provider final fee adjustment against prepaid Wallet",
+          createdBy: "system:lalamove-dispatch",
+          createdAt: FieldValue.serverTimestamp(),
+        });
       }
       tx.set(ledgerRef, {
         status: "settled", lalamoveOrderId: placed.orderId,
         reference: "LALAMOVE:" + placed.orderId,
         note: "Lalamove delivery fee via LUKKAJA Central",
+        providerFinalFee: settledAmount,
         updatedAt: FieldValue.serverTimestamp(),
       }, { merge: true });
     }
@@ -671,14 +703,15 @@ async function settleDispatch(context, attempt, patch, placed) {
       lalamoveDispatchReservation: FieldValue.delete(),
       ...(central ? {
         lalamoveWalletDebitTransactionId: attempt.transactionId,
-        lalamoveWalletDebitedAmount: attempt.amount,
-        lalamoveWalletBalanceAfter: attempt.balanceAfter,
+        lalamoveWalletDebitedAmount: settledAmount,
+        lalamoveWalletBalanceAfter: finalBalance,
         lalamoveWalletDebitedAt: patch.lalamoveDispatchPlacedAt,
         lalamoveWalletDebitPending: false,
         lalamoveWalletDebitError: FieldValue.delete(),
       } : {}),
     }, { merge: true });
   });
+  return { amount: settledAmount, balanceAfter: finalBalance };
 }
 
 async function quoteAction(request) {
@@ -858,8 +891,9 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
     ...completion,
     updatedAt: FieldValue.serverTimestamp(),
   };
+  let settlement;
   try {
-    await settleDispatch(context, attempt, patch, placed);
+    settlement = await settleDispatch(context, attempt, patch, placed);
   } catch (error) {
     // Provider accepted the job; NEVER refund or dispatch again automatically.
     await holdUncertainDispatch(context, attempt, error.message).catch(() => {});
@@ -871,8 +905,8 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
   const stateOrder = {
     ...order, ...patch,
     lalamoveWalletDebitTransactionId: attempt.transactionId,
-    lalamoveWalletDebitedAmount: attempt.accountMode === "fod_central" ? attempt.amount : null,
-    lalamoveWalletBalanceAfter: attempt.balanceAfter,
+    lalamoveWalletDebitedAmount: settlement.amount,
+    lalamoveWalletBalanceAfter: settlement.balanceAfter,
     lalamoveWalletDebitPending: false,
   };
   return { item: dispatchState(stateOrder), created: true };
