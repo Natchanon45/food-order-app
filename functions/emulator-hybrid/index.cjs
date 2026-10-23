@@ -28,7 +28,15 @@ const demoConditions = {
   localFirestore: localHost("FIRESTORE_EMULATOR_HOST"),
   localAuth: localHost("FIREBASE_AUTH_EMULATOR_HOST"),
   localStorage: localHost("FIREBASE_STORAGE_EMULATOR_HOST"),
-  localFunctions: localHost("FIREBASE_FUNCTIONS_EMULATOR_HOST"),
+  // Firebase CLI discovery has been observed to OMIT its own reserved
+  // FIREBASE_FUNCTIONS_EMULATOR_HOST. A separate, non-reserved test-only
+  // marker is loaded from emulator-hybrid/.env.local by Firebase itself.
+  // It pins the same host/port as firebase.hybrid-functions-emulator.json.
+  localFunctions: process.env.HYBRID_DEMO_FUNCTIONS_HOST === "127.0.0.1:5001",
+  // Reject a conflicting native host whenever Firebase does supply one.
+  nativeFunctionsHostSafe: !process.env.FIREBASE_FUNCTIONS_EMULATOR_HOST
+    || /^(?:127\.0\.0\.1|localhost):5001$/.test(
+      process.env.FIREBASE_FUNCTIONS_EMULATOR_HOST),
 };
 const unsafe = Object.entries(demoConditions)
   .filter(([, valid]) => !valid).map(([check]) => check);
