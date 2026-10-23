@@ -1,5 +1,5 @@
 import {
-  collection, getDocs, limit as queryLimit, orderBy, query, startAfter,
+  collection, documentId, getDocs, limit as queryLimit, orderBy, query, startAfter,
 } from "firebase/firestore";
 import { db } from "@/firebase/client";
 
@@ -17,7 +17,7 @@ const first = (docs, max) => ({
 });
 export async function listHybridTenants(cursor = null) {
   const count = 50;
-  const constraints = [orderBy("__name__"), ...(cursor ? [startAfter(cursor)] : []), queryLimit(count)];
+  const constraints = [orderBy(documentId()), ...(cursor ? [startAfter(cursor)] : []), queryLimit(count)];
   const result = await getDocs(query(collection(db, "tenants"), ...constraints));
   return first(result, count);
 }
