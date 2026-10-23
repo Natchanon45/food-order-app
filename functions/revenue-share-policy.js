@@ -86,7 +86,7 @@ function revenueShareChannels(tenant = {}) {
 // Only paid Delivery goods count toward the monthly threshold.
 // The day the monthly threshold is reached (100%) and later days qualify;
 // previous days are never charged.
-function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, anchorDate = null) {
+function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, anchorDate = null, effectiveDate = null) {
   const money = Number(threshold);
   if (!Number.isFinite(money) || money < 0 || money > 1000000000
     || Math.abs(money * 100 - Math.round(money * 100)) > 0.00001) {
@@ -105,8 +105,12 @@ function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, a
   const monthlyTotals = new Map();
   const days = new Set();
   for (const [date, cents] of [...byDay].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const cycle = anchorDate ? cycleForDate(anchorDate, date) : null;
-    if (anchorDate && !cycle) continue; // Ignore sales before activation.
+    // Retain the old calendar-month rules before an explicitly authorized
+    // cutover; never recalculate already-settled historical sales under a
+    // newly selected anniversary threshold policy.
+    if (anchorDate && date < anchorDate) continue; // Before activation.
+    const useAnniversary = Boolean(anchorDate) && (!effectiveDate || date >= effectiveDate);
+    const cycle = useAnniversary ? cycleForDate(anchorDate, date) : null;
     const cycleId = cycle ? cycle.startDate : date.slice(0, 7);
     const total = (monthlyTotals.get(cycleId) || 0) + cents;
     monthlyTotals.set(cycleId, total);
