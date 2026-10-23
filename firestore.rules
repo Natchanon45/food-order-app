@@ -299,6 +299,11 @@ service cloud.firestore {
     match /hybridBillingSlipReferences/{referenceId} {
       allow read, write: if false;
     }
+    // Financial proof claims shared by Hybrid, Wallet and Revenue Share:
+    // no browser can inspect cross-tenant fingerprints or alter uniqueness.
+    match /financeSlipClaims/{claimId} {
+      allow read, write: if false;
+    }
     match /publicWaitingQueues/{publicToken} {
       allow get: if true;
       allow list: if false;
