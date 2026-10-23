@@ -1,5 +1,14 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-24 — Phase 8 third Mac run reveals two missing discovery flags; custom dotenv-only solution awaiting native rerun
+
+- Mac after ebd939bd: `test:hybrid-functions-safety` **10/10 PASS**, JDK21 and demo project correct; Functions discovery still blocked with `[failed checks: explicitDemoFlag, localFunctions]`. It received demo project plus Auth/Firestore/Storage loopback, but CLI child dropped custom shell flag `HYBRID_DEMO_FUNCTIONS_ONLY` and reserved `FIREBASE_FUNCTIONS_EMULATOR_HOST`; 8 integration tests `functions/not-found` 0/8 because no endpoint registered, no financial service reached.
+- Added `functions/emulator-hybrid/.env.local` with ONLY allowed non-reserved custom values `HYBRID_DEMO_FUNCTIONS_ONLY=1` and `HYBRID_DEMO_FUNCTIONS_HOST=127.0.0.1:5001`, no secrets/credentials. Official Firebase Emulator supports `.env.local`; reserved FIREBASE_*, GCLOUD_PROJECT, GCP_PROJECT must NOT be in it.
+- Updated emulator-only `functions/emulator-hybrid/index.cjs` guard: uses custom local Functions host marker to handle Firebase CLI dropping reserved host during discovery; still requires exact demo project across all available IDs, explicit test flag, and loopback Auth/Firestore/Storage, plus rejects any present reserved `FIREBASE_FUNCTIONS_EMULATOR_HOST` if it conflicts or wrong port. Production remains hard disabled and unexported.
+- Updated `tests/react-parity/hybrid-functions-emulator-safety.spec.mjs`: checks the exact dotenv names/values, no reserved or secrets, no real-project activation, correct guard behavior under dropped reserved vars, and conflicting native host rejection. Static mock **12/12 PASS**. No Mac/real Firebase Functions Emulator run since this fix (Desktop Commander offline).
+- Mac: git pull, JDK21 exports, `npm run test:hybrid-functions-safety`, `npm run test:hybrid-functions-emulator`; after green, full hybrid/parity/build. If failed, capture CLI `Loaded environment variables from .env.local` and `[failed checks: ...]` or next runtime error, never disable production guards.
+- Full guide `docs/HYBRID_PHASE8_FUNCTIONS_EMULATOR_UAT_20261023.md`. No real Firebase deployment, no production data changes, no automatic invoice issuance, no activation of Hybrid payment Callable or approval UI.
+
 ## 2026-10-24 — Second Functions Emulator attempt still 0/8 due to import-time demo guard; redacted diagnostics added
 
 - User's new Mac log, after syncing commit 40a4f8b6: Phase 8 local safety 9/9 PASS, Java 21 OK, Auth/Firestore/Storage/Functions emulators started for project demo-penguin-hybrid. During CLI function-discovery child, functions/emulator-hybrid/index.cjs line 27 still threw HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS. All 8 integration requests failed with functions/not-found because **no demo Callable endpoints registered**. Financial handlers were NEVER reached. Don't mistake 0/8 as failed financial workflows.
