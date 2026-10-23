@@ -75,3 +75,32 @@ npm run build:react
 - Explicit Firebase Hosting/Cloud Functions/Firestore/Storage Rules deploy is a separate future step after the owner's go-ahead.
 
 The `JAVA_HOME` and `PATH` commands above affect the current Terminal session only. Other projects using Java 17 may continue using it. If `brew install openjdk@21` reports an unsupported macOS version, install a JDK 21 distribution compatible with your macOS and set `JAVA_HOME` to its actual installation path instead.
+
+## Emulator results and Storage overwrite fix (23 October 2026)
+
+The owner ran this suite on the Mac with **OpenJDK 21.0.13.0.2** and Firebase CLI **15.34.0** against the demo project. **7/8 integration tests passed.** The single failure was `Storage permits own owner/admin write-once slip, rejects replacement and deletion`, where the second `uploadBytes(target, image)` unexpectedly succeeded. This is a **security behavior**, not a failing billing calculation.
+
+Firebase Storage can evaluate a repeated upload to an existing path as `create`, including in the Storage emulator; simply declaring `allow create` and `allow update: if false` does not prohibit overwrites. See Firebase CLI issue https://github.com/firebase/firebase-tools/issues/10302 and the official Storage Rules documentation at https://firebase.google.com/docs/reference/security/storage.
+
+**Fix:** In `storage.rules`, the Hybrid proof `allow create` clause now additionally requires `resource == null` (existing Storage object absent). This protects an immutable bank proof even if the upload is evaluated as `CREATE`. All pre-existing invoice/tenant/MIME/size checks remain intact and `allow update, delete: if false` remains unchanged.
+
+The emulator test now explicitly rejects re-uploading identical bytes, overwriting with modified bytes, changing Storage metadata, and deleting proof; it re-downloads the evidence to confirm the original bytes survived. `hybrid-emulator-safety.spec.mjs` checks this invariant to prevent regression.
+
+**Verification:** The source-only test harness and syntax checker passed 7/7 after the change. The **real Firebase Emulator must be rerun on the Mac**; do not claim 8/8 passed or deploy the modified rules until that happens.
+
+Commands (on the Mac session using JDK 21):
+
+```bash
+set -e
+cd ~/Desktop/Sites/food-order-app
+git switch feature/react-firebase-port
+git pull --ff-only origin feature/react-firebase-port
+export JAVA_HOME="$(brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+npm run test:hybrid-emulator-safety
+npm run test:firebase-hybrid-emulator
+npm run test:react-parity
+npm run build:react
+```
+
+No production Firebase/Storage, credentials, financial data, store Master information or Hosting was accessed or deployed by this change.
