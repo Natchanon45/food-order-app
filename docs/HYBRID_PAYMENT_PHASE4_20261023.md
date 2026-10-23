@@ -47,3 +47,7 @@ npm run build:react
 These were also exercised with an isolated V8 **mock** harness; native Mac Node and Firebase emulator tests are still required. Source code and Rules have only been committed to `feature/react-firebase-port`, **not deployed**. Do not deploy new Rules alone until the corresponding UI and backend release and emulator checks are ready.
 
 Next: implement a shared transaction-reference claim for all Slip2Go-dependent financial workflows, a super-admin invoice approval dashboard with proper pagination and authenticated callable, verified receipt + partial/late refund handling, and recoverable invoice-day scheduler under an explicit release flag.
+
+## Phase 5 follow-up
+
+Shared global claim registry is now added to all three financial paths and UI has tenant and Super Admin **read-only** actual invoice listings. See `docs/HYBRID_FINANCE_SHARED_CLAIMS_PHASE5_20261023.md`. No Hybrid payment callable, issuance or automatic approval has been enabled, and the entire new Rules set remains undeployed.
