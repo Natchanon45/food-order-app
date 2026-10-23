@@ -147,7 +147,7 @@ test("tenant UI scopes both asynchronous lists and refresh clears the slip selec
   assert.match(page, /token !== previewRequestRef\.current/);
   assert.match(page, /invoicePage\.scope === invoiceScope/);
   assert.match(page, /mergeHybridTenantInvoicePage/);
-  assert.match(page, /setProofInvoiceId\("+"\)/);
+  assert.match(page, /setProofInvoiceId\(""\)/);
   assert.match(page, /setInvoiceRefreshKey\(value => value \+ 1\)/);
   assert.match(panel, /invoice\?\.status, invoice\?\.amount/);
   assert.match(invoiceAdapter, /\{ \.\.\.doc\.data\(\), id: doc\.id \}/);
