@@ -171,7 +171,7 @@ test("Storage permits own owner/admin write-once slip, rejects replacement and d
     const path = name === "owner-a" ? proofPath : proofPath.replace("proof.png", "admin.png");
     const target = storageRef(identities.get(name).storage, path);
     await uploadBytes(target, image, { contentType: "image/png" });
-    assert.equal((await getBytes(target)).length, image.length);
+    assert.equal((await getBytes(target)).byteLength, image.byteLength);
     await denied(uploadBytes(target, image, { contentType: "image/png" }));
     await denied(deleteObject(target));
   }
