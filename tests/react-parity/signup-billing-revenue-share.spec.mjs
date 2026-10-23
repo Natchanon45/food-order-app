@@ -258,6 +258,11 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
     "firebase-functions/v2/scheduler": { onSchedule: (_options, fn) => fn },
     "firebase-admin/firestore": { getFirestore: () => db, FieldValue: {} },
     "firebase-admin/storage": { getStorage: () => ({}) },
+    // The payment-slip layer now uses Node's SHA-256 and a shared immutable
+    // finance-claim helper. Keep both real pure dependencies in this harness
+    // so it still exercises the Revenue Share calculator without Firestore writes.
+    "node:crypto": require("node:crypto"),
+    "./finance-slip-claims": require("../../functions/finance-slip-claims.js"),
     "./slip-verification": { inspectSlip: async () => ({}) },
     "./subscription-pricing-core": { loadPricing: async () => pricing },
     "./revenue-share-policy": policy,
