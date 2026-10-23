@@ -46,9 +46,9 @@ export function HybridBillingReportPage() {
       .finally(() => setLoading(false));
   };
   useEffect(() => {
-    if (tenant?.billingPolicyVersion === "hybrid_v1"
+    if (tenant?.id
       && ["owner", "admin"].includes(auth.profile?.role)) reload();
-  }, [tenant?.id, tenant?.billingPolicyVersion, auth.profile?.role, month]);
+  }, [tenant?.id, auth.profile?.role, month]);
 
   const number = value => formatNumber(Number(value || 0), {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -68,7 +68,7 @@ export function HybridBillingReportPage() {
   }
   if (!auth.profile) return <Navigate to="/login?next=%2Freports%2Fhybrid-billing" replace />;
   if (!["owner", "admin"].includes(auth.profile.role)
-    || tenant?.billingPolicyVersion !== "hybrid_v1") return <Navigate to="/" replace />;
+    || !tenant?.id) return <Navigate to="/" replace />;
 
   return (
     <>
