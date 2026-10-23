@@ -110,7 +110,8 @@ export function RevenueShareReportPage() {
     const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return match ? `${match[3]}/${match[2]}/${match[1]}` : (raw || "-");
   };
-  const periodLabel = period === "daily" ? displayDate(date)
+  const periodLabel = period === "monthly" && report.period?.label
+    ? report.period.label : period === "daily" ? displayDate(date)
     : period === "monthly" ? displayMonth(month)
       : period === "yearly" ? String(year)
         : `${displayDate(startDate)} – ${displayDate(endDate)}`;
@@ -208,7 +209,13 @@ export function RevenueShareReportPage() {
   const progressPercent = centralThreshold > 0
     ? Math.min(100, monthlyDeliverySales / centralThreshold * 100) : 100;
   const thresholdReached = centralThreshold <= 0 || monthlyDeliverySales >= centralThreshold;
-  const monthLabel = displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
+  const cycleStartLabel = summary.monthlyDeliveryStartDate
+    ? displayDate(summary.monthlyDeliveryStartDate) : "";
+  const cycleEndLabel = summary.monthlyDeliveryEndDate
+    ? displayDate(summary.monthlyDeliveryEndDate) : "";
+  const monthLabel = cycleStartLabel && cycleEndLabel
+    ? `${cycleStartLabel} – ${cycleEndLabel}`
+    : displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
   const remainingToThreshold = Math.max(0, centralThreshold - monthlyDeliverySales);
   const inStoreTotal = Number(summary.inStoreSales || 0);
   const deliveryTotal = Number(summary.deliveryOrderSales || 0);
@@ -520,12 +527,12 @@ export function RevenueShareReportPage() {
 
         <section className="card report-month-progress" aria-labelledby="reportProgressTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportProgressTitle"><i className="bi bi-bullseye" aria-hidden="true"></i> {rc("Progress ยอด Delivery สะสมเดือนนี้", "Monthly Delivery progress")}</h2>
+            <div><h2 id="reportProgressTitle"><i className="bi bi-bullseye" aria-hidden="true"></i> {rc("Progress ยอด Delivery สะสมรอบบิลนี้", "Delivery progress this billing cycle")}</h2>
               <p>{rc("ติดตามยอดสินค้าที่ชำระแล้ว ไม่รวมค่าส่ง", "Tracks paid merchandise excluding delivery fees")} · {monthLabel}</p></div>
             <span className="report-progress-asof"><i className="bi bi-calendar-check" aria-hidden="true"></i>{rc("ข้อมูล ณ วันที่ ", "As of ")}{displayDate(today)}</span>
           </div>
           <div className="report-progress-barline">
-            <div className="report-progress-track" role="progressbar" aria-label={rc("ยอด Delivery สะสมเดือนนี้", "Current month Delivery total")} aria-valuemin={0} aria-valuemax={Math.max(centralThreshold, 1)} aria-valuenow={Math.min(monthlyDeliverySales, Math.max(centralThreshold, 1))}>
+            <div className="report-progress-track" role="progressbar" aria-label={rc("ยอด Delivery สะสมรอบบิลปัจจุบัน", "Current billing-cycle Delivery total")} aria-valuemin={0} aria-valuemax={Math.max(centralThreshold, 1)} aria-valuenow={Math.min(monthlyDeliverySales, Math.max(centralThreshold, 1))}>
               <span className="report-progress-fill" style={{ width: Math.max(0, Math.min(100, progressPercent)) + "%" }}></span>
             </div>
             <strong className="report-progress-percent" id="monthlyDeliveryPercent">{formatNumber(progressPercent, { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%</strong>
@@ -536,7 +543,7 @@ export function RevenueShareReportPage() {
           </div>
           <p className="report-progress-note"><i className="bi bi-info-circle" aria-hidden="true"></i>
             {thresholdReached ? rc("ยอดสะสมครบ 100% แล้ว ระบบเริ่มคิดส่วนแบ่งกับยอดสินค้าในวันที่ถึงเกณฑ์และวันต่อไป โดยไม่ย้อนหลังวันก่อนหน้า", "Monthly sales reached 100%. The crossing day and following days qualify, without charging earlier days.")
-              : rc("เริ่มคิดส่วนแบ่งเมื่อยอด Delivery สะสมครบ " + money(centralThreshold) + " บาท (100%) ภายในเดือนเดียวกัน", "Revenue sharing starts when paid Delivery merchandise reaches " + money(centralThreshold) + " THB (100%) in the same month.")}</p>
+              : rc("เริ่มคิดส่วนแบ่งเมื่อยอด Delivery สะสมครบ " + money(centralThreshold) + " บาท (100%) ภายในรอบบิลนี้ และเริ่มนับใหม่วันครบรอบถัดไป", "Revenue share begins when paid Delivery merchandise reaches " + money(centralThreshold) + " THB (100%) within this billing cycle, resetting on the next anniversary.")}</p>
         </section>
 
         <section className="card report-share-math" aria-labelledby="reportShareMathTitle">
@@ -546,7 +553,7 @@ export function RevenueShareReportPage() {
             <span className={"report-share-state " + (deliveryShareDue > 0 ? "is-chargeable" : "")}>{deliveryShareDue > 0 ? rc("มีส่วนแบ่ง Delivery", "Delivery share due") : thresholdReached ? rc("เดือนนี้ถึงเกณฑ์แล้ว", "Monthly threshold reached") : rc("ยังไม่ถึงเกณฑ์ จึงไม่มีส่วนแบ่ง", "Below threshold: no share")}</span>
           </div>
           <div className="report-share-equation">
-            <div className="report-share-month"><span className="report-equation-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ยอด Delivery สะสมเดือนนี้", "Monthly Delivery total")}</span><strong>{money(monthlyDeliverySales)} <small>{rc("บาท", "THB")}</small></strong></div></div>
+            <div className="report-share-month"><span className="report-equation-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ยอด Delivery สะสมรอบบิลนี้", "Billing-cycle Delivery total")}</span><strong>{money(monthlyDeliverySales)} <small>{rc("บาท", "THB")}</small></strong></div></div>
             <b aria-hidden="true" className="report-equation-operator"><i className="bi bi-arrow-right"></i></b>
             <div className="report-share-base"><span className="report-equation-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span><div><span>{rc("ยอดที่เข้าเกณฑ์แล้ว", "Eligible amount")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div></div>
             <b aria-hidden="true" className="report-equation-operator">×</b>
