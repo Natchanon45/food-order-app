@@ -36,7 +36,7 @@ test("Finance review panel shows actual pending attempts and never changes invoi
   assert.match(panel, /note.trim\(\).length >= 20/);
   assert.match(panel, /note.trim\(\).length >= 6/);
   assert.match(panel, /verifiedExternally/);
-  assert.match(panel, /setRevision\(value => value \+ 1\)/);
+  assert.match(page, /setRevision\(value => value \+ 1\)/);
 });
 
 test("Finance approval UX is responsive, bilingual and clearly disabled", () => {
