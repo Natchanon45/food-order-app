@@ -127,3 +127,51 @@ Running the inventory is **not approval to migrate**; it never sets
 invoices, and never issues payments. Existing calendar billing cutovers
 require a separate reviewed finance decision. Do not deploy billing Functions
 or Hosting until the specific tenant migration risks are resolved.
+
+## Cutover proposal — audited dry run, no writes (2026-10-23)
+
+Added `tools/billing-anniversary-cutover-plan-core.mjs` and
+`tools/plan-billing-anniversary-cutover.mjs`, with a regression suite.
+The planner consumes **only** a prior local read-only inventory JSON,
+does not connect to Firestore, and generates an advisory JSON outside the
+Git repository with private 0600 permissions and no overwrite.
+
+Use the report generated on 2026-10-23:
+
+```bash
+npm run test:billing-anniversary-audit
+node tools/plan-billing-anniversary-cutover.mjs \
+  --audit "$HOME/Desktop/billing-anniversary-audit-20261023-191156.json" \
+  --out "$HOME/Desktop/billing-cutover-dry-run-$(date +%Y%m%d-%H%M%S).json"
+```
+
+**Expected anonymous classification from 2026-10-23 audit:**
+
+| Example | Existing billing type | Next anniversary candidate | Review state |
+|---|---|---|---|
+| SHOP_1 | Revenue share, daily slips | 2026-11-21 | Pending explicit manual approval (not production-ready) |
+| SHOP_2 | Unverified legacy Premium, suspended | 2026-11-04 | Blocked; preserve suspension and annual expiry |
+| SHOP_3 | Unverified legacy Premium, active | 2026-11-22 | Blocked; verify implicit billingMode, monthly membership entitlements |
+
+Do not infer a shop is eligible solely because `revenueSharePayments` is
+empty. The audit does not prove absence of Premium membership history.
+At the time of cutover, refresh the audit and review new invoices created
+after this snapshot. Inventories older than seven days or with truncated
+data are automatically blocked in the dry-run planner.
+
+**Billing policy safety correction:** `revenue-share.js` now uses the
+original calendar-month threshold and settlement periods before
+`billingAnniversaryEffectiveAt`. For eligible paid Delivery sales **from**
+the approved cutover date, `eligibleDeliveryShareDays()` switches buckets
+to the activation anniversary cycle and resets its cumulative threshold.
+Daily `revenueShareBillingCycle` remains daily throughout. Before cutover,
+existing legacy monthly settlement enforcement continues according to
+its prior rules, rather than being silently suspended just because an
+activation timestamp exists. After cutover, no unfinished or pre-cutover
+anniversary cycle can be collected as a new monthly invoice.
+
+Production go/no-go remains **NO-GO** until source review, billing
+entitlement review, finance cutover authorization, a separate audited
+data migration and staging/UAT are complete. This work never overwrites
+`subscriptionExpiresAt`, `planCode`, `subscriptionStatus`,
+`revenueShareSuspended`, Wallet entries or any paid invoice.
