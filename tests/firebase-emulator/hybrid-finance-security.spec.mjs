@@ -192,6 +192,10 @@ test("Storage rejects invalid MIME, invoice/attempt path and oversized slip", as
     buf, { contentType: "text/html" }));
   await denied(uploadBytes(storageRef(storage, proofPath.replace(invoiceId, "malformed")),
     buf, { contentType: "image/png" }));
+  await denied(uploadBytes(storageRef(storage, proofPath.replace(invoiceId,
+    "2026-10-22:delivery:2026-11-01")),
+    buf, { contentType: "image/png" }),
+  "Even a well-formed invoice ID must exist in the tenant ledger");
   await denied(uploadBytes(storageRef(storage,
     proofPath.replace("attempt_1234567890123456", "tiny")),
   buf, { contentType: "image/png" }));
@@ -298,6 +302,10 @@ test("Real Admin transaction stages slip as pending, then finance review marks p
   assert.equal(approved.status, "paid");
   assert.equal((await invoiceRef.get()).data().status, "paid");
   assert.equal((await invoiceRef.get()).data().amount, 500);
+  await denied(uploadBytes(storageRef(identities.get("owner-a").storage,
+    proofPath.replace("proof.png", "after-paid.png")),
+    new Uint8Array([137, 80, 78, 71]), { contentType: "image/png" }),
+  "Paid invoices cannot accept new bank slips");
   assert.equal((await tenantRef.get()).data().subscriptionStatus, "active",
     "Payment processing never changes unrelated store access");
   await assert.rejects(reviewHybridInvoiceProof({
