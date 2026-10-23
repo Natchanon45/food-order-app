@@ -9,6 +9,8 @@ const {
   evaluateSlipVerification, assertManualReview,
 } = require("./hybrid-billing-payment-policy");
 const { LEDGER_VERSION } = require("./hybrid-billing-ledger");
+const { createHash } = require("node:crypto");
+const { claimIds, checkClaimsInTransaction, createClaimsInTransaction } = require("./finance-slip-claims");
 
 function refs(tenantRef, invoiceId, attemptId) {
   validInvoiceId(invoiceId);
@@ -69,6 +71,10 @@ async function prepareHybridInvoiceProof({
     invoiceAmount: invoice.amount,
     verification: verdict,
     fingerprintIds: fingerprintClaims(buffer, verdict),
+    sharedClaimIds: claimIds({
+      sha256: createHash("sha256").update(buffer).digest("hex"),
+      referenceId: verdict.referenceId, transRef: verdict.transRef,
+    }),
   });
 }
 /**
@@ -89,7 +95,10 @@ async function stageHybridInvoiceProof({
   if (!prepared || prepared.tenantId !== tenantRef.id
     || !Array.isArray(prepared.fingerprintIds)
     || prepared.fingerprintIds.length < 1 || prepared.fingerprintIds.length > 3
-    || prepared.fingerprintIds.some(id => !/^[a-f0-9]{64}$/.test(id))) {
+    || prepared.fingerprintIds.some(id => !/^[a-f0-9]{64}$/.test(id))
+    || !Array.isArray(prepared.sharedClaimIds)
+    || prepared.sharedClaimIds.length < 1 || prepared.sharedClaimIds.length > 3
+    || prepared.sharedClaimIds.some(id => !/^(file_[a-f0-9]{64}|bank_[a-f0-9]{64})$/.test(id))) {
     throw new Error("HYBRID_PAYMENT_INVALID_PREPARED_EVIDENCE");
   }
   validateEvidencePath({
@@ -99,11 +108,14 @@ async function stageHybridInvoiceProof({
   const { invoiceRef, attemptRef } = refs(tenantRef, prepared.invoiceId, prepared.attemptId);
   const claims = [...new Set(prepared.fingerprintIds)].sort()
     .map(id => db.collection("hybridBillingSlipReferences").doc(id));
+  const sharedClaims = [...new Set(prepared.sharedClaimIds)].sort()
+    .map(id => db.collection("financeSlipClaims").doc(id));
   return db.runTransaction(async tx => {
     const invoiceSnap = await tx.get(invoiceRef);
     const attemptSnap = await tx.get(attemptRef);
     const claimSnaps = [];
     for (const claim of claims) claimSnaps.push(await tx.get(claim));
+    await checkClaimsInTransaction(tx, sharedClaims);
     if (!invoiceSnap.exists) throw new Error("HYBRID_PAYMENT_INVOICE_NOT_FOUND");
     const invoice = invoiceSnap.data();
     assertInvoicePayable(invoice, prepared.invoiceId);
@@ -121,6 +133,9 @@ async function stageHybridInvoiceProof({
         attemptId: prepared.attemptId, createdAt: serverTimestamp,
       });
     }
+    createClaimsInTransaction(tx, sharedClaims, {
+      channel: "hybrid", tenantId: tenantRef.id, recordId: prepared.attemptId,
+    }, serverTimestamp);
     tx.create(attemptRef, {
       id: prepared.attemptId, invoiceId: prepared.invoiceId,
       tenantId: tenantRef.id, invoiceSignature: prepared.invoiceSignature,
