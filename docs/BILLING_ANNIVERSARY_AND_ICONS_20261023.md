@@ -97,3 +97,33 @@ Recommended adoption:
    is not mandated.
 
 No external icons were downloaded or added to the repository.
+
+## Read-only production inventory (2026-10-23)
+
+Added a bounded **read-only** Firestore audit tool. It does not modify Tenant records,
+slips, Wallet balances, subscriptions, Hosting, Functions, or billing cutover fields.
+
+Use authorized Google Application Default Credentials with Firestore read permission.
+From the feature branch, ensure functions dependencies are installed and run:
+
+```bash
+npm run test:billing-anniversary-audit
+node tools/audit-billing-anniversary.mjs \
+  --project chat-45754 \
+  --out "$HOME/Desktop/billing-anniversary-audit-$(date +%Y%m%d-%H%M%S).json" \
+  --max-tenants 500 --payments-limit 200
+```
+
+Report JSON is saved **only on the authorized local Mac** with 0600 permissions,
+outside the repository. It includes tenant IDs and historical financial metadata:
+do NOT commit it, upload it, or paste the full report into public chats.
+The tool prints only aggregate counts and flags overlapping historical
+payments, unconfirmed anchors, pending review, suspension, and capped scans.
+A bounded scan is **not** evidence that older payment records do not exist.
+Run `--tenant TENANT_ID` to inspect one store with the same read-only behavior.
+
+Running the inventory is **not approval to migrate**; it never sets
+`billingCycleAnchorAt` or `billingAnniversaryEffectiveAt`, never rewrites
+invoices, and never issues payments. Existing calendar billing cutovers
+require a separate reviewed finance decision. Do not deploy billing Functions
+or Hosting until the specific tenant migration risks are resolved.
