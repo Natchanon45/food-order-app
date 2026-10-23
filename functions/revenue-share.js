@@ -115,8 +115,9 @@ function revenueSetting(tenant = {}, premiumPricing = null) {
   const centralDeliveryShare = tenant.billingPolicyVersion !== "hybrid_v1"
     && businessType !== "retail" && premiumPricing != null
     && Number(premiumPricing.deliveryShareRate) > 0;
-  const premiumDeliveryShare = centralDeliveryShare && !legacyChannels.enabled
-    && tenant.billingMode === "subscription";
+  // Prelaunch uniform policy: empty legacy billingMode fields must not exempt
+  // a store from centrally configured paid-Delivery threshold/share rules.
+  const premiumDeliveryShare = centralDeliveryShare && !legacyChannels.enabled;
   const channels = premiumDeliveryShare
     ? { enabled: true, includeRestaurant: true, includeRetail: false, restaurantScope: "delivery_only" }
     : legacyChannels;
