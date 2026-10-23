@@ -1,5 +1,17 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Phase 3 Hybrid invoice ledger implementation candidate (NOT DEPLOYED)
+
+- Current GitHub branch: `feature/react-firebase-port`. Owner explicitly chose new activation-anniversary billing for ALL shops before real users; master tenant/menu/product data preserved. No manual cutover approvals or legacy-mode exemptions.
+- Added pure `functions/hybrid-billing-ledger.js`: deterministic stable SHA-256 invoice signatures, day-close gating, sealed historical paid Delivery sales checksum, immutable pricing snapshots, paid/status preservation and hard-fail on refund/sales drift.
+- Added private Admin transaction `functions/hybrid-billing-persistence.js`: creates only missing `hybridBillingPeriods/{cycleStartDate}` and `hybridBillingInvoices/{invoiceId}` docs, validates previous seal and invoice identity inside transaction, idempotent retries; no browser mutation.
+- Added private server read-only orchestrator `functions/hybrid-billing-reconciler.js`: trusted server order paidAt scan, store anniversary cycle, period pricing snapshot, existing issued invoice reads; `HYBRID_INVOICE_ISSUANCE_READY=false`, not imported from `functions/bootstrap.js` and no callable/scheduler.
+- Firestore rules explicitly tenant-admin/Super Admin read-only for these new subcollections; no client create/update/delete. Rules NOT DEPLOYED.
+- Read-only Hybrid preview now always prefers existing locked period config, otherwise central current settings; removed legacy tenant trial pricing override.
+- New tests `tests/react-parity/hybrid-invoice-ledger.spec.mjs` and `hybrid-invoice-reconciler.spec.mjs`, bound into `test:hybrid-billing`; also `npm run test:hybrid-invoice-ledger`. Mock V8 suite passed initial 9/9 ledger and 5/5 orchestration; native Mac/Emulator verification still pending. Do not claim end-to-end successful deployment.
+- Next: slip upload/Slip2Go verified invoice settlement, Admin approve/reject/audit, invoice UI, adjustment notes, quota, debt suspension/recovery, emulator UAT. Never combine Lalamove prepaid shipping with Platform share collection.
+- Full specification: `docs/HYBRID_INVOICE_LEDGER_PHASE3_20261023.md`. No Firestore data, master records, subscription status, hosting or Cloud Functions were changed.
+
 ## 2026-10-23 — Owner overrides all former legacy Cutover restrictions: UNIVERSAL NEW BILLING
 
 - IMPORTANT FINAL DECISION: No real customers and no real sales in Firebase. ALL old and future stores use the activation-date monthly anniversary cycle now. SHOP_1/2/3 must not be blocked from calendar reset by legacy billingMode, yearly plan, or suspended status; access suspension is independent and must not be lifted implicitly.
