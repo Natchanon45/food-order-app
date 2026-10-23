@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
- * Local-only advisory tool. Reads an existing audited inventory JSON.
- * No cloud credentials, no remote requests, and no Firestore mutations.
+ * ARCHIVED: the owner confirmed this is a prelaunch system with no real
+ * customer charges. Universal anniversary billing now applies to every store
+ * without tenant-by-tenant Cutover approval. The old read-only planner below
+ * is retained solely for historical audit, not a release requirement.
  */
 import fs from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
@@ -37,6 +39,11 @@ function bangkokToday() {
   return parts.year + "-" + parts.month + "-" + parts.day;
 }
 async function main(argv = process.argv.slice(2)) {
+  // Intentionally stop the obsolete workflow rather than showing misleading
+  // BLOCKED_REVIEW statuses for stores now covered by the universal policy.
+  if (process.env.PENGUIN_LEGACY_CUTOVER_DIAGNOSTIC !== "1") {
+    throw new Error("Archived legacy cutover planner. All stores now use universal anniversary billing. See docs/UNIVERSAL_BILLING_PRELAUNCH_20261023.md");
+  }
   const { input, output, asOf } = parseArgs(argv);
   const source = JSON.parse(await fs.readFile(input, "utf8"));
   const plan = generateCutoverPlan(source, asOf || bangkokToday());
