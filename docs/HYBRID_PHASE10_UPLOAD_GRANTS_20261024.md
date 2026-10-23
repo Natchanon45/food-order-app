@@ -46,3 +46,9 @@ git status --short
 ```
 
 Do not reset, clean, merge to main or deploy Production. `build:react` can regenerate local public HTML; preserve any intentional Mac-only changes.
+
+## Follow-up verification notes
+
+- A separate **real Firestore Emulator** test now creates one Admin-only grant and checks that Owner/Admin/Cashier/other store/Super Admin/anonymous browser identities cannot get, list, create, update or delete it.
+- A source-level JavaScript V8 execution check directly exercised the private grant implementation with deterministic fake Firestore transactions: **18/18 passed** for input allowlists, rejection paths, ID/path issuance, 10-minute expiry, role denial, no invoice mutation and reservation replay collision. This is NOT the Node test suite and does NOT simulate real Emulator Rules/SDK behavior.
+- The new Emulator permission test, actual demo Callable request, Node regression suite and React build remain **unrun on the offline Mac**. Do not state they passed until Mac result logs are available.

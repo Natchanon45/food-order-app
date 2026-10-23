@@ -155,6 +155,27 @@ test("All Browser roles including Super Admin are denied billing amount/status w
   }
 });
 
+test("Browser roles cannot read, enumerate or forge server-only upload grants", async () => {
+  const path = "tenants/store-a/hybridBillingUploadGrants/demo_grant_1234567890123456";
+  await adminDb.doc(path).set({
+    id: "demo_grant_1234567890123456", tenantId: "store-a",
+    invoiceId, actorUid: identities.get("owner-a").uid,
+    slipPath: proofPath, status: "reserved",
+    contentType: "image/png", maxSize: 512,
+    createdAt: new Date(), expiresAt: new Date(Date.now() + 600000),
+    invoiceSignature: "a".repeat(64),
+  });
+  for (const name of ["owner-a", "admin-a", "cashier-a",
+    "owner-b", "super-admin", "anonymous"]) {
+    const clientDb = identities.get(name).firestore;
+    await denied(getDoc(doc(clientDb, path)));
+    await denied(getDocs(collection(clientDb, "tenants/store-a/hybridBillingUploadGrants")));
+    await denied(setDoc(doc(clientDb, path), { status: "paid" }));
+    await denied(updateDoc(doc(clientDb, path), { actorUid: "forged" }));
+    await denied(deleteDoc(doc(clientDb, path)));
+  }
+});
+
 test("Global bank/slip claims cannot be read or forged by any Browser role", async () => {
   for (const name of ["owner-a", "admin-a", "super-admin", "cashier-a", "anonymous"]) {
     const db = identities.get(name).firestore;

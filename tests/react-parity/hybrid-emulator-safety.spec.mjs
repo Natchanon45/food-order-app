@@ -49,6 +49,9 @@ test("emulator integration checks permission barriers and real Admin claim/invoi
   assert.match(src, /Firestore grants invoice read\/list only to own tenant/);
   assert.match(src, /All Browser roles including Super Admin are denied billing/);
   assert.match(src, /Global bank\/slip claims cannot be read or forged/);
+  assert.match(src, /Browser roles cannot read, enumerate or forge server-only upload grants/);
+  assert.match(fs.readFileSync("firestore.rules", "utf8"),
+    /match \/hybridBillingUploadGrants\/\{attemptId\} \{\s*allow read, write: if false;/);
   assert.match(src, /Storage permits own owner\/admin write-once slip/);
   assert.match(src, /Storage rejects invalid MIME/);
   assert.match(src, /Actual Admin Firestore transactions serialize cross-channel/);
