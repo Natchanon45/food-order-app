@@ -2,6 +2,7 @@ const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { createHash, createHmac, randomUUID } = require("crypto");
+const { claimRefs, checkClaimsInTransaction, createClaimsInTransaction } = require("./finance-slip-claims");
 
 const REGION = "asia-southeast1";
 
@@ -799,14 +800,15 @@ exports.submitTenantLalamoveWalletTopup = onCall({ region: REGION, timeoutSecond
   const ledgerId = autoApproved ? randomUUID() : "";
   const ledgerRef = ledgerId ? ref.collection("lalamoveWalletTransactions").doc(ledgerId) : null;
   const dedupeRefs = topupDedupeRefs(db, { sha256, referenceId, transRef });
+  const financeClaims = claimRefs(db, { sha256, referenceId, transRef });
 
   try {
     await db.runTransaction(async transaction => {
-      const refsToRead = [topupRef, ...dedupeRefs, ...(autoApproved ? [walletRef] : [])];
+      const refsToRead = [topupRef, ...dedupeRefs, ...financeClaims, ...(autoApproved ? [walletRef] : [])];
       const snapshots = [];
       for (const documentRef of refsToRead) snapshots.push(await transaction.get(documentRef));
       if (snapshots[0].exists) throw new HttpsError("already-exists", "FOD_WALLET_TOPUP_ALREADY_EXISTS");
-      for (let index = 1; index <= dedupeRefs.length; index += 1) {
+      for (let index = 1; index <= dedupeRefs.length + financeClaims.length; index += 1) {
         if (snapshots[index]?.exists) throw new HttpsError("already-exists", "FOD_WALLET_TOPUP_DUPLICATE_SLIP");
       }
 
@@ -882,6 +884,11 @@ exports.submitTenantLalamoveWalletTopup = onCall({ region: REGION, timeoutSecond
         storagePath,
         createdAt: FieldValue.serverTimestamp(),
       }));
+      // Shared immutable registry: the wallet credit and every claim are
+      // created atomically, preventing simultaneous reuse by another channel.
+      createClaimsInTransaction(transaction, financeClaims, {
+        channel: "wallet_topup", tenantId, recordId: topupId,
+      }, FieldValue.serverTimestamp());
     });
   } catch (error) {
     await deleteStoragePath(storagePath);
