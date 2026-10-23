@@ -2,7 +2,8 @@
 
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
-const { calculateMonth, dateKey, normalizeSettings } = require("./hybrid-billing-core");
+const { calculateCycle, dateKey, normalizeSettings } = require("./hybrid-billing-core");
+const { tenantAnchorDate, cycleFromMonth } = require("./billing-anniversary");
 const { paidDeliveryByDay } = require("./hybrid-billing-orders");
 const { loadHybridBillingSettings } = require("./hybrid-billing-settings");
 
@@ -10,15 +11,22 @@ const REGION = "asia-southeast1";
 const MAX_PAID_ORDERS = 50000;
 const PAGE_LIMIT = 500;
 
-function monthWindow(month) {
+function monthWindow(month, anchor = "") {
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(month || ""))) {
     throw new HttpsError("invalid-argument", "Invalid calendar month");
+  }
+  if (anchor) {
+    const cycle = cycleFromMonth(anchor, month);
+    return { start: cycle.start, end: cycle.end,
+      startDate: cycle.startDate, endDate: cycle.endDate,
+      endExclusiveDate: cycle.endExclusiveDate,
+      nextMonth: cycle.endExclusiveDate.slice(0, 7) };
   }
   const [year, m] = month.split("-").map(Number);
   const next = m === 12 ? `${year + 1}-01` : `${year}-${String(m + 1).padStart(2, "0")}`;
   const start = new Date(`${month}-01T00:00:00+07:00`);
   const end = new Date(`${next}-01T00:00:00+07:00`);
-  return { start, end, nextMonth: next };
+  return { start, end, startDate: month + "-01", endExclusiveDate: next + "-01", nextMonth: next };
 }
 
 async function assertViewer(request, db) {
@@ -68,7 +76,8 @@ async function paidOrdersInWindow(tenantRef, start, end) {
 }
 
 async function previewHybridMonth(tenantRef, tenant, month, db) {
-  const { start, end } = monthWindow(month);
+  const anchor = tenantAnchorDate(tenant);
+  const { start, end, startDate, endExclusiveDate } = monthWindow(month, anchor);
   const periodSnap = await tenantRef.collection("hybridBillingPeriods").doc(month).get();
   const locked = periodSnap.exists && periodSnap.data()?.configSnapshot;
   // Snapshot is immutable after first billing issuance. Without it, show a prospective estimate only.
@@ -78,9 +87,10 @@ async function previewHybridMonth(tenantRef, tenant, month, db) {
       ? tenant.hybridBillingSnapshot
       : await loadHybridBillingSettings(db));
   const orders = await paidOrdersInWindow(tenantRef, start, end);
-  const daySales = paidDeliveryByDay(orders, month);
-  const result = calculateMonth({
-    month, firstMonth: month === tenant.hybridTrialMonth,
+  const daySales = paidDeliveryByDay(orders, { startDate, endExclusiveDate });
+  const result = calculateCycle({
+    month, cycleStartDate: startDate, cycleEndExclusiveDate: endExclusiveDate,
+    firstMonth: month === tenant.hybridTrialMonth,
     dailyDeliverySales: daySales, settings: config,
   });
   const now = new Date();
