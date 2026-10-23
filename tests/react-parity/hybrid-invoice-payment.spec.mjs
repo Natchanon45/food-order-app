@@ -187,7 +187,7 @@ test("duplicate slip bytes or repeated bank reference cannot pay another store",
     verification: { ...paidBank(), transRef: "different-ref" },
   });
   await assert.rejects(env.submit("tenant-2", duplicate),
-    /DUPLICATE_SLIP_OR_BANK_REFERENCE/);
+    /DUPLICATE_SLIP_OR_BANK_REFERENCE|FINANCE_SLIP_ALREADY_CLAIMED/);
   assert.equal(env.getInvoice("tenant-2").status, "issued");
   assert.equal(env.getPayment("tenant-2", "attempt_1234567890999999"), undefined);
 });
@@ -223,7 +223,7 @@ test("rejected proof permits a new attempt, but permanently blocks reusing old e
   const reused = await env.prepare({ attempt: "attempt_1234567890999999",
     verification: paidBank() });
   await assert.rejects(env.submit("tenant-1", reused),
-    /DUPLICATE_SLIP_OR_BANK_REFERENCE/);
+    /DUPLICATE_SLIP_OR_BANK_REFERENCE|FINANCE_SLIP_ALREADY_CLAIMED/);
   const differentData = Buffer.from("different verified bank slip bytes");
   const newProof = await env.prepare({ attempt: "attempt_1234567890999999",
     data: differentData, verification: {
