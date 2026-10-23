@@ -85,7 +85,7 @@
     "test:hybrid-invoice-payment": "node --test tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs",
     "test:finance-slip-claims": "node --test tests/react-parity/finance-slip-claims.spec.mjs",
     "test:hybrid-invoice-review-ui": "node --test tests/react-parity/hybrid-invoice-review-ui.spec.mjs",
-    "test:firebase-hybrid-emulator": "firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-emulator.json --only auth,firestore,storage \"node --test tests/firebase-emulator/hybrid-finance-security.spec.mjs\"",
+    "test:firebase-hybrid-emulator": "node tools/check-firebase-emulator-java.mjs && firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-emulator.json --only auth,firestore,storage \"node --test tests/firebase-emulator/hybrid-finance-security.spec.mjs\"",
     "test:hybrid-emulator-safety": "node --test tests/react-parity/hybrid-emulator-safety.spec.mjs"
   },
   "repository": {
