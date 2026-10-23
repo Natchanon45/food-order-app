@@ -66,8 +66,9 @@ Actual production data has not been examined in this GitHub-only update.
 
 ## Regression coverage
 
-`npm run test:lalamove-prepaid-atomic`: 9 cases, including success/pre-debit,
-insufficient balance, two concurrent calls, definitive rejection and retry,
+`npm run test:lalamove-prepaid-atomic`: 10 cases, including success/pre-debit,
+insufficient balance, same-order concurrent calls, two different orders sharing one Wallet,
+definitive rejection and retry,
 timeout/unknown outcome, final provider fee increases/decreases, insufficient
 additional credit, and independent Partner mode.
 
