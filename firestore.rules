@@ -294,6 +294,11 @@ service cloud.firestore {
 
     match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
     match /tenantSlugs/{slug} { allow read: if true; allow write: if superAdminRole(); }
+    // Global claims are trusted-server-only and contain payment correlations
+    // across tenants. Even a Super Admin browser cannot forge or erase them.
+    match /hybridBillingSlipReferences/{referenceId} {
+      allow read, write: if false;
+    }
     match /publicWaitingQueues/{publicToken} {
       allow get: if true;
       allow list: if false;
@@ -379,6 +384,14 @@ service cloud.firestore {
         allow create, update, delete: if false;
       }
       match /hybridBillingInvoices/{invoiceId} {
+        allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
+        allow create, update, delete: if false;
+      }
+      match /hybridBillingPaymentAttempts/{attemptId} {
+        allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
+        allow create, update, delete: if false;
+      }
+      match /hybridBillingPaymentEvents/{eventId} {
         allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
         allow create, update, delete: if false;
       }
