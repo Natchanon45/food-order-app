@@ -43,11 +43,6 @@ function addDays(date, days) {
   return new Date(date.getTime() + Number(days || 0) * 86400000);
 }
 
-function tenantAnniversaryEffectiveDate(tenant = {}) {
-  const effectiveAt = asDate(tenant.billingAnniversaryEffectiveAt);
-  return effectiveAt ? dateKey(effectiveAt) : null;
-}
-
 function periodFromData(data = {}, tenant = {}) {
   const now = new Date();
   const today = dateKey(now);
@@ -55,14 +50,13 @@ function periodFromData(data = {}, tenant = {}) {
   if (period === "monthly") {
     const month = /^\d{4}-\d{2}$/.test(String(data.month || "")) ? String(data.month) : today.slice(0, 7);
     const anchor = tenantAnchorDate(tenant);
-    const cutover = tenantAnniversaryEffectiveDate(tenant);
-    // An unapproved tenant stays on calendar months. Before cutover, monthly
-    // report selections must also retain the historical calendar boundaries.
-    if (anchor && cutover && month >= anchor.slice(0, 7)) {
-      const candidate = cycleFromMonth(anchor, month);
-      if (candidate.startDate >= cutover) return { type: period, ...candidate };
-    }
-    // Accounts missing trusted activation timestamps retain calendar months.
+    // Prelaunch policy: every store uses its original Bangkok activation-day
+    // anniversary. Do not depend on the old billingMode or cutover flags.
+    if (!anchor) throw new HttpsError("failed-precondition",
+      "Tenant activation date is required for anniversary billing");
+    if (month >= anchor.slice(0, 7)) return { type: period, ...cycleFromMonth(anchor, month) };
+    // Months before tenant activation remain readable as a historical,
+    // non-chargeable calendar view. No anniversary invoice can precede signup.
     const [year, monthNo] = month.split("-").map(Number);
     const start = new Date(`${month}-01T00:00:00${TZ_OFFSET}`);
     const nextMonth = monthNo === 12 ? `${year + 1}-01` : `${year}-${String(monthNo + 1).padStart(2, "0")}`;
@@ -139,7 +133,6 @@ function revenueSetting(tenant = {}, premiumPricing = null) {
     billingCycle: premiumDeliveryShare ? "monthly"
       : (tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly"),
     billingAnchorDate: tenantAnchorDate(tenant),
-    billingAnniversaryEffectiveDate: tenantAnniversaryEffectiveDate(tenant),
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
     businessType,
     restaurantScope: channels.restaurantScope,
@@ -205,19 +198,20 @@ async function summaryForTenant(tenantId, period, setting) {
   const currentDate = dateKey(new Date());
   const currentMonth = currentDate.slice(0, 7);
   const anniversary = setting.billingAnchorDate;
-  const cutoverDate = setting.billingAnniversaryEffectiveDate;
-  const useAnniversary = Boolean(anniversary && cutoverDate && currentDate >= cutoverDate);
-  const activeCycle = useAnniversary ? cycleForDate(anniversary, currentDate) : null;
+  // Universal prelaunch policy: every store with a valid activation date uses
+  // the anniversary cycle now; no separate migration/cutover date is needed.
+  const activeCycle = anniversary ? cycleForDate(anniversary, currentDate) : null;
   const calendarCycle = cycleFromMonth("2000-01-01", currentMonth);
   const cycleStart = activeCycle?.startDate || calendarCycle.startDate;
   const cycleEnd = activeCycle?.endDate || calendarCycle.endDate;
   const monthDeliveryCents = [...paidDeliveryDaily].reduce((cents, [day, amount]) =>
     day >= cycleStart && day <= currentDate && day <= cycleEnd ? cents + amount : cents, 0);
-  const eligibleDeliveryDays = eligibleDeliveryShareDays(
-    [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
-    setting.deliveryThreshold, anniversary && cutoverDate ? anniversary : null,
-    cutoverDate,
-  );
+  const eligibleDeliveryDays = anniversary
+    ? eligibleDeliveryShareDays(
+      [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
+      setting.deliveryThreshold, anniversary,
+    )
+    : new Set(); // Missing activation date must never create an invoice.
 
   ordersSnapshot.docs.forEach(snapshot => {
     const row = snapshot.data();
@@ -501,21 +495,9 @@ function previousPeriod(cycle, tenant = {}) {
     return { type: "daily", startDate: key, endDate: key, start, end: addDays(start, 1) };
   }
   const anchor = tenantAnchorDate(tenant);
-  const cutoverDate = tenantAnniversaryEffectiveDate(tenant);
-  if (anchor && cutoverDate && today >= cutoverDate) {
-    const previous = previousCompletedCycle(anchor, today);
-    // Do not invoice a partially completed anniversary cycle, and never
-    // convert pre-cutover calendar days to a new monthly invoice.
-    if (!previous || previous.startDate < cutoverDate) return null;
-    return { type: "monthly", ...previous };
-  }
-  const [year, month] = today.slice(0, 7).split("-").map(Number);
-  const py = month === 1 ? year - 1 : year;
-  const pm = month === 1 ? 12 : month - 1;
-  const startKey = `${py}-${String(pm).padStart(2, "0")}-01`;
-  const nextKey = `${year}-${String(month).padStart(2, "0")}-01`;
-  const start = dateAtBangkok(startKey), end = dateAtBangkok(nextKey);
-  return { type: "monthly", startDate: startKey, endDate: dateKey(addDays(end, -1)), start, end };
+  if (!anchor) return null; // Fail closed instead of billing an invented cycle.
+  const previous = previousCompletedCycle(anchor, today);
+  return previous ? { type: "monthly", ...previous } : null;
 }
 
 async function latestPaymentForPeriod(tenantRef, startDate, endDate) {
@@ -565,8 +547,6 @@ async function reconcileTenant(tenantId, centralPricing = null) {
   }
   const due = previousPeriod(setting.billingCycle, tenant);
   if (!due) return { state: "first_cycle", action: "none" };
-  // Legacy calendar-month enforcement remains in effect before approved
-  // cutover; after cutover, previousPeriod only returns completed new cycles.
   if (overrideMatches(tenant, due.startDate, due.endDate)) return { state: "manual_override", action: "none" };
   const payment = await latestPaymentForPeriod(tenantRef, due.startDate, due.endDate);
   if (payment?.data().status === "approved") return { state: "approved", action: "none" };
