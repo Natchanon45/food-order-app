@@ -74,7 +74,7 @@ function fingerprintClaims(buffer, verification = {}) {
   if (transRef) claims.add(proofFingerprint("transRef", transRef));
   return [...claims].sort();
 }
-function evaluateSlipVerification(verification = {}, invoiceAmount) {
+function evaluateSlipVerification(verification = {}, invoiceAmount, options = {}) {
   const expectedCents = satang(invoiceAmount);
   const status = String(verification.status || "manual_review");
   if (UNSAFE_SLIP_RESULTS.has(status)) {
@@ -86,12 +86,19 @@ function evaluateSlipVerification(verification = {}, invoiceAmount) {
   const provider = String(verification.provider || "").slice(0, 48);
   const referenceId = normalizeReference(verification.referenceId);
   const transRef = normalizeReference(verification.transRef);
+  // Strict Hybrid evidence must include server-confirmed beneficiary checks.
+  // Caller-provided data can never set this option: it is private server code.
+  if (options.requireVerifiedReceiver === true && status === "matched"
+    && verification.receiverValidated !== true) {
+    throw new Error("HYBRID_PAYMENT_RECEIVER_UNVERIFIED");
+  }
   // Slip2Go 200200 acknowledges receiver, duplicate, amount and bank date.
   // A generic OCR "matched", code 200000 or configured Vision fallback
   // DOES NOT constitute a bank-verified transfer.
   const bankVerified = provider === "slip2go" && status === "matched"
     && String(verification.code || "") === "200200" && matchedAmount
-    && verification.amountMatched === true && Boolean(referenceId || transRef);
+    && verification.amountMatched === true && Boolean(referenceId || transRef)
+    && (options.requireVerifiedReceiver !== true || verification.receiverValidated === true);
   if (status === "matched" && !matchedAmount) throw new Error("HYBRID_PAYMENT_AMOUNT_MISMATCH");
   return Object.freeze({
     provider, status, reason: String(verification.reason || "").slice(0, 100),

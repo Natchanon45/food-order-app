@@ -167,9 +167,16 @@ async function inspectSlip(buffer, mime, filename, expectedAmount, options = {})
     accountNumber: String(settings.receiverAccountNumber || ""),
   };
   const receiverReady = Boolean(receiver.accountNumber || receiver.accountNameTH || receiver.accountNameEN);
+  // The shared Delivery verifier keeps its existing receiver compatibility.
+  // Only Hybrid Billing opts into this stricter, fail-closed beneficiary check.
+  const strictReceiver = options.requireVerifiedReceiver === true;
+  const strictReceiverReady = /^[0-9]{6,20}$/.test(
+    String(receiver.accountNumber || "").replace(/[ -]/g, ""))
+    && Boolean(String(receiver.accountNameTH || receiver.accountNameEN || "").trim());
   const base = baseResult("slip2go", expectedAmount);
 
-  if (!apiUrl || !secret || !receiverReady) {
+  if (!apiUrl || !secret || !receiverReady
+    || (strictReceiver && !strictReceiverReady)) {
     const result = { ...base, status: "config_required", reason: "slip2go_config_required", fallbackAllowed: true };
     return provider === "slip2go_fallback_vision"
       ? fallbackResult(result, await inspectGoogleVision(buffer, mime, expectedAmount), expectedAmount)
@@ -212,7 +219,16 @@ async function inspectSlip(buffer, mime, filename, expectedAmount, options = {})
       detectedAmount,
       amountMatched: detectedAmount !== null ? Math.abs(detectedAmount - money(expectedAmount)) <= 0.01 : null,
     };
-    if (code === "200200") return { ...base, ...details, status: "matched", reason: "slip2go_verified" };
+    // A forged upstream body may claim success during an HTTP failure.
+    // It must never enter a verified bank payment state.
+    if (!response.ok) {
+      return { ...base, status: "manual_review", reason: "slip2go_http_error",
+        fallbackAllowed: false };
+    }
+    if (code === "200200") return {
+      ...base, ...details, status: "matched", reason: "slip2go_verified",
+      receiverValidated: strictReceiver && strictReceiverReady,
+    };
 
     const mapped = {
       // 200000 only means the bank found a transfer. It does NOT

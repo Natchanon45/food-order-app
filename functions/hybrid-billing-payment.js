@@ -63,9 +63,11 @@ async function prepareHybridInvoiceProof({
   // Slip2Go's configured receiver is read server-side from private settings.
   // Even 200200 only qualifies for Super Admin review, never auto PAID.
   const verification = await inspectSlip(buffer, mime, filename, invoice.amount, {
-    providerOverride: "slip2go",
+    providerOverride: "slip2go", requireVerifiedReceiver: true,
   });
-  const verdict = evaluateSlipVerification(verification, invoice.amount);
+  const verdict = evaluateSlipVerification(verification, invoice.amount, {
+    requireVerifiedReceiver: true,
+  });
   return Object.freeze({
     tenantId: tenantRef.id, invoiceId, attemptId, slipPath,
     size, mime, invoiceSignature: invoice.signature,

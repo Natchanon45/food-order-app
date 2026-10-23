@@ -14,7 +14,7 @@ const slipPath = "tenants/store-1/hybrid-billing-slips/" +
 const user = (role, tenantId = "store-1", active = true) =>
   ({ role, tenantId, active });
 const bank = { provider: "slip2go", status: "matched", code: "200200",
-  amountMatched: true, detectedAmount: 500,
+  amountMatched: true, detectedAmount: 500, receiverValidated: true,
   referenceId: "bank-ref-2026", transRef: "bank-trans-2026" };
 
 function fixture() {

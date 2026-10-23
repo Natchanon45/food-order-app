@@ -71,6 +71,7 @@ async function fakeBankVerifier(buffer, mime, name, invoiceAmount) {
   return {
     provider: "slip2go", status: "matched", code: "200200",
     amountMatched: true, detectedAmount: invoiceAmount,
+    receiverValidated: true, // synthetic demo verifier ONLY
     referenceId: "DEMO-REF-" + fingerprint.slice(0, 24),
     transRef: "DEMO-TX-" + fingerprint.slice(24, 48),
   };

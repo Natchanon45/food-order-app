@@ -19,7 +19,7 @@ const body = Buffer.from("test fixture bank slip PNG bytes");
 const fakeStamp = "SERVER_CLOCK";
 const paidBank = () => ({
   provider: "slip2go", code: "200200", status: "matched",
-  amountMatched: true, detectedAmount: 500,
+  amountMatched: true, detectedAmount: 500, receiverValidated: true,
   referenceId: "bank-ref-a", transRef: "bank-trans-a",
 });
 const invoice = (overrides = {}) => ({
