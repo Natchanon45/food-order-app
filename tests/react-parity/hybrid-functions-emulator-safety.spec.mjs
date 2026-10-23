@@ -135,3 +135,27 @@ test("runtime guard fails before loading Firebase modules for real project or no
   evaluate({ ...baseline, GCP_PROJECT: "chat-45754" });
   evaluate({ ...baseline, FIREBASE_CONFIG: '{"projectId":"chat-45754"}' });
 });
+
+
+test("explicit local demo CLI environment passes guard and reaches ONLY the first module import", () => {
+  const imported = [];
+  const env = {
+    GCLOUD_PROJECT: "demo-penguin-hybrid",
+    GCP_PROJECT: "demo-penguin-hybrid",
+    FIREBASE_CONFIG: '{"projectId":"demo-penguin-hybrid"}',
+    HYBRID_DEMO_FUNCTIONS_ONLY: "1",
+    FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+    FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
+    FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
+    FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
+  };
+  assert.throws(() => runInNewContext(entrypoint, {
+    process: { env },
+    require: name => {
+      imported.push(name);
+      throw new Error("TEST_STOP_BEFORE_LOADING_ANY_DEPENDENCY");
+    },
+    exports: {},
+  }), /TEST_STOP_BEFORE_LOADING_ANY_DEPENDENCY/);
+  assert.deepEqual(imported, ["node:crypto"]);
+});
