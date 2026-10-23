@@ -1,5 +1,14 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 — Phase 7 private Hybrid payment Callable and locked Super Admin review UX (NOT DEPLOYED)
+
+- Latest user Mac **Phase 6** real demo Emulator: safety 7/7, Auth/Firestore/Storage integration 8/8 with exit 0 after optional ownerEmail Rule fix; previous React Parity and build had passed. Do not report Phase 7 Callable UAT as completed; only Phase 6 was run.
+- New `functions/hybrid-billing-payment-callables.js`: App Check enforced named definitions `submitTenantHybridPaymentProof` (tenant owner/admin) and `reviewHybridInvoicePaymentProof` (Super Admin); strict allowlisted input, no client amounts/statuses, sanitized HttpsError, reuse private trusted Slip2Go transaction service. **`HYBRID_PAYMENT_CALLABLE_READY=false`**; module **NOT imported/exported by `functions/index.js` or `functions/bootstrap.js`**. No Function endpoint exists in deployment.
+- UI: `react-app/src/components/HybridReviewDecisionPanel.jsx` renders bilingual finance review note, external bank verification checkbox, and permanently disabled Approve/Reject buttons for pending attempts; included on `/platform/hybrid-invoices`. `react-app/src/data/hybridPaymentActions.js` callable adapter has separate **`HYBRID_PAYMENT_UI_READY=false`**; no Firestore/browser money writes. Existing store invoice preview and real invoice history remain read-only.
+- Tests: `tests/react-parity/hybrid-payment-callables.spec.mjs` 7/7 simulated; `hybrid-payment-review-ui.spec.mjs` 4/4 simulated; old `hybrid-invoice-review-ui.spec.mjs` 5/5 simulated. New tests wired into `npm run test:hybrid-billing`, standalone `npm run test:hybrid-payment-callables`. **Native Mac npm/Vite and Functions Emulator tests NOT run.** Mac mini remote was offline.
+- Complete guide: `docs/HYBRID_PHASE7_PAYMENT_CALLABLES_20261023.md`. Next run Mac `npm run test:hybrid-payment-callables`, `npm run test:hybrid-billing`, `npm run test:react-parity`, `npm run build:react`; build a separate demo-only Functions Emulator integration suite and UAT secured Callables before production. Preserve existing public generated HTML and all master data.
+- No Firebase Production Hosting/Functions/Firestore/Storage deploy, no real invoice issuance, auto subscription suspension or payment approval. Do NOT flip release flags merely to make buttons work.
+
 ## 2026-10-23 — User Mac Phase 6 UAT SUCCESS; Storage optional ownerEmail safe-read follow-up
 
 - The user supplied full Mac terminal log in Markdown attachment: `npm run test:hybrid-emulator-safety` 6/6; **real** `npm run test:firebase-hybrid-emulator` 8/8 with exit 0 and proper emulator shutdown; `npm run test:hybrid-billing` 101/101; `npm run test:react-parity` completed; `npm run build:react` completed with `verify:react-build` PASS build 2026.10.19.526 /react/assets/index-DRAJQJOM.js.
