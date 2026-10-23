@@ -59,6 +59,12 @@ test("emulator integration checks permission barriers and real Admin claim/invoi
   assert.match(storageRules, /firestore\.exists\(invoicePath\)/);
   assert.match(storageRules, /\['issued', 'rejected'\]/);
   assert.match(storageRules, /&& hybridInvoiceAcceptsEvidence\(tenantId, invoiceId\)/);
+  // Storage uploads may be classified as CREATE even when replacing an object.
+  // A storage resource existence condition is necessary for immutability.
+  assert.match(storageRules, /allow create: if resource == null\s*&& tenantBillingAdmin\(tenantId\)/);
+  assert.match(src, /await denied\(updateMetadata\(target,/);
+  assert.match(src, /alteredImage/);
+  assert.match(src, /Rejected overwrites must preserve the original slip bytes/);
 });
 
 test("production automatic issuer and privileged public endpoints remain disabled", () => {
