@@ -34,3 +34,29 @@
 .hybrid-review-actions .btn:disabled{opacity:.48;cursor:not-allowed}
 .hybrid-review-closed{font-size:12px;line-height:1.5;color:#687770}
 @media(max-width:760px){.hybrid-review-decision{min-width:215px;max-width:260px}}
+
+/* Phase 9: tenant evidence is a LOCAL, nonpayment preview until separate release. */
+.hybrid-tenant-proof{margin-top:16px;padding:18px;display:flex;flex-direction:column;gap:12px;border:1px solid #dce9df;border-radius:14px}
+.hybrid-tenant-proof-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.hybrid-tenant-proof-heading h3{margin:0;font-size:18px}
+.hybrid-tenant-proof-heading p{margin:5px 0 0}
+.hybrid-tenant-proof-heading .btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.hybrid-tenant-proof-amount{display:flex;flex-direction:column;gap:4px}
+.hybrid-tenant-proof-amount small{font-size:12px;color:#5f7067}
+.hybrid-tenant-proof-amount strong{font-size:23px;line-height:1.25;color:#183e2c}
+.hybrid-tenant-proof-warning{display:flex;align-items:flex-start;gap:9px;border:1px solid #e7d6a1;background:#fff9e8;border-radius:9px;padding:11px 12px;color:#72500b;line-height:1.5;margin:0}
+.hybrid-tenant-proof-warning .app-icon{margin-top:3px;flex-shrink:0}
+.hybrid-tenant-proof-explain{margin:0;line-height:1.55}
+.hybrid-tenant-proof>label{font-size:13px;font-weight:700}
+.hybrid-tenant-proof input[type=file]{display:block;max-width:100%;font:inherit;font-size:13px}
+.hybrid-tenant-proof>small{line-height:1.5}
+.hybrid-tenant-proof-error{margin:0;color:#a92d29;font-size:13px}
+.hybrid-tenant-proof-summary{display:flex;align-items:flex-start;gap:9px;background:#edf8f0;border:1px solid #cae7d3;padding:11px;border-radius:9px}
+.hybrid-tenant-proof-summary>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hybrid-tenant-proof-summary strong{font-size:13px;overflow-wrap:anywhere}
+.hybrid-tenant-proof-summary small{font-size:12px;color:#3e6950}
+.hybrid-tenant-proof-actions{display:flex}
+.hybrid-tenant-proof-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px}
+.hybrid-tenant-proof-actions .btn:disabled{opacity:.48;cursor:not-allowed}
+.hybrid-tenant-proof-private{color:#5b7366}
+@media(max-width:760px){.hybrid-tenant-proof{padding:14px}.hybrid-tenant-proof-actions .btn{width:100%}.hybrid-tenant-proof-amount strong{font-size:20px}.hybrid-tenant-proof-heading h3{font-size:16px}}
