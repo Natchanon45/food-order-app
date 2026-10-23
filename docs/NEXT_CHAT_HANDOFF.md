@@ -1,5 +1,14 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-24 — Second Functions Emulator attempt still 0/8 due to import-time demo guard; redacted diagnostics added
+
+- User's new Mac log, after syncing commit 40a4f8b6: Phase 8 local safety 9/9 PASS, Java 21 OK, Auth/Firestore/Storage/Functions emulators started for project demo-penguin-hybrid. During CLI function-discovery child, functions/emulator-hybrid/index.cjs line 27 still threw HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS. All 8 integration requests failed with functions/not-found because **no demo Callable endpoints registered**. Financial handlers were NEVER reached. Don't mistake 0/8 as failed financial workflows.
+- Added fail-closed condition diagnostics in functions/emulator-hybrid/index.cjs. It now appends only names of failing checks (demoProject, noConflictingProject, explicitDemoFlag, localFirestore, localAuth, localStorage, localFunctions); it never outputs actual project IDs, hosts, tokens or credentials. No safety check weakened; no Firebase deploy or data writes.
+- Expanded tests/react-parity/hybrid-functions-emulator-safety.spec.mjs with redacted failure reason test. Static isolated JS mock **10/10 PASS**. Real Functions Emulator has NOT been rerun since diagnostics were added.
+- Official Firebase docs reserve ALL FIREBASE_* environment variable names in Functions .env files, as well as GCLOUD_PROJECT/GCP_PROJECT. An attempted functions/emulator-hybrid/.env.local containing those names was immediately reverted/deleted from GitHub; do NOT reintroduce them via .env.local. CLI runner continues explicit values in shell script.
+- Next user Mac run: git pull feature/react-firebase-port; use JDK21 session; npm run test:hybrid-functions-safety; npm run test:hybrid-functions-emulator. If failed, capture the `[failed checks: ...]` phrase after HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS to identify exactly what the CLI discovery worker replaces/omits. Do NOT remove guards or export payment callables to Production to silence the error.
+- All billing release flags remain OFF, React review buttons disabled, no master data changes, no deploy. See docs/HYBRID_PHASE8_FUNCTIONS_EMULATOR_UAT_20261023.md.
+
 ## 2026-10-24 — Phase 8 Mac Emulator 0/8 (guard/setup failure), source fixed, real rerun pending
 
 - User pasted Mac log after pulling d9f57258: Phase 8 `npm run test:hybrid-functions-safety` 8/8 passed; Firebase CLI JDK preflight 21 OK, started demo emulators. Function discovery failed in `functions/emulator-hybrid/index.cjs` with HYBRID_DEMO_FUNCTIONS_FORBIDDEN_OUTSIDE_LOCAL_EMULATORS before server boot. Test before-hook missing FIREBASE_FUNCTIONS_EMULATOR_HOST, so all 8 integration tests failed at setup; **not evidence of 8 failed payment workflows**.
