@@ -178,3 +178,15 @@ test("authenticated wrapper remains server-private and does not expose Cloud Fun
   assert.match(service, /financeReviewer\(db, auth\)/);
   assert.match(service, /assertNoLegacyReferenceUse/);
 });
+
+test("Super Admin can reject duplicate legacy evidence despite blocked approval", async () => {
+  const env = fixture();
+  await env.submit();
+  env.legacy.add("revenueSharePayments:slip2GoTransRef:" + bank.transRef);
+  await assert.rejects(env.review("super-1", "approve"),
+    /ALREADY_USED_BY_LEGACY_BILLING_OR_WALLET/);
+  const rejected = await env.review("super-1", "reject");
+  assert.equal(rejected.status, "rejected");
+  assert.equal(env.invoice().status, "rejected");
+  assert.equal(env.payment().status, "rejected");
+});
