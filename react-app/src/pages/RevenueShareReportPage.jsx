@@ -210,11 +210,9 @@ export function RevenueShareReportPage() {
   const thresholdReached = centralThreshold <= 0 || monthlyDeliverySales >= centralThreshold;
   const monthLabel = displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
   const remainingToThreshold = Math.max(0, centralThreshold - monthlyDeliverySales);
-  const hasLegacyDeliveryDebt = Number(summary.platformAmountDue || 0) > Number(summary.revenueShare || 0);
   const inStoreTotal = Number(summary.inStoreSales || 0);
   const deliveryTotal = Number(summary.deliveryOrderSales || 0);
   const deliveryShareDue = Number(summary.deliveryShareAmount || 0);
-  const lalamoveOutstanding = Number(summary.lalamoveOutstandingCost || 0);
   const failures = report.lalamoveFailures || [];
   const billingCycle = summary.revenueShareBillingCycle === "daily"
     ? "daily" : (access?.billingCycle === "daily" ? "daily" : "monthly");
@@ -565,10 +563,9 @@ export function RevenueShareReportPage() {
           <div className="report-related-grid">
             <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("รวมจากออร์เดอร์ในช่วงรายงาน", "From selected period orders")}</small></div></article>
             <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-box-seam" aria-hidden="true"></i></span><div><span>{rc("ต้นทุน Lalamove", "Lalamove delivery cost")}</span><strong>{money(summary.lalamoveDeliveryCost)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("ไม่ใช่ฐานคิดส่วนแบ่ง", "Not part of revenue share")}</small></div></article>
-            <article className="report-related-tile report-related-platform"><span className="report-related-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ยอดที่ต้องโอนให้ Platform", "Platform amount due")}</span><strong id="platformAmountDue">{money(summary.platformAmountDue)} <small>{rc("บาท", "THB")}</small></strong><small>{Number(summary.platformAmountDue || 0) <= 0 ? rc("ไม่มียอดค้างชำระ", "Nothing due") : rc("รวมยอดค้างที่ต้องชำระจริง", "Includes actual outstanding charges")}</small></div></article>
+            <article className="report-related-tile report-related-platform"><span className="report-related-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ยอดที่ต้องโอนให้ Platform", "Platform amount due")}</span><strong id="platformAmountDue">{money(summary.platformAmountDue)} <small>{rc("บาท", "THB")}</small></strong><small>{Number(summary.platformAmountDue || 0) <= 0 ? rc("ไม่มีส่วนแบ่งค้างชำระ", "No share payable") : rc("เฉพาะส่วนแบ่งยอดขาย ไม่รวมค่าขนส่งที่ตัดเครดิตแล้ว", "Revenue share only; prepaid delivery is excluded")}</small></div></article>
           </div>
           {Number(summary.legacyShareAmount || 0) > 0 ? <div className="report-legacy-share">{rc("ส่วนแบ่งรวม Delivery และสัญญาเดิม", "Total Delivery and legacy revenue share")}: <strong>{money(summary.revenueShare)} {rc("บาท", "THB")}</strong> · {rc("เฉพาะสัญญาเดิม", "Legacy portion")}: {money(summary.legacyShareAmount)} {rc("บาท", "THB")}</div> : null}
-          {hasLegacyDeliveryDebt ? <p className="report-related-debt-note"><i className="bi bi-info-circle" aria-hidden="true"></i>{rc("ยอดโอน Platform รวมต้นทุน Lalamove ที่ยังไม่หัก Wallet " + money(lalamoveOutstanding) + " บาท ไม่ใช่ส่วนแบ่ง Delivery", "The Platform balance includes " + money(lalamoveOutstanding) + " THB of Lalamove not covered by Wallet, not Delivery revenue share.")}</p> : null}
         <section className={"card report-payment-card" + (noAmountDue ? " report-payment-card-zero" : "")} aria-labelledby="reportPaymentTitle">
           <div className="report-section-heading">
             <div><h2 id="reportPaymentTitle"><i className="bi bi-file-earmark-text" aria-hidden="true"></i> {t("revenue_share_report.payment.title")}</h2><p>{t("revenue_share_report.payment.description")}</p></div>
