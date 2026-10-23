@@ -88,7 +88,7 @@
     "test:firebase-hybrid-emulator": "node tools/check-firebase-emulator-java.mjs && firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-emulator.json --only auth,firestore,storage \"node --test tests/firebase-emulator/hybrid-finance-security.spec.mjs\"",
     "test:hybrid-emulator-safety": "node --test tests/react-parity/hybrid-emulator-safety.spec.mjs",
     "test:hybrid-payment-callables": "node --test tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs",
-    "test:hybrid-functions-emulator": "node tools/check-firebase-emulator-java.mjs && HYBRID_DEMO_FUNCTIONS_ONLY=1 firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-functions-emulator.json --only auth,firestore,storage,functions \"node --test tests/firebase-emulator/hybrid-callable-transport.spec.mjs\"",
+    "test:hybrid-functions-emulator": "node tools/check-firebase-emulator-java.mjs && npm run test:hybrid-functions-safety && HYBRID_DEMO_FUNCTIONS_ONLY=1 firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-functions-emulator.json --only auth,firestore,storage,functions \"node --test tests/firebase-emulator/hybrid-callable-transport.spec.mjs\"",
     "test:hybrid-functions-safety": "node --test tests/react-parity/hybrid-functions-emulator-safety.spec.mjs"
   },
   "repository": {
