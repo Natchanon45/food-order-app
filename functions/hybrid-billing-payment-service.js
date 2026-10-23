@@ -7,6 +7,7 @@ const {
   prepareHybridInvoiceProof, stageHybridInvoiceProof, reviewHybridInvoiceProof,
 } = require("./hybrid-billing-payment");
 const { validInvoiceId, validId } = require("./hybrid-billing-payment-policy");
+const { assertTrustedHybridUploadGrant } = require("./hybrid-billing-upload-grant");
 
 async function actorProfile(db, auth) {
   const uid = String(auth?.uid || "");
@@ -62,12 +63,22 @@ async function submitTrustedHybridProof({
   const tenantRef = db.collection("tenants").doc(tenantId);
   const tenantSnap = await tenantRef.get();
   if (!tenantSnap.exists) throw new Error("HYBRID_PAYMENT_TENANT_NOT_FOUND");
+  // Fail before downloading a slip or calling the bank verifier when the
+  // client supplies a fabricated, stolen, consumed or expired attempt.
+  const grantSnap = await tenantRef.collection("hybridBillingUploadGrants")
+    .doc(attemptId).get();
+  assertTrustedHybridUploadGrant({
+    grant: grantSnap.exists ? grantSnap.data() : null,
+    tenantId, invoiceId, attemptId, actorUid: auth.uid, slipPath,
+  });
   const prepared = await prepareHybridInvoiceProof({
     tenantRef, invoiceId, attemptId, slipPath, bucket, inspectSlip,
   });
   await assertNoLegacyReferenceUse(db, prepared.verification);
   return stageHybridInvoiceProof({
     db, tenantRef, prepared, actorId: auth.uid, serverTimestamp,
+    // The financial transaction ALSO verifies & consumes the same grant.
+    requireUploadGrant: true,
   });
 }
 /**

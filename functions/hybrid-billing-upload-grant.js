@@ -19,6 +19,40 @@ const MIME_EXTENSIONS = Object.freeze({
 const RESERVATION_MS = 10 * 60 * 1000;
 const TENANT_ID = /^[A-Za-z0-9_-]{3,160}$/;
 
+// A trusted grant MUST be checked both before expensive bank verification and
+// once more INSIDE the financial transaction before writing shared claims.
+function assertTrustedHybridUploadGrant({
+  grant, tenantId, invoiceId, attemptId, actorUid, slipPath,
+  invoiceSignature, contentType, fileSize, now = new Date(),
+}) {
+  if (!grant || grant.id !== attemptId || grant.tenantId !== tenantId
+    || grant.invoiceId !== invoiceId || grant.actorUid !== actorUid
+    || grant.slipPath !== slipPath || grant.status !== "reserved") {
+    throw new Error("HYBRID_UPLOAD_GRANT_NOT_FOUND_OR_FORBIDDEN");
+  }
+  const expiry = typeof grant.expiresAt?.toDate === "function"
+    ? grant.expiresAt.toDate() : grant.expiresAt;
+  if (!(now instanceof Date) || !Number.isFinite(now.getTime())
+    || !(expiry instanceof Date) || !Number.isFinite(expiry.getTime())
+    || expiry.getTime() <= now.getTime()) {
+    throw new Error("HYBRID_UPLOAD_GRANT_EXPIRED");
+  }
+  if (!Object.hasOwn(MIME_EXTENSIONS, grant.contentType)
+    || !Number.isSafeInteger(grant.maxSize)
+    || grant.maxSize < 1 || grant.maxSize > MAX_BYTES) {
+    throw new Error("HYBRID_UPLOAD_GRANT_INVALID");
+  }
+  if (invoiceSignature !== undefined && grant.invoiceSignature !== invoiceSignature) {
+    throw new Error("HYBRID_UPLOAD_INVOICE_CHANGED");
+  }
+  if ((contentType !== undefined && grant.contentType !== contentType)
+    || (fileSize !== undefined && grant.maxSize !== fileSize)) {
+    throw new Error("HYBRID_UPLOAD_FILE_MISMATCH");
+  }
+  return grant;
+}
+
+
 function validatePrepareRequest(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)
     || Object.getPrototypeOf(input) !== Object.prototype
@@ -102,5 +136,6 @@ async function issueTrustedHybridUploadGrant({
 
 module.exports = {
   MAX_BYTES, MIME_EXTENSIONS, RESERVATION_MS,
-  validatePrepareRequest, issueTrustedHybridUploadGrant,
+  validatePrepareRequest, assertTrustedHybridUploadGrant,
+  issueTrustedHybridUploadGrant,
 };

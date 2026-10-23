@@ -64,7 +64,11 @@ test("emulator integration checks permission barriers and real Admin claim/invoi
   assert.match(storageRules, /&& hybridInvoiceAcceptsEvidence\(tenantId, invoiceId\)/);
   // Storage uploads may be classified as CREATE even when replacing an object.
   // A storage resource existence condition is necessary for immutability.
-  assert.match(storageRules, /allow create: if resource == null\s*&& tenantBillingAdmin\(tenantId\)/);
+  assert.match(storageRules, /allow create: if resource == null\s*&& validHybridEvidenceGrant\(tenantId, invoiceId, attemptId, fileName\)/);
+  assert.match(storageRules, /firestore\.exists\(grantPath\)/);
+  assert.match(storageRules, /data\.get\('actorUid', ''\) == request\.auth\.uid/);
+  assert.match(storageRules, /data\.get\('expiresAt', request\.time\) > request\.time/);
+  assert.match(storageRules, /data\.get\('maxSize', 0\) == request\.resource\.size/);
   assert.match(src, /await denied\(updateMetadata\(target,/);
   assert.match(src, /alteredImage/);
   assert.match(src, /Rejected overwrites must preserve the original slip bytes/);

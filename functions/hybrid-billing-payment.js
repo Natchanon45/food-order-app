@@ -10,6 +10,7 @@ const {
 } = require("./hybrid-billing-payment-policy");
 const { LEDGER_VERSION } = require("./hybrid-billing-ledger");
 const { createHash } = require("node:crypto");
+const { assertTrustedHybridUploadGrant } = require("./hybrid-billing-upload-grant");
 const { claimIds, checkClaimsInTransaction, createClaimsInTransaction } = require("./finance-slip-claims");
 
 function refs(tenantRef, invoiceId, attemptId) {
@@ -87,6 +88,7 @@ async function prepareHybridInvoiceProof({
  */
 async function stageHybridInvoiceProof({
   db, tenantRef, prepared, actorId, serverTimestamp,
+  requireUploadGrant = true,
 }) {
   if (!db?.runTransaction || !tenantRef?.collection || !serverTimestamp
     || !/^[a-zA-Z0-9_-]{3,160}$/.test(String(actorId || ""))) {
@@ -106,6 +108,8 @@ async function stageHybridInvoiceProof({
     attemptId: prepared.attemptId, path: prepared.slipPath,
   });
   const { invoiceRef, attemptRef } = refs(tenantRef, prepared.invoiceId, prepared.attemptId);
+  const grantRef = tenantRef.collection("hybridBillingUploadGrants").doc(prepared.attemptId);
+  const actorRef = db.collection("users").doc(actorId);
   const claims = [...new Set(prepared.fingerprintIds)].sort()
     .map(id => db.collection("hybridBillingSlipReferences").doc(id));
   const sharedClaims = [...new Set(prepared.sharedClaimIds)].sort()
@@ -113,6 +117,10 @@ async function stageHybridInvoiceProof({
   return db.runTransaction(async tx => {
     const invoiceSnap = await tx.get(invoiceRef);
     const attemptSnap = await tx.get(attemptRef);
+    // Authorization is checked *inside* the same transaction as the
+    // invoice update and globally atomic slip-claim reservations.
+    const grantSnap = requireUploadGrant ? await tx.get(grantRef) : null;
+    const actorSnap = requireUploadGrant ? await tx.get(actorRef) : null;
     const claimSnaps = [];
     for (const claim of claims) claimSnaps.push(await tx.get(claim));
     await checkClaimsInTransaction(tx, sharedClaims);
@@ -122,6 +130,21 @@ async function stageHybridInvoiceProof({
     if (invoice.signature !== prepared.invoiceSignature
       || satang(invoice.amount) !== satang(prepared.invoiceAmount)) {
       throw new Error("HYBRID_PAYMENT_INVOICE_CHANGED_DURING_VERIFICATION");
+    }
+    if (requireUploadGrant) {
+      const profile = actorSnap?.exists ? actorSnap.data() : null;
+      if (!profile || profile.active === false
+        || profile.tenantId !== tenantRef.id
+        || !["owner", "admin"].includes(profile.role)) {
+        throw new Error("HYBRID_PAYMENT_TENANT_ADMIN_REQUIRED");
+      }
+      assertTrustedHybridUploadGrant({
+        grant: grantSnap?.exists ? grantSnap.data() : null,
+        tenantId: tenantRef.id, invoiceId: prepared.invoiceId,
+        attemptId: prepared.attemptId, actorUid: actorId,
+        slipPath: prepared.slipPath, invoiceSignature: invoice.signature,
+        contentType: prepared.mime, fileSize: prepared.size,
+      });
     }
     if (attemptSnap.exists) throw new Error("HYBRID_PAYMENT_ATTEMPT_ALREADY_EXISTS");
     if (claimSnaps.some(snap => snap.exists)) {
@@ -136,6 +159,9 @@ async function stageHybridInvoiceProof({
     createClaimsInTransaction(tx, sharedClaims, {
       channel: "hybrid", tenantId: tenantRef.id, recordId: prepared.attemptId,
     }, serverTimestamp);
+    if (requireUploadGrant) tx.update(grantRef, {
+      status: "consumed", usedAt: serverTimestamp,
+    });
     tx.create(attemptRef, {
       id: prepared.attemptId, invoiceId: prepared.invoiceId,
       tenantId: tenantRef.id, invoiceSignature: prepared.invoiceSignature,

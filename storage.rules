@@ -96,6 +96,29 @@ service firebase.storage {
       return firestore.exists(invoicePath)
         && firestore.get(invoicePath).data.get('status', '') in ['issued', 'rejected'];
     }
+    // A short-lived server-only reservation is the *only* authority to upload.
+    // The browser may not write/read the Firestore grant, choose another
+    // filename, change the expected byte count, or upload as another tenant.
+    function validHybridEvidenceGrant(tenantId, invoiceId, attemptId, fileName) {
+      let grantPath = /databases/(default)/documents/tenants/$(tenantId)/hybridBillingUploadGrants/$(attemptId);
+      let invoicePath = /databases/(default)/documents/tenants/$(tenantId)/hybridBillingInvoices/$(invoiceId);
+      return signedIn()
+        && firestore.exists(grantPath)
+        && firestore.exists(invoicePath)
+        && staffProfile().active == true
+        && staffProfile().tenantId == tenantId
+        && staffProfile().role in ['owner', 'admin']
+        && firestore.get(grantPath).data.get('id', '') == attemptId
+        && firestore.get(grantPath).data.get('tenantId', '') == tenantId
+        && firestore.get(grantPath).data.get('invoiceId', '') == invoiceId
+        && firestore.get(grantPath).data.get('actorUid', '') == request.auth.uid
+        && firestore.get(grantPath).data.get('status', '') == 'reserved'
+        && firestore.get(grantPath).data.get('expiresAt', request.time) > request.time
+        && firestore.get(grantPath).data.get('invoiceSignature', '') == firestore.get(invoicePath).data.get('signature', '')
+        && firestore.get(grantPath).data.get('slipPath', '') == 'tenants/' + tenantId + '/hybrid-billing-slips/' + invoiceId + '/' + attemptId + '/' + fileName
+        && firestore.get(grantPath).data.get('contentType', '') == request.resource.contentType
+        && firestore.get(grantPath).data.get('maxSize', 0) == request.resource.size;
+    }
 
     match /platform-branding/{fileName} {
       allow read: if true;
@@ -144,7 +167,7 @@ service firebase.storage {
       // that no object existed before this write; update:false alone is
       // insufficient to guarantee immutable bank evidence.
       allow create: if resource == null
-        && tenantBillingAdmin(tenantId)
+        && validHybridEvidenceGrant(tenantId, invoiceId, attemptId, fileName)
         && hybridInvoiceAcceptsEvidence(tenantId, invoiceId)
         && invoiceId.matches('20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:(delivery:.*|monthly:fixed)')
         && attemptId.matches('[A-Za-z0-9_-]{16,80}')
