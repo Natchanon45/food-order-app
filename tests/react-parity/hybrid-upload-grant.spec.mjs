@@ -5,7 +5,8 @@ import { createRequire } from "node:module";
 
 const fromFunctions = createRequire(new URL("../../functions/package.json", import.meta.url));
 const { MAX_BYTES, MIME_EXTENSIONS, RESERVATION_MS,
-  validatePrepareRequest, issueTrustedHybridUploadGrant } =
+  validatePrepareRequest, assertTrustedHybridUploadGrant,
+  issueTrustedHybridUploadGrant } =
   fromFunctions("./hybrid-billing-upload-grant");
 const input = { tenantId: "shop-a", invoiceId: "2026-10-22:delivery:trigger",
   contentType: "image/png", fileSize: 380000 };
@@ -133,4 +134,41 @@ test("production has no public upload endpoint and React still has no file trans
   assert.doesNotMatch(panel + model, /uploadBytes\(|httpsCallable\(/);
   assert.match(prodCallable, /HYBRID_PAYMENT_CALLABLE_READY = false/);
   assert.match(model, /HYBRID_TENANT_PROOF_SUBMISSION_READY = false/);
+});
+
+test("trusted grant contract rejects theft, replay, expiry, mismatched bytes and invoice", () => {
+  const record = {
+    id: attemptId, tenantId: "shop-a", invoiceId: input.invoiceId,
+    actorUid: "uid-one", status: "reserved",
+    contentType: "image/png", maxSize: 32,
+    invoiceSignature: "a".repeat(64),
+    expiresAt: new Date("2026-10-24T00:10:00.000Z"),
+    slipPath: "tenants/shop-a/hybrid-billing-slips/" +
+      input.invoiceId + "/" + attemptId + "/evidence.png",
+  };
+  const good = { grant: record, tenantId: "shop-a", invoiceId: input.invoiceId,
+    attemptId, actorUid: "uid-one", slipPath: record.slipPath,
+    invoiceSignature: record.invoiceSignature, contentType: "image/png",
+    fileSize: 32, now: new Date("2026-10-24T00:05:00.000Z") };
+  assert.equal(assertTrustedHybridUploadGrant(good), record);
+  for (const [changes, error] of [
+    [{ actorUid: "uid-two" }, /NOT_FOUND_OR_FORBIDDEN/],
+    [{ slipPath: "tenants/another/file" }, /NOT_FOUND_OR_FORBIDDEN/],
+    [{ tenantId: "shop-b" }, /NOT_FOUND_OR_FORBIDDEN/],
+    [{ attemptId: "another_fake_attempt_123456" }, /NOT_FOUND_OR_FORBIDDEN/],
+    [{ invoiceSignature: "b".repeat(64) }, /INVOICE_CHANGED/],
+    [{ contentType: "application/pdf" }, /FILE_MISMATCH/],
+    [{ fileSize: 33 }, /FILE_MISMATCH/],
+    [{ now: new Date("2026-10-24T00:10:00.000Z") }, /EXPIRED/],
+  ]) assert.throws(() => assertTrustedHybridUploadGrant({ ...good, ...changes }), error);
+  for (const [changes, error] of [
+    [{ status: "consumed" }, /NOT_FOUND_OR_FORBIDDEN/],
+    [{ actorUid: "uid-two" }, /NOT_FOUND_OR_FORBIDDEN/],
+    [{ expiresAt: new Date("2026-10-23T00:00:00.000Z") }, /EXPIRED/],
+    [{ contentType: "text/html" }, /GRANT_INVALID/],
+    [{ maxSize: 10485761 }, /GRANT_INVALID/],
+    [{ maxSize: 50 }, /FILE_MISMATCH/],
+  ]) assert.throws(() => assertTrustedHybridUploadGrant({
+    ...good, grant: { ...record, ...changes },
+  }), error);
 });

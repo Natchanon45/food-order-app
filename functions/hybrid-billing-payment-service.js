@@ -123,7 +123,7 @@ async function listTrustedTenantHybridInvoices({
     .collection("hybridBillingInvoices")
     .orderBy("date", "desc").limit(limit).get();
   return invoices.docs.map(doc => ({
-    id: doc.id, ...doc.data(),
+    ...doc.data(), id: doc.id,
     // Do not expose secrets or internal slip-verification raw payload here.
   }));
 }

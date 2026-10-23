@@ -250,3 +250,18 @@ test("Phase 10A upload grant exists only behind test-only authenticated Callable
   assert.match(firestoreRules, /match \/hybridBillingUploadGrants\/\{attemptId\} \{\s*allow read, write: if false;/);
   assert.doesNotMatch(uploadGrant, /uploadBytes\(|financeSlipClaims|onCall\(/);
 });
+
+test("trusted proof submit requires unexpired grant before verification and consumes it atomically", () => {
+  const service = read("functions/hybrid-billing-payment-service.js");
+  const payment = read("functions/hybrid-billing-payment.js");
+  assert.match(service, /assertTrustedHybridUploadGrant\(\{/);
+  assert.match(service, /requireUploadGrant: true/);
+  assert.match(payment, /requireUploadGrant = true/);
+  assert.match(payment, /const grantSnap = requireUploadGrant \? await tx\.get\(grantRef\)/);
+  assert.match(payment, /const actorSnap = requireUploadGrant \? await tx\.get\(actorRef\)/);
+  assert.match(payment, /assertTrustedHybridUploadGrant\(\{/);
+  assert.match(payment, /tx\.update\(grantRef, \{/);
+  assert.match(payment, /status: "consumed"/);
+  assert.match(transport, /reserveAndUpload\(/);
+  assert.doesNotMatch(transport, /await upload\(/);
+});

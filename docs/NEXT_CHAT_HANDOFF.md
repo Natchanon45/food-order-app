@@ -1,3 +1,11 @@
+## 2026-10-24 — Phase 10 continuation: grant-enforced Storage + atomic submit (native tests pending)
+
+- Owner explicitly requested finishing in Phase 10, without adding Phase 10A/10B/C or Phase 11. Source already committed on feature/react-firebase-port; check latest HEAD.
+- Complete grant enforcement was wired to Storage Rules with exact reserved UID/invoice/path/MIME/byte count/expiry/signature/active role, no overwrites; private trusted submit preflight rejects missing/stolen/expired/used grants, and payment staging transaction reads grant+actor, consumes grant atomically with invoice pending, payment attempts and shared dedupe claims. `requireUploadGrant` defaults TRUE; old direct unit transaction fixtures alone may pass FALSE.
+- Demo-only real Auth/Storage/Functions UAT tests updated to call `demoHybridPrepareUpload` first, upload and submit via server grant, then authorize Super Admin review. Added negative tests for stolen/unreserved/expired grants and missing/consumed grants. React UI and Production endpoints remain hard-disabled.
+- **Mac still OFFLINE. GitHub/source validation is not equivalent to Native test/Emulator passing.** Run `npm run test:hybrid-upload-grant`, `npm run test:hybrid-invoice-payment-service` (if script exists; otherwise `node --test tests/react-parity/hybrid-invoice-payment-service.spec.mjs`), `npm run test:hybrid-functions-safety`, `npm run test:hybrid-emulator-safety`, JDK21 `npm run test:firebase-hybrid-emulator`, `npm run test:hybrid-functions-emulator`, `npm run test:hybrid-billing`, `npm run test:react-parity`, `npm run build:react`. Analyze failures before production approval.
+- Remaining final Phase 10 work: real bank/Slip2Go/AppCheck UAT, beneficiary verification, exception/refund/credit/suspension-policy UX, full E2E browser and device parity, owner signoff. No production deploy, no main merge. Preserve dirty generated `public/**/index.html`.
+
 ## 2026-10-24 — Phase 10A server-generated upload reservation (GitHub-only, Emulator UAT pending)
 
 - Owner confirmed Phase 9 Mac tests passed. Current Mac Remote Desktop Commander device remained OFFLINE in this turn.

@@ -1,4 +1,4 @@
-# PENGUIN Hybrid Billing — Phase 10A: Server-issued Evidence Upload Reservations
+# PENGUIN Hybrid Billing — Phase 10: Evidence Upload & Payment Security
 
 Date: 24 October 2026  
 Branch: `feature/react-firebase-port`  
@@ -52,3 +52,13 @@ Do not reset, clean, merge to main or deploy Production. `build:react` can regen
 - A separate **real Firestore Emulator** test now creates one Admin-only grant and checks that Owner/Admin/Cashier/other store/Super Admin/anonymous browser identities cannot get, list, create, update or delete it.
 - A source-level JavaScript V8 execution check directly exercised the private grant implementation with deterministic fake Firestore transactions: **18/18 passed** for input allowlists, rejection paths, ID/path issuance, 10-minute expiry, role denial, no invoice mutation and reservation replay collision. This is NOT the Node test suite and does NOT simulate real Emulator Rules/SDK behavior.
 - The new Emulator permission test, actual demo Callable request, Node regression suite and React build remain **unrun on the offline Mac**. Do not state they passed until Mac result logs are available.
+
+## 24 October 2026 — Phase 10 continuation (same FINAL phase, not a new phase)
+
+- Server-issued grants are now **required** in the private submit service before any Storage download/bank-verifier work. Nonexistent, foreign-owned, consumed or expired grants fail closed.
+- `stageHybridInvoiceProof` requires grants **by default**, reads the trusted actor profile and grant **inside** its Firestore transaction, checks UID/tenant/invoice/signature/MIME/exact byte size/expiry/role, and marks the grant `consumed` atomically with pending invoice, payment attempt and global SHA256/bank-reference claims. Historical unit-only bare-stage fixtures explicitly opt out of grant validation; no production handler opts out.
+- Storage Rules `validHybridEvidenceGrant` now requires a server-only Firestore grant with matching authenticated active owner/admin, invoice, UID, exact object path, MIME/size, status `reserved` and unexpired timestamp; `resource == null` prevents overwriting even when Storage classifies it as CREATE. No other Storage paths broadened.
+- Real Auth/Functions Emulator transport suite revised to issue `demoHybridPrepareUpload` before each upload, then submit/review, including cross-shop SHA256 reuse, unauthorized stolen grant, expired grant, non-issued invoice and consumed-grant replay.
+- Real Storage Emulator suite revised to seed server-owned grants and reject direct forged paths, expired grants and owner/admin grant theft.
+- ***Status: source committed to branch; full native Mac tests and Firebase Emulator runs remain PENDING because Mac mini was offline.*** No Production App Check/Slip2Go end-to-end proof, no React Upload enabled, no Firebase deploy/merge.
+- The user explicitly requested Phase 10 be the FINAL phase: do not add further subphase names. Remaining final acceptance includes App Check, receiver-bank config, manual finance audit, refund/credit controls, suspension/recovery logic, and complete native mobile/desktop UAT.
