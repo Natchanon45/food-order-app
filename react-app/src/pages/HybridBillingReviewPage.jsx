@@ -8,6 +8,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { HybridReviewDecisionPanel } from "@/components/HybridReviewDecisionPanel";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
+import { isHybridDemoMode } from "@/firebase/client";
 import {
   listHybridTenants, listHybridInvoices, listHybridPaymentAttempts,
 } from "@/data/hybridInvoiceReviewData";
@@ -133,6 +134,10 @@ export function HybridBillingReviewPage() {
               "Issued invoices and payment attempts (read-only)", thai)}</p>
           </div>
         </section>
+        {isHybridDemoMode ? <p role="status" className="hybrid-demo-banner">
+          {label("นี่คือระบบทดสอบ Emulator • ผลยืนยันธนาคารและสถานะ Paid เป็นข้อมูลจำลองเท่านั้น",
+            "Local Emulator only • Bank confirmations and PAID states are synthetic test records.", thai)}
+        </p> : null}
         <p role="status" className="hybrid-report-notice">
           {label("ยังไม่เปิดออกบิลและอนุมัติชำระเงินจริงผ่านหน้านี้ โปรดอย่าใช้ยอดคาดการณ์เป็นยอดค้างชำระ",
             "Invoice issuance and approval are not enabled here. Projections are not payable balances.", thai)}
