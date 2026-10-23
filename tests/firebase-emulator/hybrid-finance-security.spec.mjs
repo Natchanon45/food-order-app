@@ -7,7 +7,7 @@ import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } from "fi
 import { getFirestore, connectFirestoreEmulator, doc, getDoc, getDocs,
   collection, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { getStorage, connectStorageEmulator, ref as storageRef,
-  uploadBytes, deleteObject, getBytes } from "firebase/storage";
+  uploadBytes, deleteObject, getBytes, updateMetadata, getMetadata } from "firebase/storage";
 
 const projectId = "demo-penguin-hybrid";
 const bucketName = projectId + ".appspot.com";
@@ -172,7 +172,21 @@ test("Storage permits own owner/admin write-once slip, rejects replacement and d
     const target = storageRef(identities.get(name).storage, path);
     await uploadBytes(target, image, { contentType: "image/png" });
     assert.equal((await getBytes(target)).byteLength, image.byteLength);
-    await denied(uploadBytes(target, image, { contentType: "image/png" }));
+    // Firebase Storage may classify a second upload as CREATE, not UPDATE.
+    // The resource == null guard must deny both identical and changed bytes.
+    await denied(uploadBytes(target, image, { contentType: "image/png" }),
+      "The same bytes must not be uploaded again to existing bank evidence");
+    const alteredImage = new Uint8Array([137, 80, 78, 71, 0, 99, 98, 97]);
+    await denied(uploadBytes(target, alteredImage, { contentType: "image/png" }),
+      "Even a different file must not replace an existing bank slip");
+    await denied(updateMetadata(target, {
+      customMetadata: { forgedFinanceStatus: "paid" },
+    }), "Uploaded slip metadata must be immutable");
+    assert.deepEqual(new Uint8Array(await getBytes(target)), image,
+      "Rejected overwrites must preserve the original slip bytes");
+    const metadata = await getMetadata(target);
+    assert.equal(metadata.customMetadata?.forgedFinanceStatus, undefined,
+      "Rejected metadata changes must never persist");
     await denied(deleteObject(target));
   }
   const other = storageRef(identities.get("owner-b").storage, proofPath);
