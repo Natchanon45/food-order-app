@@ -80,3 +80,31 @@ test("Report keeps the period picker, payment review/history, and keeps Wallet/L
   assert.equal(css, sourceCss, "built parity CSS must match canonical React source");
   assert.match(css, /@media\(max-width:620px\)/);
 });
+
+test("Approved report design keeps the compact dashboard hierarchy and responsive layout", () => {
+  const ordered = [
+    "revenue-share-hero", "report-filter-card", "report-channel-overview",
+    "report-month-progress", "report-share-math", "report-related-amounts",
+    "report-extra", "report-payment-card", "report-history-disclosure",
+  ];
+  let previous = -1;
+  for (const block of ordered) {
+    const position = report.indexOf(block);
+    assert.ok(position > previous, "Report design hierarchy changed: " + block);
+    previous = position;
+  }
+  assert.match(report, /report-hero-symbol/);
+  assert.match(report, /report-hero-art/);
+  assert.match(report, /report-filter-refresh/);
+  assert.match(report, /report-progress-barline/);
+  assert.match(report, /report-progress-caption/);
+  assert.match(report, /report-share-month/);
+  assert.match(report, /report-related-platform/);
+  assert.match(report, /report-payment-card-zero/);
+  assert.match(css, /REVENUE_REPORT_APPROVED_DASHBOARD_20261023/);
+  assert.match(css, /\.revenue-share-dashboard \.report-filter-card\{/);
+  assert.match(css, /\.revenue-share-dashboard \.report-share-math \.report-share-equation\{/);
+  assert.match(css, /@media\(max-width:700px\)/);
+  assert.match(css, /@media\(max-width:390px\)/);
+  assert.equal(css, sourceCss);
+});
