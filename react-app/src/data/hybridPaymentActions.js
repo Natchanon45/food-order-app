@@ -1,26 +1,17 @@
-import { httpsCallable } from "firebase/functions";
-import { functions } from "@/firebase/client";
-
-// The server also has HYBRID_PAYMENT_CALLABLE_READY = false.
-// Never allow the client to enable money movement from user settings.
+// Phase 7 review UX is a deliberately non-operational preview.
+// Do not reference an unregistered Firebase Callable from the React bundle:
+// tools/react-callable-contract.mjs requires every client Callable to be
+// exported by functions/index.js, whereas this write endpoint is not released.
+//
+// Releasing payments requires a separately reviewed change that registers
+// the server Callable, passes live Functions Emulator UAT and updates this
+// adapter and its independent UI/server gates together.
 export const HYBRID_PAYMENT_UI_READY = false;
 
-function assertReady() {
+export async function reviewHybridPayment() {
   if (!HYBRID_PAYMENT_UI_READY) {
     throw new Error("HYBRID_PAYMENT_NOT_RELEASED");
   }
-}
-export async function reviewHybridPayment({
-  tenantId, invoiceId, attemptId, action,
-  note, verifiedExternally = false,
-}) {
-  assertReady();
-  // Only these identifiers, action and reviewer note travel to the server.
-  // Amount, bank beneficiary, paid status and reviewer identity must come
-  // from the trusted Admin SDK and authenticated Firebase session.
-  const callable = httpsCallable(functions, "reviewHybridInvoicePaymentProof");
-  const result = await callable({
-    tenantId, invoiceId, attemptId, action, note, verifiedExternally,
-  });
-  return result.data;
+  // A future UI switch must never silently enable a missing/misrouted API.
+  throw new Error("HYBRID_PAYMENT_CALLABLE_UNREGISTERED");
 }
