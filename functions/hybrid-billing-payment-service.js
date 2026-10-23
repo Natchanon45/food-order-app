@@ -6,7 +6,7 @@
 const {
   prepareHybridInvoiceProof, stageHybridInvoiceProof, reviewHybridInvoiceProof,
 } = require("./hybrid-billing-payment");
-const { validInvoiceId } = require("./hybrid-billing-payment-policy");
+const { validInvoiceId, validId } = require("./hybrid-billing-payment-policy");
 
 async function actorProfile(db, auth) {
   const uid = String(auth?.uid || "");
@@ -80,6 +80,7 @@ async function reviewTrustedHybridProof({
 }) {
   const actor = await financeReviewer(db, auth);
   validInvoiceId(invoiceId);
+  validId(attemptId, "ATTEMPT_ID");
   const tenantRef = db.collection("tenants").doc(tenantId);
   const attemptSnap = await tenantRef.collection("hybridBillingPaymentAttempts")
     .doc(attemptId).get();
