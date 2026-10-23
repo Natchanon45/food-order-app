@@ -79,3 +79,16 @@ test("Firebase Emulator refuses JDK 17 before starting Firebase CLI", () => {
   assert.match(javaGuard, /brew install openjdk@21/);
   assert.match(javaGuard, /process\.exit\(1\)/);
 });
+
+test("Storage tenant ownership tolerates optional ownerEmail without broadening access", () => {
+  const begin = storageRules.indexOf("function tenantOwner(tenantId)");
+  const end = storageRules.indexOf("function userTenantProductAdmin(", begin);
+  assert.ok(begin >= 0 && end > begin);
+  const ownerRule = storageRules.slice(begin, end);
+  assert.match(ownerRule, /signedIn\(\)/);
+  assert.match(ownerRule, /firestore\.exists\(tenantPath\)/);
+  assert.match(ownerRule, /data\.get\('ownerUid', ''\)/);
+  assert.match(ownerRule, /data\.get\('ownerEmail', ''\)/);
+  assert.match(ownerRule, /request\.auth\.token\.get\('email', ''\) != ''/);
+  assert.doesNotMatch(ownerRule, /\.data\.ownerEmail\b|\.data\.ownerUid\b/);
+});
