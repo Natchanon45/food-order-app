@@ -501,53 +501,184 @@ async function appendFailure(tenantRef, order, stage, error, context = {}) {
   return entry;
 }
 
-async function debitCentralWallet(tenantRef, order, quote, lalamoveOrder) {
-  const db = getFirestore();
+// A dispatch attempt is a durable Firestore lock. Never POST to Lalamove
+// before the prepaid balance is reserved atomically with this lock.
+async function reserveDispatch(context, order, quote) {
+  const central = context.account.mode === "fod_central";
   const amount = money(quote.fee);
-  if (amount <= 0.009) return null;
-  const walletRef = tenantRef.collection("settings").doc("lalamoveWallet");
-  const txId = randomUUID();
-  const ledgerRef = tenantRef.collection("lalamoveWalletTransactions").doc(txId);
-  let result = null;
-  await db.runTransaction(async transaction => {
-    const walletSnap = await transaction.get(walletRef);
-    const before = money(walletSnap.data()?.balance);
-    if (before + 0.009 < amount) {
-      throw new HttpsError("failed-precondition", "FOD_WALLET_INSUFFICIENT_BALANCE", {
-        requiredAmount: amount,
-        walletBalance: before,
-        currency: String(walletSnap.data()?.currency || "THB"),
+  if (central && (!(amount > 0) || !Number.isFinite(Number(quote.fee))
+    || String(quote.currency || "THB").toUpperCase() !== "THB")) {
+    throw new HttpsError("failed-precondition", "FOD_WALLET_QUOTE_INVALID");
+  }
+  const db = getFirestore();
+  const token = randomUUID();
+  const attempt = {
+    id: token, amount: central ? amount : 0,
+    transactionId: central ? "dispatch_" + token : "",
+    quotationId: String(quote.quotationId || ""),
+    startedAt: new Date().toISOString(),
+    state: "reserved",
+    accountMode: context.account.mode,
+  };
+  const walletRef = context.tenantRef.collection("settings").doc("lalamoveWallet");
+  const ledgerRef = central
+    ? context.tenantRef.collection("lalamoveWalletTransactions").doc(attempt.transactionId) : null;
+  let balanceAfter = null;
+  await db.runTransaction(async tx => {
+    const latest = await tx.get(context.orderRef);
+    if (!latest.exists || !readyToDispatch(latest.data() || {})) {
+      throw new HttpsError("failed-precondition", "LALAMOVE_ORDER_NOT_READY");
+    }
+    if (String(latest.data()?.lalamoveOrderId || "")) {
+      throw new HttpsError("failed-precondition", "LALAMOVE_ORDER_ALREADY_PLACED");
+    }
+    if (latest.data()?.lalamoveDispatchReservation?.id) {
+      throw new HttpsError("failed-precondition", "LALAMOVE_DISPATCH_IN_PROGRESS", {
+        attemptId: String(latest.data().lalamoveDispatchReservation.id),
       });
     }
-    const after = money(before - amount);
-    transaction.set(walletRef, {
-      balance: after,
-      currency: "THB",
+    const walletSnap = central ? await tx.get(walletRef) : null;
+    if (central) {
+      const balance = money(walletSnap.data()?.balance);
+      if (balance + 0.009 < amount) {
+        throw new HttpsError("failed-precondition", "FOD_WALLET_INSUFFICIENT_BALANCE", {
+          requiredAmount: amount, walletBalance: balance,
+          currency: String(walletSnap.data()?.currency || "THB"),
+        });
+      }
+      balanceAfter = money(balance - amount);
+      tx.set(walletRef, {
+        balance: balanceAfter, currency: "THB",
+        updatedAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
+      tx.set(ledgerRef, {
+        type: "delivery_debit", direction: "debit", status: "reserved",
+        amount, balanceBefore: balance, balanceAfter, currency: "THB",
+        orderId: order.id, quotationId: attempt.quotationId,
+        reference: "DISPATCH:" + token, note: "Reserved for Lalamove dispatch",
+        metadata: { accountMode: "fod_central", attemptId: token },
+        createdBy: "system:lalamove-dispatch",
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    }
+    tx.set(context.orderRef, {
+      lalamoveDispatchReservation: attempt,
+      ...(central ? {
+        lalamoveWalletDebitPending: true,
+        lalamoveWalletDebitAttemptedAmount: amount,
+        lalamoveWalletDebitAttemptedAt: attempt.startedAt,
+      } : {}),
       updatedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
-    transaction.set(ledgerRef, {
-      type: "delivery_debit",
-      direction: "debit",
-      amount,
-      balanceBefore: before,
-      balanceAfter: after,
-      currency: "THB",
-      orderId: order.id,
-      lalamoveOrderId: String(lalamoveOrder.orderId || ""),
-      quotationId: String(quote.quotationId || ""),
-      reference: String(lalamoveOrder.orderId || "") ? `LALAMOVE:${lalamoveOrder.orderId}` : "",
-      note: "Lalamove delivery fee via LUKKAJA Central",
-      metadata: {
-        accountMode: "fod_central",
-        environment: String(order.lalamoveAccountEnvironment || "sandbox"),
-        providerFee: Number.isFinite(Number(lalamoveOrder.fee)) ? Number(lalamoveOrder.fee) : amount,
-      },
-      createdBy: "system:lalamove-dispatch",
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    result = { id: txId, amount, balanceBefore: before, balanceAfter: after };
   });
-  return result;
+  return { ...attempt, balanceAfter };
+}
+
+// Release funds ONLY after a definitive provider rejection. Timeouts, 409,
+// 408, 429 and 5xx may hide an accepted order and must remain reserved.
+function definitelyRejected(provider) {
+  return Number(provider?.status) >= 400 && Number(provider?.status) < 500
+    && ![408, 409, 429].includes(Number(provider.status));
+}
+
+async function releaseRejectedDispatch(context, attempt, provider) {
+  const central = attempt.accountMode === "fod_central";
+  const db = getFirestore();
+  const walletRef = context.tenantRef.collection("settings").doc("lalamoveWallet");
+  const ledgerRef = central
+    ? context.tenantRef.collection("lalamoveWalletTransactions").doc(attempt.transactionId) : null;
+  const refundRef = central
+    ? context.tenantRef.collection("lalamoveWalletTransactions").doc("refund_" + attempt.id) : null;
+  await db.runTransaction(async tx => {
+    const current = await tx.get(context.orderRef);
+    if (current.data()?.lalamoveDispatchReservation?.id !== attempt.id) return;
+    if (String(current.data()?.lalamoveOrderId || "")) {
+      throw new HttpsError("failed-precondition", "LALAMOVE_ORDER_ALREADY_PLACED");
+    }
+    if (central) {
+      const wallet = await tx.get(walletRef);
+      const before = money(wallet.data()?.balance);
+      const after = money(before + attempt.amount);
+      tx.set(walletRef, { balance: after, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+      tx.set(ledgerRef, {
+        status: "reversed", rejectionStatus: Number(provider.status),
+        updatedAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
+      tx.set(refundRef, {
+        type: "delivery_refund", direction: "credit", amount: attempt.amount,
+        balanceBefore: before, balanceAfter: after, currency: "THB",
+        orderId: current.id, quotationId: attempt.quotationId,
+        reference: "DISPATCH-REJECTED:" + attempt.id,
+        metadata: { attemptId: attempt.id, reason: "definitive_provider_rejection" },
+        createdBy: "system:lalamove-dispatch",
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    }
+    tx.set(context.orderRef, {
+      lalamoveDispatchReservation: FieldValue.delete(),
+      ...(central ? {
+        lalamoveWalletDebitPending: false,
+        lalamoveWalletDebitError: FieldValue.delete(),
+      } : {}),
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+  });
+}
+
+async function holdUncertainDispatch(context, attempt, reason) {
+  await getFirestore().runTransaction(async tx => {
+    const latest = await tx.get(context.orderRef);
+    if (latest.data()?.lalamoveDispatchReservation?.id !== attempt.id) return;
+    tx.set(context.orderRef, {
+      lalamoveDispatchReservation: {
+        ...attempt,
+        state: "review_required",
+        reason: String(reason || "LALAMOVE_RESULT_UNCERTAIN").slice(0, 200),
+      },
+      ...(attempt.accountMode === "fod_central"
+        ? { lalamoveWalletDebitPending: true, lalamoveWalletDebitError: "LALAMOVE_RESULT_UNCERTAIN" } : {}),
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+  });
+}
+
+async function settleDispatch(context, attempt, patch, placed) {
+  const central = attempt.accountMode === "fod_central";
+  const ledgerRef = central
+    ? context.tenantRef.collection("lalamoveWalletTransactions").doc(attempt.transactionId) : null;
+  await getFirestore().runTransaction(async tx => {
+    const latest = await tx.get(context.orderRef);
+    if (latest.data()?.lalamoveDispatchReservation?.id !== attempt.id
+      || String(latest.data()?.lalamoveOrderId || "")) {
+      throw new HttpsError("failed-precondition", "LALAMOVE_DISPATCH_RECONCILIATION_REQUIRED");
+    }
+    if (central) {
+      // The accepted quotation is the amount pre-authorized and debited.
+      // A different final provider amount needs review, not an unpaid invoice.
+      if (Number.isFinite(Number(placed.fee))
+        && Math.abs(money(placed.fee) - attempt.amount) >= 0.01) {
+        throw new HttpsError("failed-precondition", "LALAMOVE_FEE_MISMATCH_REVIEW_REQUIRED");
+      }
+      tx.set(ledgerRef, {
+        status: "settled", lalamoveOrderId: placed.orderId,
+        reference: "LALAMOVE:" + placed.orderId,
+        note: "Lalamove delivery fee via LUKKAJA Central",
+        updatedAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
+    }
+    tx.set(context.orderRef, {
+      ...patch,
+      lalamoveDispatchReservation: FieldValue.delete(),
+      ...(central ? {
+        lalamoveWalletDebitTransactionId: attempt.transactionId,
+        lalamoveWalletDebitedAmount: attempt.amount,
+        lalamoveWalletBalanceAfter: attempt.balanceAfter,
+        lalamoveWalletDebitedAt: patch.lalamoveDispatchPlacedAt,
+        lalamoveWalletDebitPending: false,
+        lalamoveWalletDebitError: FieldValue.delete(),
+      } : {}),
+    }, { merge: true });
+  });
 }
 
 async function quoteAction(request) {
@@ -653,25 +784,6 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
     throw new HttpsError("failed-precondition", "LALAMOVE_COD_QUOTATION_REQUIRED");
   }
 
-  if (context.account.mode === "fod_central") {
-    const walletSnap = await context.tenantRef.collection("settings").doc("lalamoveWallet").get();
-    const balance = money(walletSnap.data()?.balance);
-    const required = money(quote.fee);
-    if (required > balance + 0.009) {
-      await appendFailure(context.tenantRef, order, "wallet", "FOD_WALLET_INSUFFICIENT_BALANCE", {
-        requiredAmount: required,
-        walletBalance: balance,
-        quoteFee: required,
-        currency: String(walletSnap.data()?.currency || "THB"),
-      });
-      throw new HttpsError("failed-precondition", "FOD_WALLET_INSUFFICIENT_BALANCE", {
-        requiredAmount: required,
-        walletBalance: balance,
-        currency: String(walletSnap.data()?.currency || "THB"),
-      });
-    }
-  }
-
   const metadata = {
     fodOrderId: String(order.id),
     tenantId: String(context.profile.tenantId),
@@ -697,8 +809,25 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
     },
   };
 
+  let attempt;
+  try {
+    attempt = await reserveDispatch(context, order, quote);
+  } catch (error) {
+    if (String(error?.message || "") === "FOD_WALLET_INSUFFICIENT_BALANCE") {
+      await appendFailure(context.tenantRef, order, "wallet", error.message, {
+        ...(error.details || {}), quoteFee: quote.fee,
+      });
+    }
+    throw error;
+  }
+  // A second request cannot reach this POST while the order holds a reservation.
   const provider = await providerRequest(context.account.credentials, "POST", "/v3/orders", body);
   if (!provider.ok) {
+    if (definitelyRejected(provider)) {
+      await releaseRejectedDispatch(context, attempt, provider);
+    } else {
+      await holdUncertainDispatch(context, attempt, provider.message);
+    }
     await appendFailure(context.tenantRef, order, "place", "LALAMOVE_ORDER_CREATE_FAILED", {
       providerError: provider.message,
       requestId: provider.requestId,
@@ -706,29 +835,13 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
     });
     throw providerError("LALAMOVE_ORDER_CREATE_FAILED", provider);
   }
-  const placed = orderFromResponse(provider);
-  let walletDebit = null;
-  let walletDebitError = "";
-  if (context.account.mode === "fod_central") {
-    try {
-      walletDebit = await debitCentralWallet(
-        context.tenantRef,
-        { ...order, lalamoveAccountEnvironment: context.account.credentials.environment },
-        quote,
-        placed,
-      );
-    } catch (error) {
-      walletDebitError = String(error?.message || "FOD_WALLET_DEBIT_FAILED");
-      const walletSnap = await context.tenantRef.collection("settings").doc("lalamoveWallet").get();
-      await appendFailure(context.tenantRef, order, "wallet_debit", walletDebitError, {
-        requiredAmount: Number(quote.fee || 0),
-        walletBalance: Number(walletSnap.data()?.balance || 0),
-        quoteFee: quote.fee,
-        currency: "THB",
-      });
-    }
+  let placed;
+  try {
+    placed = orderFromResponse(provider);
+  } catch (error) {
+    await holdUncertainDispatch(context, attempt, "LALAMOVE_ORDER_RESPONSE_INVALID");
+    throw error;
   }
-
   const nowIso = new Date().toISOString();
   const completion = lalamoveCompletionPatch(order, placed.status, nowIso);
   const patch = {
@@ -743,26 +856,24 @@ exports.placeTenantLalamoveDispatch = onCall({ region: REGION, timeoutSeconds: 4
     lalamoveOrderLastSyncedAt: nowIso,
     ...(Number.isFinite(Number(placed.fee)) ? { lalamoveDispatchFee: Number(placed.fee) } : {}),
     ...completion,
-    ...(walletDebit ? {
-      lalamoveWalletDebitTransactionId: walletDebit.id,
-      lalamoveWalletDebitedAmount: walletDebit.amount,
-      lalamoveWalletBalanceAfter: walletDebit.balanceAfter,
-      lalamoveWalletDebitedAt: nowIso,
-      lalamoveWalletDebitPending: false,
-      lalamoveWalletDebitError: FieldValue.delete(),
-    } : walletDebitError ? {
-      lalamoveWalletDebitPending: true,
-      lalamoveWalletDebitError: walletDebitError,
-      lalamoveWalletDebitAttemptedAmount: Number(quote.fee || 0),
-      lalamoveWalletDebitAttemptedAt: nowIso,
-    } : {}),
     updatedAt: FieldValue.serverTimestamp(),
   };
-  await context.orderRef.set(patch, { merge: true });
+  try {
+    await settleDispatch(context, attempt, patch, placed);
+  } catch (error) {
+    // Provider accepted the job; NEVER refund or dispatch again automatically.
+    await holdUncertainDispatch(context, attempt, error.message).catch(() => {});
+    console.error("LALAMOVE_DISPATCH_SETTLEMENT_REVIEW_REQUIRED", order.id, error);
+    throw new HttpsError("failed-precondition", "LALAMOVE_DISPATCH_RECONCILIATION_REQUIRED", {
+      attemptId: attempt.id, lalamoveOrderId: placed.orderId,
+    });
+  }
   const stateOrder = {
-    ...order,
-    ...patch,
-    lalamoveWalletDebitError: walletDebitError || "",
+    ...order, ...patch,
+    lalamoveWalletDebitTransactionId: attempt.transactionId,
+    lalamoveWalletDebitedAmount: attempt.accountMode === "fod_central" ? attempt.amount : null,
+    lalamoveWalletBalanceAfter: attempt.balanceAfter,
+    lalamoveWalletDebitPending: false,
   };
   return { item: dispatchState(stateOrder), created: true };
 });
