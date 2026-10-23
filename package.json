@@ -77,7 +77,8 @@
     "test:admin-menu-autosave": "node --test tests/react-parity/admin-menu-sort-autosave.spec.mjs",
     "test:master-business-access": "node --test tests/react-parity/master-business-access.spec.mjs",
     "test:lalamove-prepaid-atomic": "node --test tests/react-parity/lalamove-prepaid-atomic.spec.mjs",
-    "test:billing-anniversary": "node --test tests/react-parity/billing-anniversary.spec.mjs"
+    "test:billing-anniversary": "node --test tests/react-parity/billing-anniversary.spec.mjs",
+    "test:billing-anniversary-audit": "node --test tests/react-parity/billing-anniversary-audit.spec.mjs"
   },
   "repository": {
     "type": "git",
