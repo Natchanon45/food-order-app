@@ -79,7 +79,7 @@ test("Prepaid Lalamove wallet discrepancy is diagnostic only, never billed to Pl
   assert.doesNotMatch(report, /money\(summary\.platformAmountDue\)/);
   assert.match(report, /historicalPrepaidGap/);
   assert.match(report, /"ยอดบันทึกเดิม "/);
-  assert.match(report, /" ไม่ใช่ยอดส่วนแบ่งค้างชำระใหม่"/);
+  assert.match(report, /ไม่ใช่ยอดส่วนแบ่งค้างชำระใหม่/);
 });
 
 
