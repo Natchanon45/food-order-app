@@ -144,7 +144,7 @@ before(async () => {
     ownerUid: clients.get("owner-b").uid, shopName: "Demo B",
     subscriptionStatus: "active", active: true,
   });
-  for (const suffix of ["trigger", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28"]) {
+  for (const suffix of ["trigger", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29"]) {
     await seed("demo-shop-a", suffix);
   }
   await seed("demo-shop-b", "trigger");
@@ -339,4 +339,34 @@ test("concurrent submit calls consume exactly one grant and create exactly one p
   const attempt = await db.doc("tenants/demo-shop-a/hybridBillingPaymentAttempts/" +
     payload.attemptId).get();
   assert.equal(attempt.exists, true);
+});
+
+test("revoked Super Admin cannot settle a pending invoice; audit remains untouched", async () => {
+  const { payload } = await reserveAndUpload(
+    "owner-a", "demo-shop-a", "2026-10-29", "revoked-reviewer-test");
+  assert.equal((await submit("owner-a", payload)).data.status, "pending_review");
+  const userRef = db.collection("users").doc(clients.get("super-admin").uid);
+  const reviewPayload = reviewData(payload, "approve", "Synthetic bank confirmed");
+  try {
+    await userRef.update({ active: false });
+    await assert.rejects(review("super-admin", reviewPayload), fails("unauthenticated"));
+    assert.equal((await invoiceDoc("demo-shop-a", "2026-10-29").get()).data().status,
+      "pending_review");
+
+    await userRef.update({ active: true, role: "cashier" });
+    await assert.rejects(review("super-admin", reviewPayload), fails("permission-denied"));
+    assert.equal((await invoiceDoc("demo-shop-a", "2026-10-29").get()).data().status,
+      "pending_review");
+    const event = await db.doc("tenants/demo-shop-a/hybridBillingPaymentEvents/" +
+      payload.attemptId + "-review").get();
+    assert.equal(event.exists, false, "No reviewer event may exist after revocation");
+  } finally {
+    await userRef.update({ active: true, role: "super_admin" });
+  }
+  assert.equal((await review("super-admin", reviewPayload)).data.status, "paid");
+  assert.equal((await invoiceDoc("demo-shop-a", "2026-10-29").get()).data().status, "paid");
+  const store = (await db.collection("tenants").doc("demo-shop-a").get()).data();
+  assert.equal(store.subscriptionStatus, "suspended",
+    "Review must not unlock unrelated store suspension");
+  assert.equal(store.active, false);
 });
