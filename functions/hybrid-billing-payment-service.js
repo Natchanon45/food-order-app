@@ -89,7 +89,9 @@ async function reviewTrustedHybridProof({
   if (record.invoiceId !== invoiceId || record.tenantId !== tenantId) {
     throw new Error("HYBRID_PAYMENT_CROSS_TENANT_ATTEMPT");
   }
-  await assertNoLegacyReferenceUse(db, record.verification);
+  // A conflict must block approval, but must NEVER prevent a reviewer from
+  // rejecting and closing an invalid/duplicate proof.
+  if (action === "approve") await assertNoLegacyReferenceUse(db, record.verification);
   return reviewHybridInvoiceProof({
     db, tenantRef, invoiceId, attemptId, action, note,
     verifiedExternally, reviewerId: actor.uid, serverTimestamp,
