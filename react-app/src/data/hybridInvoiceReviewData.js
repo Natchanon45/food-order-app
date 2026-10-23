@@ -90,7 +90,9 @@ export async function listHybridPaymentReviewEvents(tenantId, {
         reviewedAt: event.reviewedAt || null,
         // Expose only the first 160 characters of a reviewer note, never
         // a raw provider response, bank reference or full sensitive payload.
-        notePreview: String(event.note || "").slice(0, 160),
+        notePreview: String(event.note || "")
+          .replace(/(?:[0-9๐-๙][\\s.-]?){8,20}/g, "[redacted]")
+          .slice(0, 160),
       };
     }),
   };

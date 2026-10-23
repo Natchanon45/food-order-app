@@ -63,6 +63,7 @@ export function HybridBillingReviewPage() {
   const [pageBusyScope, setPageBusyScope] = useState("");
   const detailScope = selectedId + ":" + revision;
   const detailScopeRef = useRef(detailScope);
+  const pageInFlightRef = useRef("");
   detailScopeRef.current = detailScope;
   // Never display a prior tenant or refresh generation's finance records.
   const detailsReady = Boolean(selectedId) && loadedDetailScope === detailScope;
@@ -140,9 +141,12 @@ export function HybridBillingReviewPage() {
   }, [selectedId, auth.profile?.role, revision]);
 
   function loadMoreDetails(kind, cursor, getPage, setRows, setCursor, setMore) {
-    if (!detailsReady || !cursor || loadingDetails || pageBusyScope) return;
+    if (!detailsReady || !cursor || loadingDetails
+      || pageBusyScope || pageInFlightRef.current) return;
     const expectedScope = detailScope;
     const requestScope = expectedScope + ":" + kind;
+    // Synchronous ref prevents two clicks in the same React render.
+    pageInFlightRef.current = requestScope;
     setPageBusyScope(requestScope);
     getPage(selectedId, { cursor }).then(next => {
       if (detailScopeRef.current !== expectedScope) return;
@@ -160,6 +164,7 @@ export function HybridBillingReviewPage() {
       if (detailScopeRef.current === expectedScope)
         setError(error.message || "BILLING_PAGE_FAILED");
     }).finally(() => {
+      if (pageInFlightRef.current === requestScope) pageInFlightRef.current = "";
       setPageBusyScope(current => current === requestScope ? "" : current);
     });
   }

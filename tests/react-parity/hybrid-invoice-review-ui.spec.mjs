@@ -58,7 +58,8 @@ test("Super Admin finance audit reads only whitelisted immutable review events",
   assert.match(data, /export async function listHybridPaymentReviewEvents\(/);
   assert.match(data, /collection\(db, "tenants", tenantId, "hybridBillingPaymentEvents"\)/);
   assert.match(data, /orderBy\("reviewedAt", "desc"\)/);
-  assert.match(data, /notePreview: String\(event\.note \|\| ""\)\.slice\(0, 160\)/);
+  assert.match(data, /notePreview: String\(event\.note \|\| ""\)/);
+  assert.match(data, /\[redacted\]/);
   assert.match(data, /reviewerId: String\(event\.reviewerId \|\| ""\)/);
   assert.doesNotMatch(data, /rawVerification|referenceId: event|transRef: event|slipPath: event/);
   assert.match(admin, /listHybridPaymentReviewEvents\(selectedId\)/);
@@ -79,4 +80,10 @@ test("all three finance page types block stale tenant/refresh results and duplic
   assert.match(admin, /detailScopeRef\.current !== expectedScope/);
   assert.match(admin, /const seen = new Set\(previous\.map\(item => item\.id\)\)/);
   assert.match(admin, /setLoadedDetailScope\(detailScope\)/);
+});
+
+test("React audit pagination prevents synchronous duplicate requests", () => {
+  assert.match(admin, /pageInFlightRef = useRef/);
+  assert.match(admin, /pageInFlightRef\.current = requestScope/);
+  assert.match(admin, /pageInFlightRef\.current === requestScope/);
 });
