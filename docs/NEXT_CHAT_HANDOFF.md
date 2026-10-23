@@ -1,5 +1,13 @@
 # Next Chat Handoff — React + Firebase Migration
 
+## 2026-10-23 17:54 — THB 59 still visible after dispatch-only deploy (corrected report code; deploy pending)
+
+- User supplied production screenshots for `/reports/revenue-share` dated 22/10/2026: Delivery goods THB 690, eligible share THB 0, Lalamove THB 118, yet the old live report still showed THB 59 Platform due and requested a payment slip. Last deployment was only `functions:placeTenantLalamoveDispatch`, so it did **not** change live `getTenantRevenueShareSummary`, `submitTenantRevenueSharePayment`, `getPlatformRevenueShareSummary`, reconciliation callables, or Hosting.
+- Current `functions/revenue-share.js` already calculates `platformAmountDue = setting.enabled ? revenueShare : 0` and denies a zero-share slip; to become live, the revenue callables need targeted deployment.
+- Updated `RevenueShareReportPage.jsx` with defense-in-depth: payable amount and payment form use `platformSharePayable` derived only from `summary.revenueShare`, ignoring old Lalamove gaps. Historical slip documents preserve original recorded amount for audit but not new payable. Updated `tests/react-parity/revenue-share-current-settings.spec.mjs`; seven report static regression checks passed in V8 mock harness, **not native npm**.
+- Deploy plans in `docs/LALAMOVE_PREPAID_DISPATCH_20261023.md`. Rollout report callables plus Hosting only after local tests and Hybrid registration fail-closed verification. No production Firestore data writes or reconciliation of existing THB 59 payment records were done from GitHub. Mac mini Remote Desktop Commander still offline.
+
+
 ## 2026-10-23 — Lalamove prepaid atomic dispatch / THB 59 safeguard (GitHub change, NOT deployed)
 
 - Direct GitHub updates on `feature/react-firebase-port`: `functions/lalamove-dispatch.js` now reserves the quoted Lalamove delivery fee and stores a one-order lock in the same Firestore transaction BEFORE calling the provider; serializes concurrent requests and finalizes provider order + debit atomically.
