@@ -107,7 +107,7 @@ export function HybridBillingReviewPage() {
     return () => { cancelled = true; };
   }, [selectedId, auth.profile?.role, revision]);
 
-  if (!stylesReady || auth.status === "loading" || busy) return <PageReadyOverlay />;
+  if (!stylesReady || auth.status === "loading" || (auth.profile?.role === "super_admin" && busy)) return <PageReadyOverlay />;
   if (!auth.profile) return <Navigate to="/login?next=%2Fplatform%2Fhybrid-invoices" replace />;
   if (auth.profile.role !== "super_admin") return <Navigate to="/" replace />;
 
