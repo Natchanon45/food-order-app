@@ -594,6 +594,23 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // PRIVATE synthetic signed-posting batch reservation (Final Phase 10).
+    // Immutable Admin-SDK Emulator claims only; NO browser role, including
+    // Super Admin, may enumerate, create, change or delete bank hashes.
+    // These entries NEVER authenticate a bank or authorize any settlement.
+    match /hybridBankBatchReservations/{batchId} {
+      allow read, write: if false;
+    }
+    match /hybridBankBatchReferenceClaims/{referenceHash} {
+      allow read, write: if false;
+    }
+    match /hybridBankBatchInstructionClaims/{instructionHash} {
+      allow read, write: if false;
+    }
+    match /hybridBankBatchAdjustmentClaims/{adjustmentHash} {
+      allow read, write: if false;
+    }
+
     // Untrusted internal bank-key enrollment demo audit. Admin SDK only.
     // No Browser role (including Super Admin) can spoof key approval or
     // read a fingerprint/private key. This does NOT activate trust.

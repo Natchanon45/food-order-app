@@ -1,6 +1,6 @@
 import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
+import { createHash, generateKeyPairSync, sign } from "node:crypto";
 import { createRequire } from "node:module";
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } from "firebase/auth";
@@ -29,6 +29,10 @@ const { auditDemoHybridRefundHistory } =
 const { stageDemoHybridBankKeyEnrollment,
   reviewDemoHybridBankKeyEnrollment } =
   fnRequire("./hybrid-billing-bank-key-enrollment");
+const { reserveDemoHybridSignedBankBatch } =
+  fnRequire("./hybrid-billing-bank-batch-reservation");
+const { canonicalHybridBankEvidenceBytes } =
+  fnRequire("./hybrid-billing-bank-evidence-contract");
 const { auditDemoHybridBankKeyHistory } =
   fnRequire("./hybrid-billing-bank-key-history-audit");
 const { auditDemoHybridPhase10Readiness } =
@@ -1055,6 +1059,152 @@ test("Bank signing-key history inventory rejects orphan claims in real Firestore
   await assert.rejects(auditDemoHybridBankKeyHistory({
     db,maxPerSource:1,
   }), /HYBRID_BANK_KEY_AUDIT_SCAN_OVERFLOW_/);
+});
+
+
+test("Emulator: synthetic bank batch claims persist cross-batch, race atomically, and block all browser roles",async()=>{
+  const keys=generateKeyPairSync("ed25519");
+  const hash=x=>createHash("sha256").update(x).digest("hex");
+  const providerId="sandbox_bank",keyId="emulator_batch_signer";
+  const registry={ [providerId]:{ [keyId]:{
+    enabled:true,publicKeyPem:keys.publicKey.export({type:"spki",format:"pem"}),
+    fingerprintSha256:hash(keys.publicKey.export({type:"spki",format:"der"})),
+    validFrom:"2026-10-01T00:00:00.000Z",
+    validUntil:"2026-11-30T23:59:59.000Z",
+    revokedAt:null,registeredBy:"security-registrar",reviewedBy:"finance-reviewer",
+  }}};
+  const SCOPE=["tenantId","invoiceId","adjustmentId","instructionHash",
+    "bankReferenceHash","destinationFingerprint","amountCents"];
+  const item=(n,fields={})=>{
+    const payload={
+      tenantId:"store-a",invoiceId:"2026-10-24:monthly:fixed",
+      adjustmentId:"adjustment_"+String(n).padStart(16,"0"),
+      instructionHash:hash("emulator-outgoing-"+n),
+      bankReferenceHash:hash("emulator-bank-"+n),
+      destinationFingerprint:hash("emulator-payee-"+n),
+      amountCents:15000+n,currency:"THB",direction:"debit",
+      postingStatus:"posted",submittedAt:"2026-10-24T09:00:00.000Z",
+      postedAt:"2026-10-24T10:00:00.000Z",...fields,
+    };
+    const unsigned={version:"hybrid_bank_posting_ed25519_v1",
+      providerId,keyId,payload};
+    return {envelope:{...unsigned,
+      signatureBase64:sign(null,canonicalHybridBankEvidenceBytes(unsigned),
+        keys.privateKey).toString("base64")},
+      expected:Object.fromEntries(SCOPE.map(name=>[name,payload[name]]))};
+  };
+  const db={app:{options:{projectId}},
+    collection:name=>adminDb.collection(name),
+    runTransaction:fn=>adminDb.runTransaction(fn)};
+  const opts=(batchId,postings)=>({
+    db,batchId,actorUid:"test-super-admin",postings,
+    trustedRegistry:registry,expectedProviderId:providerId,
+    asOf:"2026-10-24T12:00:00.000Z",
+    serverTimestamp:FieldValue.serverTimestamp(),
+  });
+  const first=item(701),second=item(702);
+  const winId="emulator_batch_a_20261024_1234567";
+  const winner=await reserveDemoHybridSignedBankBatch(opts(winId,[first,second]));
+  assert.equal(winner.postingsReserved,2);
+  assert.equal(winner.crossBatchClaimsCreated,true);
+  assert.equal(winner.bankProviderIdentityIndependentlyAuthenticated,false);
+  assert.equal(winner.settlementAllowed,false);
+  assert.equal(winner.productionReleaseAllowed,false);
+  assert.equal(winner.writesPerformed,true);
+  const batchRef=adminDb.collection("hybridBankBatchReservations").doc(winId);
+  assert.equal((await batchRef.get()).data().settlementConfirmed,false);
+  const bankRef=adminDb.collection("hybridBankBatchReferenceClaims")
+    .doc(first.expected.bankReferenceHash);
+  const instructionRef=adminDb.collection("hybridBankBatchInstructionClaims")
+    .doc(first.expected.instructionHash);
+  assert.equal((await bankRef.get()).data().bankOriginAuthenticated,false);
+  assert.equal((await instructionRef.get()).exists,true);
+
+  const replay=item(703,{tenantId:"store-b",
+    bankReferenceHash:first.expected.bankReferenceHash});
+  const replayId="emulator_batch_b_20261024_1234567";
+  await assert.rejects(
+    reserveDemoHybridSignedBankBatch(opts(replayId,[replay])),
+    /BATCH_OR_REFERENCE_ALREADY_RESERVED/);
+  assert.equal((await adminDb.collection("hybridBankBatchReservations")
+    .doc(replayId).get()).exists,false);
+  await assert.rejects(
+    reserveDemoHybridSignedBankBatch(opts("emulator_batch_c_20261024_1234567",
+      [item(704,{instructionHash:first.expected.instructionHash})])),
+    /BATCH_OR_REFERENCE_ALREADY_RESERVED/);
+  await assert.rejects(
+    reserveDemoHybridSignedBankBatch(opts("emulator_batch_d_20261024_1234567",
+      [item(705,{adjustmentId:first.expected.adjustmentId})])),
+    /BATCH_OR_REFERENCE_ALREADY_RESERVED/);
+
+  // Existing synthetic refund candidates also reserve bank refs/instructions.
+  const legacy=item(706);
+  const oldRef=adminDb.collection("hybridRefundReferenceClaims")
+    .doc(legacy.expected.bankReferenceHash);
+  await oldRef.set({kind:"hybrid_refund_candidate",state:"unverified_candidate"});
+  try {
+    await assert.rejects(
+      reserveDemoHybridSignedBankBatch(opts(
+        "emulator_batch_e_20261024_1234567",[legacy])),
+      /BATCH_OR_REFERENCE_ALREADY_RESERVED/);
+  } finally { await oldRef.delete(); }
+
+  const oldInstruction=adminDb.collection("hybridRefundInstructionClaims")
+    .doc(legacy.expected.instructionHash);
+  await oldInstruction.set({
+    kind:"hybrid_refund_candidate",state:"unverified_candidate",
+  });
+  try {
+    await assert.rejects(
+      reserveDemoHybridSignedBankBatch(opts(
+        "emulator_batch_f_20261024_1234567",[legacy])),
+      /BATCH_OR_REFERENCE_ALREADY_RESERVED/);
+  } finally { await oldInstruction.delete(); }
+
+  // Two independent batches compete for the same reference; exactly ONE
+  // transaction may atomically create the global claim.
+  const same=item(707);
+  const contenders=await Promise.allSettled([
+    reserveDemoHybridSignedBankBatch(opts(
+      "emulator_batch_g_20261024_1234567",[same])),
+    reserveDemoHybridSignedBankBatch(opts(
+      "emulator_batch_h_20261024_1234567",[same])),
+  ]);
+  assert.equal(contenders.filter(v=>v.status==="fulfilled").length,1);
+  assert.equal(contenders.filter(v=>v.status==="rejected").length,1);
+  assert.equal((await adminDb.collection("hybridBankBatchReferenceClaims")
+    .doc(same.expected.bankReferenceHash).get()).exists,true);
+
+  // An invalid signature in an otherwise valid multi-record batch must
+  // create no claim or batch reservation.
+  const bad=item(709);
+  const invalid={...bad,envelope:{...bad.envelope,
+    signatureBase64:"A".repeat(86)+"=="}};
+  const noPartialId="emulator_batch_i_20261024_1234567";
+  await assert.rejects(
+    reserveDemoHybridSignedBankBatch(opts(noPartialId,[item(708),invalid])),
+    /HYBRID_BANK_BATCH_ITEM_REJECTED/);
+  assert.equal((await adminDb.collection("hybridBankBatchReservations")
+    .doc(noPartialId).get()).exists,false);
+  assert.equal((await adminDb.collection("hybridBankBatchReferenceClaims")
+    .doc(item(708).expected.bankReferenceHash).get()).exists,false);
+
+  for(const role of ["owner-a","admin-a","cashier-a",
+    "owner-b","super-admin","anonymous"]) {
+    const browser=identities.get(role).firestore;
+    for(const [collectionName,id] of [
+      ["hybridBankBatchReservations",winId],
+      ["hybridBankBatchReferenceClaims",first.expected.bankReferenceHash],
+      ["hybridBankBatchInstructionClaims",first.expected.instructionHash],
+    ]) {
+      await denied(getDoc(doc(browser,collectionName,id)),
+        "No browser actor may read batch claims");
+      await denied(getDocs(collection(browser,collectionName)),
+        "No browser actor may enumerate batch claims");
+      await denied(setDoc(doc(browser,collectionName,id),
+        {state:"settled"}),"No browser actor may forge batch claims");
+    }
+  }
 });
 
 

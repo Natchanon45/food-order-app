@@ -224,3 +224,56 @@ real bank provenance or financial release. Independent provider key onboarding,
 authenticated statement imports, cross-batch global anti-replay records,
 historical reconciliation, final idempotent settlement and owner approval
 remain mandatory.
+
+
+## 24 October 2026 — Atomic DEMO cross-batch signed evidence reservation
+
+New PRIVATE writer: \`functions/hybrid-billing-bank-batch-reservation.js\`.
+This is **not a bank importer** and must not be exposed to Production or
+browser/Cloud Function callers. The module is hard-locked to the exact
+\`demo-penguin-hybrid\` project, loopback Firestore Emulator and an active
+Super Admin read inside a Firestore transaction.
+
+- Validates **1–25** synthetic signed postings with the existing strict
+  Ed25519 batch preflight before any Firestore reads or writes.
+- Atomically creates a private append-only batch event and **three global
+  claims per posting**: bank reference SHA-256, outgoing instruction SHA-256,
+  and a domain-separated hashed tenant+adjustment scope. Each new claim has
+  an immutable \`synthetic_untrusted_reservation\` status.
+- Checks previous reservations **across batches and tenants**, and also reads
+  existing legacy demo \`hybridRefundReferenceClaims\` and
+  \`hybridRefundInstructionClaims\` inside the SAME transaction. Any existing
+  claim, repeated batch ID, invalid signer/amount, or identity/role failure
+  aborts the entire batch: no partial claims are committed.
+- Four new collections are explicitly **deny-all to every Browser role**
+  in \`firestore.rules\`. No raw bank accounts, raw bank reference strings,
+  private signing keys or tenant IDs are written into claim documents.
+  The private batch event records its synthetic operator UID for audit.
+- No invoice/refund/Wallet updates, settlement transfer, external bank
+  attestation, source-key promotion, Firebase Production callable or release
+  flag changes. The only \`writesPerformed:true\` result means *local demo
+  claim metadata*, **never any bank transfer or payout**.
+
+**Critical limitations:** The legacy refund candidate writer does not yet
+check these **new** claims when it subsequently creates an older-style
+candidate, so this is not a universal bidirectional cross-channel replay
+barrier. Other banks, files, batches outside this emulator, archived records,
+and historical disbursements are not covered. Signatures are made with
+synthetic runtime test keys only. Production-grade ingestion still requires
+independently bank-verified provider keys, secure secrets, a complete
+cross-channel replay migration strategy, audit/compensating reversals and
+separate finance approval. A successful claim reservation is **never**
+bank authenticated, paid, settled or eligible for Production release.
+
+Native test checklist (10 local unit cases + Firestore Emulator transaction,
+collision, concurrency and Browser denial scenarios):
+
+\`\`\`bash
+npm run test:hybrid-bank-batch-reservation
+npm run test:hybrid-bank-batch
+npm run test:hybrid-bank-evidence
+npm run test:hybrid-billing
+npm run test:firebase-hybrid-emulator
+npm run test:react-parity
+npm run build:react
+\`\`\`

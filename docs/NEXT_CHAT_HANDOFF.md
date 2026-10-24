@@ -1,3 +1,11 @@
+## 2026-10-24 — Final Phase 10: DEMO atomic cross-batch bank evidence claims
+
+- User confirmed previous HEAD \`b940b905\` native tests passed and requested continuation. Branch only \`feature/react-firebase-port\`.
+- Added PRIVATE \`functions/hybrid-billing-bank-batch-reservation.js\`: refuses non-\`demo-penguin-hybrid\` or non-loopback Emulator, checks active Super Admin in transaction, verifies 1–25 signed synthetic postings using existing batch preflight, then atomically creates 3 globally unique claim types per posting and 1 private batch event. Read old demo refund reference/instruction claims in same TX; duplicate/race/invalid signer fails all-or-nothing. No real bank attestation/payout/release.
+- Added 4 deny-all Browser Firestore collections, \`test:hybrid-bank-batch-reservation\` (10 new native unit scenarios) to \`test:hybrid-billing\`, plus real Firestore Emulator collision, concurrency, rollback and Browser denial coverage. Documented in \`docs/HYBRID_PHASE10_BANK_EVIDENCE_CONTRACT_20261024.md\`.
+- Key limitations: existing legacy refund candidate writer does NOT yet reciprocally check new bank-batch claims; no cross-channel/historical bank completeness; no real provider authentication; no Production Cloud Functions/settlement. Mac mini offline; new tests NOT run by assistant. Mac should run \`npm run test:hybrid-bank-batch-reservation\`, \`npm run test:hybrid-bank-batch\`, \`npm run test:hybrid-billing\`, \`npm run test:firebase-hybrid-emulator\`, \`npm run test:react-parity\`, \`npm run build:react\`.
+- Do not merge \`main\`, deploy Firebase, enable payment flags or money movement without explicit owner approval. Preserve existing local \`public/**/index.html\`; never reset/clean.
+
 ## 2026-10-24 — Final Phase 10: private signed bank posting batch preflight
 
 - User confirmed HEAD `4291cf50` native tests passed and requested continuation. Branch only: `feature/react-firebase-port`.
