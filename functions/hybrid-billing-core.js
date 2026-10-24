@@ -71,17 +71,21 @@ function calculateCycle({
   const key = invoicePrefix || start;
   let cumulativeCents = 0, triggerDate = null, totalShareCents = 0;
   const thresholdCents = Math.round(config.deliveryThreshold * 100), invoices = [], days = [];
+  let firstChargeRecorded = false;
   for (const [date, cents] of [...sales.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const previousCents = cumulativeCents;
     cumulativeCents += cents;
-    let baseCents = 0, kind = null;
-    if (!triggerDate && cumulativeCents >= thresholdCents) {
-      triggerDate = date;
-      baseCents = thresholdCents;
-      kind = "delivery_threshold";
-    } else if (triggerDate && date !== triggerDate && cents > 0) {
-      baseCents = cents;
-      kind = "delivery_daily";
-    }
+    // Only the amount ABOVE the threshold is chargeable. The threshold
+    // itself is an exemption, never a charge base; partial crossing-day
+    // sales are split at the precise satang boundary.
+    const aboveBefore = Math.max(0, previousCents - thresholdCents);
+    const aboveAfter = Math.max(0, cumulativeCents - thresholdCents);
+    const baseCents = aboveAfter - aboveBefore;
+    if (!triggerDate && cumulativeCents >= thresholdCents) triggerDate = date;
+    const kind = baseCents > 0
+      ? (firstChargeRecorded ? "delivery_daily" : "delivery_threshold")
+      : null;
+    if (kind) firstChargeRecorded = true;
     const shareCents = Math.round(baseCents * config.deliveryShareRate / 100);
     totalShareCents += shareCents;
     if (kind && shareCents > 0) invoices.push({

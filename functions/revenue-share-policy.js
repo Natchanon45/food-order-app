@@ -114,7 +114,43 @@ function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, a
   return days;
 }
 
+// The share base is only the marginal part of PAID Delivery above the
+// store's anniversary-cycle threshold. Returning charged cents by Bangkok
+// day prevents the trigger day from billing the full threshold/day.
+function eligibleDeliveryShareCentsByDay(dailyDeliverySales = [], threshold = 10000, anchorDate = null) {
+  const money = Number(threshold);
+  if (!Number.isFinite(money) || money < 0 || money > 1000000000
+    || Math.abs(money * 100 - Math.round(money * 100)) > 0.00001) {
+    throw new RangeError("Invalid Delivery share threshold");
+  }
+  const ceiling = Math.round(money * 100);
+  const byDay = new Map();
+  for (const item of dailyDeliverySales) {
+    const date = String(item?.date || "");
+    const cents = item?.cents;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isSafeInteger(cents) || cents < 0) {
+      throw new TypeError("Invalid paid Delivery daily amount");
+    }
+    byDay.set(date, (byDay.get(date) || 0) + cents);
+  }
+  const totals = new Map(), eligible = new Map();
+  for (const [date, cents] of [...byDay].sort(([a], [b]) => a.localeCompare(b))) {
+    if (anchorDate && date < anchorDate) continue;
+    const cycle = anchorDate ? cycleForDate(anchorDate, date) : null;
+    if (anchorDate && !cycle) continue;
+    const scope = cycle?.startDate || date.slice(0, 7);
+    const previous = totals.get(scope) || 0;
+    const next = previous + cents;
+    if (!Number.isSafeInteger(next)) throw new RangeError("Delivery share total overflow");
+    totals.set(scope, next);
+    const charge = Math.max(0, next - ceiling) - Math.max(0, previous - ceiling);
+    if (charge > 0) eligible.set(date, charge);
+  }
+  return eligible;
+}
+
 module.exports = {
+  eligibleDeliveryShareCentsByDay,
   BILLING_MODES,
   BUSINESS_TYPES,
   RESTAURANT_SCOPES,

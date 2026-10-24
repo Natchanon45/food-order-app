@@ -1,3 +1,10 @@
+## 2026-10-25 — Owner rejected synthetic Phase 10 as incorrect business deliverable
+
+- **IMPORTANT**: Previous Phase 10 Demo "COMPLETE" engineering signoff is NOT the actual requested Delivery commission system. Owner requirement is activation-date monthly cycle (3 Oct to 2 Nov), first 10,000 THB Delivery goods excluded, any excess daily at 5%, pay by that night, suspend next day if unpaid, slip submitted/Slip2Go success or Super Admin manual approval on outage, restore access only when approved.
+- Inspected code: `hybrid-billing-core.js` had WRONG formula charging 5% of the 10,000 THB threshold on crossing day, `revenue-share.js` also charged entire qualifying days; fixed both with marginal excess in satang. Native tests: `test:hybrid-billing` **351/351 PASS**, `test:signup-billing-revenue-share` **18/18 PASS**, exact 3 Oct–2 Nov / 11,500 / 75 THB scenario included. Scope in `docs/DELIVERY_SHARE_BUSINESS_ACCEPTANCE_20261025.md`.
+- **NOT COMPLETED**: end-to-end Premium/Hybrid daily issuance, real nightly enforcement, verified Slip2Go/manual receipt-to-suspension release in actual live React UI. Hybrid invoice and payment callables remain hard OFF, Premium suspension skipped by historical-only guard, and signup Hybrid disabled. Do not tell owner it is usable/live or claim manual UAT complete.
+- Respect dirty generated `public/**` changes. Do NOT reset/clean; do NOT deploy Production, merge main, or activate billing transfers. The correction is only formula and current existing reports. Next objective is ONE authoritative tested owner-facing workflow, not new bank evidence modules.
+
 ## 2026-10-25 — Local React UAT bootstrap bug repair (not a new Phase)
 
 - Owner screenshot shows plain `กำลังโหลดข้อมูล...` at `localhost:5174/react/`. Root cause from source: Dev Vite `base:"/react/"` conflicts with `main.jsx` canonical /react -> / redirect; default Vite publicDir also omits repository-hosted `public/assets` and `public/react/parity` used by the shell.

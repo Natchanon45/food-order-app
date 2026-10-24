@@ -24,6 +24,15 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Correct charged Delivery base to EXCESS above monthly threshold
+
+- **Symptom:** Owner rejected isolated synthetic Finance Demo; required original anniversary billing (3 Oct to 2 Nov), 10,000 THB monthly Delivery exemption, 1,500 THB overshoot at 5% = 75 THB, nightly payment/suspension, Slip2Go and manual Super Admin unlock.
+- **Root causes found:** Hybrid pure calculator charged first THB 10,000 on crossing day; existing Revenue Share report charged full qualifying days; real Hybrid invoice writer and payment callable still disabled, Premium suspension guard skips new subscribers, Premium cycle is monthly rather than required daily overdue collection. Demo Bank Evidence never implemented the requested live owner workflow.
+- **Change made this commit:** Corrected marginal cents in `functions/hybrid-billing-core.js` and `functions/revenue-share-policy.js`; `functions/revenue-share.js` now uses actual excess Delivery goods for period share base (not day totals or Lalamove fee). Updated 7 existing test files plus owner exact scenario test. Added `docs/DELIVERY_SHARE_BUSINESS_ACCEPTANCE_20261025.md` with definitive scope/gaps.
+- **Verification on Mac:** `npm run test:hybrid-billing` = 351/351 PASS; `npm run test:signup-billing-revenue-share` = 18/18 PASS. No end-to-end nightly suspension or Production collection tests passed because this implementation is not connected.
+- **Release:** Feature branch only; no Firebase Production deploy, no `main` merge, no active billing/settlement triggers. Preserve generated `public/**` and untracked Vite output.
+- **Next:** Implement and UAT one REAL Premium Delivery daily settlement/suspension/Slip2Go/manual review flow. Do not add new synthetic bank modules or announce system complete prematurely.
+
 ## 2026-10-25 — Repair local React UAT entry, isolate Finance Demo
 
 - **Symptom:** User screenshot at `localhost:5174/react/` showed only plain HTML `กำลังโหลดข้อมูล...` rather than the centered branded loader / React shell; Demo UI inaccessible.

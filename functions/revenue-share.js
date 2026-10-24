@@ -12,6 +12,7 @@ const {
   revenueShareChannels,
   restaurantOrderEligible,
   eligibleDeliveryShareDays,
+  eligibleDeliveryShareCentsByDay,
 } = require("./revenue-share-policy");
 const { tenantAnchorDate, cycleFromMonth, cycleForDate, previousCompletedCycle } = require("./billing-anniversary");
 
@@ -215,6 +216,14 @@ async function summaryForTenant(tenantId, period, setting) {
       setting.deliveryThreshold, anniversary,
     )
     : new Set(); // Missing activation date must never create an invoice.
+  // The existing day-set is a threshold indicator, NOT a fee base.
+  // Compute the marginal shareable satang independently, per anniversary.
+  const shareableDeliveryByDay = anniversary
+    ? eligibleDeliveryShareCentsByDay(
+      [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
+      setting.deliveryThreshold, anniversary,
+    )
+    : new Map();
 
   ordersSnapshot.docs.forEach(snapshot => {
     const row = snapshot.data();
@@ -251,15 +260,9 @@ async function summaryForTenant(tenantId, period, setting) {
       // Preserve the existing non-Delivery legacy charging rules only.
       shareOrderSales += foodSales;
     }
-    if (isDelivery && setting.centralDeliveryShare
-      && String(row.paymentStatus || "").toLowerCase() === "paid"
-      && String(row.status || "").toLowerCase() !== "refunded"
-      && asDate(row.paidAt) && eligibleDeliveryDays.has(dateKey(asDate(row.paidAt)))) {
-      // Global rate always wins for paid Delivery, regardless of stale
-      // per-Tenant rate, scope or legacy billing mode.
-      const refund = Math.max(0, Number(row.refundTotal ?? row.refundedAmount ?? row.refundAmount ?? 0) || 0);
-      shareDeliverySales += Math.max(0, Math.min(foodSales, Math.max(0, total - customerFee)) - refund);
-    }
+    // Paid Delivery amounts are accounted for by paidDeliveryDaily and
+    // shareableDeliveryByDay below, not by summing an entire qualifying day.
+    // This avoids taxing the exempt 10,000 THB and duplicated trigger-day orders.
     customerDeliveryFees += isLalamove ? customerFee : 0;
     lalamoveDeliveryCost += lalamoveCost;
     lalamoveWalletCoveredCost += walletCovered;
@@ -291,6 +294,13 @@ async function summaryForTenant(tenantId, period, setting) {
   const combinedSales = roundMoney(orderSales + posSales);
   const inStoreSales = roundMoney(storefrontOrderSales + posSales);
   const monthlyDeliverySales = roundMoney(monthDeliveryCents / 100);
+  // Include only the shareable slice of paid Delivery from the selected
+  // report day(s); threshold progress is across the whole anniversary cycle.
+  const reportStartDate = period.startDate || dateKey(period.start);
+  const reportEndExclusive = period.endExclusiveDate || dateKey(period.end);
+  shareDeliverySales = [...shareableDeliveryByDay].reduce((sum, [day, cents]) =>
+    day >= reportStartDate && day < reportEndExclusive && eligibleDeliveryDays.has(day)
+      ? sum + cents : sum, 0) / 100;
   const legacyShareBase = setting.legacyEnabled ? roundMoney(shareOrderSales + sharePosSales) : 0;
   const deliveryShareBase = roundMoney(shareDeliverySales);
   const deliveryShareAmount = setting.centralDeliveryShare

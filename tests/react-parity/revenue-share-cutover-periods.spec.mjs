@@ -82,7 +82,7 @@ test("all existing stores use their anniversary months even without cutover flag
   assert.equal(sum.monthlyDeliveryStartDate, "2026-10-21");
   assert.equal(sum.monthlyDeliveryEndDate, "2026-11-20");
   assert.equal(sum.monthlyDeliverySales, 11000);
-  assert.equal(sum.revenueShare, 250);
+  assert.equal(sum.revenueShare, 50);
 });
 
 test("next store anniversary resets the threshold regardless of its previous billing mode", async () => {
@@ -100,7 +100,7 @@ test("next store anniversary resets the threshold regardless of its previous bil
     assert.equal(sum.monthlyDeliveryEndDate, "2026-12-20");
     assert.equal(sum.monthlyDeliverySales, 10000);
     // Only paid qualifying Delivery merchandise enters the new period.
-    assert.equal(sum.deliveryShareBase, 4000);
+    assert.equal(sum.deliveryShareBase, 0);
   }
 });
 

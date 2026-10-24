@@ -30,22 +30,22 @@ const periodFrom = plan => ({
 
 test("day-close invoice plan never bills current Bangkok day or fixed fee before cycle close", () => {
   const plan = make({ asOfDate: "2026-11-02", dailyDeliverySales: [
-    sale("2026-10-23", 6000), sale("2026-11-01", 4000), sale("2026-11-02", 25000),
+    sale("2026-10-23", 6000), sale("2026-11-01", 7000), sale("2026-11-02", 25000),
   ] });
   assert.equal(plan.mode, "delivery_share");
   assert.equal(plan.expectedInvoices.length, 1);
   assert.deepEqual(plan.expectedInvoices.map(x => [x.kind, x.date, x.amount]), [
-    ["delivery_threshold", "2026-11-01", 500],
+    ["delivery_threshold", "2026-11-01", 150],
   ]);
   assert.equal(plan.sealedBeforeDate, "2026-11-02");
-  assert.equal(plan.openAmount, 500);
+  assert.equal(plan.openAmount, 150);
 });
 
 test("threshold overshoot creates one deterministic trigger and later closed-day invoices", () => {
   const sales = [sale("2026-10-25", 9000),
     sale("2026-11-01", 4000), sale("2026-11-02", 3000)];
   const atTwo = make({ asOfDate: "2026-11-02", dailyDeliverySales: sales });
-  assert.deepEqual(atTwo.expectedInvoices.map(row => row.amount), [500]);
+  assert.deepEqual(atTwo.expectedInvoices.map(row => row.amount), [150]);
   assert.equal(atTwo.expectedInvoices[0].id, "2026-10-22:delivery:trigger");
   const atThree = make({ asOfDate: "2026-11-03", dailyDeliverySales: sales,
     existingPeriod: periodFrom(atTwo),
@@ -81,10 +81,10 @@ test("changed historical payment/refund after seal fails closed before issuing f
 
 test("paid invoices cannot be overwritten, removed, or silently changed", () => {
   const issued = make({ asOfDate: "2026-11-03",
-    dailyDeliverySales: [sale("2026-10-23", 9000), sale("2026-11-01", 1000)],
+    dailyDeliverySales: [sale("2026-10-23", 9000), sale("2026-11-01", 1100)],
   });
   const existingPeriod = periodFrom(issued);
-  const goods = [sale("2026-10-23", 9000), sale("2026-11-01", 1000)];
+  const goods = [sale("2026-10-23", 9000), sale("2026-11-01", 1100)];
   assert.equal(make({ asOfDate: "2026-11-03", dailyDeliverySales: goods,
     existingPeriod, existingInvoices: [invoiced(issued.expectedInvoices[0], "paid")] }).newInvoices.length, 0);
   assert.throws(() => make({ asOfDate: "2026-11-03", dailyDeliverySales: goods,
@@ -127,7 +127,7 @@ function memory() {
 test("private Firestore transaction creates invoices exactly once and repeated reconciliation is a no-op", async () => {
   const env = memory(), serverTimestamp = "serverTimestamp";
   const first = make({ asOfDate: "2026-11-02",
-    dailyDeliverySales: [sale("2026-10-23", 9000), sale("2026-11-01", 1000)] });
+    dailyDeliverySales: [sale("2026-10-23", 9000), sale("2026-11-01", 1100)] });
   const once = await persistHybridInvoiceLedger({
     db: env.db, tenantRef: env.tenantRef, ledger: first, serverTimestamp });
   assert.deepEqual([once.created, once.reused, once.unchanged], [1, 0, false]);
@@ -135,7 +135,7 @@ test("private Firestore transaction creates invoices exactly once and repeated r
   assert.equal(env.readPeriod().configSnapshot.monthlyFee, 590);
 
   const repeat = make({ asOfDate: "2026-11-02",
-    dailyDeliverySales: [sale("2026-10-23", 9000), sale("2026-11-01", 1000)],
+    dailyDeliverySales: [sale("2026-10-23", 9000), sale("2026-11-01", 1100)],
     existingPeriod: env.readPeriod(), existingInvoices: env.readInvoices() });
   const twice = await persistHybridInvoiceLedger({
     db: env.db, tenantRef: env.tenantRef, ledger: repeat, serverTimestamp });
@@ -154,14 +154,14 @@ test("concurrent stale issuance and paid invoice modifications never rewrite tra
   }), /HYBRID_LEDGER_CONCURRENT_PERIOD_UPDATE_RETRY/);
 
   const now = make({ asOfDate: "2026-11-03",
-    dailyDeliverySales: [sale("2026-11-02", 10000)],
+    dailyDeliverySales: [sale("2026-11-02", 10100)],
     existingPeriod: env.readPeriod() });
   await persistHybridInvoiceLedger({ db: env.db, tenantRef: env.tenantRef,
     ledger: now, serverTimestamp });
   const invoiceRef = "tenants/test/hybridBillingInvoices/2026-10-22:delivery:trigger";
   env.store.set(invoiceRef, { ...env.store.get(invoiceRef), status: "paid" });
   const replay = make({ asOfDate: "2026-11-03",
-    dailyDeliverySales: [sale("2026-11-02", 10000)],
+    dailyDeliverySales: [sale("2026-11-02", 10100)],
     existingPeriod: env.readPeriod(), existingInvoices: env.readInvoices() });
   const result = await persistHybridInvoiceLedger({
     db: env.db, tenantRef: env.tenantRef, ledger: replay, serverTimestamp });
@@ -172,16 +172,16 @@ test("concurrent stale issuance and paid invoice modifications never rewrite tra
 test("payment status cannot be forged and snapshots are immutable", async () => {
   const env = memory(), serverTimestamp = "serverTimestamp";
   const first = make({ asOfDate: "2026-11-02",
-    dailyDeliverySales: [sale("2026-11-01", 10000)] });
+    dailyDeliverySales: [sale("2026-11-01", 10100)] });
   await persistHybridInvoiceLedger({ db: env.db, tenantRef: env.tenantRef,
     ledger: first, serverTimestamp });
   const alteredPrices = { ...prices, deliveryShareRate: 9, monthlyFee: 900 };
   const retry = make({ asOfDate: "2026-11-02",
-    dailyDeliverySales: [sale("2026-11-01", 10000)],
+    dailyDeliverySales: [sale("2026-11-01", 10100)],
     existingPeriod: env.readPeriod(), existingInvoices: env.readInvoices(),
     settings: alteredPrices });
   assert.equal(retry.configSnapshot.deliveryShareRate, 5);
-  assert.equal(retry.expectedInvoices[0].amount, 500);
+  assert.equal(retry.expectedInvoices[0].amount, 5);
   const invoiceRef = "tenants/test/hybridBillingInvoices/2026-10-22:delivery:trigger";
   env.store.set(invoiceRef, { ...env.store.get(invoiceRef), status: "fake_paid" });
   await assert.rejects(persistHybridInvoiceLedger({

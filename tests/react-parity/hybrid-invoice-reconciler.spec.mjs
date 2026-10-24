@@ -71,7 +71,7 @@ test("read-only trusted invoice planner uses activation anniversary for a legacy
   assert.equal(plan.firstMonth, undefined, "first-cycle billing is stored as policy, not client flag");
   assert.equal(plan.mode, "delivery_share");
   assert.deepEqual(plan.expectedInvoices.map(x => [x.date, x.amount]),
-    [["2026-11-01", 500]]);
+    [["2026-11-01", 50]]);
 });
 
 test("fixed fee only after anniversary close; a first-cycle fee is waived", async () => {

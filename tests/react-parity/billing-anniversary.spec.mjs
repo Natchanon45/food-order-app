@@ -102,8 +102,8 @@ test("Hybrid projected trigger spans calendar months but its threshold restarts 
   assert.equal(result.triggerDate, "2026-11-01");
   assert.equal(result.cycleStartDate, "2026-10-22");
   assert.equal(result.cycleEndDate, "2026-11-21");
-  assert.deepEqual(result.invoices.map(row => row.amount), [500, 50]);
-  assert.equal(result.totalFee, 550);
+  assert.deepEqual(result.invoices.map(row => row.amount), [50, 50]);
+  assert.equal(result.totalFee, 100);
   const renewal = cycleFromMonth("2026-10-22", "2026-11");
   const next = calculateCycle({
     cycleStartDate: renewal.startDate, cycleEndExclusiveDate: renewal.endExclusiveDate,

@@ -68,7 +68,7 @@ test("aggregation is order-independent and combines many same-day paid orders ex
   const result = calculateMonth({ month: "2026-10", firstMonth: false, dailyDeliverySales: daily });
   assert.equal(result.mode, "delivery_share");
   assert.equal(result.triggerDate, "2026-10-21");
-  assert.equal(result.totalFee, 500);
+  assert.equal(result.totalFee, 90);
   assert.equal(result.fixedFee, 0);
 });
 test("monthWindow uses Thai dates incl leap and year rollover", () => {
@@ -114,7 +114,7 @@ test("read-only tenant preview uses stored period snapshot, ignores POS and neve
   assert.equal(result.source, "billing_snapshot");
   assert.equal(result.config.monthlyFee, 777);
   assert.equal(result.totalDeliverySales, 12000);
-  assert.equal(result.totalFee, 240);
+  assert.equal(result.totalFee, 40);
   assert.equal(result.fixedFee, 0);
   assert.deepEqual(changes, []);
 });
