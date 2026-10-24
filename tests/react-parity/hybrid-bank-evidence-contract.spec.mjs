@@ -31,9 +31,18 @@ const expected = Object.fromEntries(
     "bankReferenceHash", "destinationFingerprint", "amountCents"]
     .map(k => [k, payload[k]]),
 );
-const registry = { [providerId]: { [keyId]: {
+const pinnedKey = {
   enabled: true, publicKeyPem: keyPem,
-} } };
+  fingerprintSha256: createHash("sha256")
+    .update(keys.publicKey.export({ type: "spki", format: "der" }))
+    .digest("hex"),
+  validFrom: "2026-10-01T00:00:00.000Z",
+  validUntil: "2026-11-30T23:59:59.000Z",
+  revokedAt: null,
+  registeredBy: "security-registrar",
+  reviewedBy: "finance-reviewer",
+};
+const registry = { [providerId]: { [keyId]: pinnedKey } };
 const envelope = (p = payload, fields = {}) => {
   const bare = {
     version: "hybrid_bank_posting_ed25519_v1",
@@ -94,12 +103,12 @@ test("editing any signed field without resigning destroys signature", () => {
 
 test("unrecognized, revoked or browser-injected key cannot verify", () => {
   const e = envelope();
-  assert.throws(() => run(e, { trustedRegistry: {} }), /TRUSTED_SERVER_KEY_REQUIRED/);
+  assert.throws(() => run(e, { trustedRegistry: {} }), /HYBRID_BANK_KEY_NOT_PINNED/);
   assert.throws(() => run(e, {
     trustedRegistry: { [providerId]: { [keyId]: {
-      enabled: false, publicKeyPem: keyPem,
+      ...pinnedKey, enabled: false,
     } } },
-  }), /TRUSTED_SERVER_KEY_REQUIRED/);
+  }), /HYBRID_BANK_KEY_DISABLED/);
   assert.throws(() => run({ ...e, publicKeyPem: keyPem }),
     /ENVELOPE_OR_PROVIDER_INVALID/);
   assert.throws(() => run(e, { expectedProviderId: "different_bank" }),
@@ -159,11 +168,11 @@ test("missing/malformed signature and wrong key algorithm must fail closed", () 
   const rsa = generateKeyPairSync("rsa", { modulusLength: 2048 });
   assert.throws(() => run(e, {
     trustedRegistry: { [providerId]: { [keyId]: {
-      enabled: true, publicKeyPem: rsa.publicKey.export({
+      ...pinnedKey, publicKeyPem: rsa.publicKey.export({
         type: "spki", format: "pem",
       }),
     } } },
-  }), /ED25519_PUBLIC_KEY_REQUIRED/);
+  }), /HYBRID_BANK_KEY_ED25519_REQUIRED/);
 });
 
 test("invalid future, noncanonical date or zero/unsafe baht amount fails", () => {

@@ -2,7 +2,8 @@
 
 // PRIVATE Phase 10 format preflight. No bank API, payout or Firestore writes.
 // An Ed25519 signature using a test key DOES NOT establish real bank provenance.
-const { createHash, createPublicKey, verify } = require("node:crypto");
+const { createHash, verify } = require("node:crypto");
+const { validateHybridBankPinnedKey } = require("./hybrid-billing-bank-key-policy");
 const VERSION = "hybrid_bank_posting_ed25519_v1";
 const DOMAIN = "PENGUIN-HYBRID-BANK-EVIDENCE-TEST-CONTRACT-V1\n";
 const SHA = /^[a-f0-9]{64}$/;
@@ -64,16 +65,13 @@ function verifyHybridSignedBankEvidencePreflight({
   }
   if (Date.parse(envelope.payload.postedAt) > Date.parse(asOf))
     fail("POSTED_AFTER_OBSERVATION");
-  const keyConfig = trustedRegistry?.[expectedProviderId]?.[envelope.keyId];
-  if (!keyConfig || keyConfig.enabled !== true
-    || typeof keyConfig.publicKeyPem !== "string"
-    || !keyConfig.publicKeyPem.startsWith("-----BEGIN PUBLIC KEY-----"))
-    fail("TRUSTED_SERVER_KEY_REQUIRED");
-  let key;
-  try {
-    key = createPublicKey(keyConfig.publicKeyPem);
-    if (key.asymmetricKeyType !== "ed25519") fail("ED25519_PUBLIC_KEY_REQUIRED");
-  } catch { fail("ED25519_PUBLIC_KEY_REQUIRED"); }
+  // Enforce pinned key fingerprint, dual internal review, valid time window
+  // and non-revocation BEFORE verifying the signed envelope. These guards
+  // remain only internal policy until verified bank-origin onboarding.
+  const key = validateHybridBankPinnedKey({
+    trustedRegistry, providerId: expectedProviderId, keyId: envelope.keyId,
+    postingAt: envelope.payload.postedAt, checkedAt: asOf,
+  });
   const sig = envelope.signatureBase64;
   if (typeof sig !== "string" || !/^[A-Za-z0-9+/]{86}==$/.test(sig))
     fail("SIGNATURE_ENCODING_INVALID");
