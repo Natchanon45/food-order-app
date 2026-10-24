@@ -123,3 +123,51 @@ Testing:
 - Finance operations MUST NOT treat a complete internal enrollment review
   as independent bank ownership verification. Real provider onboarding,
   authenticated trust roots and source checks remain blocked.
+
+## 24 October 2026 — Read-only four-collection historical signer audit
+
+A separate PRIVATE module `functions/hybrid-billing-bank-key-history-audit.js`
+inspects the four DEMO-only bank key enrollment collections and emits
+**aggregate counts and allowlisted error codes only**. It never returns
+provider IDs, signer key IDs, fingerprints, request IDs, raw PEM, accounts or
+the Super Admin user IDs. It is not imported by any Production Cloud Function.
+
+The inventory looks for:
+- Requests with invalid scope, forged key activation/bank-authentication flags,
+  changed fields, invalid UTC validity windows and missing identity.
+- Missing/mismatched SHA256 fingerprint reservations and hashed
+  provider/key-slot reservations.
+- Orphaned fingerprint/slot claims with no matching source request, or
+  references whose request/provider/key does not match.
+- Missing/orphaned review events, forged decision/result status, review
+  outside the request's window, self-review and changed trust flags.
+  A **pending** request without a review is normal and is counted separately
+  as `pendingInternalReviews`, with a release blocker.
+
+All four collections use bounded reads (`maxPerSource` 1–500, request
+`limit(max+1)`). Overflow or malformed Firestore document references throw
+instead of issuing a falsely complete history result. The four collection
+reads are **not an atomic Firestore snapshot**. An empty or internally
+consistent inventory is not proof of bank-origin public key ownership or
+historical signer completeness.
+
+Every report contains:
+`bankOriginAuthenticated:false`,
+`trustedRegistryPromoted:false`,
+`anyKeyActivated:false`,
+`historicalKeyCoverageVerified:false`,
+`settlementAllowed:false`,
+`releaseReady:false`, `writesPerformed:false`, and explicit
+bank-ownership, legacy-key and non-atomic-scan release blockers.
+
+Tests: `npm run test:hybrid-bank-key-history` has 14 mocked-source unit
+scenarios (14/14 V8 pass) and is included in `test:hybrid-billing`.
+Real Firestore Emulator integration was added under
+`test:firebase-hybrid-emulator`, including an orphan claim and overflow
+case; native Mac test for the new commit remains pending.
+
+Next: real bank/provider public key attestation, safe signer rotation and
+revocation policy using verified origins, historic provider and bank
+reconciliation, final independent settlement authorization and receipts,
+and explicit owner UAT approval. No financial operations or Production
+gates have been enabled.

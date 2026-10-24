@@ -1,3 +1,14 @@
+## 2026-10-24 — FINAL Phase 10: four-collection private bank key enrollment integrity history
+
+- User confirmed native Mac suite for previous HEAD `dec33889` passed; Remote Desktop Commander Mac mini still OFFLINE during new work, so new native Node/Emulator test results not yet confirmed.
+- Added read-only private `functions/hybrid-billing-bank-key-history-audit.js`: exact `demo-penguin-hybrid`, local Firestore Emulator only, bounded scans of four global collections (requests, reviews, fingerprint claims, key-slot claims), max 500 docs/source with explicit limit-overflow exception. No Production import, web/Firestore writer, payout or key activation. Scans are deliberately NON-ATOMIC.
+- Audit cross-checks request schema and states, global SHA256 fingerprint + provider/key-slot hash and backrefs, review actor separation, decision/status and timestamps; flags orphaned/missing/spoofed documents. Pending reviews are counted separately (pending is expected, not itself an integrity anomaly). Returns ONLY aggregate counts, allowlisted issue codes and release blockers: never raw fingerprints, UIDs, IDs or PEM.
+- Report permanently states `bankOriginAuthenticated:false`, `trustedRegistryPromoted:false`, `anyKeyActivated:false`, `historicalKeyCoverageVerified:false`, `settlementAllowed:false`, `releaseReady:false`. Consistent/empty Firestore is NOT real bank trust.
+- New `npm run test:hybrid-bank-key-history` included in `test:hybrid-billing`; 14/14 source-level mocked V8 test cases passed. Added actual Emulator integration scenario verifying orphan claim detection, redaction, bounded overflow and disabled bank trust; native Emulator not yet run.
+- Docs updated in `docs/HYBRID_PHASE10_BANK_KEY_ENROLLMENT_20261024.md` and `docs/HYBRID_PHASE10_BROWSER_EMULATOR_UAT_20261024.md`. No `main` merge, Production deployment or release flag alteration. Preserve local dirty `public/**/index.html` on Mac.
+- Continue Phase 10 only: independently authenticate real bank public key ownership and trusted provider onboarding, authenticated statement import, historical payout migration, independent finance final settlement and App Check/Slip2Go UAT. Do not infer actual bank trust from these demo diagnostics.
+- Safe Mac: `git status --short`; `git switch feature/react-firebase-port`; `git pull --ff-only origin feature/react-firebase-port`; `npm run test:hybrid-bank-key-history`; `npm run test:hybrid-bank-enrollment`; `npm run test:hybrid-billing`; `npm run test:firebase-hybrid-emulator`; `npm run test:react-parity`; `npm run build:react`. Never `git reset --hard` or `git clean`.
+
 ## 2026-10-24 — Final Phase 10: revalidate global bank signer claims at review
 
 - User confirmed native Mac tests at previous HEAD `e079da63` passed and requested continuation. Remote Mac remains OFFLINE in this turn; new native tests have NOT been run by assistant.

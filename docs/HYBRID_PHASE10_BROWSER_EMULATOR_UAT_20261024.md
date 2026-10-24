@@ -332,3 +332,22 @@ npm run build:react
   `npm run build:react`.
 - These are **synthetic internal finance audit controls**. Real bank
   identity, bank statement ingestion and final settlement remain unimplemented.
+
+## 24 October 2026 — Bank key enrollment history integrity inventory UAT
+
+- Run `npm run test:hybrid-bank-key-history` and
+  `npm run test:firebase-hybrid-emulator` on the latest
+  `feature/react-firebase-port` commit.
+- Four global collections must be scanned with maximum 500 records each.
+  Greater source size must fail closed with `SCAN_OVERFLOW`.
+  Malformed doc IDs/paths and duplicated snapshots also fail closed.
+- A Request with both legitimate global claims and no review counts as
+  `pendingInternalReviews`; this is not an integrity error. A complete
+  Review Event still never authenticates bank key ownership.
+- A deleted/repointed fingerprint claim or slot claim, an orphaned review
+  event, changed review actor/status, forged bank authentication/activation
+  or incorrect UTC validity must cause sanitized integrity exception codes.
+- The report must contain no signer key, fingerprint, provider ID, request ID,
+  or Super Admin UID; never present an empty report as verified bank evidence.
+- All release/trust flags remain FALSE, including when no integrity issues
+  are reported. This is a demo-only read-only **NON-ATOMIC** snapshot.
