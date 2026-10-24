@@ -191,6 +191,34 @@ test("Browser roles cannot read, enumerate or forge server-only upload grants", 
   }
 });
 
+test("Financial compensation balance, proposals and reviewer events are never client-writable", async () => {
+  const invoiceId = "2026-10-22:delivery:trigger";
+  for (const [collectionName, documentId] of [
+    ["hybridBillingAdjustments", "adjustment_12345678901234"],
+    ["hybridBillingAdjustmentBalances", invoiceId],
+    ["hybridBillingAdjustmentEvents", "adjustment_12345678901234-review"],
+  ]) {
+    const path = "tenants/store-a/" + collectionName + "/" + documentId;
+    await adminDb.doc(path).set({ tenantId: "store-a", invoiceId, status: "proposed",
+      amount: 500 });
+    for (const name of ["owner-a", "admin-a", "cashier-a",
+      "super-admin", "owner-b", "anonymous"]) {
+      const db = identities.get(name).firestore;
+      await denied(setDoc(doc(db, path), { status: "settled" }),
+        name + " must not write finance compensation");
+      await denied(updateDoc(doc(db, path), { amount: 0 }),
+        name + " must not modify finance compensation");
+      await denied(deleteDoc(doc(db, path)),
+        name + " must not delete finance compensation");
+      if (name !== "super-admin" || collectionName === "hybridBillingAdjustmentBalances") {
+        await denied(getDoc(doc(db, path)), "Private finance records denied");
+      } else {
+        assert.equal((await getDoc(doc(db, path))).exists(), true);
+      }
+    }
+  }
+});
+
 test("Global bank/slip claims cannot be read or forged by any Browser role", async () => {
   for (const name of ["owner-a", "admin-a", "super-admin", "cashier-a", "anonymous"]) {
     const db = identities.get(name).firestore;

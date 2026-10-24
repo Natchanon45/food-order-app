@@ -405,6 +405,19 @@ service cloud.firestore {
         allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
         allow create, update, delete: if false;
       }
+      // Private financial compensation: a Server Admin transaction is the
+      // only writer. The balance cap and decision audit must not be forged.
+      match /hybridBillingAdjustments/{adjustmentId} {
+        allow get, list: if superAdminRole();
+        allow create, update, delete: if false;
+      }
+      match /hybridBillingAdjustmentBalances/{invoiceId} {
+        allow read, write: if false;
+      }
+      match /hybridBillingAdjustmentEvents/{eventId} {
+        allow get, list: if superAdminRole();
+        allow create, update, delete: if false;
+      }
       match /memberships/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole() || tenantAdminRole(tenantId)); allow create, update, delete: if superAdminRole(); }
     }
     /* WAITING_QUEUE_MVP_RULES_START */
