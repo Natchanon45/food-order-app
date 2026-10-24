@@ -131,8 +131,9 @@ test("Delivery uses the owner-selected line icon, with theme-colored SVG mask an
   assert.equal(iconOccurrences.length, 3, "sales, charge calculation and customer delivery fee use one Delivery glyph");
   assert.doesNotMatch(report, /className="bi bi-scooter"/);
   assert.doesNotMatch(report, /className="bi bi-truck"/);
-  assert.match(asset, /viewBox="3 4 76 52"/);
-  assert.match(asset, /fill="currentColor"/);
+  assert.match(asset, /viewBox="0 0 256 256"/);
+  assert.match(asset, /fill: rgb\(0,0,0\)/);
+  assert.match(asset, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
   assert.doesNotMatch(asset, /<script|foreignObject|<image|https?:\/\/[^\s]*\.svg/);
   assert.match(css, /\.revenue-share-dashboard \.delivery-bike-line-icon\{/);
   assert.match(css, /background-color:currentColor/);
