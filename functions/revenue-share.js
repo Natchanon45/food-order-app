@@ -446,6 +446,18 @@ function detectSlipAmount(text = "") {
 
 async function inspectRevenueShareSlip(file, mime, expectedAmount, premiumDelivery = false) {
   const [buffer] = await file.download();
+  // Local browser Demo is absolutely forbidden from calling a real Slip2Go,
+  // Vision or banking endpoint, even if an operator configured a secret in
+  // demo Firestore. Fail closed to manual Super Admin review instead.
+  if (process.env.HYBRID_DEMO_FUNCTIONS_ONLY === "1"
+    && ["127.0.0.1", "localhost"].some(host =>
+      String(process.env.FIRESTORE_EMULATOR_HOST || "").startsWith(host + ":"))
+    && [process.env.GCLOUD_PROJECT, process.env.GCP_PROJECT]
+      .filter(Boolean).every(id => id === "demo-penguin-hybrid")) {
+    return { provider: "slip2go", status: "config_required",
+      reason: "demo_local_slip2go_disabled", amountMatched: false,
+      receiverValidated: false, expectedAmount };
+  }
   // Premium Delivery requires strict receiver + Slip2Go transaction verification.
   // Service/config outages queue HUMAN review, never auto-confirm payment.
   return inspectSlip(buffer, mime, String(file.name || "slip"), expectedAmount,

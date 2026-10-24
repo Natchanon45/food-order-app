@@ -115,3 +115,23 @@ exports.demoHybridPrepareUpload = onCall(options, async request => {
     throw new HttpsError("failed-precondition", "HYBRID_UPLOAD_UNAVAILABLE");
   }
 });
+
+// Owner-facing Premium Delivery Revenue Share CALLABLES for local browser UAT.
+// The fail-closed DEMO environment guard at file top runs first. Do not expose
+// the production scheduler here: Super Admin runs reconciliation explicitly
+// during UAT so an idle demo never locks an unsuspecting tenant overnight.
+// Real provider requests are blocked by the local-only branch in
+// revenue-share.inspectRevenueShareSlip, but live Production is unchanged.
+const premiumRevenueShare = require("../revenue-share");
+for (const name of [
+  "getTenantRevenueShareAccess", "getTenantRevenueShareSummary",
+  "listTenantRevenueSharePayments", "submitTenantRevenueSharePayment",
+  "deleteTenantRevenueSharePayment", "getPlatformRevenueShareSummary",
+  "listPlatformRevenueSharePayments", "reviewRevenueSharePayment",
+  "reconcileRevenueShare",
+]) {
+  if (typeof premiumRevenueShare[name] !== "function") {
+    throw new Error("LOCAL_PREMIUM_DEMO_MISSING_CALLABLE");
+  }
+  exports[name] = premiumRevenueShare[name];
+}

@@ -282,3 +282,15 @@ test("Finance approval rechecks active Super Admin and immutable ledger inside t
   assert.match(payment, /rawInvoice\.version !== LEDGER_VERSION/);
   assert.match(payment, /rawAttempt\.id !== attemptId/);
 });
+
+test("Premium Delivery Browser seed refuses any real Firebase project or nonlocal emulator", () => {
+  const code = read("tools/seed-premium-delivery-demo.mjs");
+  const script = pkg.scripts["seed:premium-delivery-demo"];
+  assert.match(script, /demo-penguin-hybrid/);
+  assert.match(script, /HYBRID_DEMO_FUNCTIONS_ONLY=1/);
+  assert.match(script, /FIRESTORE_EMULATOR_HOST=127\.0\.0\.1:8080/);
+  assert.match(code, /PREMIUM_DEMO_REQUIRES_EXPLICIT_LOCAL_EMULATORS/);
+  assert.match(code, /PREMIUM_DEMO_CENTRAL_PRICING_CONFLICT/);
+  assert.match(code, /if \(\(await ref\.get\(\)\)\.exists\) continue/);
+  assert.doesNotMatch(code, /firebase deploy|chat-45754|realBankTransfer/);
+});

@@ -97,6 +97,7 @@
     "test:hybrid-upload-grant": "node --test tests/react-parity/hybrid-upload-grant.spec.mjs",
     "test:hybrid-demo-browser": "node --test tests/react-parity/hybrid-demo-payment-transport.spec.mjs",
     "seed:hybrid-demo-browser": "node tools/seed-hybrid-browser-demo.mjs",
+    "seed:premium-delivery-demo": "GCLOUD_PROJECT=demo-penguin-hybrid GCP_PROJECT=demo-penguin-hybrid HYBRID_DEMO_FUNCTIONS_ONLY=1 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199 FIREBASE_FUNCTIONS_EMULATOR_HOST=127.0.0.1:5001 node tools/seed-premium-delivery-demo.mjs",
     "test:hybrid-receiver-verification": "node --test tests/react-parity/hybrid-receiver-verification.spec.mjs",
     "test:hybrid-finance-policy": "node --test tests/react-parity/hybrid-finance-policy.spec.mjs",
     "test:hybrid-recovery-reader": "node --test tests/react-parity/hybrid-recovery-reader.spec.mjs",

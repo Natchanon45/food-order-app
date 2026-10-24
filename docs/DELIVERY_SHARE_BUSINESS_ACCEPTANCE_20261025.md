@@ -114,3 +114,12 @@ may need a one-time reconciliation; do not silently mutate prior paid rows.
   sign-off confirms the exact 75 THB flow and recovery. No synthetic bank
   evidence module is required or relevant to this business acceptance.
 
+
+## 2026-10-25 — Premium Delivery browser UAT bridge (local-only)
+
+- Last native `tests/firebase-emulator/delivery-share-actual-workflow.spec.mjs` **PASS 1/1** after adding second-day 100 THB strict mocked Slip2Go auto-approval + Firestore claims and release. This is **not a real Slip2Go connection**.
+- Previous UAT blocker: `firebase.hybrid-functions-emulator.json` served only private Hybrid callables; live Revenue Share browser page would report `functions/not-found`. Reused guarded `functions/emulator-hybrid/index.cjs` to expose only its required Revenue Share Callables; no Production export or automatic scheduler; manual Super Admin `reconcileRevenueShare` can simulate the overnight action in this local Demo.
+- Local browser seeder `npm run seed:premium-delivery-demo` creates a synthetic Premium tenant and Auth owner/Super Admin, monthly cycle from 3 October, first THB 10,000 exempt and yesterday's THB 1,500 excess. It refuses non-local emulator hosts or non-demo project and does not overwrite existing receipts/orders.
+- Under the demo-only guard, `inspectRevenueShareSlip` refuses all real bank or Slip2Go traffic and returns `config_required` to queue Super Admin manual review. Production's actual verification behavior is unchanged.
+- To test browser: run the guarded existing Hybrid Functions Emulator with `HYBRID_DEMO_FUNCTIONS_ONLY=1` and local hosts, **restart it after updating source**, run `npm run seed:premium-delivery-demo`, run `npm run dev:react:hybrid-demo`, open `/login` then `/reports/revenue-share` and `/admin/tenants`. No Production deploy/merge until Manual UAT and real credential verification prerequisites are satisfied.
+

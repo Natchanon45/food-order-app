@@ -24,6 +24,12 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Premium Delivery browser UAT bridge (local-only)
+
+- **Blocker:** Existing Hybrid Demo Functions Emulator exported no Revenue Share endpoints, so the new owner and Super Admin UAT could not be performed in the browser even though source and Firestore tests passed.
+- **Changes:** Export only the existing owner/finance-review Revenue Share Callables inside guard-hardened `functions/emulator-hybrid/index.cjs`. Do not export the scheduler. Backend `inspectRevenueShareSlip` returns a local Demo manual-review result, prohibiting all outbound Slip2Go/bank traffic in this special mode. Added safe synthetic Premium Owner/Admin seeder and central 10,000 THB/5% fixture for yesterday due. Test-only source; no Production export or release enabled.
+- **Verification:** GitHub-first code commit must be pulled to Mac to execute `test:hybrid-functions-safety`, `test:hybrid-billing`, Emulator test, Browser UI, and React build. No Production deploy before the user's acceptance.
+
 ## 2026-10-25 — Native Firestore/Auth/Storage Delivery Share UAT
 
 - GitHub-first Commit `6ea258e7` was pulled to Mac and the **real local** Emulator regression (not just an in-memory mock) **PASSED 1/1** at `demo-penguin-hybrid`: 3 October anchor, 10 October 75 THB, 11 October unpaid suspended + inactive slug, duplicate reconcile no-op, synthetic Storage receipt with offline Slip2Go pending, Super Admin verified review approved, restored tenant and slug. No live provider call.
