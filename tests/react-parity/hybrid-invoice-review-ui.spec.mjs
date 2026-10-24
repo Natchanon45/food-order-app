@@ -87,3 +87,36 @@ test("React audit pagination prevents synchronous duplicate requests", () => {
   assert.match(admin, /pageInFlightRef\.current = requestScope/);
   assert.match(admin, /pageInFlightRef\.current === requestScope/);
 });
+
+
+test("finance adjustments and immutable review history are read-only and tenant scoped", () => {
+  assert.match(data, /export async function listHybridAdjustments\(/);
+  assert.match(data, /export async function listHybridAdjustmentReviewEvents\(/);
+  assert.match(data, /collection\(db, "tenants", tenantId, "hybridBillingAdjustments"\)/);
+  assert.match(data, /collection\(db, "tenants", tenantId, "hybridBillingAdjustmentEvents"\)/);
+  assert.match(data, /orderBy\("proposedAt", "desc"\)/);
+  assert.match(data, /orderBy\("reviewedAt", "desc"\)/);
+  assert.match(admin, /listHybridAdjustments\(selectedId\)/);
+  assert.match(admin, /listHybridAdjustmentReviewEvents\(selectedId\)/);
+  assert.match(admin, /const visibleAdjustments = detailsReady \? adjustments : \[\]/);
+  assert.match(admin, /const visibleAdjustmentEvents = detailsReady \? adjustmentEvents : \[\]/);
+  assert.match(admin, /loadMoreDetails\("adjustments", adjustmentCursor,/);
+  assert.match(admin, /loadMoreDetails\("adjustment-events", adjustmentEventCursor,/);
+  assert.match(admin, /setAdjustments\(\[\]\)/);
+  assert.match(admin, /setAdjustmentEvents\(\[\]\)/);
+  assert.match(rules, /match \/hybridBillingAdjustments\/\{adjustmentId\}/);
+  assert.match(rules, /match \/hybridBillingAdjustmentEvents\/\{eventId\}/);
+  assert.match(rules, /match \/hybridBillingAdjustmentBalances\/\{invoiceId\}/);
+  assert.doesNotMatch(admin + data, /setDoc\(|updateDoc\(|deleteDoc\(|addDoc\(/);
+});
+
+test("internal approval never masquerades as a bank refund or applied credit", () => {
+  assert.match(admin, /Internally approved only/);
+  assert.match(admin, /No confirmed payout/);
+  assert.match(admin, /Payout not confirmed/);
+  assert.match(admin, /Credit note \(not applied\)/);
+  assert.match(data, /payoutConfirmed: false/);
+  assert.doesNotMatch(data, /payoutReference:|bankAccount:|slipPath:|rawOCR:|rawVerification:/);
+  assert.match(data, /safeFinanceText/);
+  assert.match(admin, /hybrid-adjustment-unsettled/);
+});

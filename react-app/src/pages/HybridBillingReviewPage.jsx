@@ -12,6 +12,7 @@ import { isHybridDemoMode } from "@/firebase/client";
 import {
   listHybridTenants, listHybridInvoices, listHybridPaymentAttempts,
   listHybridPaymentReviewEvents,
+  listHybridAdjustments, listHybridAdjustmentReviewEvents,
 } from "@/data/hybridInvoiceReviewData";
 
 const label = (th, en, isThai) => isThai ? th : en;
@@ -51,6 +52,12 @@ export function HybridBillingReviewPage() {
   const [reviewEvents, setReviewEvents] = useState([]);
   const [eventCursor, setEventCursor] = useState(null);
   const [moreEvents, setMoreEvents] = useState(false);
+  const [adjustments, setAdjustments] = useState([]);
+  const [adjustmentCursor, setAdjustmentCursor] = useState(null);
+  const [moreAdjustments, setMoreAdjustments] = useState(false);
+  const [adjustmentEvents, setAdjustmentEvents] = useState([]);
+  const [adjustmentEventCursor, setAdjustmentEventCursor] = useState(null);
+  const [moreAdjustmentEvents, setMoreAdjustmentEvents] = useState(false);
   const [invoiceCursor, setInvoiceCursor] = useState(null);
   const [attemptCursor, setAttemptCursor] = useState(null);
   const [moreInvoices, setMoreInvoices] = useState(false);
@@ -70,6 +77,8 @@ export function HybridBillingReviewPage() {
   const visibleInvoices = detailsReady ? invoices : [];
   const visibleAttempts = detailsReady ? attempts : [];
   const visibleReviewEvents = detailsReady ? reviewEvents : [];
+  const visibleAdjustments = detailsReady ? adjustments : [];
+  const visibleAdjustmentEvents = detailsReady ? adjustmentEvents : [];
   const stylesReady = useParityPage({
     title: label("ตรวจสอบบิล Hybrid", "Hybrid Invoice Review", thai),
     bodyClass: "revenue-share-report-page hybrid-report-page",
@@ -108,6 +117,12 @@ export function HybridBillingReviewPage() {
       setReviewEvents([]);
       setEventCursor(null);
       setMoreEvents(false);
+      setAdjustments([]);
+      setAdjustmentCursor(null);
+      setMoreAdjustments(false);
+      setAdjustmentEvents([]);
+      setAdjustmentEventCursor(null);
+      setMoreAdjustmentEvents(false);
       return;
     }
     let cancelled = false;
@@ -118,17 +133,28 @@ export function HybridBillingReviewPage() {
     setInvoices([]);
     setAttempts([]);
     setReviewEvents([]);
+    setAdjustments([]);
+    setAdjustmentEvents([]);
     Promise.all([
       listHybridInvoices(selectedId),
       listHybridPaymentAttempts(selectedId),
       listHybridPaymentReviewEvents(selectedId),
-    ]).then(([invoicePage, attemptPage, eventPage]) => {
+      listHybridAdjustments(selectedId),
+      listHybridAdjustmentReviewEvents(selectedId),
+    ]).then(([invoicePage, attemptPage, eventPage,
+      adjustmentPage, adjustmentEventPage]) => {
         if (cancelled) return;
         setInvoices(invoicePage.items);
         setAttempts(attemptPage.items);
         setReviewEvents(eventPage.items);
         setEventCursor(eventPage.cursor);
         setMoreEvents(eventPage.hasMore);
+        setAdjustments(adjustmentPage.items);
+        setAdjustmentCursor(adjustmentPage.cursor);
+        setMoreAdjustments(adjustmentPage.hasMore);
+        setAdjustmentEvents(adjustmentEventPage.items);
+        setAdjustmentEventCursor(adjustmentEventPage.cursor);
+        setMoreAdjustmentEvents(adjustmentEventPage.hasMore);
         setInvoiceCursor(invoicePage.cursor);
         setAttemptCursor(attemptPage.cursor);
         setMoreInvoices(invoicePage.hasMore);
@@ -359,6 +385,108 @@ export function HybridBillingReviewPage() {
                 onClick={() => loadMoreDetails("events", eventCursor,
                   listHybridPaymentReviewEvents, setReviewEvents, setEventCursor, setMoreEvents)}>
                 {label("โหลดประวัติเพิ่มเติม", "Load more audit events", thai)}
+              </button> : null}
+            </section>
+
+            <section className="card hybrid-report-details hybrid-review-audit hybrid-adjustment-history" aria-label={
+              label("คำขอปรับยอดการเงิน", "Financial adjustment proposals", thai)
+            }>
+              <h2>{label("คำขอปรับยอดการเงิน", "Financial adjustment proposals", thai)}</h2>
+              <p className="hybrid-report-notice">{label(
+                "อ่านอย่างเดียว • ผ่านอนุมัติภายในไม่ได้หมายถึงคืนเงินหรือหักหนี้สำเร็จ ยอดบิลและ Wallet ไม่เปลี่ยน",
+                "Read-only • Internal approval does NOT mean refund sent, debt cleared, or wallet credited.",
+                thai
+              )}</p>
+              <div className="hybrid-report-table-scroll">
+                <table>
+                  <thead><tr>
+                    <th>{label("รหัสบิล", "Invoice", thai)}</th>
+                    <th>{label("ประเภท", "Type", thai)}</th>
+                    <th>{label("วันที่ยื่น", "Proposed", thai)}</th>
+                    <th>{label("จำนวนเงิน", "Amount", thai)}</th>
+                    <th>{label("ผู้ยื่น", "Requested by", thai)}</th>
+                    <th>{label("สถานะภายใน", "Internal status", thai)}</th>
+                    <th>{label("การคืนเงินจริง", "Actual payout", thai)}</th>
+                    <th>{label("เหตุผล", "Reason", thai)}</th>
+                  </tr></thead>
+                  <tbody>{visibleAdjustments.length ? visibleAdjustments.map(item => (
+                    <tr key={item.id}>
+                      <td className="hybrid-review-id">{item.invoiceId}</td>
+                      <td>{({
+                        credit_note: label("ใบลดหนี้ (รอดำเนินการ)", "Credit note (not applied)", thai),
+                        refund_request: label("คำขอคืนเงิน", "Refund request", thai),
+                        chargeback_review: label("ตรวจสอบรายการเรียกเงินคืน", "Chargeback review", thai),
+                      })[item.kind] || "-"}</td>
+                      <td>{recordDate(item.proposedAt, intlLocale)}</td>
+                      <td>{money(item.amount, intlLocale)}</td>
+                      <td className="hybrid-review-id">{item.proposedBy || "-"}</td>
+                      <td><span className={"hybrid-review-status " + item.status}>
+                        {({
+                          proposed: label("รอตรวจภายใน", "Awaiting internal review", thai),
+                          approved: label("อนุมัติภายในเท่านั้น", "Internally approved only", thai),
+                          rejected: label("ปฏิเสธ", "Rejected", thai),
+                        })[item.status] || "-"}</span></td>
+                      <td className="hybrid-adjustment-unsettled">{label(
+                        "ยังไม่มีหลักฐานคืนเงินจริง", "No confirmed payout", thai
+                      )}</td>
+                      <td className="hybrid-review-audit-note">{item.reasonPreview || "-"}</td>
+                    </tr>
+                  )) : <tr><td colSpan={8}>{label(
+                    "ยังไม่มีคำขอปรับยอด", "No adjustment proposals", thai
+                  )}</td></tr>}</tbody>
+                </table>
+              </div>
+              {moreAdjustments && detailsReady ? <button type="button" className="btn btn-sm"
+                disabled={loadingDetails || Boolean(pageBusyScope)}
+                onClick={() => loadMoreDetails("adjustments", adjustmentCursor,
+                  listHybridAdjustments, setAdjustments, setAdjustmentCursor, setMoreAdjustments)}>
+                {label("โหลดคำขอเพิ่มเติม", "Load more proposals", thai)}
+              </button> : null}
+            </section>
+            <section className="card hybrid-report-details hybrid-review-audit hybrid-adjustment-history" aria-label={
+              label("ประวัติการอนุมัติปรับยอด", "Adjustment review history", thai)
+            }>
+              <h2>{label("ประวัติการอนุมัติปรับยอด", "Adjustment review history", thai)}</h2>
+              <p className="hybrid-report-notice">{label(
+                "แสดงเฉพาะผู้ตรวจและผลตัดสินใจ ไม่แสดงข้อมูลบัญชีธนาคารหรือเลขอ้างอิงการโอน",
+                "Immutable decisions only; no bank account, raw evidence or transfer references.",
+                thai
+              )}</p>
+              <div className="hybrid-report-table-scroll">
+                <table>
+                  <thead><tr>
+                    <th>{label("คำขอ", "Adjustment", thai)}</th>
+                    <th>{label("วันที่ตรวจ", "Reviewed", thai)}</th>
+                    <th>{label("ผู้ตรวจ", "Reviewer", thai)}</th>
+                    <th>{label("ผลภายใน", "Internal decision", thai)}</th>
+                    <th>{label("หลักฐานคืนเงินจริง", "External settlement", thai)}</th>
+                    <th>{label("หมายเหตุ", "Audit note", thai)}</th>
+                  </tr></thead>
+                  <tbody>{visibleAdjustmentEvents.length ? visibleAdjustmentEvents.map(event => (
+                    <tr key={event.id}>
+                      <td className="hybrid-review-id">{event.adjustmentId}</td>
+                      <td>{recordDate(event.reviewedAt, intlLocale)}</td>
+                      <td className="hybrid-review-id">{event.reviewerId || "-"}</td>
+                      <td><span className={"hybrid-review-status " + event.resultStatus}>
+                        {event.action === "approve"
+                          ? label("อนุมัติภายใน", "Internally approved", thai)
+                          : event.action === "reject" ? label("ปฏิเสธ", "Rejected", thai) : "-"}</span></td>
+                      <td className="hybrid-adjustment-unsettled">{label(
+                        "ยังไม่ยืนยันการคืนเงินจริง", "Payout not confirmed", thai
+                      )}</td>
+                      <td className="hybrid-review-audit-note">{event.notePreview || "-"}</td>
+                    </tr>
+                  )) : <tr><td colSpan={6}>{label(
+                    "ยังไม่มีประวัติการตัดสินใจ", "No adjustment decisions", thai
+                  )}</td></tr>}</tbody>
+                </table>
+              </div>
+              {moreAdjustmentEvents && detailsReady ? <button type="button" className="btn btn-sm"
+                disabled={loadingDetails || Boolean(pageBusyScope)}
+                onClick={() => loadMoreDetails("adjustment-events", adjustmentEventCursor,
+                  listHybridAdjustmentReviewEvents, setAdjustmentEvents,
+                  setAdjustmentEventCursor, setMoreAdjustmentEvents)}>
+                {label("โหลดประวัติเพิ่มเติม", "Load more decisions", thai)}
               </button> : null}
             </section>
           </>

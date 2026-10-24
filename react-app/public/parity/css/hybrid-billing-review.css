@@ -78,3 +78,11 @@
 .hybrid-review-audit-note{max-width:260px;overflow-wrap:anywhere;line-height:1.45}
 .hybrid-review-audit .btn{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;min-height:38px}
 @media(max-width:760px){.hybrid-review-audit .btn{width:100%}}
+
+/* Phase 10 adjustment proposals: read-only finance history, mobile scroll. */
+.hybrid-adjustment-history .hybrid-report-table-scroll table{min-width:850px}
+.hybrid-adjustment-history .hybrid-review-status.approved{background:#edf2fa;color:#28436e}
+.hybrid-adjustment-history .hybrid-review-status.proposed{background:#fff5e2;color:#915600}
+.hybrid-adjustment-unsettled{color:#8d5b12;font-weight:650;line-height:1.45}
+.hybrid-adjustment-history .btn{margin-top:10px;display:inline-flex;justify-content:center;align-items:center;min-height:38px}
+@media(max-width:760px){.hybrid-adjustment-history .btn{width:100%}}
