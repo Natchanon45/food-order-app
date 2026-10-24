@@ -1,3 +1,13 @@
+## 2026-10-24 — FINAL Phase 10: unified 16-source finance & signing-key release blocker report
+
+- User confirmed prior Mac native tests at HEAD `8e71025d` passed. Remote Mac mini offline this turn; new native Node/Emulator React build tests NOT executed.
+- Added private `functions/hybrid-billing-phase10-readiness.js` merging sanitized 12-source finance audit/worklist and 4-source bank enrollment history audit; no database writes. Never treats internal Wallet delivery_refund credits as outgoing bank payouts. Both scans are bounded but NON-ATOMIC. All Production/Settlement/Bank trust flags locked false even if no issues.
+- Added CLI option `node tools/audit-hybrid-finance-demo.mjs --format=readiness --max=100` with existing demo-ack + exact project + loopback checks before Admin SDK import. Exit code 2 remains expected for unresolved release blockers. Redacted JSON only, no raw IDs, bank references, signers, users or tenant details.
+- Added `npm run test:hybrid-phase10-readiness` (12 tests, 12/12 mocked V8 pass) to `test:hybrid-billing`, plus Firestore Emulator integration reading all 16 sources and ensuring no release. Native Mac/Emulator tests pending for this commit.
+- Docs: `docs/HYBRID_PHASE10_UNIFIED_READINESS_20261024.md`. No new phases, `main` merge, Firebase Production deployment, key activation, settlement transfer or release-flag modifications.
+- Safe Mac: `git status --short`; `git switch feature/react-firebase-port`; `git pull --ff-only origin feature/react-firebase-port`; `npm run test:hybrid-phase10-readiness`; `npm run test:hybrid-billing`; `npm run test:firebase-hybrid-emulator`; `npm run test:react-parity`; `npm run build:react`; `git status --short`. Do not reset/clean dirty `public/**/index.html`.
+- Final Phase 10 remains BLOCKED for authenticated bank/provider identity, full historical payout coverage, independent real finance settlement authorization, App Check/Slip2Go UAT and explicit owner release decision.
+
 ## 2026-10-24 — FINAL Phase 10: four-collection private bank key enrollment integrity history
 
 - User confirmed native Mac suite for previous HEAD `dec33889` passed; Remote Desktop Commander Mac mini still OFFLINE during new work, so new native Node/Emulator test results not yet confirmed.

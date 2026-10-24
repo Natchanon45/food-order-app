@@ -351,3 +351,20 @@ npm run build:react
   or Super Admin UID; never present an empty report as verified bank evidence.
 - All release/trust flags remain FALSE, including when no integrity issues
   are reported. This is a demo-only read-only **NON-ATOMIC** snapshot.
+
+## 24 October 2026 — Combined Phase 10 readiness acceptance
+
+- With the exact local `demo-penguin-hybrid` Firestore Emulator running,
+  export `--format=readiness` (see the unified report doc).
+- The report must cover exactly 16 collection sources (12 finance, 4 bank
+  signer enrollment); per-source overflow must fail closed, not return a
+  partial readiness report. Reads are non-atomic across collections.
+- Invoice/adjustment conflicts and signer review/orphan claims must coexist
+  as redacted, actionable source-specific tasks; raw IDs, bank references
+  and private accounts must not appear.
+- Wallet `delivery_refund` credit is never a bank payout. A consistent or
+  empty demo dataset must still yield bank-ownership, external statement,
+  historical payout and final settlement blockers.
+- CLI and report keep `eligibleForBankSettlement:false`,
+  `productionReleaseAllowed:false` and `writesPerformed:false`; expected
+  CLI exit code is 2. No Production release flag may change.

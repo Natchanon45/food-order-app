@@ -204,3 +204,14 @@ can check an Ed25519 signature and strict payout fields using a server-configure
 public key. A synthetic signer (including a test fixture) is **NOT** bank-origin
 proof and does not remove any historical or external bank blockers. No real
 bank keys, receipts or statements are connected; Settlement stays disabled.
+
+## 24 October 2026 — Unified bank key + finance release blocker report
+
+[Combined demo readiness report](HYBRID_PHASE10_UNIFIED_READINESS_20261024.md)
+now merges 12 finance + 4 private key enrollment collections into one
+allowlisted, read-only triage list. Even with no integrity issues, bank
+source/owner authentication, historical bank settlements and independent
+final finance approval remain unresolved. CLI:
+`node tools/audit-hybrid-finance-demo.mjs --format=readiness --max=100`
+(only with local demo Emulator, explicit ACK and environment guards).
+The exporter exits 2, not 0, by design.
