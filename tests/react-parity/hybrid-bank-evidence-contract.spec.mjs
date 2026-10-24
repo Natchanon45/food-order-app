@@ -123,11 +123,14 @@ test("mismatched currency, direction, pending posting and unsorted times fail", 
     { postingStatus: "pending" },
     { submittedAt: "2026-10-24T11:00:00.000Z" },
     { postedAt: "2026-10-24T08:00:00.000Z" },
-    { postedAt: "2026-10-24T14:00:00.000Z" },
   ]) {
-    const e = envelope({ ...payload, ...field });
-    assert.throws(() => run(e), /HYBRID_BANK_EVIDENCE_/);
+    assert.throws(() => envelope({ ...payload, ...field }),
+      /HYBRID_BANK_EVIDENCE_INVALID_CANONICAL_PAYLOAD/);
   }
+  const future = envelope({ ...payload,
+    postedAt: "2026-10-24T14:00:00.000Z" });
+  assert.throws(() => run(future),
+    /HYBRID_BANK_EVIDENCE_POSTED_AFTER_OBSERVATION/);
 });
 
 test("extra keys, raw account numbers or preapproved flags are forbidden", () => {
