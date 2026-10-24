@@ -124,3 +124,20 @@ The reader intentionally **fails closed on missing historical billing periods**,
 6. Under NO circumstances should `approved` be displayed as `refunded` or `money sent`. No current UI/Callable exposes these private methods; Finance must still manually verify refund destination and actual bank settlement outside this feature.
 
 New `npm run test:hybrid-finance-records` is included in `test:hybrid-billing`. All changes here are **local source/isolated demo work**, no Production deploy.
+
+## 24 October 2026 — Internal approval ≠ actual cash refund
+
+- As an active Super Admin on `/react/platform/hybrid-invoices`, select a demo tenant. View two new **read-only** sections for adjustment proposals and their immutable approval/rejection events. The selected tenant + refresh generation must scope each list; repeatedly clicking Load more cannot duplicate IDs.
+- A proposed record displays `Awaiting internal review`; an approved record displays `Internally approved only`; a rejected record displays `Rejected`. The separate actual payout column must always show `No confirmed payout` until real bank integration is independently delivered. Credit note proposal must show `Credit note (not applied)`.
+- Inject fake bank account numbers into a sandbox note; only the masked note should render. No bank account, raw OCR, Storage path or transfer reference should surface in React. `externallySettled:true` injected into the proposal must NOT cause the UI to display Paid/Refunded.
+- Reconciliation pure policy requires exact two-side evidence comparison: approved refund + immutable PAID invoice + separate Super Admin decision + outgoing disbursement + actual posted outgoing bank statement. Mismatched amount, beneficiary fingerprint, hashed bank reference, bank status/direction, actor or posting date must fail. Reusing a claimed bank reference must fail.
+- **No bank API is wired yet**. Even a dry-run `candidate_for_independent_finance_attestation` is not proof of money sent or received. Any actual refund requires verified provider-origin data, anti-replay transaction, separate final finance confirmation and explicit Production authorization.
+
+Native Mac run:
+```bash
+npm run test:hybrid-adjustment-ui
+npm run test:hybrid-refund-reconciliation
+npm run test:hybrid-billing
+npm run test:react-parity
+npm run build:react
+```
