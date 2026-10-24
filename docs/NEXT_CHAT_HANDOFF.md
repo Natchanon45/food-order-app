@@ -1,3 +1,11 @@
+## 2026-10-24 — Final Phase 10: optional owner-pinned offline packet checksum
+
+- Baseline verified on GitHub: `feature/react-firebase-port` at `9e5edbc5`. The existing offline 16-source packet verifier checked only the checksum embedded within the received JSON, which can be recomputed by someone replacing the packet. Do not treat a valid embedded checksum as bank authenticity.
+- Added optional `node tools/verify-hybrid-phase10-packet.mjs file.json --expected-sha256=<64-lowercase-hex>`: compare the canonical verified packet checksum to an SHA-256 the owner/reviewer **retained independently at original export**. Wrong pin or malformed option fails with no JSON output; matches return exit status **2 (still BLOCKED)** and `ownerSuppliedChecksumMatched:true`. Without the option, existing one-file usage still works with `ownerSuppliedChecksumMatched:false`.
+- Added native-process regression test for a self-consistent substituted packet (new total 13 Phase 10 packet tests), UAT instructions in `docs/HYBRID_PHASE10_UNIFIED_READINESS_20261024.md`; no actual bank authentication, real payouts, settlement, or release allowed.
+- Remote Desktop Commander Mac mini remains OFFLINE; **native Node, full Emulator and React build suites NOT run for this change**. Run `npm run test:hybrid-phase10-packet`, `npm run test:hybrid-phase10-readiness`, `npm run test:hybrid-billing`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity`, `npm run build:react` on Mac. Preserve local dirty `public/**/index.html`; never reset/clean.
+- Remaining real blockers unchanged: independent provider signer ownership, trusted real bank statements and secure ingestion, full historical payout reconciliation, independent settlement receipts and reversals, external App Check/Slip2Go beneficiary UAT and explicit owner approval. No new Phase, `main` merge, Production deploy, flag change or actual money movement.
+
 ## 2026-10-24 — FINAL Phase 10: portable unified readiness packet
 
 - User confirmed tests at HEAD `44970a25` passed, requested continuation. Mac mini offline; do not claim new native Node/Emulator runs.

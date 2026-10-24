@@ -233,6 +233,43 @@ test("offline Node verifier yields exit 2 with only checksum-consistent status; 
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 
+
+test("independently retained SHA pin rejects self-consistent substituted packets",()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"hybrid-phase10-pin-"));
+  try{
+    const pathname=path.join(dir,"readiness-packet.json");
+    const original=make();
+    const substituted=make({financeCounts:{hybridBillingInvoices:1}});
+    assert.notEqual(original.checksumSha256,substituted.checksumSha256);
+    const verify=(args)=>spawnSync(process.execPath,
+      ["tools/verify-hybrid-phase10-packet.mjs",pathname,...args],{
+        cwd:process.cwd(),encoding:"utf8",timeout:5000,
+        env:{...process.env,GCLOUD_PROJECT:"production-live",
+          FIRESTORE_EMULATOR_HOST:"",HYBRID_FINANCE_AUDIT_DEMO_ACK:""},
+      });
+    const pin=["--expected-sha256="+original.checksumSha256];
+    fs.writeFileSync(pathname,JSON.stringify(original));
+    const accepted=verify(pin);
+    assert.equal(accepted.status,2,accepted.stderr);
+    assert.equal(JSON.parse(accepted.stdout).ownerSuppliedChecksumMatched,true);
+    fs.writeFileSync(pathname,JSON.stringify(substituted));
+    // A self-consistent replacement is not detectable without the owner pin.
+    const unpinned=verify([]);
+    assert.equal(unpinned.status,2,unpinned.stderr);
+    assert.equal(JSON.parse(unpinned.stdout).ownerSuppliedChecksumMatched,false);
+    const rejected=verify(pin);
+    assert.notEqual(rejected.status,2);
+    assert.equal(rejected.stdout.trim(),"");
+    assert.match(rejected.stderr,/HYBRID_PHASE10_PACKET_VERIFY_PIN_MISMATCH/);
+    for(const badArg of ["--expected-sha256=1234","--expected-sha256="+
+      original.checksumSha256.toUpperCase(),"--unsafe-mode=true"]){
+      const invalid=verify([badArg]);
+      assert.notEqual(invalid.status,2);
+      assert.equal(invalid.stdout.trim(),"");
+    }
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
+
 test("CLI remains gated to local demo before SDK; old finance-packet format intact",()=>{
   const cli=fs.readFileSync("tools/audit-hybrid-finance-demo.mjs","utf8");
   assert.match(cli,/format=text\|json\|packet\|readiness\|readiness-packet/);

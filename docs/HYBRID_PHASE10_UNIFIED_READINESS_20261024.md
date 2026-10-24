@@ -125,6 +125,37 @@ checksum. Corrupt files fail with a different nonzero code.
 All genuine bank and settlement gates remain locked. Never enable a
 payment callable because this local-demo packet passes verification.
 
+
+### Owner-pinned checksum check (optional, recommended for handoff)
+
+The default offline verifier only proves the received JSON agrees with its
+**own embedded checksum**. It cannot detect an attacker who substitutes a
+different valid-looking packet and recomputes the embedded checksum.
+
+At **original export time**, preserve the original `checksumSha256` in a
+separately controlled reviewer record/channel (not in the transferred JSON).
+Then on the reviewing computer, obtain that retained SHA-256 from the separate
+owner record rather than copying it from the received packet:
+
+```bash
+node tools/verify-hybrid-phase10-packet.mjs \
+  /tmp/hybrid-phase10-readiness-packet-demo.json \
+  --expected-sha256=PASTE_ORIGINALLY_RETAINED_64_HEX_SHA256
+```
+
+The placeholder must be replaced with **exactly 64 lowercase hex digits**.
+If the independent pin differs, verification fails closed without printing the
+packet; it does **not** return the diagnostic exit code 2. A matching pin
+returns `ownerSuppliedChecksumMatched:true` with the same **blocked** exit
+code 2 and all bank/payout/release flags still false. Without a pin, the
+existing one-file command remains supported and returns
+`ownerSuppliedChecksumMatched:false`.
+
+**Limit:** A pin is only as trustworthy as its independently retained original.
+It is neither a digital signature nor proof of a bank, exporter, historical
+coverage, or coherent cross-collection snapshot. Never promote it into
+payment/settlement authorization. The verifier remains offline and read-only.
+
 ### Native tests
 
 ```bash
@@ -137,10 +168,10 @@ npm run build:react
 ```
 
 `tests/react-parity/hybrid-phase10-review-packet.spec.mjs` has
-**12 tests** for canonical regeneration, deterministic checksum,
+**13 tests** for canonical regeneration, optional owner-pinned SHA-256 verification, deterministic checksum,
 tampering even after checksum recomputation, unknown-code privacy,
 Wallet-vs-bank separation, safe CLI, private-only exports and Node
-offline-file verification. **11/11 V8 source-level mock cases passed**;
+offline-file verification. **11/11 V8 source-level mock cases passed before the new pin test**;
 the spawned native Node verification case and Firestore Emulator
 integration have been added but not executed by the assistant on Mac
 (authorized Remote Desktop Mac mini offline).
