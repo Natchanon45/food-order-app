@@ -196,3 +196,11 @@ optimistic `settlementAllowed` or `digitallySigned` status. Both exporter
 and verifier exit 2 even when running correctly because bank/legacy
 settlement blockers remain. See
 [full instructions](HYBRID_PHASE10_FINANCE_REVIEW_PACKET_20261024.md).
+
+## 24 October 2026 — Signed bank evidence is not yet verified bank origin
+
+The new [bank evidence contract](HYBRID_PHASE10_BANK_EVIDENCE_CONTRACT_20261024.md)
+can check an Ed25519 signature and strict payout fields using a server-configured
+public key. A synthetic signer (including a test fixture) is **NOT** bank-origin
+proof and does not remove any historical or external bank blockers. No real
+bank keys, receipts or statements are connected; Settlement stays disabled.

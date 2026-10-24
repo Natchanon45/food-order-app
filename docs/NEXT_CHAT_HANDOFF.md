@@ -1,3 +1,13 @@
+## 2026-10-24 — Final Phase 10: Ed25519 bank evidence format/safety preflight
+
+- User confirmed Mac native suite at prior HEAD `c35ede46` passed, asked to continue. Mac mini Remote Desktop Commander is OFFLINE, so **new Ed25519 native Node tests are not yet confirmed**.
+- New PRIVATE `functions/hybrid-billing-bank-evidence-contract.js`: strict Ed25519 detached signature/format check against externally supplied **server-controlled** public key registry; canonical payload binds tenant+invoice+adjustment+amount in satang+hashed outgoing instruction+bank reference+recipient+posted debit THB time. Rejects unknown/revoked keys, wrong provider, extra fields, non-UTC, pending/wrong direction/currency and mismatches; no raw transfer or credentials in result.
+- IMPORTANT: no live provider key/credential/integration. A successfully verified synthetic signature is **NOT** authenticated banking provenance. All returned flags permanently `bankProviderIdentityIndependentlyAuthenticated:false`, `realBankStatementSourceIntegrated:false`, `settlementAllowed:false`, `releaseReady:false`; no DB writes/Cloud Function/real payout or unlock. Synthetic `trusted_bank_statement` source strings remain untrusted, and candidate writer is still demo-only.
+- Added `tests/react-parity/hybrid-bank-evidence-contract.spec.mjs` (10 cases) as `test:hybrid-bank-evidence` and to `test:hybrid-billing`; Ed25519 keys are generated only at test runtime. V8 with mocked crypto passed **6/6** format/guard smoke checks; REAL Ed25519 Node tests and Emulator/build still pending native Mac.
+- Docs in `docs/HYBRID_PHASE10_BANK_EVIDENCE_CONTRACT_20261024.md`. No Production flags on, no `main` merge or Firebase deploy.
+- Next: true bank/provider public-key onboarding verified independently, secure server ingress, authenticated bank transaction import, historical cross-channel payout manifest, idempotent settlement+receipts under finance controls, App Check/Slip2Go UAT and explicit production permission.
+- Mac safe run: `git status --short`; `git switch feature/react-firebase-port`; `git pull --ff-only origin feature/react-firebase-port`; `npm run test:hybrid-bank-evidence`; `npm run test:hybrid-billing`; `npm run test:firebase-hybrid-emulator`; `npm run test:react-parity`; `npm run build:react`. Preserve dirty generated `public/**/index.html`.
+
 ## 2026-10-24 — FINAL Phase 10: offline finance review packet, checksum-only
 
 - User confirmed native Mac tests at previous HEAD `952f2681` passed, asked to proceed. Remote Mac mini remained OFFLINE; native tests for NEW commits in this turn are not yet verified.

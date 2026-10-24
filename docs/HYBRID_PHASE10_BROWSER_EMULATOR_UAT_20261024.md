@@ -252,3 +252,21 @@ npm run build:react
   never treat an unsigned report as authoritative bank data.
 - No main merge, release gate, bank transfer, wallet modification or Firebase
   Production deploy.
+
+## 24 October 2026 — Signed bank posting verification acceptance
+
+- Run `npm run test:hybrid-bank-evidence` with Node 22 on the latest feature
+  branch; it uses test-generated Ed25519 keys (never committed to the repo).
+- A changed bank reference, instruction, recipient, amount, tenant, original
+  invoice, transfer timestamp or signed payload must be rejected. Wrong
+  provider or revoked/unknown key, RSA public key and attempted unsigned
+  `settlementAllowed:true` must fail.
+- A correct synthetic Ed25519 signature may report
+  `signatureCryptographicallyValid:true`, but MUST keep
+  `realBankStatementSourceIntegrated:false`,
+  `bankProviderIdentityIndependentlyAuthenticated:false`,
+  `settlementAllowed:false`, `writesPerformed:false`.
+- No live bank connection/credentials or Production bank enrolment exists.
+  Do not treat the existing synthetic source label as trusted provenance.
+  Bank onboarding, historical reconciliation and independent finance
+  release are unresolved prerequisites.
