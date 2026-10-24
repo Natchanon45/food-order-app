@@ -27,7 +27,8 @@ function timestamp(value, label) {
 function scope(value, label, tenantId, invoiceId, adjustmentId) {
   if (!value || typeof value !== "object" || Array.isArray(value)
     || value.tenantId !== tenantId || value.invoiceId !== invoiceId
-    || value.adjustmentId !== adjustmentId) {
+    || (label === "ADJUSTMENT" ? value.id !== adjustmentId
+      : value.adjustmentId !== adjustmentId)) {
     throw new Error("HYBRID_REFUND_SCOPE_" + label);
   }
 }
