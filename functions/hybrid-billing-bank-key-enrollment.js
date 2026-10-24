@@ -59,11 +59,14 @@ function stamp(stamp) {
  * 1 key slot / fingerprint cannot be staged twice, including across
  * provider IDs. No PEM is accepted, nor is any bank signer activated.
  */
-async function stageDemoHybridBankKeyEnrollment({
-  db, requestId, providerId, keyId, fingerprintSha256,
-  validFrom, validUntil, actorUid, requestedAt,
-  serverTimestamp,
-} = {}) {
+async function stageDemoHybridBankKeyEnrollment(input = {}) {
+  // Reject caller-added "trusted", signing-key material and activation flags,
+  // rather than silently discarding them through argument destructuring.
+  if (!exact(input, ["db", "requestId", "providerId", "keyId",
+    "fingerprintSha256", "validFrom", "validUntil", "actorUid",
+    "requestedAt", "serverTimestamp"])) fail("REQUEST_FIELDS_INVALID");
+  const { db, requestId, providerId, keyId, fingerprintSha256,
+    validFrom, validUntil, actorUid, requestedAt, serverTimestamp } = input;
   assertDemo(db);
   const values = {requestId,providerId,keyId,fingerprintSha256,
     validFrom,validUntil,actorUid,requestedAt};
@@ -109,9 +112,11 @@ async function stageDemoHybridBankKeyEnrollment({
  * Immutable acknowledgement that a distinct, currently active Super Admin
  * saw the request, NOT proof of an independent bank-source verification.
  */
-async function reviewDemoHybridBankKeyEnrollment({
-  db,requestId,reviewerUid,decision,reviewedAt,serverTimestamp,
-}={}) {
+async function reviewDemoHybridBankKeyEnrollment(input = {}) {
+  if (!exact(input, ["db", "requestId", "reviewerUid", "decision",
+    "reviewedAt", "serverTimestamp"])) fail("REVIEW_FIELDS_INVALID");
+  const { db, requestId, reviewerUid, decision, reviewedAt,
+    serverTimestamp } = input;
   assertDemo(db);
   if (!ID.test(String(requestId||""))
     || !USER.test(String(reviewerUid||""))
@@ -129,18 +134,53 @@ async function reviewDemoHybridBankKeyEnrollment({
     if (existing.exists) fail("ALREADY_REVIEWED");
     if (!admin(reviewer)) fail("ACTIVE_SUPER_ADMIN_REQUIRED");
     const doc=request.data();
-    if (doc?.id!==requestId || doc.state!=="pending_internal_review"
+    if (!exact(doc, ["id","providerId","keyId","fingerprintSha256",
+      "validFrom","validUntil","requestedAt","proposedBy","state",
+      "bankOriginAuthenticated","trustedRegistryPromoted","keyActivated",
+      "createdAt"])
+      || doc.id!==requestId || doc.state!=="pending_internal_review"
       || doc.bankOriginAuthenticated!==false
       || doc.trustedRegistryPromoted!==false || doc.keyActivated!==false
+      || !PROVIDER.test(String(doc.providerId||""))
+      || !KEY.test(String(doc.keyId||""))
+      || !HASH.test(String(doc.fingerprintSha256||""))
       || !USER.test(String(doc.proposedBy||""))
       || reviewerUid===doc.proposedBy
-      || !utc(doc.requestedAt)
-      || Date.parse(reviewedAt)<Date.parse(doc.requestedAt)) {
+      || !utc(doc.requestedAt) || !utc(doc.validFrom)
+      || !utc(doc.validUntil)
+      || Date.parse(doc.requestedAt)>Date.parse(doc.validFrom)
+      || Date.parse(doc.validFrom)>=Date.parse(doc.validUntil)
+      || Date.parse(reviewedAt)<Date.parse(doc.requestedAt)
+      || Date.parse(reviewedAt)>Date.parse(doc.validUntil)) {
       fail("REVIEW_INTEGRITY_INVALID");
     }
-    // Revalidate the proposer's active role while handling review.
-    const initiator=await tx.get(db.collection("users").doc(doc.proposedBy));
+    // Read every global reservation within the SAME Firestore transaction:
+    // a missing/repointed fingerprint or provider/key slot makes even
+    // internal acknowledgement unsafe. These reads precede tx.create.
+    const slotHash=claimHash("key-slot",doc.providerId+"/"+doc.keyId);
+    const [initiator,fingerprint,slot]=await Promise.all([
+      tx.get(db.collection("users").doc(doc.proposedBy)),
+      tx.get(db.collection("hybridBankKeyFingerprintClaims")
+        .doc(doc.fingerprintSha256)),
+      tx.get(db.collection("hybridBankKeySlotClaims").doc(slotHash)),
+    ]);
     if (!admin(initiator)) fail("INITIATOR_REVOKED");
+    const expectedClaim=["requestId","providerId","keyId","fingerprintSha256",
+      "state","createdAt"];
+    const expectedSlot=["requestId","providerId","keyId","slotHash",
+      "state","createdAt"];
+    const fc=fingerprint.exists?fingerprint.data():null;
+    const sc=slot.exists?slot.data():null;
+    if (!exact(fc,expectedClaim)
+      || fc.requestId!==requestId || fc.providerId!==doc.providerId
+      || fc.keyId!==doc.keyId
+      || fc.fingerprintSha256!==doc.fingerprintSha256
+      || fc.state!=="pending_internal_review"
+      || !exact(sc,expectedSlot) || sc.requestId!==requestId
+      || sc.providerId!==doc.providerId || sc.keyId!==doc.keyId
+      || sc.slotHash!==slotHash || sc.state!=="pending_internal_review") {
+      fail("GLOBAL_CLAIMS_INCONSISTENT");
+    }
     const status=decision==="reject"?"rejected":"internally_acknowledged_untrusted";
     tx.create(reviewRef,{
       id:requestId,providerId:doc.providerId,keyId:doc.keyId,
