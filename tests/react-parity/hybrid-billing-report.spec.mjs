@@ -39,7 +39,10 @@ test("hybrid report is routed, localized and uses backend preview, never payment
   const data = fs.readFileSync("react-app/src/data/hybridBillingReport.js", "utf8");
   assert.match(app, /path="\/reports\/hybrid-billing"/);
   assert.match(app, /hybridSuspended/);
-  assert.match(home, /\{tenant \? \(/);
+  // The legacy Hybrid read-only preview is not a second Premium owner report.
+  assert.match(home, /\{tenant\?\.billingPolicyVersion === "hybrid_v1" \? \(/);
+  assert.match(home, /href="\/reports\/revenue-share" cardKey="revenue_share"/);
+  assert.match(home, /href="\/reports\/hybrid-billing" cardKey="hybrid_billing"/);
   assert.doesNotMatch(page, /tenant\?\.billingPolicyVersion !== "hybrid_v1"/);
   const preview = fs.readFileSync("functions/hybrid-billing-preview.js", "utf8");
   assert.match(preview, /const minMonth = tenantAnchorDate\(tenant\)/);
