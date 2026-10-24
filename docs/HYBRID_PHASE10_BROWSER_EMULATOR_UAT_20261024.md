@@ -214,3 +214,25 @@ npm run build:react
   `integrityIssueCodes` is empty, unknown external bank/legacy payouts
   prevent final settlement. No credentials, real bank calls, automatic
   repair, Wallet changes, tenant access changes or Production release.
+
+
+## 24 October 2026 — Sanitized finance exception worklist UAT
+
+1. Run `npm run test:hybrid-finance-worklist` on the Mac. A forged
+   `settlementAllowed:true`, malformed source counts, duplicate/unrecognized
+   codes or wrong project must fail closed.
+2. Start the isolated Firestore Emulator and run the CLI as documented in
+   `docs/HYBRID_PHASE10_FINANCE_HISTORY_AUDIT_20261024.md`. It should output
+   Thai action items and *no* invoice/bank/tenant/user identity.
+3. Even an empty sandbox database prints the four unconditional finance
+   review blockers. The CLI returns exit code 2 intentionally, and its
+   `releaseReady` and `settlementAllowed` fields remain false.
+4. Verify the `--format=json` output stays valid JSON when generated with
+   the direct Node command (not a verbose `npm run` wrapper). Do not include
+   stderr, stack traces or Firebase credentials in the exported finance
+   worklist.
+5. `npm run test:firebase-hybrid-emulator` checks that missing reserved
+   balances become sanitized Worklist exception codes rather than settlement.
+6. This remains a demo-only triage feature; authenticated bank statements,
+   historical/legacy payout manifests, separate Final Settlement approval,
+   Slip2Go and App Check UAT are still required.

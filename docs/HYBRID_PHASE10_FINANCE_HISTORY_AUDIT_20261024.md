@@ -99,3 +99,89 @@ passed. Added Firestore Emulator case with a deliberately missing per-invoice
 adjustment balance. Native Mac/Emulator test run is pending for the new commits.
 Run `npm run test:hybrid-refund-history` and
 `npm run test:firebase-hybrid-emulator` before any further work.
+
+
+## 24 October 2026 — Finance Review Worklist CLI (DEMO ONLY)
+
+The audit already produces **12-source sanitized counts and integrity error codes**
+but is not friendly to a finance reviewer. New PRIVATE pure mapper
+`functions/hybrid-billing-finance-worklist.js` turns those codes into
+deterministic, action-oriented Thai finance tasks. Each task has a category,
+priority, code, safe Thai instruction and English fallback. The four external
+bank, historical, cross-channel and snapshot blockers are always present,
+**even when there are zero records and zero internal integrity issues**.
+
+The mapper only accepts the exact sanitized `demo_inventory_diagnostic_only`
+shape with `releaseReady:false`, `settlementAllowed:false`,
+`bankSourceAuthenticated:false`, `historicalBankCoverageVerified:false`
+and `atomicSnapshot:false`. It validates the exact 12 source names and bounded
+nonnegative counts. Unknown integrity error strings are **not echoed**; an
+aggregate `UNKNOWN_INTEGRITY_CODE` entry is emitted instead, so a corrupt
+Firestore field cannot leak a bank account via the Worklist. No raw
+reference, slip, invoice ID, user ID or beneficiary is included.
+
+### Export a worklist from LOCAL Firestore Emulator
+
+Terminal A — start the demo Firestore emulator (do NOT use Production):
+
+```bash
+cd ~/Desktop/Sites/food-order-app
+npx firebase emulators:start --project demo-penguin-hybrid \
+  --config firebase.hybrid-emulator.json --only firestore
+```
+
+Terminal B — run only after confirming the local emulator is running:
+
+```bash
+cd ~/Desktop/Sites/food-order-app
+HYBRID_FINANCE_AUDIT_DEMO_ACK=1 \
+GCLOUD_PROJECT=demo-penguin-hybrid \
+GCP_PROJECT=demo-penguin-hybrid \
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+node tools/audit-hybrid-finance-demo.mjs --format=text --max=100
+```
+
+For a JSON file containing only sanitized totals and task codes:
+
+```bash
+HYBRID_FINANCE_AUDIT_DEMO_ACK=1 \
+GCLOUD_PROJECT=demo-penguin-hybrid \
+GCP_PROJECT=demo-penguin-hybrid \
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+node tools/audit-hybrid-finance-demo.mjs --format=json --max=100 \
+  > /tmp/hybrid-finance-demo-worklist.json
+```
+
+**Exit status 2 is EXPECTED** for a diagnostic with unresolved finance
+blockers. Do not use this CLI in a green `&&` pipeline or treat the presence
+of an exported JSON file as Finance approval. Any invalid project, host,
+permission, parsing error or over-limit source fails closed **before**
+generating a worklist; do not redirect stderr into the sanitized report.
+
+The CLI requires explicit consent `HYBRID_FINANCE_AUDIT_DEMO_ACK=1`, exact
+project `demo-penguin-hybrid`, and loopback Firestore Emulator on port 8080
+*before* loading `firebase-admin`. It does not connect to banks, execute
+refunds, change Invoice/Wallet/tenant data, or create/audit real payments.
+No scheduled task or Production Callable is added.
+
+### Tests
+
+```bash
+npm run test:hybrid-finance-worklist
+npm run test:hybrid-refund-history
+npm run test:hybrid-billing
+npm run test:firebase-hybrid-emulator
+npm run test:react-parity
+npm run build:react
+```
+
+There are **11 new Worklist tests** (source shape, permanent finance blockers,
+Thai tasks, unknown-code redaction, counts, defensive rejected reports,
+CLI invalid host/project/consent, and safe `--help`), plus Emulator
+integration checks that the real audit produces a Worklist without sensitive
+IDs. Source-level V8 harness ran 9/9 test cases that do not require a native
+child process. The 2 CLI child-process tests and full Mac/Emulator tests are
+pending on the latest commits.
+
+This worklist helps FINANCE TRIAGE; it is NOT authenticated bank ingestion,
+not a legally binding finance approval, and not a settlement receipt.
