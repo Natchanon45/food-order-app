@@ -186,12 +186,14 @@ test("malformed UTC, invalid project and arbitrary bank-origin fields reject",()
     x=>{x.generatedAt="2026-10-24";},
     x=>{x.projectId="live-bank-prod";},
     x=>{x.bankProviderAuthenticated=true;},
-    x=>{x.checksumSha256="AA";},
   ]){
     const bad=copy(p);mutate(bad);bad.checksumSha256=recalc(bad);
     assert.throws(()=>verifyDemoHybridPhase10ReviewPacket(bad),
       /HYBRID_PHASE10_PACKET_/);
   }
+  const malformedChecksum={...copy(p),checksumSha256:"AA"};
+  assert.throws(()=>verifyDemoHybridPhase10ReviewPacket(malformedChecksum),
+    /HYBRID_PHASE10_PACKET_INVALID_PACKET_SHAPE/);
 });
 
 test("source worklists are not mutated by packet generation or offline validation",()=>{
