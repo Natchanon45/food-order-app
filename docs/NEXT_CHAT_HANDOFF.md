@@ -1,3 +1,12 @@
+## 2026-10-24 — Final Phase 10: revalidate global bank signer claims at review
+
+- User confirmed native Mac tests at previous HEAD `e079da63` passed and requested continuation. Remote Mac remains OFFLINE in this turn; new native tests have NOT been run by assistant.
+- Hardened private `functions/hybrid-billing-bank-key-enrollment.js`: exact top-level input shape (reject caller-injected PEM, bank origin, activation flags) for both stage/review; review rechecks exact immutable request metadata and validity, current two active Super Admin identities, fingerprint and provider/key slot Global Claims, and prior event in ONE transaction; any missing, spoofed or cross-request claim denies review.
+- Updated `tests/react-parity/hybrid-bank-key-enrollment.spec.mjs` from 6 to **11** scenarios (11/11 V8 mocked pass) including tamper, absent claims, time expiry, unexpected input and simultaneous reviewers. Added real Firestore Emulator concurrency and claim-tamper tests in `tests/firebase-emulator/hybrid-finance-security.spec.mjs`. Native Mac/Emulator results pending for this new HEAD.
+- All outputs remain `bankOriginAuthenticated:false`, `trustedRegistryPromoted:false`, `keyActivated:false`; no bank key activation, trust-root onboarding, payout, settlement or Production Callable.
+- Full notes and UAT in `docs/HYBRID_PHASE10_BANK_KEY_ENROLLMENT_20261024.md` and `docs/HYBRID_PHASE10_BROWSER_EMULATOR_UAT_20261024.md`.
+- Do not modify/main merge/Production deploy until explicit owner approval. Mac safe commands: `git status --short`, `git switch feature/react-firebase-port`, `git pull --ff-only origin feature/react-firebase-port`, `npm run test:hybrid-bank-enrollment`, `npm run test:hybrid-bank-key-policy`, `npm run test:hybrid-bank-evidence`, `npm run test:hybrid-billing`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity`, `npm run build:react`. Never reset/clean existing local `public/**/index.html`.
+
 ## 2026-10-24 — Final Phase 10: private demo bank signer enrollment audit
 
 - User confirmed native Mac tests through `97248355` passed. Remote Desktop Commander Mac mini OFFLINE this turn. New commits NOT yet run with native Node or Emulator.

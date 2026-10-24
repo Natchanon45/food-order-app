@@ -309,3 +309,26 @@ npm run build:react
   `trustedRegistryPromoted:false`,
   `bankOriginAuthenticated:false`. No Production Bank SDK connected and
   no Firebase Production release allowed.
+
+## 24 October 2026 — Cross-claim review integrity / Emulator UAT
+
+- The second Super Admin's review now reads the request, Fingerprint Claim,
+  Key Slot Claim, current proposer/reviewer and prior review in one
+  Firestore transaction; a missing or edited claim must fail before
+  writing any review.
+- Concurrent acknowledgement by two different active reviewers must yield
+  exactly **one** immutable review event. The winner is still only
+  `internally_acknowledged_untrusted`; key activation and bank-origin
+  flags remain FALSE.
+- Neither staging nor review may silently accept extra
+  `publicKeyPem`, `privateKey`, `trustedRegistryPromoted` or
+  `bankOriginAuthenticated` caller fields. A tampered request's provider,
+  fingerprint, validity or activation fields must block review.
+- Mac commands after safe pull:
+  `npm run test:hybrid-bank-enrollment`,
+  `npm run test:hybrid-billing`,
+  `npm run test:firebase-hybrid-emulator`,
+  `npm run test:react-parity`,
+  `npm run build:react`.
+- These are **synthetic internal finance audit controls**. Real bank
+  identity, bank statement ingestion and final settlement remain unimplemented.

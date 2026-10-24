@@ -89,3 +89,37 @@ trust anchors and actual bank statement ingestion, historical cross-channel
 reconciliation, legally appropriate independent finance authorization,
 global idempotent settlement receipts, Slip2Go/App Check UAT and explicit
 owner approval before any merge/deploy.
+
+## 24 October 2026 — Review-time reservation integrity hardening
+
+The internal key review no longer trusts a previously submitted request
+on its own. Inside the SAME Firestore Admin transaction, the reviewer
+re-reads the immutable request, its globally reserved SPKI fingerprint
+claim, its hashed provider/key slot claim, both actor records and the
+unique review event. The review is denied if any claim is absent, repointed,
+or differs in ID, provider, key, fingerprint/slot hash or pending status.
+
+Review now also checks exact stored request fields, canonical metadata,
+the validity interval and the claimed review timestamp. Both the staging
+and review entry points reject unexpected caller fields: no `publicKeyPem`,
+`privateKey`, `bankOriginAuthenticated:true` or
+`trustedRegistryPromoted:true` can be passed unnoticed through argument
+destructuring. Invalid or expired synthetic requests remain unreviewed.
+
+**Scope:** this strengthens internal audit consistency; it does NOT
+authenticate the bank, activate keys or infer externally signed transfers.
+All three trust/activation flags remain false, with immutable review
+result `internally_acknowledged_untrusted`.
+
+Testing:
+- `npm run test:hybrid-bank-enrollment` now includes **11 scenarios**
+  (previously 6), including missing/tampered claims, forged request data,
+  unexpected caller fields, expired request and competing reviewers.
+- `npm run test:firebase-hybrid-emulator` adds real Admin Firestore
+  concurrent reviewers on one request and a tampered/deleted global claim,
+  while continuing Browser-denied GET/LIST/SET for four collections.
+- V8 mocked unit source tests **11/11 passed**. The new native Node and
+  real Emulator tests are awaiting the user's Mac run on this commit.
+- Finance operations MUST NOT treat a complete internal enrollment review
+  as independent bank ownership verification. Real provider onboarding,
+  authenticated trust roots and source checks remain blocked.
