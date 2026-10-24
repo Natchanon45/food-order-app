@@ -94,3 +94,23 @@ until the owner has inspected the sample 10 Oct 75 THB bill, next-day
 suspension and manual/automatic-unlock behavior. Existing past billing rows
 may need a one-time reconciliation; do not silently mutate prior paid rows.
 
+
+## 2026-10-25 — GitHub-first Mac sync and final source-test results
+
+- Final business-code HEAD `186437bf872666cee16d0d758a5a81a203c066e4`.
+  GitHub-first commits were fast-forward pulled to the Mac while preserving
+  54 modified generated `public/**/index.html` files and untracked
+  `public/react/**` outputs. No unstaged business-source files remained.
+- Native Mac `test:hybrid-billing`: **351/351 PASS**;
+  `test:signup-billing-revenue-share`: **18/18 PASS**;
+  dedicated Premium daily + suspension/access regression: **8/8 PASS**.
+  `npm run test:react-parity`: **PASS, no failures**;
+  `npm run build:react`: **PASS, build contract PASS**.
+- **Not yet Production release accepted**: these automated checks are NOT a
+  complete E2E signed-off staging test of actual Cloud Functions, live Slip2Go
+  credentials and store suspension after day end. Production Revenue Share
+  scheduler would deactivate real tenants, so **NO production Firebase deploy,
+  NO main merge** until an isolated Firestore/Auth/Functions UAT and owner
+  sign-off confirms the exact 75 THB flow and recovery. No synthetic bank
+  evidence module is required or relevant to this business acceptance.
+
