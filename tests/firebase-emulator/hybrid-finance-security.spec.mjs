@@ -708,4 +708,16 @@ test("Emulator global instruction claim rejects separate references on same outg
       .doc(e.adjustmentId).get();
     assert.equal(candidate.exists, e.tenantRef.id === claim.data().tenantId);
   }
+  // The new global outgoing-instruction namespace cannot be listed or
+  // modified through any Browser identity, including Super Admin.
+  for (const name of ["owner-a", "admin-a", "cashier-a", "owner-b",
+    "super-admin", "anonymous"]) {
+    const client = identities.get(name).firestore;
+    const ref = doc(client, "hybridRefundInstructionClaims/" + hash);
+    await denied(getDoc(ref), "Outgoing refund instruction claim is server-private");
+    await denied(setDoc(ref, { state: "settled" }),
+      "No Browser user can rewrite an outgoing instruction claim");
+    await denied(getDocs(collection(client, "hybridRefundInstructionClaims")),
+      "No Browser user can enumerate global outgoing instruction hashes");
+  }
 });
