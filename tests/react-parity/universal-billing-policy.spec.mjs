@@ -53,12 +53,13 @@ test("all legacy tenant billing modes have one shared qualifying Delivery thresh
   assert.match(reportServer, /: new Set\(\); \/\/ Missing activation date must never create an invoice/);
 });
 
-test("Hybrid read-only preview is visible to every anchored tenant without converting master data", () => {
+test("Legacy Hybrid preview remains read-only and directly accessible without duplicating the Premium home report", () => {
   assert.doesNotMatch(previewServer, /snap\.data\(\)\?\.billingPolicyVersion !== "hybrid_v1"/);
   assert.match(previewServer, /if \(!tenantAnchorDate\(snap\.data\(\)\)\)/);
   assert.match(previewServer, /firstMonth: month === anchor\.slice\(0, 7\)/);
   assert.match(previewServer, /const minMonth = tenantAnchorDate\(tenant\)\?\.slice\(0, 7\)/);
-  assert.match(home, /\{tenant \? \(/);
+  assert.match(home, /\{tenant\?\.billingPolicyVersion === "hybrid_v1" \? \(/);
+  assert.match(home, /href="\/reports\/revenue-share" cardKey="revenue_share"/);
   assert.doesNotMatch(previewPage, /tenant\?\.billingPolicyVersion !== "hybrid_v1"/);
   assert.match(previewPage, /tenantAnniversaryMonth\(tenant\)/);
   assert.doesNotMatch(previewServer, /(?:\.set\(|\.update\(|\.delete\(|runTransaction\()/);
