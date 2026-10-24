@@ -1,3 +1,13 @@
+## 2026-10-24 — FINAL Phase 10: read-only historical cross-channel finance inventory
+
+- User confirmed native Mac tests through `9b3e9960` passed and asked to proceed. Mac mini Remote Desktop Commander remains OFFLINE: tests on **new** commits from this response have not been natively rerun.
+- Added `functions/hybrid-billing-refund-history-audit.js`: PRIVATE, demo-only (exact `demo-penguin-hybrid` + localhost Emulator) bounded Admin read across 9 real finance/claim collections. Read-only, no invoice/refund/Wallet/tenant writes. Cross-checks global reference/instruction claims against tenant candidates; outputs only aggregate counts and issue-code blockers, no raw identifiers, accounts or slips. Cap 1–500 docs/source, fail closed on overflow.
+- Wallet `delivery_refund` CREDIT is NOT an actual outward bank transfer. Incoming Wallet Topups, revenue share and hybrid invoice proof claims are distinct and cannot be hashed/equated blindly with outgoing bank refunds.
+- Report ALWAYS returns `releaseReady:false`, `settlementAllowed:false`, `historicalBankCoverageVerified:false`, `bankSourceAuthenticated:false`, `atomicSnapshot:false`; collections being internally consistent does not prove bank payout history. Backfilled historical manifest, verified external source integration and finance attestation are required before future settlement writer.
+- `test:hybrid-refund-history` added to `test:hybrid-billing` with **11/11 source-level V8 tests PASS**, not native Node. Real Firestore Emulator negative/overflow case added to `hybrid-finance-security.spec.mjs`, not yet run on user's Mac.
+- Documentation `docs/HYBRID_PHASE10_FINANCE_HISTORY_AUDIT_20261024.md`. No Production export/flags change, no `main` merge, no Firebase deploy or money movement. Preserve dirty generated local `public/**/index.html`.
+- Recommended Mac: inspect `git status --short`, `git switch feature/react-firebase-port`, `git pull --ff-only origin feature/react-firebase-port`, `npm run test:hybrid-refund-history`, `npm run test:hybrid-billing`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity`, `npm run build:react`.
+
 ## 2026-10-24 — FINAL Phase 10: refund instruction anti-replay + read-only evidence UI
 
 - User confirmed native Mac tests on prior HEAD `a442f1ce` passed and asked to continue. Remote Mac mini remains OFFLINE; **new code here has not been run with native Node/Emulator/Build yet**.

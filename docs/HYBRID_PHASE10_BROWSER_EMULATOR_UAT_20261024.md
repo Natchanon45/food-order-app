@@ -187,3 +187,11 @@ npm run build:react
 - Historical/cross-channel reconciliation and real bank import are REQUIRED
   before any Production settlement or release. A demo claim is only an
   unverified candidate, NEVER evidence of completed refund.
+
+## 24 October 2026 — Read-only historical bank coverage check
+
+1. Run `npm run test:hybrid-refund-history` and `npm run test:firebase-hybrid-emulator` on the latest feature branch.
+2. The audit must scan bounded collections (incoming slip claims, wallet topups, revenue share, hybrid invoices, outgoing refund candidate/reference/instruction claims, internal Wallet transactions), report only aggregate counts and issue codes, and NEVER leak raw payment refs.
+3. Missing bank-reference or instruction claim, orphaned claim, forged candidate `settlementConfirmed:true`, cross-tenant candidate and scan overflow must not authorize settlement.
+4. An empty Emulator and a fully matched synthetic candidate index must both say `releaseReady:false` and `historicalBankCoverageVerified:false`. The audit is non-atomic across independent collection queries, and no bank/provider records are fetched.
+5. Real external bank statement provenance, old refunds across providers, separate Wallet credit flows, final finance approval and settlement idempotency are still required before releasing any Production flags.

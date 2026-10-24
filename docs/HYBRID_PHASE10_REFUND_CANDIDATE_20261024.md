@@ -139,3 +139,7 @@ in the candidate spec), `npm run test:hybrid-refund-ui` (4 new UI scenarios),
 `npm run test:hybrid-billing`, `npm run test:react-parity`,
 `npm run build:react`. Source-level V8 candidate tests 9/9 and source/UI
 tests 15/15 passed; native Mac/Emulator still pending for these new changes.
+
+## 24 October 2026 — Historical finance inventory coverage blocker
+
+New private read-only audit scans 9 local Emulator collection sources at a bounded limit (see [finance history audit](HYBRID_PHASE10_FINANCE_HISTORY_AUDIT_20261024.md)). Empty and internally consistent candidate/claim documents are not proof that external bank transfers did not occur in older records. Wallet `delivery_refund` credits and prepaid topups must never be counted as outward bank refunds. The audit always returns `settlementAllowed: false`; no settlement writer has been added. New test command: `npm run test:hybrid-refund-history`. Historical bank payout archives and authenticated bank feeds remain explicit blockers.
