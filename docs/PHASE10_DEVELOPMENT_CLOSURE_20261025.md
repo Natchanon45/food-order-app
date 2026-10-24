@@ -5,6 +5,46 @@
 **Scope:** `feature/react-firebase-port`, Hybrid Billing/Finance **local Demo** only  
 **Decision:** **STOP expanding Phase 10.** This is a technical delivery/acceptance boundary, not a declaration of Production bank readiness.
 
+## 25 October 2026 — Automated acceptance evidence received
+
+**Engineering status: IMPLEMENTATION COMPLETE / AUTOMATED TESTS PASS.**
+No further Phase 10 Demo feature development is authorized under this fixed scope.
+**Formal Demo signoff: PENDING OWNER MANUAL UAT.**
+These are deliberately separate statuses.
+
+The owner supplied terminal transcripts of native Mac execution after the
+bidirectional replay fix was introduced. The transcript does not print a
+`git rev-parse HEAD` line, but includes the reverse-direction Emulator test
+added in the final code change. Verified reported results:
+
+| Native check | Observed result | Source |
+| --- | --- | --- |
+| `test:hybrid-bank-batch-reservation` | 10/10 passed | First terminal transcript |
+| `test:hybrid-bank-batch` | 10/10 passed | First terminal transcript |
+| `test:hybrid-bank-evidence` | 10/10 passed | First terminal transcript |
+| `test:hybrid-billing` | 350/350 passed, 0 failed | First terminal transcript, final run |
+| `test:react-parity` | All invoked test commands ran through to completion | First terminal transcript |
+| `build:react` | Vite built; postbuild build contract PASS | First terminal transcript |
+| `test:firebase-hybrid-emulator` | **24/24 passed, 0 failed, exit 0** under OpenJDK 21.0.13 | Second terminal transcript |
+
+The first Emulator attempt was blocked by Java 17, **not** a test failure.
+After the owner selected OpenJDK 21 in the terminal, the second attempt
+started Auth/Firestore/Storage demo emulators and exited cleanly.
+The many `PERMISSION_DENIED` messages were deliberate negative authorization
+checks and did **not** cause any test failure.
+
+**No unresolved automated test blocker.** Do not request additional speculative
+unit/Emulator feature rounds. Do not falsely claim that manual Owner Demo UAT
+or real-bank Production settlement has passed. Once the owner confirms the
+pre-agreed local Demo Invoice/Refund/Billing/report UI scenarios, record that
+signoff and mark `Phase 10 Demo Development: COMPLETE` **without adding scope**.
+
+GitHub development baseline at evidence review:
+`c1b8b09673d55089de2dfaa999fe5de76febebf5`.
+The transcripts include the new reverse-claim test but lack an explicit
+printed HEAD hash. A later documentation-only commit does not invalidate
+the observed code tests.
+
 ## Definition of Done — exactly one final acceptance round
 
 | Area | Fixed acceptance requirement | Verification |

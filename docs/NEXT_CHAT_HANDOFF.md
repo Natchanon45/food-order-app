@@ -1,3 +1,10 @@
+## 2026-10-25 — Phase 10 Demo automated acceptance PASSED (freeze maintained)
+
+- Owner provided two full Mac terminal logs. Native Bank Batch Reservation **10/10**, signed Batch **10/10**, Bank Evidence **10/10**, Hybrid Billing final **350/350**, React Parity tests complete, React Vite build and generated-build contract PASS. After switching JDK 17 to installed **OpenJDK 21.0.13**, real local Auth/Firestore/Storage Emulator **24/24 PASS, exit 0**. Browser `PERMISSION_DENIED` diagnostics are intended negative tests.
+- Engineering code for Phase 10 Demo is **COMPLETE and FROZEN**; no further speculative Bank Evidence/Finance phases or features. **Owner manual Demo UAT is not attested in uploaded terminal logs, so formal Demo signoff remains PENDING**. Follow `docs/PHASE10_DEVELOPMENT_CLOSURE_20261025.md`. Do not demand a new automated suite for this document-only status update.
+- Last executable code commit: `c1b8b09673d55089de2dfaa999fe5de76febebf5`. Uploaded logs include the reverse-claim Emulator test introduced there, though no explicit `git rev-parse HEAD` line is included.
+- Real bank identity, money settlement, and unrelated Lalamove credit/59-baht discrepancies remain **excluded** from Demo closure, unresolved for Production. **NO main merge, NO Firebase deploy, NO bank-transfer release**. Preserve all local generated/modified `public/**` files.
+
 ## 2026-10-25 — FINAL Phase 10 scope freeze: stop feature expansion
 
 - Owner requested that Phase 10 **finish**, not spawn an endless series of bank-security demo features. SEE `docs/PHASE10_DEVELOPMENT_CLOSURE_20261025.md` as the single acceptance checklist and scope boundary.

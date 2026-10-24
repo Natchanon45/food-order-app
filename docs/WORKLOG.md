@@ -24,6 +24,16 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Native Mac tests PASSED; Phase 10 Demo engineering freeze
+
+- **Request:** Owner submitted the final Firestore Emulator terminal transcript after JDK 21 selection; previously supplied successful Hybrid and React test/build terminal output.
+- **Verification observed:** `test:hybrid-bank-batch-reservation` 10/10 PASS; `test:hybrid-bank-batch` 10/10 PASS; `test:hybrid-bank-evidence` 10/10 PASS; `test:hybrid-billing` final 350/350 PASS; React Parity suite completed; Vite `build:react` plus build contract PASS; `test:firebase-hybrid-emulator` 24/24 PASS, 0 failures and process exit 0 using OpenJDK 21. Earlier JDK 17 issue resolved in the user's Terminal. Intentional permission-denial security tests are not application errors.
+- **Scope/status:** Phase 10 local Demo **implementation and automated tests COMPLETE**; **owner's manual Demo UAT remains pending**, so not a complete Demo signoff or Production release. Do not reopen development for hypothetical banking improvements.
+- **Source:** User-provided Mac transcript evidence. Last executable code SHA `c1b8b09673d55089de2dfaa999fe5de76febebf5`; transcript lacks a separate printed HEAD but contains tests introduced in that change.
+- **Files:** `docs/PHASE10_DEVELOPMENT_CLOSURE_20261025.md`, `docs/NEXT_CHAT_HANDOFF.md`, this worklog only.
+- **Deployment:** Documentation-only GitHub update to `feature/react-firebase-port`. No main merge, Firebase deploy, Production payment or live settlement.
+- **Follow-up:** Get owner manual UI/UAT confirmation for Demo under the previously frozen acceptance gate. Investigate remaining Lalamove Wallet and historical 59 THB Platform fee separately before any related business release.
+
 ## 2026-10-25 — Phase 10 delivery scope freeze and DEMO replay repair
 
 - **Request:** Finish Phase 10 rather than append new demo Bank Evidence modules after every green test.
