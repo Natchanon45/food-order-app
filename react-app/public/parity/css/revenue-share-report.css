@@ -773,3 +773,15 @@
     width:100%;font-size:.78rem;
   }
 }
+
+/* PENGUIN icon standard: one-color outline SVG; always inherit card theme.
+   The mask avoids fixed black/color SVG files and preserves approved layouts. */
+.revenue-share-dashboard .delivery-bike-line-icon{
+  display:inline-block;
+  width:1.6em;
+  height:1.12em;
+  flex:0 0 auto;
+  background-color:currentColor;
+  -webkit-mask:url("/react/parity/icons/delivery-bike-outline.svg") center / contain no-repeat;
+  mask:url("/react/parity/icons/delivery-bike-outline.svg") center / contain no-repeat;
+}
