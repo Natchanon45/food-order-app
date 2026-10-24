@@ -26,6 +26,8 @@ const { recordDemoHybridRefundCandidate } =
   fnRequire("./hybrid-billing-refund-candidate");
 const { auditDemoHybridRefundHistory } =
   fnRequire("./hybrid-billing-refund-history-audit");
+const { buildDemoHybridFinanceWorklist, formatHybridFinanceWorklistTH } =
+  fnRequire("./hybrid-billing-finance-worklist");
 const { stageHybridInvoiceProof, reviewHybridInvoiceProof } =
   fnRequire("./hybrid-billing-payment");
 const { fingerprintClaims } = fnRequire("./hybrid-billing-payment-policy");
@@ -742,6 +744,13 @@ test("Historical cross-channel finance inventory never claims real bank coverage
   assert.equal(result.writesPerformed, false);
   assert.equal(result.sourcesScanned.length, 12);
   assert.equal(Array.isArray(result.integrityIssueCodes), true);
+  const worklist = buildDemoHybridFinanceWorklist(result);
+  assert.equal(worklist.releaseReady, false);
+  assert.equal(worklist.settlementAllowed, false);
+  assert.equal(worklist.bankSourceAuthenticated, false);
+  assert.ok(worklist.itemCount >= 4);
+  assert.equal(worklist.counts.hybridBillingInvoices, result.counts.hybridBillingInvoices);
+  assert.match(formatHybridFinanceWorklistTH(worklist), /ยืนยัน Settlement: ไม่ได้/);
   assert.ok(result.blockers.includes("LEGACY_OUTGOING_BANK_REFUNDS_NOT_MIGRATED"));
   assert.ok(result.blockers.includes("EXTERNAL_BANK_STATEMENT_SOURCE_NOT_AUTHENTICATED"));
   assert.equal(Object.hasOwn(result, "documents"), false);
@@ -788,6 +797,11 @@ test("Historical audit flags missing per-invoice adjustment reservation in the r
     db, maxPerSource: 500,
   });
   assert.ok(result.integrityIssueCodes.includes("ADJUSTMENT_RESERVED_BALANCE_MISMATCH"));
+  const worklist = buildDemoHybridFinanceWorklist(result);
+  assert.ok(worklist.items.some(item =>
+    item.code === "ADJUSTMENT_RESERVED_BALANCE_MISMATCH"
+    && item.severity === "integrity_exception"));
+  assert.equal(worklist.settlementAllowed, false);
   assert.equal(result.releaseReady, false);
   assert.equal(result.settlementAllowed, false);
   assert.equal(result.historicalBankCoverageVerified, false);
