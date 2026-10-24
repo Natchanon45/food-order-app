@@ -18,7 +18,8 @@ export function revenueShareEnabled(tenant = {}) {
 }
 
 export function revenueShareSuspended(tenant = {}) {
-  return revenueShareEnabled(tenant) && tenant.revenueShareSuspended === true;
+  return tenant.billingPolicyVersion !== "hybrid_v1"
+    && tenant.revenueShareSuspended === true;
 }
 
 // An unrelated manual/legacy hold must outrank the billing-only exception.
@@ -36,7 +37,7 @@ export function effectiveSubscriptionStatus(tenant = {}, now = new Date()) {
     if (unrelatedHybridHold(tenant)) return "suspended";
     return tenant.hybridBillingSuspended === true ? "hybrid_billing_suspended" : "hybrid_billing_active";
   }
-  if (revenueShareEnabled(tenant)) {
+  if (revenueShareEnabled(tenant) || revenueShareSuspended(tenant)) {
     return tenant.revenueShareSuspended === true ? "revenue_share_suspended" : "revenue_share_active";
   }
 
@@ -72,7 +73,7 @@ export function tenantAccessDecision(tenant = {}, role = "", now = new Date()) {
       ? { allowed: false, status: "inactive", code: "TENANT_INACTIVE" }
       : { allowed: true, status: "hybrid_billing_active", code: "" };
   }
-  if (revenueShareEnabled(tenant)) {
+  if (revenueShareEnabled(tenant) || revenueShareSuspended(tenant)) {
     if (tenant.revenueShareSuspended === true) {
       const allowed = ["owner", "admin"].includes(String(role || ""));
       return {

@@ -1,3 +1,10 @@
+## 2026-10-25 — GitHub-first Premium Delivery daily workflow integration
+
+- User explicitly directed workflow: develop/commit/push to **GitHub first**, then `pull` to Mac and test; deploy only when complete and accepted. Local branch HEAD matched GitHub `f1d18034` at investigation; only **54 modified `public/**/index.html` and 15 untracked generated `public/react/**` assets** existed locally. They were left untouched, never staged or discarded.
+- New GitHub source change: central Premium Delivery percentage uses daily settlement and its historical monthly anniversary threshold; existing Revenue Share scheduler and reconciliation now process Premium too; owner can access payment page while suspended; Slip2Go outages route to Super Admin (no unverified auto-approval), strict beneficiary check, restore after approval while respecting independent holds. Historical legacy settings are unchanged; `hybrid_v1` synthetic ledger remains separately disabled to avoid double billing.
+- Added `tests/react-parity/revenue-share-premium-daily-enforcement.spec.mjs` with mocked scheduling/status/payment-review/Slip2Go options, plus existing tests. See `docs/DELIVERY_SHARE_BUSINESS_ACCEPTANCE_20261025.md`.
+- **NOT YET ACCEPTED/DEPLOYED**: Do NOT say full production is ready until native full suites+Auth/Firestore Emulator+owner Manual UAT confirm. No main merge, no Firebase Production deploy, no new synthetic financial modules. After passing tests, pull GitHub to Mac without touching/staging generated `public/**`.
+
 ## 2026-10-25 — Owner rejected synthetic Phase 10 as incorrect business deliverable
 
 - **IMPORTANT**: Previous Phase 10 Demo "COMPLETE" engineering signoff is NOT the actual requested Delivery commission system. Owner requirement is activation-date monthly cycle (3 Oct to 2 Nov), first 10,000 THB Delivery goods excluded, any excess daily at 5%, pay by that night, suspend next day if unpaid, slip submitted/Slip2Go success or Super Admin manual approval on outage, restore access only when approved.

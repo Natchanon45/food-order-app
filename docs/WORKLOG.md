@@ -24,6 +24,14 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — GitHub-first integration of the actual daily Premium Delivery workflow
+
+- **Request:** User wants business workflow (real daily Delivery share), no more synthetic Bank Evidence; develop on GitHub then pull Mac and only then consider deployment.
+- **Scope:** Existing Revenue Share Cloud Functions + React Revenue Share screen, Premium subset only; activation anniversary exemption 10,000 THB, marginal 5%, yesterday assessed at Bangkok 00:20. Keep unrelated historical contracts and `hybrid_v1` simulated billing from double charging.
+- **Source updates:** Premium daily billingCycle, correct eligibility in scheduler/manual reconciliation, reversible suspension after no approved payment, pending manual evidence defers suspension, Slip2Go strict receiver auto-check and Super Admin manual fallback on outages, owner bypass only the billing hold, suspension date prefilled in upload page. Added isolated regression tests and fixed acceptance document.
+- **Verification/release:** GitHub-first source commit is not Production release. Actual native tests/UI Emulator UAT required before any `main` merge/Firebase deploy. Local generated `public/**` are preserved. Real provider credentials/external validation are not simulated or asserted.
+- **Follow-up:** Run full suites after GitHub `pull`, verify suspended owner can upload despite active:false, verify manual approval release only if independent subscription active, then request formal Production release permission.
+
 ## 2026-10-25 — Correct charged Delivery base to EXCESS above monthly threshold
 
 - **Symptom:** Owner rejected isolated synthetic Finance Demo; required original anniversary billing (3 Oct to 2 Nov), 10,000 THB monthly Delivery exemption, 1,500 THB overshoot at 5% = 75 THB, nightly payment/suspension, Slip2Go and manual Super Admin unlock.

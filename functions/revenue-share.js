@@ -134,7 +134,7 @@ function revenueSetting(tenant = {}, premiumPricing = null) {
     deliveryShareRate: centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0,
     deliveryThreshold: premiumPricing != null ? Number(premiumPricing.deliveryThreshold)
       : Number(tenant.revenueShareDeliveryThreshold ?? 10000),
-    billingCycle: premiumDeliveryShare ? "monthly"
+    billingCycle: premiumDeliveryShare ? "daily"
       : (tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly"),
     billingAnchorDate: tenantAnchorDate(tenant),
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
@@ -444,9 +444,15 @@ function detectSlipAmount(text = "") {
   return { amount: best?.value ?? null, ranked: ranked.slice(0, 20) };
 }
 
-async function inspectRevenueShareSlip(file, mime, expectedAmount) {
+async function inspectRevenueShareSlip(file, mime, expectedAmount, premiumDelivery = false) {
   const [buffer] = await file.download();
-  return inspectSlip(buffer, mime, String(file.name || "slip"), expectedAmount);
+  // Premium Delivery requires strict receiver + Slip2Go transaction verification.
+  // Service/config outages queue HUMAN review, never auto-confirm payment.
+  return inspectSlip(buffer, mime, String(file.name || "slip"), expectedAmount,
+    premiumDelivery ? {
+      providerOverride: "slip2go", allowConfiguredFallback: true,
+      requireVerifiedReceiver: true,
+    } : {});
 }
 
 function normalizedOcr(row = {}) {
@@ -480,9 +486,12 @@ function paymentPayload(snapshot, tenant = null) {
 }
 
 function subscriptionActive(tenant = {}, now = new Date()) {
-  if (tenant.subscriptionStatus === "suspended") return false;
+  if (["suspended", "expired"].includes(String(tenant.subscriptionStatus || "").toLowerCase())
+    || String(tenant.suspensionReason || "").trim()) return false;
   const expiry = asDate(tenant.subscriptionExpiresAt);
-  if (!expiry) return tenant.active !== false;
+  if (!expiry) return tenant.active !== false
+    || (tenant.revenueShareSuspended === true
+      && !String(tenant.suspensionReason || "").trim());
   return now <= addDays(expiry, Number(tenant.gracePeriodDays ?? 3));
 }
 
@@ -542,19 +551,23 @@ async function reconcileTenant(tenantId, centralPricing = null) {
   const tenantSnapshot = await tenantRef.get();
   if (!tenantSnapshot.exists) return { state: "tenant_missing", action: "none" };
   let tenant = { id: tenantSnapshot.id, ...tenantSnapshot.data() };
-  const historicalSetting = revenueSetting(tenant);
-  // Keep legacy enforcement restricted to historical revenue-share tenants.
-  // Premium subscribers never enter this suspension flow.
-  if (!historicalSetting.enabled) {
+  // Evaluate central Premium Delivery settings as well as historical plans.
+  // Delivery's 10k exemption resets each anniversary, but the DUE interval
+  // is daily. Unrelated expired/manual subscriptions remain independent.
+  const setting = revenueSetting(tenant, centralPricing || await loadPricing(db));
+  if (!setting.enabled) {
     if (!tenant.revenueShareSuspended) return { state: "subscription", action: "none" };
     const active = subscriptionActive(tenant);
     await mirrorTenantAccess(tenantRef, tenant, { active, revenueShareSuspended: false, revenueShareSuspendedAt: FieldValue.delete(), revenueShareSuspendedPeriodType: FieldValue.delete(), revenueShareSuspendedPeriodStart: FieldValue.delete(), revenueShareSuspendedPeriodEnd: FieldValue.delete(), revenueShareSuspensionReason: FieldValue.delete() });
     return { state: active ? "active" : "subscription_inactive", action: "released" };
   }
-  const setting = revenueSetting(tenant, centralPricing || await loadPricing(db));
+  if (setting.premiumDeliveryShare && !setting.billingAnchorDate) {
+    return { state: "missing_activation", action: "none" };
+  }
   if (tenant.revenueShareSuspended) {
     const payment = await latestPaymentForPeriod(tenantRef, tenant.revenueShareSuspendedPeriodStart || "", tenant.revenueShareSuspendedPeriodEnd || "");
     if (!payment || payment.data().status !== "approved") return { state: "suspended", action: "none" };
+    if (!subscriptionActive(tenant)) return { state: "other_hold", action: "none" };
     await mirrorTenantAccess(tenantRef, tenant, { active: true, revenueShareSuspended: false, revenueShareSuspendedAt: FieldValue.delete(), revenueShareSuspendedPeriodType: FieldValue.delete(), revenueShareSuspendedPeriodStart: FieldValue.delete(), revenueShareSuspendedPeriodEnd: FieldValue.delete(), revenueShareSuspensionReason: FieldValue.delete() });
     tenant = { ...tenant, active: true, revenueShareSuspended: false };
   }
@@ -753,7 +766,8 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
     throw new HttpsError("failed-precondition", "REVENUE_SHARE_SLIP_BYTES_INVALID");
   }
   const slipSha256 = createHash("sha256").update(slipBytes).digest("hex");
-  const verification = await inspectRevenueShareSlip(file, mime, summary.platformAmountDue);
+  const verification = await inspectRevenueShareSlip(file, mime,
+    summary.platformAmountDue, setting.premiumDeliveryShare);
   const verificationStatus = String(verification?.status || "manual_review");
   const verificationReason = String(verification?.reason || "");
   const deleteUploadedSlip = async () => {
@@ -761,14 +775,14 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
       if (Number(error?.code) !== 404) console.warn("REVENUE_SHARE_SLIP_CLEANUP_FAILED", slipPath, error?.message || error);
     }
   };
-  if (verificationStatus === "config_required") {
+  if (verificationStatus === "config_required" && !setting.premiumDeliveryShare) {
     await deleteUploadedSlip();
     throw new HttpsError(
       "failed-precondition",
       verificationReason.startsWith("google_") ? "GOOGLE_VISION_API_KEY_REQUIRED" : "SLIP2GO_CONFIG_REQUIRED",
     );
   }
-  if (verificationStatus === "config_invalid") {
+  if (verificationStatus === "config_invalid" && !setting.premiumDeliveryShare) {
     await deleteUploadedSlip();
     throw new HttpsError(
       "failed-precondition",
@@ -791,6 +805,7 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
   const autoApproved = verificationProvider === "slip2go"
     && verificationStatus === "matched"
     && verification?.amountMatched === true
+    && (!setting.premiumDeliveryShare || verification?.receiverValidated === true)
     && Boolean(referenceId || transRef);
 
   const sharedClaims = claimRefs(getFirestore(), { sha256: slipSha256, referenceId, transRef });
@@ -848,6 +863,7 @@ exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSecond
     && tenant.revenueShareSuspended === true
     && tenant.revenueShareSuspendedPeriodStart === period.startDate
     && tenant.revenueShareSuspendedPeriodEnd === period.endDate
+    && subscriptionActive(tenant)
   ) {
     await mirrorTenantAccess(tenantRef, tenant, {
       active: true,
@@ -965,10 +981,27 @@ exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => 
     transaction.set(paymentRef, { status, reviewNote: note, reviewedBy: reviewer.uid, reviewedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   });
   const tenant = { id: tenantSnapshot.id, ...tenantSnapshot.data() };
-  if (status === "approved" && tenant.revenueShareSuspended && tenant.revenueShareSuspendedPeriodStart === payment.periodStart && tenant.revenueShareSuspendedPeriodEnd === payment.periodEnd) {
-    await mirrorTenantAccess(tenantRef, tenant, { active: true, revenueShareSuspended: false, revenueShareSuspendedAt: FieldValue.delete(), revenueShareSuspendedPeriodType: FieldValue.delete(), revenueShareSuspendedPeriodStart: FieldValue.delete(), revenueShareSuspendedPeriodEnd: FieldValue.delete(), revenueShareSuspensionReason: FieldValue.delete() });
-  } else if (status === "rejected") {
-    await mirrorTenantAccess(tenantRef, tenant, { active: false, revenueShareSuspended: true, revenueShareSuspendedAt: FieldValue.serverTimestamp(), revenueShareSuspendedPeriodType: payment.periodType, revenueShareSuspendedPeriodStart: payment.periodStart, revenueShareSuspendedPeriodEnd: payment.periodEnd, revenueShareSuspensionReason: "rejected_payment" });
+  if (status === "approved" && tenant.revenueShareSuspended
+    && tenant.revenueShareSuspendedPeriodStart === payment.periodStart
+    && tenant.revenueShareSuspendedPeriodEnd === payment.periodEnd) {
+    // Releasing a billing hold must not override an unrelated suspension.
+    if (subscriptionActive(tenant)) {
+      await mirrorTenantAccess(tenantRef, tenant, { active: true,
+        revenueShareSuspended: false, revenueShareSuspendedAt: FieldValue.delete(),
+        revenueShareSuspendedPeriodType: FieldValue.delete(),
+        revenueShareSuspendedPeriodStart: FieldValue.delete(),
+        revenueShareSuspendedPeriodEnd: FieldValue.delete(),
+        revenueShareSuspensionReason: FieldValue.delete() });
+    }
+  } else if (status === "rejected"
+    && payment.periodEnd < dateKey(new Date())) {
+    // A same-day rejected slip does not suspend the shop before midnight.
+    await mirrorTenantAccess(tenantRef, tenant, { active: false,
+      revenueShareSuspended: true, revenueShareSuspendedAt: FieldValue.serverTimestamp(),
+      revenueShareSuspendedPeriodType: payment.periodType,
+      revenueShareSuspendedPeriodStart: payment.periodStart,
+      revenueShareSuspendedPeriodEnd: payment.periodEnd,
+      revenueShareSuspensionReason: "rejected_payment" });
   }
   return { ok: true, status };
 });
@@ -1002,7 +1035,7 @@ exports.reconcileRevenueShare = onCall({ region: REGION }, async request => {
   ]);
   let checked = 0, suspended = 0, released = 0;
   for (const doc of snapshot.docs) {
-    if (!revenueSetting(doc.data()).enabled) continue;
+    if (!revenueSetting(doc.data(), centralPricing).enabled) continue;
     const result = await reconcileTenant(doc.id, centralPricing); checked += 1;
     if (result.action === "suspended") suspended += 1;
     if (result.action === "released") released += 1;
@@ -1017,7 +1050,7 @@ exports.syncRevenueShareTenants = onSchedule({ schedule: "every day 00:20", time
   ]);
   let checked = 0;
   for (const doc of snapshot.docs) {
-    if (!revenueSetting(doc.data()).enabled) continue;
+    if (!revenueSetting(doc.data(), centralPricing).enabled) continue;
     await reconcileTenant(doc.id, centralPricing); checked += 1;
   }
   console.log("Revenue-share reconciliation completed", { checked });

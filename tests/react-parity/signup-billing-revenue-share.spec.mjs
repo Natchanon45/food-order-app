@@ -286,7 +286,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   assert.equal(setting.legacyEnabled, false);
   assert.equal(setting.channels.includeRetail, false);
   assert.equal(setting.channels.restaurantScope, "delivery_only");
-  assert.equal(setting.billingCycle, "monthly");
+  assert.equal(setting.billingCycle, "daily");
   const span = (day, next) => ({ start: new Date(day + "T00:00:00+07:00"), end: new Date(next + "T00:00:00+07:00") });
   const expected = [
     ["2026-10-01", "2026-10-02", 0],

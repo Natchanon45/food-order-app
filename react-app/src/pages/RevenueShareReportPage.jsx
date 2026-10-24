@@ -129,6 +129,11 @@ export function RevenueShareReportPage() {
       setAccess(next);
       const cycle = next.billingCycle === "daily" ? "daily" : "monthly";
       setPeriod(cycle);
+      // When suspended, point the upload form directly at the unpaid day.
+      if (next.suspended === true && next.suspendedPeriodType === "daily"
+        && /^\d{4}-\d{2}-\d{2}$/.test(String(next.suspendedPeriodStart || ""))) {
+        setDate(next.suspendedPeriodStart);
+      }
       if (next.enabled !== true) setError(t("revenue_share_report.explanation.disabled"));
       return next;
     } catch (loadError) {

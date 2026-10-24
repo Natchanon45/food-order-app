@@ -60,3 +60,37 @@ Admin fallback, and test full Browser+Firestore Emulator end-to-end before
 any Production activation. Do NOT announce it complete until real customer
 flow and suspension/unlock pass end-to-end. Synthetic Bank Evidence/Refund
 Proof workflows are out of scope and must not block this objective.
+
+## 25 October 2026 — GitHub-first integration (NOT Production release)
+
+The existing Premium Delivery commission branch now runs through the original
+Revenue Share owner/Super Admin workflow rather than the separate synthetic
+Hybrid bank-proof UI:
+
+- Premium stores capable of restaurant Delivery use **daily** settlement, with
+  the month-long 10,000 THB exemption reset at the account activation anniversary.
+  Historical revenue-share monthly/day configurations stay unchanged; pure
+  retail remains ineligible. `hybrid_v1` demo tenants remain excluded to avoid
+  duplicating a second ledger.
+- The real Bangkok 00:20 Revenue Share scheduler and Super Admin manual
+  reconcile now inspect central Premium pricing when selecting eligible tenants
+  (previously Premium was bypassed). Yesterday's unpaid delivery share creates
+  a reversible Revenue-Share-only tenant suspension. Repeated jobs are no-ops.
+  Submitted proofs awaiting manual check do not prematurely block the shop;
+  invalid/rejected proofs are not accepted as paid.
+- Owner/admin are allowed into their Revenue Share payment page while the
+  revenue-only suspension applies, and the form selects the unpaid date.
+- Premium proof processing requires Slip2Go with strict receiver/amount/duplicate
+  validation. Missing/invalid service configuration is routed to manual
+  Super Admin review, **never auto approved**. Verified receipt or explicitly
+  reviewed approval can lift the billing hold, but not independent account holds.
+- Source-only regression tests cover the amount, scheduler, pending/manual
+  approval, reject before midnight and strict Slip2Go options.
+
+**Acceptance gate:** native tests, Java 21 Firestore/Auth Emulator tests, React
+build and manual owner/Super Admin UI tests must be executed against the final
+commit before any production release. Do not deploy a financial scheduler
+until the owner has inspected the sample 10 Oct 75 THB bill, next-day
+suspension and manual/automatic-unlock behavior. Existing past billing rows
+may need a one-time reconciliation; do not silently mutate prior paid rows.
+
