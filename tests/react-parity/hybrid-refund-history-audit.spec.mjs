@@ -12,6 +12,7 @@ const invoiceId = "2026-10-24:monthly:fixed";
 const bankReferenceHash = "a".repeat(64), instructionHash = "b".repeat(64);
 const candidate = {
   id: adjustmentId, tenantId, invoiceId,
+  invoiceSignature: "f".repeat(64), observedBy: "super-auditor",
   bankReferenceHash, instructionHash, amount: 250,
   state: "awaiting_independent_bank_attestation",
   settlementConfirmed: false, sourceIntegrationReady: false,
@@ -20,6 +21,18 @@ const referenceClaim = { bankReferenceHash, tenantId, adjustmentId,
   invoiceId, state: "unverified_candidate" };
 const instructionClaim = { instructionHash, tenantId, adjustmentId,
   invoiceId, state: "unverified_candidate" };
+const signature = "f".repeat(64);
+const invoice = { id: invoiceId, tenantId, status: "paid", version: "hybrid-invoice-v1",
+  signature, amount: 590 };
+const adjustment = { id: adjustmentId, tenantId, invoiceId, invoiceSignature: signature,
+  kind: "refund_request", amount: 250, amountCents: 25000,
+  status: "approved", externallySettled: false, proposedBy: "super-proposer",
+  reviewedBy: "super-reviewer" };
+const reviewEvent = { tenantId, invoiceId, adjustmentId, invoiceSignature: signature,
+  resultStatus: "approved", action: "approve", reviewerId: "super-reviewer",
+  externallySettled: false };
+const balance = { tenantId, invoiceId, invoiceSignature: signature,
+  invoiceAmountCents: 59000, reservedCents: 25000, count: 1 };
 
 function fixture({ rows = {}, projectId = "demo-penguin-hybrid",
   host = "127.0.0.1:8080" } = {}) {
@@ -54,6 +67,10 @@ const validRows = () => ({
     "tenants/" + tenantId + "/hybridBillingRefundCandidates/" + adjustmentId]],
   hybridRefundReferenceClaims: [[bankReferenceHash, referenceClaim]],
   hybridRefundInstructionClaims: [[instructionHash, instructionClaim]],
+  hybridBillingInvoices: [[invoiceId, invoice]],
+  hybridBillingAdjustments: [[adjustmentId, adjustment]],
+  hybridBillingAdjustmentEvents: [[adjustmentId + "-review", reviewEvent]],
+  hybridBillingAdjustmentBalances: [[invoiceId, balance]],
 });
 
 test("empty historical database NEVER certifies bank settlement or legacy completeness", async () =>
@@ -66,8 +83,8 @@ test("empty historical database NEVER certifies bank settlement or legacy comple
     assert.equal(report.atomicSnapshot, false);
     assert.equal(report.writesPerformed, false);
     assert.equal(report.integrityIssueCount, 0);
-    assert.equal(report.sourcesScanned.length, 9);
-    assert.equal(counts.length, 9);
+    assert.equal(report.sourcesScanned.length, 12);
+    assert.equal(counts.length, 12);
     assert.deepEqual([...new Set(counts.map(x => x.limit))], [101]);
     assert.ok(report.blockers.includes("LEGACY_OUTGOING_BANK_REFUNDS_NOT_MIGRATED"));
   }));
@@ -175,6 +192,78 @@ test("privacy: diagnostic outputs counts and issue codes, not bank/user/source r
     assert.equal(Object.hasOwn(out, "documents"), false);
     assert.equal(Object.hasOwn(out, "bankReferenceHashes"), false);
   }, { rows: validRows() }));
+
+test("audit chain detects missing paid invoice or forged signature", async () => {
+  for (const rows of [
+    { ...validRows(), hybridBillingInvoices: [] },
+    { ...validRows(), hybridBillingInvoices: [[invoiceId, { ...invoice, signature: "a".repeat(64) }]] },
+  ]) await scenario(async ({ db }) => {
+    const report = await auditDemoHybridRefundHistory({ db });
+    assert.ok(report.integrityIssueCodes.includes("CANDIDATE_PAID_INVOICE_PROVENANCE_MISSING"));
+    assert.equal(report.settlementAllowed, false);
+  }, { rows });
+});
+
+test("audit chain blocks absent approved adjustment and independent finance decision", async () => {
+  for (const [change, code] of [
+    [{ hybridBillingAdjustments: [] }, "CANDIDATE_APPROVED_ADJUSTMENT_MISSING"],
+    [{ hybridBillingAdjustmentEvents: [] }, "CANDIDATE_INDEPENDENT_REVIEW_MISSING"],
+    [{ hybridBillingAdjustmentEvents: [[adjustmentId + "-review",
+      { ...reviewEvent, reviewerId: "super-proposer" }]] }, "CANDIDATE_INDEPENDENT_REVIEW_MISSING"],
+  ]) await scenario(async ({ db }) => {
+    const r = await auditDemoHybridRefundHistory({ db });
+    assert.ok(r.integrityIssueCodes.includes(code));
+  }, { rows: { ...validRows(), ...change } });
+});
+
+test("audit chain requires three distinct finance actors and exact amounts", async () => {
+  const variants = [
+    [{ hybridBillingRefundCandidates: [[adjustmentId,
+      { ...candidate, observedBy: "super-reviewer" }]] }, "CANDIDATE_SEPARATION_OF_DUTIES_MISSING"],
+    [{ hybridBillingRefundCandidates: [[adjustmentId,
+      { ...candidate, amount: 251 }]] }, "CANDIDATE_AMOUNT_MISMATCH"],
+    [{ hybridBillingAdjustments: [[adjustmentId,
+      { ...adjustment, amountCents: 25001 }]] }, "CANDIDATE_AMOUNT_MISMATCH"],
+  ];
+  for (const [change, issue] of variants) {
+    const docRows = { ...validRows(), ...change };
+    if (change.hybridBillingRefundCandidates) {
+      docRows.hybridBillingRefundCandidates = change.hybridBillingRefundCandidates.map(
+        ([id, body]) => [id, body,
+          "tenants/" + tenantId + "/hybridBillingRefundCandidates/" + id]);
+    }
+    await scenario(async ({ db }) => {
+      const r = await auditDemoHybridRefundHistory({ db });
+      assert.ok(r.integrityIssueCodes.includes(issue));
+      assert.equal(r.releaseReady, false);
+    }, { rows: docRows });
+  }
+});
+
+test("cap reconciliation detects insufficient reservation, orphan cap and duplicate spend", async () => {
+  for (const [rows, issue] of [
+    [{ ...validRows(), hybridBillingAdjustmentBalances: [] },
+      "ADJUSTMENT_RESERVED_BALANCE_MISMATCH"],
+    [{ ...validRows(), hybridBillingAdjustmentBalances: [[invoiceId,
+      { ...balance, reservedCents: 24900 }]] }, "ADJUSTMENT_RESERVED_BALANCE_MISMATCH"],
+    [{ ...validRows(), hybridBillingAdjustmentBalances: [[invoiceId, balance],
+      ["2026-10-25:monthly:fixed", { ...balance,
+        invoiceId: "2026-10-25:monthly:fixed" }]] }, "ADJUSTMENT_BALANCE_ORPHAN"],
+  ]) await scenario(async ({ db }) => {
+    const r = await auditDemoHybridRefundHistory({ db });
+    assert.ok(r.integrityIssueCodes.includes(issue));
+  }, { rows });
+});
+
+test("review events are not allowed without matching adjustment identity", async () =>
+  scenario(async ({ db }) => {
+    const r = await auditDemoHybridRefundHistory({ db });
+    assert.ok(r.integrityIssueCodes.includes("ADJUSTMENT_REVIEW_EVENT_ORPHAN"));
+    assert.equal(r.settlementAllowed, false);
+  }, { rows: { ...validRows(), hybridBillingAdjustmentEvents: [
+    [adjustmentId + "-review", reviewEvent],
+    ["other_adjustment_123456-review", { ...reviewEvent, adjustmentId: "other_adjustment_123456" }],
+  ] } }));
 
 test("private history scanner is unexposed and side-effect-free", () => {
   const src = fs.readFileSync("functions/hybrid-billing-refund-history-audit.js", "utf8");
