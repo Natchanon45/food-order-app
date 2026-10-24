@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 const reactOutDir = fileURLToPath(new URL("./public/react", import.meta.url));
+const hostingPublicDir = fileURLToPath(new URL("./public", import.meta.url));
 const canonicalSuperAdminEntries = [
   "./public/platform/index.html",
   "./public/platform/owners/index.html",
@@ -22,9 +23,16 @@ function syncCanonicalSuperAdminEntries() {
   });
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   root: fileURLToPath(new URL("./react-app", import.meta.url)),
-  base: "/react/",
+  // Production Hosting serves /react/assets; Dev Vite must serve canonical
+  // routes /login, /platform, / and the complete /react/parity CSS tree.
+  // Vite's /react/ base otherwise redirects / -> /react/, while main.jsx
+  // deliberately redirects /react/ -> / (an unstyled entry/redirect loop).
+  base: command === "serve" ? "/" : "/react/",
+  // Dev uses the same shared CSS/fonts/icons as canonical Hosting routes.
+  // Build still uses react-app/public and retains all existing output paths.
+  publicDir: command === "serve" ? hostingPublicDir : undefined,
   plugins: [
     react(),
     {
@@ -48,6 +56,6 @@ export default defineConfig({
       },
     },
   },
-  server: { host: "0.0.0.0", port: 5174 },
+  server: { host: "0.0.0.0", port: 5174, strictPort: true },
   preview: { host: "0.0.0.0", port: 4174 },
-});
+}));

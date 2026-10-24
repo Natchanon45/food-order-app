@@ -24,6 +24,15 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Repair local React UAT entry, isolate Finance Demo
+
+- **Symptom:** User screenshot at `localhost:5174/react/` showed only plain HTML `กำลังโหลดข้อมูล...` rather than the centered branded loader / React shell; Demo UI inaccessible.
+- **Root cause:** Vite dev Base `/react/` conflicts with canonical `main.jsx` redirect to `/`; Vite's default publicDir lacked Hosting CSS/fonts/js assets. Plain Vite also defaults to live Firebase project, so was unsafe for financial Demo UAT.
+- **Fix:** In `vite.react.config.js`, `serve` base `/`, repository `public/` as static directory and strict port; `build` retains original `/react/` base and build output behavior. Added explicit `dev:react:hybrid-demo` with emulator opt-in flags; documented guarded Auth/Firestore/Storage/Functions startup and synthetic demo seeding. Added `test:react-dev-preview` (2 native unit tests).
+- **Verification:** Source inspection and static test preparation only; user's Mac must run `npm run test:react-dev-preview`, `npm run test:react-foundation`, `npm run build:react` then manual browser UAT. Previous native acceptance was at earlier code HEAD and does not prove this bootstrap patch itself.
+- **Deployment:** Source+docs update committed to `feature/react-firebase-port` only, NO `main` merge, no Firebase deploy, no bank/payment activation.
+- **Status:** Targeted **UAT launch blocker only**, scope remains frozen otherwise. Demo official UI signoff pending.
+
 ## 2026-10-25 — Native Mac tests PASSED; Phase 10 Demo engineering freeze
 
 - **Request:** Owner submitted the final Firestore Emulator terminal transcript after JDK 21 selection; previously supplied successful Hybrid and React test/build terminal output.

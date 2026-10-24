@@ -1,3 +1,9 @@
+## 2026-10-25 — Local React UAT bootstrap bug repair (not a new Phase)
+
+- Owner screenshot shows plain `กำลังโหลดข้อมูล...` at `localhost:5174/react/`. Root cause from source: Dev Vite `base:"/react/"` conflicts with `main.jsx` canonical /react -> / redirect; default Vite publicDir also omits repository-hosted `public/assets` and `public/react/parity` used by the shell.
+- Fixed **DEV ONLY** `vite.react.config.js` to serve base `/` and repository `public/` directory, retaining build base `/react/` and original build output. Added explicit `dev:react:hybrid-demo` script with both existing emulator flags and strict port, plus native 2-case regression test. See `docs/PHASE10_LOCAL_BROWSER_UAT_20261025.md` for protected 3-terminal Auth/Firestore/Storage/Functions Emulator + demo seeding workflow.
+- CRITICAL: plain `npm run dev:react` uses **Production Firebase chat-45754**, even when served from localhost. NEVER perform finance UAT with that mode. Emulator Finance seed records are synthetic; Production settlement is still blocked. No new Phase, no `main` merge/Production deploy. Mac desktop remains offline from ChatGPT; new build and browser UAT require owner Mac execution.
+
 ## 2026-10-25 — Phase 10 Demo automated acceptance PASSED (freeze maintained)
 
 - Owner provided two full Mac terminal logs. Native Bank Batch Reservation **10/10**, signed Batch **10/10**, Bank Evidence **10/10**, Hybrid Billing final **350/350**, React Parity tests complete, React Vite build and generated-build contract PASS. After switching JDK 17 to installed **OpenJDK 21.0.13**, real local Auth/Firestore/Storage Emulator **24/24 PASS, exit 0**. Browser `PERMISSION_DENIED` diagnostics are intended negative tests.

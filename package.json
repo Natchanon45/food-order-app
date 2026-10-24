@@ -18,6 +18,8 @@
   "scripts": {
     "sync:bootstrap-icons": "mkdir -p public/assets/vendor/bootstrap-icons/fonts public/assets/vendor/bootstrap-icons/icons && cp node_modules/bootstrap-icons/font/bootstrap-icons.min.css public/assets/vendor/bootstrap-icons/bootstrap-icons.min.css && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* public/assets/vendor/bootstrap-icons/fonts/ && cp node_modules/bootstrap-icons/icons/bag.svg public/assets/vendor/bootstrap-icons/icons/bag.svg",
     "dev:react": "vite --config vite.react.config.js",
+    "dev:react:hybrid-demo": "VITE_USE_FIREBASE_EMULATORS=true VITE_HYBRID_DEMO_PAYMENT_E2E=true vite --config vite.react.config.js --strictPort",
+    "test:react-dev-preview": "node --test tests/react-parity/react-dev-preview-base.spec.mjs",
     "build:react": "vite build --config vite.react.config.js",
     "preview:react": "vite preview --config vite.react.config.js",
     "test:react-foundation": "node tools/react-foundation-contract.mjs",
