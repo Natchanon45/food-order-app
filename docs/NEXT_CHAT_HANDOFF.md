@@ -1,3 +1,9 @@
+## 2026-10-25 — Critical cross-scheduler Premium suspension guards
+
+- `react-app/src/app/App.jsx`: Premium Revenue Share suspension now routes owner/admin to payment report, without requiring old billingMode or legacy revenueShareEnabled. Synthetic `hybrid_v1` remains separately guarded.
+- `functions/subscription-admin.js`: the separate 00:15 Bangkok subscription scheduler must skip all tenants with revenueShareSuspended=true, even Premium tenants, or it may reopen them before 00:20 billing enforcement; admin subscription updates must not clear the billing hold. Regression contract added.
+- This is part of the exact end-to-end business requirement; not a new feature line. GitHub-first commit → safe Mac ff-only pull → test. No Production deploy until UAT.
+
 ## 2026-10-25 — GitHub-first Premium Delivery daily workflow integration
 
 - User explicitly directed workflow: develop/commit/push to **GitHub first**, then `pull` to Mac and test; deploy only when complete and accepted. Local branch HEAD matched GitHub `f1d18034` at investigation; only **54 modified `public/**/index.html` and 15 untracked generated `public/react/**` assets** existed locally. They were left untouched, never staged or discarded.

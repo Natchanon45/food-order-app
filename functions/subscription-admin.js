@@ -159,7 +159,9 @@ exports.updateTenantSubscription = onCall(
     }
 
     const gracePeriodDays = Math.max(0, Math.min(30, Number(request.data?.gracePeriodDays ?? tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS)));
-    if (revenueShareEnabled(tenant)) active = tenant.revenueShareSuspended !== true;
+    // Updating subscription details must not clear an outstanding Delivery
+    // share hold; billing review is the only actor that may release it.
+    if (tenant.revenueShareSuspended === true) active = false;
 
     const patch = {
       planCode: String(request.data?.planCode || tenant.planCode || "monthly"),
@@ -190,7 +192,7 @@ exports.syncExpiredTenants = onSchedule(
     for (const tenantDoc of snapshot.docs) {
       const tenant = tenantDoc.data();
       if (tenant.billingPolicyVersion === "hybrid_v1") continue;
-      if (revenueShareEnabled(tenant)) continue;
+      if (revenueShareEnabled(tenant) || tenant.revenueShareSuspended === true) continue;
       if (!tenant.subscriptionExpiresAt) {
         const batch = db.batch();
         const patch = defaultPatch(new Date(), tenant);

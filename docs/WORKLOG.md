@@ -24,6 +24,12 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Fix competing subscription scheduler and Premium suspended routing
+
+- **Root cause:** Premium revenue-share suspension flag was ignored by app route guard (legacy billingMode required), and scheduled subscription sync at 00:15 could reset tenant active=true before the 00:20 daily Billing scheduler, allowing a suspended shop to operate again.
+- **Source:** `react-app/src/app/App.jsx` recognizes Premium hold and routes owner/admin to Revenue Share report; `functions/subscription-admin.js` preserves hold both during nightly sync and manual subscription edits; new native regression contract `tests/react-parity/premium-suspension-access-contract.spec.mjs`.
+- **Release:** GitHub-first only, no main merge or Production deploy. Preserve local generated public files, test after ff-only pull.
+
 ## 2026-10-25 — GitHub-first integration of the actual daily Premium Delivery workflow
 
 - **Request:** User wants business workflow (real daily Delivery share), no more synthetic Bank Evidence; develop on GitHub then pull Mac and only then consider deployment.

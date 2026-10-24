@@ -124,8 +124,10 @@ function RevenueShareSuspensionGuard({ children }) {
   const location = useLocation();
   const profile = authState.profile;
   const tenant = tenantState.tenant;
+  // Premium Delivery uses the same revenueShareSuspended flag as the
+  // historical channel, but Premium signup has no legacy billingMode.
   const suspended = tenant?.revenueShareSuspended === true
-    && (tenant?.revenueShareEnabled === true || tenant?.billingMode === "revenue_share");
+    && tenant?.billingPolicyVersion !== "hybrid_v1";
   const hybridSuspended = tenant?.billingPolicyVersion === "hybrid_v1"
     && tenant?.hybridBillingSuspended === true;
   const ownerAdmin = ["owner", "admin"].includes(profile?.role);
