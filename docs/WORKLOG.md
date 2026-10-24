@@ -24,6 +24,14 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Final Github-first local verification, release gate
+
+- **Business code HEAD:** `c4cdca96758382ed1a77d68f946a024eae55d97a`. All changes committed/pushed to `feature/react-firebase-port`, safely `git pull --ff-only` on Mac. No Mac-side uncommitted business code; generated `public/**` files are preserved.
+- **Native Mac checks on this HEAD:** `test:hybrid-billing` **353/353 PASS**, `test:react-parity` **PASS** (no failures), `build:react` **PASS** (generated Build Contract PASS), local `node --test tests/firebase-emulator/delivery-share-actual-workflow.spec.mjs` **PASS 1/1** against Auth/Firestore/Storage Emulators. Guarded Functions Emulator safety suite **17/17 PASS**.
+- **Local UI smoke:** Vite demo serving `http://127.0.0.1:5174/login` HTTP 200, local owner and Admin callable routes operational and reject unauthenticated calls HTTP 401. Authenticated Premium owner reads `getTenantRevenueShareAccess` and `getTenantRevenueShareSummary` HTTP 200 with anchor **2026-10-03**, daily payable **75 THB**, Delivery **11,500 THB**, share base **1,500 THB**, rate **5%**. The Admin browser screen has NOT been manually signed off.
+- **Fixture:** `npm run seed:premium-delivery-demo` PASS, owner `premium-owner@demo.invalid`, Super Admin `premium-reviewer@demo.invalid`, password `EmulatorOnly123!`, sample payable day **2026-10-24**, month **2026-10-03–2026-11-02**. Owner route `/reports/revenue-share`; Super Admin route `/admin/tenants`. In Demo only, a Super Admin clicking review refresh calls `reconcileRevenueShare` to simulate the overdue day; no automatically scheduled cron exported from the Emulator.
+- **Release status:** **SOURCE+EMULATOR VERIFIED, OWNER BROWSER UAT PENDING**. Real Slip2Go API keys/bank beneficiary verification have NOT been proven against the live provider; Demo intentionally blocks outbound verification and always queues manual review. Do NOT deploy Production Functions, merge `main`, release real payments, or silently rewrite old paid invoices until owner authorizes a reviewed launch and live provider checks are complete.
+
 ## 2026-10-25 — Read-only Admin tenant list for Premium Demo review
 
 - Existing Super Admin Review UI is inside `/admin/tenants`, which loads `listTenants` and performs `backfillTenantSubscriptions` on mount. Demo-only guarded Functions source now exposes only the existing read-only `listTenants` and a role-gated, no-op `backfillTenantSubscriptions`; **does not export Tenant mutation functions**. This prevents unrelated subscription backfill from rewriting synthetic billing states.
