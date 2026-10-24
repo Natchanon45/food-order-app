@@ -331,7 +331,7 @@ export function HomePage() {
             </div>
           </section> : null}
 
-          {tenant ? (
+          {tenant?.billingPolicyVersion === "hybrid_v1" ? (
             <section className="dashboard-section" aria-labelledby="hybridReportTitle">
               <div className="dashboard-section-head">
                 <h2 id="hybridReportTitle">{t("hybrid_report.title")}</h2>
