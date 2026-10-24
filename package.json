@@ -27,7 +27,7 @@
     "test:admin-mobile-menu-table": "node --test tests/react-parity/admin-mobile-menu-table.spec.mjs",
     "test:global-initial-readiness": "node --test tests/react-parity/global-initial-readiness.spec.mjs",
     "test:signup-billing-revenue-share": "node --test tests/react-parity/signup-billing-revenue-share.spec.mjs",
-    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs tests/react-parity/hybrid-invoice-review-ui.spec.mjs tests/react-parity/hybrid-emulator-safety.spec.mjs tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs tests/react-parity/hybrid-functions-emulator-safety.spec.mjs tests/react-parity/hybrid-tenant-proof-ui.spec.mjs tests/react-parity/hybrid-upload-grant.spec.mjs tests/react-parity/hybrid-demo-payment-transport.spec.mjs tests/react-parity/hybrid-receiver-verification.spec.mjs",
+    "test:hybrid-billing": "node --test tests/react-parity/hybrid-billing.spec.mjs tests/react-parity/hybrid-billing-orders.spec.mjs tests/react-parity/hybrid-billing-report.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/hybrid-invoice-ledger.spec.mjs tests/react-parity/hybrid-invoice-reconciler.spec.mjs tests/react-parity/hybrid-invoice-payment.spec.mjs tests/react-parity/hybrid-invoice-payment-service.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs tests/react-parity/hybrid-invoice-review-ui.spec.mjs tests/react-parity/hybrid-emulator-safety.spec.mjs tests/react-parity/hybrid-payment-callables.spec.mjs tests/react-parity/hybrid-payment-review-ui.spec.mjs tests/react-parity/hybrid-functions-emulator-safety.spec.mjs tests/react-parity/hybrid-tenant-proof-ui.spec.mjs tests/react-parity/hybrid-upload-grant.spec.mjs tests/react-parity/hybrid-demo-payment-transport.spec.mjs tests/react-parity/hybrid-receiver-verification.spec.mjs tests/react-parity/hybrid-finance-policy.spec.mjs",
     "test:operational": "node tools/operational-orders-contract.mjs",
     "test:react-migration": "node tools/react-migration-coverage.mjs",
     "test:react-parity-matrix": "node tools/react-parity-matrix.mjs",
@@ -94,7 +94,8 @@
     "test:hybrid-upload-grant": "node --test tests/react-parity/hybrid-upload-grant.spec.mjs",
     "test:hybrid-demo-browser": "node --test tests/react-parity/hybrid-demo-payment-transport.spec.mjs",
     "seed:hybrid-demo-browser": "node tools/seed-hybrid-browser-demo.mjs",
-    "test:hybrid-receiver-verification": "node --test tests/react-parity/hybrid-receiver-verification.spec.mjs"
+    "test:hybrid-receiver-verification": "node --test tests/react-parity/hybrid-receiver-verification.spec.mjs",
+    "test:hybrid-finance-policy": "node --test tests/react-parity/hybrid-finance-policy.spec.mjs"
   },
   "repository": {
     "type": "git",
