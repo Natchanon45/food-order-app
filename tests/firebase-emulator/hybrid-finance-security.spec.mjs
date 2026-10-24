@@ -28,6 +28,9 @@ const { auditDemoHybridRefundHistory } =
   fnRequire("./hybrid-billing-refund-history-audit");
 const { buildDemoHybridFinanceWorklist, formatHybridFinanceWorklistTH } =
   fnRequire("./hybrid-billing-finance-worklist");
+const { createDemoHybridFinanceReviewPacket,
+  verifyDemoHybridFinanceReviewPacket } =
+  fnRequire("./hybrid-billing-finance-review-packet");
 const { stageHybridInvoiceProof, reviewHybridInvoiceProof } =
   fnRequire("./hybrid-billing-payment");
 const { fingerprintClaims } = fnRequire("./hybrid-billing-payment-policy");
@@ -751,6 +754,18 @@ test("Historical cross-channel finance inventory never claims real bank coverage
   assert.ok(worklist.itemCount >= 4);
   assert.equal(worklist.counts.hybridBillingInvoices, result.counts.hybridBillingInvoices);
   assert.match(formatHybridFinanceWorklistTH(worklist), /ยืนยัน Settlement: ไม่ได้/);
+  const packet = createDemoHybridFinanceReviewPacket(worklist, {
+    generatedAt: "2026-10-24T15:00:00.000Z",
+  });
+  assert.equal(packet.worklist.counts.hybridBillingInvoices,
+    result.counts.hybridBillingInvoices);
+  assert.equal(packet.settlementAllowed, false);
+  assert.equal(packet.bankSourceAuthenticated, false);
+  assert.equal(packet.digitallySigned, false);
+  assert.equal(verifyDemoHybridFinanceReviewPacket(packet).checksumConsistent, true);
+  const forged = structuredClone(packet);
+  forged.worklist.counts.hybridBillingInvoices += 1;
+  assert.throws(() => verifyDemoHybridFinanceReviewPacket(forged), /HYBRID_PACKET_/);
   assert.ok(result.blockers.includes("LEGACY_OUTGOING_BANK_REFUNDS_NOT_MIGRATED"));
   assert.ok(result.blockers.includes("EXTERNAL_BANK_STATEMENT_SOURCE_NOT_AUTHENTICATED"));
   assert.equal(Object.hasOwn(result, "documents"), false);
