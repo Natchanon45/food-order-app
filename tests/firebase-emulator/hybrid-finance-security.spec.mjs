@@ -915,3 +915,86 @@ test("Bank key onboarding is an untrusted, immutable, Super Admin-only Emulator 
     "Browser cannot promote a signer");
   }
 });
+
+
+test("Concurrent independent reviewers cannot double-acknowledge one bank key request", async () => {
+  const db={app:{options:{projectId}},
+    collection:name=>adminDb.collection(name),
+    runTransaction:fn=>adminDb.runTransaction(fn)};
+  const requestId="bankreq_race_20261024_123456";
+  await adminDb.collection("users").doc("third-bank-reviewer").set({
+    role:"super_admin",tenantId:"",active:true,
+  });
+  const proposed=await stageDemoHybridBankKeyEnrollment({
+    db,requestId,providerId:"sandbox_bank",keyId:"race_signer_oct",
+    fingerprintSha256:"8".repeat(64),
+    validFrom:"2026-10-25T00:00:00.000Z",
+    validUntil:"2026-12-01T00:00:00.000Z",
+    actorUid:"test-super-admin",
+    requestedAt:"2026-10-24T12:00:00.000Z",
+    serverTimestamp:FieldValue.serverTimestamp(),
+  });
+  assert.equal(proposed.keyActivated,false);
+  const opts={
+    db,requestId,decision:"acknowledge_internal_review",
+    reviewedAt:"2026-10-24T14:00:00.000Z",
+    serverTimestamp:FieldValue.serverTimestamp(),
+  };
+  const outcomes=await Promise.allSettled([
+    reviewDemoHybridBankKeyEnrollment({
+      ...opts,reviewerUid:identities.get("super-admin").uid,
+    }),
+    reviewDemoHybridBankKeyEnrollment({
+      ...opts,reviewerUid:"third-bank-reviewer",
+    }),
+  ]);
+  assert.equal(outcomes.filter(r=>r.status==="fulfilled").length,1);
+  assert.equal(outcomes.filter(r=>r.status==="rejected").length,1);
+  const snapshot=await adminDb.collection("hybridBankKeyEnrollmentReviews")
+    .doc(requestId).get();
+  assert.equal(snapshot.exists,true);
+  assert.equal(snapshot.data().status,"internally_acknowledged_untrusted");
+  assert.equal(snapshot.data().bankOriginAuthenticated,false);
+  assert.equal(snapshot.data().trustedRegistryPromoted,false);
+  assert.equal(snapshot.data().keyActivated,false);
+});
+
+test("Emulator bank key review rejects a missing or tampered global fingerprint claim", async () => {
+  const db={app:{options:{projectId}},
+    collection:name=>adminDb.collection(name),
+    runTransaction:fn=>adminDb.runTransaction(fn)};
+  const requestId="bankreq_tamper_20261024_123456";
+  const fingerprint="9".repeat(64);
+  await stageDemoHybridBankKeyEnrollment({
+    db,requestId,providerId:"sandbox_bank",keyId:"tamper_signer_oct",
+    fingerprintSha256:fingerprint,
+    validFrom:"2026-10-25T00:00:00.000Z",
+    validUntil:"2026-12-01T00:00:00.000Z",
+    actorUid:"test-super-admin",
+    requestedAt:"2026-10-24T12:00:00.000Z",
+    serverTimestamp:FieldValue.serverTimestamp(),
+  });
+  const ref=adminDb.collection("hybridBankKeyFingerprintClaims").doc(fingerprint);
+  const original=(await ref.get()).data();
+  const reviewOptions={
+    db,requestId,reviewerUid:identities.get("super-admin").uid,
+    decision:"acknowledge_internal_review",
+    reviewedAt:"2026-10-24T14:00:00.000Z",
+    serverTimestamp:FieldValue.serverTimestamp(),
+  };
+  await ref.update({providerId:"unexpected_bank"});
+  await assert.rejects(reviewDemoHybridBankKeyEnrollment(reviewOptions),
+    /GLOBAL_CLAIMS_INCONSISTENT/);
+  await ref.delete();
+  await assert.rejects(reviewDemoHybridBankKeyEnrollment(reviewOptions),
+    /GLOBAL_CLAIMS_INCONSISTENT/);
+  const audit=await adminDb.collection("hybridBankKeyEnrollmentReviews")
+    .doc(requestId).get();
+  assert.equal(audit.exists,false);
+  // Restore only the synthetic fixture to leave a consistent database;
+  // this is an Emulator Admin test, NOT a production repair procedure.
+  await ref.set(original);
+  const ack=await reviewDemoHybridBankKeyEnrollment(reviewOptions);
+  assert.equal(ack.status,"internally_acknowledged_untrusted");
+  assert.equal(ack.bankOriginAuthenticated,false);
+});
