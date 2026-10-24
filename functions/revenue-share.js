@@ -1018,8 +1018,15 @@ exports.unlockTenantRevenueShare = onCall({ region: REGION }, async request => {
   const tenantId = String(request.data?.tenantId || "").trim();
   const db = getFirestore(), tenantRef = db.collection("tenants").doc(tenantId), snapshot = await tenantRef.get();
   if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
-  const tenant = { id: snapshot.id, ...snapshot.data() }, setting = revenueSetting(tenant);
-  if (!setting.enabled || !tenant.revenueShareSuspended) throw new HttpsError("failed-precondition", "Tenant is not revenue-share suspended");
+  const tenant = { id: snapshot.id, ...snapshot.data() };
+  const setting = revenueSetting(tenant, await loadPricing(db));
+  if (!setting.enabled || !tenant.revenueShareSuspended) {
+    throw new HttpsError("failed-precondition", "Tenant is not revenue-share suspended");
+  }
+  // An emergency manual override cannot cancel an unrelated subscriber hold.
+  if (!subscriptionActive(tenant)) {
+    throw new HttpsError("failed-precondition", "Tenant has an independent subscription hold");
+  }
   const overrides = Array.isArray(tenant.revenueShareUnlockOverrides) ? [...tenant.revenueShareUnlockOverrides] : [];
   overrides.push({ periodType: tenant.revenueShareSuspendedPeriodType || setting.billingCycle, periodStart: tenant.revenueShareSuspendedPeriodStart || "", periodEnd: tenant.revenueShareSuspendedPeriodEnd || "", suspensionReason: tenant.revenueShareSuspensionReason || "manual_unlock", unlockedAt: new Date().toISOString(), unlockedBy: actor.uid });
   await mirrorTenantAccess(tenantRef, tenant, { active: true, revenueShareSuspended: false, revenueShareUnlockOverrides: overrides.slice(-50), revenueShareSuspendedAt: FieldValue.delete(), revenueShareSuspendedPeriodType: FieldValue.delete(), revenueShareSuspendedPeriodStart: FieldValue.delete(), revenueShareSuspendedPeriodEnd: FieldValue.delete(), revenueShareSuspensionReason: FieldValue.delete() });

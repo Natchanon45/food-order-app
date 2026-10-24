@@ -24,6 +24,13 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Real local Auth/Firestore/Storage delivery-share workflow acceptance
+
+- Added **emulator-only** acceptance test `tests/firebase-emulator/delivery-share-actual-workflow.spec.mjs`: real Firestore tenant + orders, Auth users, Storage synthetic slip, daily 75 THB invoice calculation; reconciliation sets tenant and slug inactive next day; repeated call idempotent; upload without configured Slip2Go creates **pending** (not paid); Super Admin explicit manual approval clears only revenue-share hold; no real banking/network or production project.
+- Guard requires `FIRESTORE_EMULATOR_HOST`, `FIREBASE_AUTH_EMULATOR_HOST`, `FIREBASE_STORAGE_EMULATOR_HOST` on loopback and demo project ID. Supports existing local Emulators with explicit env or the new isolated command `npm run test:delivery-share-emulator` (when ports free). The test uses real local Admin Firestore/Auth/Storage SDKs and production Revenue Share implementation with mocked callable wrappers and deliberate **offline** bank provider.
+- Fixed Premium emergency Super Admin manual override to load central settings and reject independent subscription suspension. Legacy overrides remain.
+- **No Production deploy**: Emulator acceptance result must be recorded after GitHub-first commit and Mac pull.
+
 ## 2026-10-25 — GitHub-first Mac sync and final source-test results
 
 - Final business-code HEAD `186437bf872666cee16d0d758a5a81a203c066e4`.
