@@ -334,7 +334,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   assert.equal(beforeThreshold.lalamoveOutstandingCost, 80, "Stale debit stamp may still appear for reconciliation");
   assert.equal(beforeThreshold.platformAmountDue, 0, "Prepaid Lalamove costs MUST NOT create a payable invoice");
   assert.equal(legacy.channels.includeRetail, true);
-  assert.equal(loaded.exports.__setting(tenant).enabled, false, "Legacy suspension scheduler never activates Premium");
+  assert.equal(loaded.exports.__setting(tenant).enabled, false, "Unconfigured central pricing does not activate Premium");
   await assert.rejects(
     loaded.exports.updateTenantRevenueShare({ auth: { uid: "super" }, data: {
       tenantId: "legacy", rate: 60, deliveryThreshold: 100, enabled: true, billingCycle: "monthly",
@@ -354,7 +354,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   assert.equal(revisedSummary.legacyShareAmount, 3000, "Legacy non-Delivery billing remains distinct");
   assert.match(server, /revenueSetting\(tenant, await loadPricing\(getFirestore\(\)\)\)/);
   assert.match(server, /revenueSetting\(tenant, premiumPricing\)/);
-  assert.match(server, /const historicalSetting = revenueSetting\(tenant\)/);
+  assert.match(server, /if \(!setting\.enabled\) \{/);
   assert.match(server, /const setting = revenueSetting\(tenant, centralPricing \|\| await loadPricing\(db\)\)/);
   assert.match(server, /await reconcileTenant\(doc.id, centralPricing\)/);
   assert.doesNotMatch(server.slice(server.indexOf("async function reconcileTenant"), server.indexOf("async function tenantWalletReport")), /premiumDeliveryShare[^=]\s*=\s*true/);

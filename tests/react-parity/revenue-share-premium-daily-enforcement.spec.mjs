@@ -204,7 +204,7 @@ test("Premium-only strict Slip2Go request never calls a real provider in unit te
   const result = await env.__inspect(file, "image/png", 75, true);
   assert.equal(result.status, "manual_review");
   assert.equal(env.slipArgs.length, 1);
-  assert.equal(env.slipArgs[0][3].providerOverride, "slip2go");
-  assert.equal(env.slipArgs[0][3].requireVerifiedReceiver, true);
-  assert.equal(env.slipArgs[0][3].allowConfiguredFallback, true);
+  assert.equal(env.slipArgs[0][4].providerOverride, "slip2go");
+  assert.equal(env.slipArgs[0][4].requireVerifiedReceiver, true);
+  assert.equal(env.slipArgs[0][4].allowConfiguredFallback, true);
 });
