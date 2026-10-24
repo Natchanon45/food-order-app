@@ -520,7 +520,7 @@ export function RevenueShareReportPage() {
               </div>
             </article>
             <article className="report-channel-card delivery">
-              <span className="report-channel-icon"><i className="bi bi-scooter" aria-hidden="true"></i></span>
+              <span className="report-channel-icon"><i className="delivery-bike-line-icon" aria-hidden="true"></i></span>
               <div><span>{rc("ขาย Delivery", "Delivery sales")}</span>
                 <strong id="orderSales">{money(deliveryTotal)} <small>{rc("บาท", "THB")}</small></strong>
                 <small id="orderCount">{rc("ยอดอาหาร ไม่รวมค่าจัดส่ง", "Merchandise only; delivery fees excluded")}</small>
@@ -558,7 +558,7 @@ export function RevenueShareReportPage() {
             <span className={"report-share-state " + (deliveryShareDue > 0 ? "is-chargeable" : "")}>{deliveryShareDue > 0 ? rc("มีส่วนแบ่ง Delivery", "Delivery share due") : thresholdReached ? rc("เดือนนี้ถึงเกณฑ์แล้ว", "Monthly threshold reached") : rc("ยังไม่ถึงเกณฑ์ จึงไม่มีส่วนแบ่ง", "Below threshold: no share")}</span>
           </div>
           <div className="report-share-equation">
-            <div className="report-share-month"><span className="report-equation-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ยอด Delivery สะสมรอบบิลนี้", "Billing-cycle Delivery total")}</span><strong>{money(monthlyDeliverySales)} <small>{rc("บาท", "THB")}</small></strong></div></div>
+            <div className="report-share-month"><span className="report-equation-icon"><i className="delivery-bike-line-icon" aria-hidden="true"></i></span><div><span>{rc("ยอด Delivery สะสมรอบบิลนี้", "Billing-cycle Delivery total")}</span><strong>{money(monthlyDeliverySales)} <small>{rc("บาท", "THB")}</small></strong></div></div>
             <b aria-hidden="true" className="report-equation-operator"><i className="bi bi-arrow-right"></i></b>
             <div className="report-share-base"><span className="report-equation-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span><div><span>{rc("ยอดที่เข้าเกณฑ์แล้ว", "Eligible amount")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div></div>
             <b aria-hidden="true" className="report-equation-operator">×</b>
@@ -577,7 +577,7 @@ export function RevenueShareReportPage() {
               <p>{rc("ค่าจัดส่ง Lalamove หักจากเครดิตล่วงหน้า ไม่ถูกนำมาคิดเป็นยอดโอน Platform ซ้ำ", "Lalamove delivery costs are debited from prepaid credits and never added to Platform share payable")}</p></div>
           </div>
           <div className="report-related-grid">
-            <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-truck" aria-hidden="true"></i></span><div><span>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("รวมจากออร์เดอร์ในช่วงรายงาน", "From selected period orders")}</small></div></article>
+            <article className="report-related-tile"><span className="report-related-icon"><i className="delivery-bike-line-icon" aria-hidden="true"></i></span><div><span>{rc("ค่าจัดส่งที่ลูกค้าชำระ", "Customer delivery fees")}</span><strong id="customerDeliveryFees">{money(summary.customerDeliveryFees)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("รวมจากออร์เดอร์ในช่วงรายงาน", "From selected period orders")}</small></div></article>
             <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-box-seam" aria-hidden="true"></i></span><div><span>{rc("ต้นทุน Lalamove", "Lalamove delivery cost")}</span><strong>{money(summary.lalamoveDeliveryCost)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("ไม่ใช่ฐานคิดส่วนแบ่ง", "Not part of revenue share")}</small></div></article>
             <article className="report-related-tile report-related-platform"><span className="report-related-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ยอดที่ต้องโอนให้ Platform", "Platform amount due")}</span><strong id="platformAmountDue">{money(platformSharePayable)} <small>{rc("บาท", "THB")}</small></strong><small>{platformSharePayable <= 0 ? rc("ไม่มีส่วนแบ่งค้างชำระ", "No share payable") : rc("เฉพาะส่วนแบ่งยอดขาย ไม่รวมค่าขนส่งที่ตัดเครดิตแล้ว", "Revenue share only; prepaid delivery is excluded")}</small></div></article>
           </div>
