@@ -83,8 +83,10 @@ test("All stores use signup anniversary, without billing-mode or migration flags
   assert.match(revenueServer, /periodFromData\(request\.data \|\| \{\}, tenant\)/);
   assert.match(revenueServer, /if \(!anchor\) return null/);
   assert.doesNotMatch(revenueServer, /billingAnniversaryEffectiveAt|anniversary_migration_pending|cutoverDate/);
-  assert.match(report, /monthlyDeliveryStartDate/);
-  assert.match(report, /monthlyDeliveryEndDate/);
+  assert.match(report, /resolveBillingCycleRange\(summary, tenant\)/);
+  const cycleDisplay = fs.readFileSync("react-app/src/utils/billingCycleDisplay.js", "utf8");
+  assert.match(cycleDisplay, /monthlyDeliveryStartDate/);
+  assert.match(cycleDisplay, /monthlyDeliveryEndDate/);
   assert.match(report, /Progress ยอด Delivery สะสมรอบบิลนี้/);
 });
 

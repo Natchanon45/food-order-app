@@ -1,20 +1,21 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { formatBillingCycleRange } from "../../react-app/src/utils/billingCycleDisplay.js";
+import { formatBillingCycleRange, billingCycleFromTenant, resolveBillingCycleRange } from "../../react-app/src/utils/billingCycleDisplay.js";
+import { cycleForDate, tenantAnchorDate } from "../../functions/billing-anniversary.js";
 
 const component = fs.readFileSync("react-app/src/pages/RevenueShareReportPage.jsx", "utf8");
 const server = fs.readFileSync("functions/revenue-share.js", "utf8");
 
 test("billing cycle shown in DD/MM/YYYY is tied to the signup anniversary, not calendar month", () => {
-  assert.equal(formatBillingCycleRange("2026-10-03", "2026-11-02"), "3/10/2026 - 2/11/2026");
-  assert.equal(formatBillingCycleRange("2026-12-30", "2027-01-29"), "30/12/2026 - 29/1/2027");
+  assert.equal(formatBillingCycleRange("2026-10-03", "2026-11-02"), "03/10/2026 - 02/11/2026");
+  assert.equal(formatBillingCycleRange("2026-12-30", "2027-01-29"), "30/12/2026 - 29/01/2027");
   assert.equal(formatBillingCycleRange("2026-02-30", "2026-03-29"), "");
   assert.equal(formatBillingCycleRange("", "2026-11-02"), "");
   assert.equal(formatBillingCycleRange("2026-11-03", "2026-11-02"), "");
 });
-test("existing approved dashboard layout stays untouched and new label reads only server cycle fields", () => {
-  assert.match(component, /formatBillingCycleRange\(\s*summary\.monthlyDeliveryStartDate, summary\.monthlyDeliveryEndDate/);
+test("existing approved dashboard layout stays untouched and reads server/tenant anniversary data", () => {
+  assert.match(component, /resolveBillingCycleRange\(summary, tenant\)/);
   assert.match(component, /id="revenueShareBillingPeriod"/);
   assert.match(component, /รอบคิดค่าบริการปัจจุบัน/);
   assert.match(component, /const monthLabel = billingCycleRange/);
@@ -27,4 +28,41 @@ test("existing approved dashboard layout stays untouched and new label reads onl
   }
   assert.match(component, /บาทแรกของรอบบิลได้รับยกเว้น/);
   assert.doesNotMatch(component, /threshold is a trigger, not a deduction/);
+});
+
+test("old production callable without cycle dates falls back to tenant Firestore activation for DISPLAY ONLY", () => {
+  const tenant = { createdAt: { seconds: Date.parse("2026-10-03T08:30:00+07:00") / 1000 } };
+  assert.equal(resolveBillingCycleRange({ monthlyDeliverySales: 11500 }, tenant, new Date("2026-10-25T03:00:00+07:00")),
+    "03/10/2026 - 02/11/2026");
+  assert.equal(resolveBillingCycleRange(
+    { monthlyDeliveryStartDate: "2026-09-03", monthlyDeliveryEndDate: "2026-10-02" },
+    tenant, new Date("2026-10-25T03:00:00+07:00")), "03/09/2026 - 02/10/2026");
+  assert.equal(resolveBillingCycleRange({}, {}, new Date("2026-10-25T03:00:00+07:00")), "");
+  assert.equal(resolveBillingCycleRange({}, { createdAt: "invalid" }, new Date("2026-10-25T03:00:00+07:00")), "");
+  assert.equal(resolveBillingCycleRange({}, { createdAt: "2026-11-03T00:00:00+07:00" },
+    new Date("2026-10-25T03:00:00+07:00")), "");
+});
+
+test("browser display-only fallback exactly matches canonical server cycles and anchor priority", () => {
+  const cases = [
+    ["2026-10-03T08:30:00+07:00", "2026-10-25T03:00:00+07:00"],
+    ["2026-10-03T08:30:00+07:00", "2026-11-03T00:15:00+07:00"],
+    ["2026-01-31T10:00:00+07:00", "2026-02-28T09:00:00+07:00"],
+    ["2026-01-31T10:00:00+07:00", "2026-03-01T09:00:00+07:00"],
+    ["2024-02-29T10:00:00+07:00", "2025-03-01T09:00:00+07:00"],
+    ["2026-12-22T10:00:00+07:00", "2027-01-07T09:00:00+07:00"],
+  ];
+  const bangkokDay = date => new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date(date)).replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2");
+  for (const [start, now] of cases) {
+    const tenant = { billingCycleAnchorAt: start, createdAt: "2020-01-01T00:00:00+07:00" };
+    const canonical = cycleForDate(tenantAnchorDate(tenant), bangkokDay(now));
+    assert.deepEqual(billingCycleFromTenant(tenant, new Date(now)),
+      { startDate: canonical.startDate, endDate: canonical.endDate });
+  }
+  const priority = { billingCycleAnchorAt: "2026-10-03T00:00:00+07:00",
+    createdAt: "2026-10-10T00:00:00+07:00" };
+  assert.equal(resolveBillingCycleRange({}, priority, new Date("2026-10-25T12:00:00+07:00")),
+    "03/10/2026 - 02/11/2026");
 });

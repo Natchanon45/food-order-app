@@ -15,7 +15,7 @@ import {
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
-import { formatBillingCycleRange } from "@/utils/billingCycleDisplay";
+import { resolveBillingCycleRange } from "@/utils/billingCycleDisplay";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -215,11 +215,10 @@ export function RevenueShareReportPage() {
   const progressPercent = centralThreshold > 0
     ? Math.min(100, monthlyDeliverySales / centralThreshold * 100) : 100;
   const thresholdReached = centralThreshold <= 0 || monthlyDeliverySales >= centralThreshold;
-  // Use only authoritative server-side anniversary boundaries; never infer
-  // the chargeable cycle from a calendar-month picker or browser locale.
-  const billingCycleRange = formatBillingCycleRange(
-    summary.monthlyDeliveryStartDate, summary.monthlyDeliveryEndDate,
-  );
+  // Prefer server-calculated anniversary. The live callable may predate
+  // those fields, so derive DISPLAY ONLY from the current Firestore tenant
+  // activation timestamp (same source/priority as server billing-anniversary).
+  const billingCycleRange = resolveBillingCycleRange(summary, tenant);
   const monthLabel = billingCycleRange
     || displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
   const remainingToThreshold = Math.max(0, centralThreshold - monthlyDeliverySales);
