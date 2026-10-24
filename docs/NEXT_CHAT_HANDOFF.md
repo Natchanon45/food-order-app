@@ -1,3 +1,13 @@
+## 2026-10-24 — FINAL Phase 10: offline finance review packet, checksum-only
+
+- User confirmed native Mac tests at previous HEAD `952f2681` passed, asked to proceed. Remote Mac mini remained OFFLINE; native tests for NEW commits in this turn are not yet verified.
+- Added pure PRIVATE `functions/hybrid-billing-finance-review-packet.js`: canonical allowlisted finance Worklist packet from existing demo inventory only. SHA256 domain-separated content checksum, generation UTC, fixed `demo-penguin-hybrid`, clear `digitallySigned:false`, `bankSourceAuthenticated:false`, `settlementAllowed:false`, `releaseReady:false`, `checksumIsBankAttestation:false`. Validator rebuilds canonical Thai finance task catalog, checks exact source counts and mandatory release blockers, detects body/checksum changes and rejects forged bank/payment flags. **Checksum is NOT signer or bank authenticity**; must retain original checksum separately. No real money or Settlement.
+- Extended DEV-only `tools/audit-hybrid-finance-demo.mjs --format=packet`, validated local emulator/explicit ACK before Admin SDK import, exits **2 expected** even on successful export. Added fully-offline `tools/verify-hybrid-finance-packet.mjs file.json`, capped at 128 KiB, prints sanitized integrity-only result, exits **2 on checksum consistency**, non-2 on invalid file. No network/Bank/Firestore writes from verifier.
+- Added `test:hybrid-finance-packet` to `test:hybrid-billing` with 11 cases (10 source-level V8 passed; 1 requires native Node spawn/file I/O); Firestore Emulator financial audit test now exercises packet assembly and rejection on modified counts. Native Node Emulator test pending on Mac.
+- Documented exact isolated CLI/verification commands and limitations at `docs/HYBRID_PHASE10_FINANCE_REVIEW_PACKET_20261024.md`. No Production Callable, no Release flags, no `main` merge, no Firebase deploy.
+- Next: authentic external bank statement and historical payouts from trusted providers, independent settlement approval and idempotent receipts, App Check/Slip2Go go-live conditions. No new Phase number/subphase.
+- Mac: `git status --short`, `git switch feature/react-firebase-port`, `git pull --ff-only origin feature/react-firebase-port`, `npm run test:hybrid-finance-packet`, `npm run test:hybrid-finance-worklist`, `npm run test:hybrid-billing`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity`, `npm run build:react`. Preserve existing local `public/**/index.html`.
+
 ## 2026-10-24 — Final Phase 10: finance exception Worklist + local Emulator report CLI
 
 - User confirmed previous Mac tests for HEAD `e8c8798f` passed and asked to continue. Mac mini Remote Desktop Commander is still OFFLINE; new native tests have not been rerun.

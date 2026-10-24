@@ -185,3 +185,14 @@ pending on the latest commits.
 
 This worklist helps FINANCE TRIAGE; it is NOT authenticated bank ingestion,
 not a legally binding finance approval, and not a settlement receipt.
+
+## 24 October 2026 — Portable finance review packet checksum
+
+Private demo-only `--format=packet` output now packages sanitized 12-source
+finance Worklist, date and source flags with a SHA256 **checksum**. It does
+NOT sign the author or prove a transfer. Offline verification can detect
+changes relative to an independently retained checksum and reject forged
+optimistic `settlementAllowed` or `digitallySigned` status. Both exporter
+and verifier exit 2 even when running correctly because bank/legacy
+settlement blockers remain. See
+[full instructions](HYBRID_PHASE10_FINANCE_REVIEW_PACKET_20261024.md).

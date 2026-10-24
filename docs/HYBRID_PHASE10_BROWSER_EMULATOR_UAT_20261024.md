@@ -236,3 +236,19 @@ npm run build:react
 6. This remains a demo-only triage feature; authenticated bank statements,
    historical/legacy payout manifests, separate Final Settlement approval,
    Slip2Go and App Check UAT are still required.
+
+## 24 October 2026 — Review Packet UAT (no bank/payment writes)
+
+- Run `npm run test:hybrid-finance-packet`, `npm run test:hybrid-billing`
+  and `npm run test:firebase-hybrid-emulator` after safe fast-forward pull.
+- Generate the redacted `--format=packet` with local
+  `demo-penguin-hybrid` Firestore. Exporter exits 2 as **expected**.
+- Run `node tools/verify-hybrid-finance-packet.mjs file.json`: checksum
+  consistency only; verifier also exits 2, never reports bank payment confirmed.
+- Edit one item amount, UTC time, blocker or action text: offline verification
+  must refuse the packet. Trying to set `settlementAllowed:true` or
+  `digitallySigned:true` must fail even after recomputing checksum.
+- This is not a digital signature. Protect a baseline checksum independently;
+  never treat an unsigned report as authoritative bank data.
+- No main merge, release gate, bank transfer, wallet modification or Firebase
+  Production deploy.
