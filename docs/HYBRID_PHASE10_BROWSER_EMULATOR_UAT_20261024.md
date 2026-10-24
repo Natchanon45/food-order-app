@@ -368,3 +368,22 @@ npm run build:react
 - CLI and report keep `eligibleForBankSettlement:false`,
   `productionReleaseAllowed:false` and `writesPerformed:false`; expected
   CLI exit code is 2. No Production release flag may change.
+
+## 24 October 2026 — Unified Readiness Packet offline verification
+
+- After pulling `feature/react-firebase-port`, run
+  `npm run test:hybrid-phase10-packet`, followed by
+  `npm run test:hybrid-billing` and
+  `npm run test:firebase-hybrid-emulator`.
+- Generate a `--format=readiness-packet` with the exact local DEMO
+  Emulator guard and verify it using
+  `node tools/verify-hybrid-phase10-packet.mjs file.json`.
+- Valid packet => `checksum_consistent_only`, exit code **2**,
+  `bankPayoutConfirmed:false`,
+  `productionReleaseAllowed:false`.
+  Modified source counts/tasks, injected bank accounts, forged
+  `settlementAllowed:true` and even recomputed checksums with altered
+  canonical tasks must be REJECTED. Unknown issue text must never leak.
+- A checksum is not a signed bank attestation. Both finance and key
+  records are collected in NON-ATOMIC bounded scans, not Production data.
+  Passing these tests cannot unlock Payment/Settlement flags.

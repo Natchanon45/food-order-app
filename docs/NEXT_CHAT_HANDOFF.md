@@ -1,3 +1,13 @@
+## 2026-10-24 — FINAL Phase 10: portable unified readiness packet
+
+- User confirmed tests at HEAD `44970a25` passed, requested continuation. Mac mini offline; do not claim new native Node/Emulator runs.
+- Added private `functions/hybrid-billing-phase10-review-packet.js` with strict canonical regeneration of all 16-source, redacted FINANCE + BANK KEY tasks and SHA-256 content checksum. Report always `eligibleForBankSettlement:false`, `productionReleaseAllowed:false`, `bankStatementSourceAuthenticated:false`. Verifier rejects modified counts/tasks/unknown fields even if checksum is recalculated. **Checksum is NOT a signature or bank authentication.**
+- Extended existing local/demo-only `tools/audit-hybrid-finance-demo.mjs --format=readiness-packet`, preserving existing formats and Emulator/Project/Consent guards before `firebase-admin` import. Added no-network `tools/verify-hybrid-phase10-packet.mjs localfile.json` with max 128 KiB; both commands return exit code **2 even for valid blocked diagnostics**, never green/settled.
+- Added `npm run test:hybrid-phase10-packet` (12 new tests; 11/11 V8 mock unit cases passed, 1 native Node file process pending) to `test:hybrid-billing`. Firestore Emulator existing 16-source Readiness integration extended to packet create/verify/tampering. Native Mac/Emulator/build checks still pending for current HEAD.
+- New UAT commands documented in `docs/HYBRID_PHASE10_UNIFIED_READINESS_20261024.md`. Finance worklist, old 12-source packet and all previous scripts remain unchanged. No Production export, payment settlement/bank evidence import, release flag activation, main merge or Firebase deploy.
+- Remaining Final Phase 10 actual blockers: independently authenticated provider key and real bank statements, historical payouts and finance settlement receipt audit, external App Check/Slip2Go real beneficiary UAT, explicit owner approval. Never assume synthetic/checksum-only bank evidence is real.
+- Mac: `git status --short`, `git switch feature/react-firebase-port`, `git pull --ff-only origin feature/react-firebase-port`, `npm run test:hybrid-phase10-packet`, `npm run test:hybrid-phase10-readiness`, `npm run test:hybrid-billing`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity`, `npm run build:react`, `git status --short`. Preserve local `public/**/index.html` (never reset/clean).
+
 ## 2026-10-24 — FINAL Phase 10: unified 16-source finance & signing-key release blocker report
 
 - User confirmed prior Mac native tests at HEAD `8e71025d` passed. Remote Mac mini offline this turn; new native Node/Emulator React build tests NOT executed.
