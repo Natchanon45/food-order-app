@@ -97,3 +97,19 @@ The new code has source-level checks but has **not** been run on the Mac in this
 3. For an actual UAT environment (not demo), validate provider account ownership with the platform finance team, successful `200200` under receiver and amount/date/duplicate checks, and negative `200000`, `200401`, duplicate, invalid beneficiary, and HTTP error responses. `200200` alone on an HTTP failure must never become bankVerified.
 4. The DEV-only demo uses synthetic verification with receiverValidated=true to simulate the success case; a synthetic record or code does NOT prove a bank transfer. Do not enable Production until real integration and independent finance review are signed off.
 5. Every Production release gate remains false. If a recipient configuration is missing, Hybrid proof submission should fail closed instead of choosing a different, legacy bank account.
+
+## 24 October 2026 — Full-history recovery and credit/refund/chargeback DRY RUN
+
+New private read-only finance policy and historical recovery collector are in `functions/hybrid-billing-finance-policy.js` and `functions/hybrid-billing-recovery-reader.js`. Run:
+
+```bash
+npm run test:hybrid-finance-policy
+npm run test:hybrid-recovery-reader
+npm run test:hybrid-billing
+npm run test:react-parity
+npm run build:react
+```
+
+Critical scenarios: (1) unpaid invoice D makes hold eligible only on D+1 Bangkok date; (2) one unpaid older-anniversary invoice keeps hold even if the newest invoice is PAID; (3) absent period index (including a zero-invoice trial) or unindexed Invoice causes a review-required error rather than recovery; (4) completed verified history permits a **proposal** to clear only `hybridBillingSuspended`; (5) separate manual/security/legacy suspension still blocks account access; (6) credit note for unpaid invoice, refund and chargeback for paid invoice only, reject duplicate/cross-tenant/over-amount/untrusted bank destination inputs; (7) no credit/refund proposal ever mutates Wallet, old Invoice, account status or real payment.
+
+The reader intentionally **fails closed on missing historical billing periods**, including pre-cutover legacy periods. Historical migration or an independently reviewed finance reconciliation will be required before enabling automatic recovery. No writer exists and none should be exposed to the browser until those controls are approved. Previous Mac test confirmation applies to the earlier HEAD only.
