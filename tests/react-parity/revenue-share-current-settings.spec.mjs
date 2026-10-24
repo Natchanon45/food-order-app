@@ -138,8 +138,8 @@ test("Delivery uses the owner-selected line icon, with theme-colored SVG mask an
   assert.match(css, /\.revenue-share-dashboard \.delivery-bike-line-icon\{/);
   // A square mask lets the original 256x256 SVG use its natural vertical room.
   // The old 1.12em height made the actual line art look much smaller than POS.
-  assert.match(css, /width:1\\.5em;\\s*height:1\\.5em/);
-  assert.doesNotMatch(css, /height:1\\.12em/);
+  assert.match(css, /width:1\.5em;\s*height:1\.5em/);
+  assert.doesNotMatch(css, /height:1\.12em/);
   assert.match(css, /background-color:currentColor/);
   assert.match(css, /-webkit-mask:url\("\/react\/parity\/icons\/delivery-bike-outline\.svg"\)/);
   assert.match(css, /mask:url\("\/react\/parity\/icons\/delivery-bike-outline\.svg"\)/);
