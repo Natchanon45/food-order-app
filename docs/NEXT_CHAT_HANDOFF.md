@@ -1,3 +1,11 @@
+## 2026-10-25 — Owner-approved Revenue Share screen preserved; add anniversary-cycle label only
+
+- Owner explicitly requires keeping **exact** existing `/reports/revenue-share` design from penguin-food.web.app screenshots (green hero, period tabs, store/POS + Delivery tiles, threshold progress, equation, Lalamove/Wallet, history and slip upload). Do not replace it with synthetic `/reports/hybrid-billing` or redesign.
+- Only markup addition is an unobtrusive billing-period line inside the *existing period filter card*: e.g. **รอบคิดค่าบริการปัจจุบัน: 3/10/2026 - 2/11/2026**. Progress panel reuses that same server-calculated anniversary range; no new cards/CSS/layout. Uses `summary.monthlyDeliveryStartDate` and `summary.monthlyDeliveryEndDate`, not calendar-month inference; missing/invalid range is hidden rather than fabricated.
+- Correction to existing text: first 10,000 THB Delivery in each anniversary cycle is EXEMPT; only goods beyond threshold are charged (the previous copy misleadingly said threshold was merely a trigger). Existing business calculation and fee logic untouched.
+- Pure formatter + React contract regression tests added. GitHub-first feature commit, safe Mac pull/test. **No Firebase Production deploy**; live web.app screenshots continue to show currently deployed version until explicitly authorized production release.
+
+
 ## 2026-10-25 — Final Github-first local verification, release gate
 
 - **Business code HEAD:** `c4cdca96758382ed1a77d68f946a024eae55d97a`. All changes committed/pushed to `feature/react-firebase-port`, safely `git pull --ff-only` on Mac. No Mac-side uncommitted business code; generated `public/**` files are preserved.

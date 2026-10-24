@@ -15,6 +15,7 @@ import {
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
+import { formatBillingCycleRange } from "@/utils/billingCycleDisplay";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -214,13 +215,13 @@ export function RevenueShareReportPage() {
   const progressPercent = centralThreshold > 0
     ? Math.min(100, monthlyDeliverySales / centralThreshold * 100) : 100;
   const thresholdReached = centralThreshold <= 0 || monthlyDeliverySales >= centralThreshold;
-  const cycleStartLabel = summary.monthlyDeliveryStartDate
-    ? displayDate(summary.monthlyDeliveryStartDate) : "";
-  const cycleEndLabel = summary.monthlyDeliveryEndDate
-    ? displayDate(summary.monthlyDeliveryEndDate) : "";
-  const monthLabel = cycleStartLabel && cycleEndLabel
-    ? `${cycleStartLabel} – ${cycleEndLabel}`
-    : displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
+  // Use only authoritative server-side anniversary boundaries; never infer
+  // the chargeable cycle from a calendar-month picker or browser locale.
+  const billingCycleRange = formatBillingCycleRange(
+    summary.monthlyDeliveryStartDate, summary.monthlyDeliveryEndDate,
+  );
+  const monthLabel = billingCycleRange
+    || displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
   const remainingToThreshold = Math.max(0, centralThreshold - monthlyDeliverySales);
   const inStoreTotal = Number(summary.inStoreSales || 0);
   const deliveryTotal = Number(summary.deliveryOrderSales || 0);
@@ -479,7 +480,7 @@ export function RevenueShareReportPage() {
 
         <section className="card report-filter-card" aria-labelledby="reportPeriodTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportPeriodTitle"><i className="bi bi-graph-up-arrow" aria-hidden="true"></i>{t("revenue_share_report.period.title")}</h2><p>{t("revenue_share_report.period.description")}</p></div>
+            <div><h2 id="reportPeriodTitle"><i className="bi bi-graph-up-arrow" aria-hidden="true"></i>{t("revenue_share_report.period.title")}</h2><p>{t("revenue_share_report.period.description")}</p>{billingCycleRange ? <p id="revenueShareBillingPeriod">{rc("รอบคิดค่าบริการปัจจุบัน", "Current billing cycle")}: <strong>{billingCycleRange}</strong></p> : null}</div>
             <strong id="reportPeriodLabel">{loading ? t("revenue_share_report.states.loading") : periodLabel}</strong>
           </div>
           <div className="report-period-tabs" role="tablist" aria-label={t("revenue_share_report.period.aria")}>
@@ -524,7 +525,7 @@ export function RevenueShareReportPage() {
               <div><span>{rc("ขาย Delivery", "Delivery sales")}</span>
                 <strong id="orderSales">{money(deliveryTotal)} <small>{rc("บาท", "THB")}</small></strong>
                 <small id="orderCount">{rc("ยอดอาหาร ไม่รวมค่าจัดส่ง", "Merchandise only; delivery fees excluded")}</small>
-                <p>{rc("ยอดของช่วงรายงานนี้ ไม่ใช่ยอดสะสมทั้งเดือน", "For this report period; not the monthly cumulative amount")}</p>
+                <p>{rc("ยอดของช่วงรายงานนี้ ไม่ใช่ยอดสะสมทั้งรอบบิล", "For this report period; not the billing-cycle cumulative amount")}</p>
               </div>
             </article>
           </div>
@@ -547,7 +548,7 @@ export function RevenueShareReportPage() {
             <small>{thresholdReached ? rc("ครบเกณฑ์แล้ว", "Target reached") : rc("เหลืออีก " + money(remainingToThreshold) + " บาท", money(remainingToThreshold) + " THB remaining")}</small>
           </div>
           <p className="report-progress-note"><i className="bi bi-info-circle" aria-hidden="true"></i>
-            {thresholdReached ? rc("ยอดสะสมครบ 100% แล้ว ระบบเริ่มคิดส่วนแบ่งกับยอดสินค้าในวันที่ถึงเกณฑ์และวันต่อไป โดยไม่ย้อนหลังวันก่อนหน้า", "Monthly sales reached 100%. The crossing day and following days qualify, without charging earlier days.")
+            {thresholdReached ? rc("ยอดสะสมถึงเพดานแล้ว ระบบคิดส่วนแบ่งเฉพาะยอด Delivery ที่เกินเพดานเท่านั้น ไม่ย้อนหลังวันก่อนหน้า", "The threshold is reached. Only Delivery merchandise above the threshold is chargeable, never the exempt first portion.")
               : rc("เริ่มคิดส่วนแบ่งเมื่อยอด Delivery สะสมครบ " + money(centralThreshold) + " บาท (100%) ภายในรอบบิลนี้ และเริ่มนับใหม่วันครบรอบถัดไป", "Revenue share begins when paid Delivery merchandise reaches " + money(centralThreshold) + " THB (100%) within this billing cycle, resetting on the next anniversary.")}</p>
         </section>
 
@@ -567,7 +568,7 @@ export function RevenueShareReportPage() {
             <div className="result"><span className="report-equation-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ค่าส่วนแบ่งที่ต้องชำระ", "Delivery share payable")}</span><strong id="deliveryShareAmount">{money(summary.deliveryShareAmount)} <small>{rc("บาท", "THB")}</small></strong></div></div>
           </div>
           <p className="report-rule-note" id="shareExplanation"><i className="bi bi-shield-check" aria-hidden="true"></i>
-            {rc("เพดาน " + money(centralThreshold) + " บาทเป็นจุดเริ่มคิดในแต่ละเดือน ไม่ใช่จำนวนเงินที่หักจากยอดขาย ส่วนแบ่งใช้เฉพาะยอดสินค้าที่ชำระแล้วในวันที่ถึงเกณฑ์และวันถัดไป", "The " + money(centralThreshold) + " THB monthly threshold is a trigger, not a deduction. Only paid merchandise from the day the threshold is reached and onward qualifies.")}</p>
+            {rc("ยอด Delivery " + money(centralThreshold) + " บาทแรกของรอบบิลได้รับยกเว้น คิดส่วนแบ่งเฉพาะยอดสินค้าที่ชำระแล้วส่วนที่เกินเพดาน และเริ่มนับใหม่เมื่อครบรอบสมัคร", "The first " + money(centralThreshold) + " THB in each anniversary billing cycle is exempt. Only paid Delivery merchandise above the threshold is charged; the exemption resets at renewal.")}</p>
           <details className="report-pricing-disclosure"><summary><i className="bi bi-gem" aria-hidden="true"></i>{rc("ข้อมูลแพ็กเกจ Premium (เพิ่มเติม)", "Premium pricing (details)")}<i className="bi bi-chevron-down" aria-hidden="true"></i></summary><div className="report-policy-inline"><span>{rc("Premium ส่วนกลาง", "Central Premium")}: {access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} {rc("บาท/เดือน", "THB/month")} · {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท/ปี", "THB/year")} <small>{rc("(เรียกเก็บแยก ไม่รวมยอดรายงานนี้)", "(billed separately, not included in this report)")}</small></span></div></details>
         </section>
 
