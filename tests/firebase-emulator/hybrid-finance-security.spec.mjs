@@ -31,6 +31,8 @@ const { stageDemoHybridBankKeyEnrollment,
   fnRequire("./hybrid-billing-bank-key-enrollment");
 const { auditDemoHybridBankKeyHistory } =
   fnRequire("./hybrid-billing-bank-key-history-audit");
+const { auditDemoHybridPhase10Readiness } =
+  fnRequire("./hybrid-billing-phase10-readiness");
 const { buildDemoHybridFinanceWorklist, formatHybridFinanceWorklistTH } =
   fnRequire("./hybrid-billing-finance-worklist");
 const { createDemoHybridFinanceReviewPacket,
@@ -1050,4 +1052,47 @@ test("Bank signing-key history inventory rejects orphan claims in real Firestore
   await assert.rejects(auditDemoHybridBankKeyHistory({
     db,maxPerSource:1,
   }), /HYBRID_BANK_KEY_AUDIT_SCAN_OVERFLOW_/);
+});
+
+
+test("Unified Phase 10 Readiness scans Finance and Bank Key history without releasing payments", async () => {
+  const db={
+    app:{options:{projectId}},
+    collection:name=>adminDb.collection(name),
+    collectionGroup:name=>adminDb.collectionGroup(name),
+  };
+  const result=await auditDemoHybridPhase10Readiness({
+    db,maxPerSource:500,
+  });
+  assert.equal(result.kind,"hybrid_phase10_unified_finance_release_readiness");
+  assert.equal(result.sourcesScanned,16);
+  assert.equal(result.mode,"local_demo_diagnostic_only");
+  assert.equal(result.bankSignerOwnerAuthenticated,false);
+  assert.equal(result.bankStatementSourceAuthenticated,false);
+  assert.equal(result.historicalBankSettlementCoverageVerified,false);
+  assert.equal(result.independentFinalSettlementAuthorized,false);
+  assert.equal(result.allSourcesAtomicSnapshot,false);
+  assert.equal(result.bankTransferConfirmed,false);
+  assert.equal(result.walletCreditIsOutgoingBankRefund,false);
+  assert.equal(result.eligibleForBankSettlement,false);
+  assert.equal(result.productionReleaseAllowed,false);
+  assert.equal(result.writesPerformed,false);
+  assert.ok(result.taskCount>=7);
+  assert.ok(result.tasks.some(task=>task.code===
+    "BANK_SIGNER_OWNERSHIP_NOT_INDEPENDENTLY_VERIFIED"));
+  assert.ok(result.tasks.some(task=>task.code===
+    "EXTERNAL_BANK_STATEMENT_SOURCE_NOT_AUTHENTICATED"));
+  assert.equal(result.sourceCounts.bankKeyEnrollment.hybridBankKeyEnrollmentRequests>=3,
+    true,"earlier seeded synthetic key registration history must remain visible");
+  const safe=JSON.stringify(result);
+  for(const sensitive of [
+    "bankreq_emulator_20261024_1234",
+    "test-super-admin",
+    "demo_signer_oct",
+    "third-bank-reviewer",
+  ])assert.equal(safe.includes(sensitive),false);
+  // Stronger than a passing internal review: fail on unknown legacy coverage.
+  await assert.rejects(auditDemoHybridPhase10Readiness({
+    db,maxPerSource:1,
+  }),/HYBRID_(?:REFUND_HISTORY|BANK_KEY_AUDIT)_SCAN_OVERFLOW|HYBRID_REFUND_HISTORY_LIMIT_/);
 });
