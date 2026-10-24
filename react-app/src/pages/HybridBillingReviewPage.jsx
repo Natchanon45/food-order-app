@@ -13,6 +13,7 @@ import {
   listHybridTenants, listHybridInvoices, listHybridPaymentAttempts,
   listHybridPaymentReviewEvents,
   listHybridAdjustments, listHybridAdjustmentReviewEvents,
+  listHybridRefundCandidates,
 } from "@/data/hybridInvoiceReviewData";
 
 const label = (th, en, isThai) => isThai ? th : en;
@@ -58,6 +59,9 @@ export function HybridBillingReviewPage() {
   const [adjustmentEvents, setAdjustmentEvents] = useState([]);
   const [adjustmentEventCursor, setAdjustmentEventCursor] = useState(null);
   const [moreAdjustmentEvents, setMoreAdjustmentEvents] = useState(false);
+  const [refundCandidates, setRefundCandidates] = useState([]);
+  const [refundCandidateCursor, setRefundCandidateCursor] = useState(null);
+  const [moreRefundCandidates, setMoreRefundCandidates] = useState(false);
   const [invoiceCursor, setInvoiceCursor] = useState(null);
   const [attemptCursor, setAttemptCursor] = useState(null);
   const [moreInvoices, setMoreInvoices] = useState(false);
@@ -79,6 +83,7 @@ export function HybridBillingReviewPage() {
   const visibleReviewEvents = detailsReady ? reviewEvents : [];
   const visibleAdjustments = detailsReady ? adjustments : [];
   const visibleAdjustmentEvents = detailsReady ? adjustmentEvents : [];
+  const visibleRefundCandidates = detailsReady ? refundCandidates : [];
   const stylesReady = useParityPage({
     title: label("ตรวจสอบบิล Hybrid", "Hybrid Invoice Review", thai),
     bodyClass: "revenue-share-report-page hybrid-report-page",
@@ -123,6 +128,9 @@ export function HybridBillingReviewPage() {
       setAdjustmentEvents([]);
       setAdjustmentEventCursor(null);
       setMoreAdjustmentEvents(false);
+      setRefundCandidates([]);
+      setRefundCandidateCursor(null);
+      setMoreRefundCandidates(false);
       return;
     }
     let cancelled = false;
@@ -135,14 +143,16 @@ export function HybridBillingReviewPage() {
     setReviewEvents([]);
     setAdjustments([]);
     setAdjustmentEvents([]);
+    setRefundCandidates([]);
     Promise.all([
       listHybridInvoices(selectedId),
       listHybridPaymentAttempts(selectedId),
       listHybridPaymentReviewEvents(selectedId),
       listHybridAdjustments(selectedId),
       listHybridAdjustmentReviewEvents(selectedId),
+      listHybridRefundCandidates(selectedId),
     ]).then(([invoicePage, attemptPage, eventPage,
-      adjustmentPage, adjustmentEventPage]) => {
+      adjustmentPage, adjustmentEventPage, refundCandidatePage]) => {
         if (cancelled) return;
         setInvoices(invoicePage.items);
         setAttempts(attemptPage.items);
@@ -155,6 +165,9 @@ export function HybridBillingReviewPage() {
         setAdjustmentEvents(adjustmentEventPage.items);
         setAdjustmentEventCursor(adjustmentEventPage.cursor);
         setMoreAdjustmentEvents(adjustmentEventPage.hasMore);
+        setRefundCandidates(refundCandidatePage.items);
+        setRefundCandidateCursor(refundCandidatePage.cursor);
+        setMoreRefundCandidates(refundCandidatePage.hasMore);
         setInvoiceCursor(invoicePage.cursor);
         setAttemptCursor(attemptPage.cursor);
         setMoreInvoices(invoicePage.hasMore);
@@ -487,6 +500,53 @@ export function HybridBillingReviewPage() {
                   listHybridAdjustmentReviewEvents, setAdjustmentEvents,
                   setAdjustmentEventCursor, setMoreAdjustmentEvents)}>
                 {label("โหลดประวัติเพิ่มเติม", "Load more decisions", thai)}
+              </button> : null}
+            </section>
+
+            <section className="card hybrid-report-details hybrid-review-audit hybrid-refund-candidate-history"
+              aria-label={label("หลักฐานคืนเงินที่รอตรวจธนาคาร", "Unverified refund evidence", thai)}>
+              <h2>{label("หลักฐานคืนเงินที่รอตรวจธนาคาร", "Unverified refund evidence", thai)}</h2>
+              <p className="hybrid-report-notice">{label(
+                "ข้อมูลจำลอง/บันทึกหลักฐานรอตรวจสอบเท่านั้น • ยังไม่ยืนยันจากธนาคาร ไม่ใช่รายการคืนเงินสำเร็จ",
+                "Evidence candidates only • Not bank attested and NOT a completed refund.",
+                thai
+              )}</p>
+              <div className="hybrid-report-table-scroll">
+                <table>
+                  <thead><tr>
+                    <th>{label("คำขอ", "Adjustment", thai)}</th>
+                    <th>{label("รหัสบิล", "Invoice", thai)}</th>
+                    <th>{label("วันที่บันทึก", "Recorded", thai)}</th>
+                    <th>{label("จำนวน", "Amount", thai)}</th>
+                    <th>{label("ผู้ตรวจ", "Recorded by", thai)}</th>
+                    <th>{label("สถานะ", "Evidence status", thai)}</th>
+                    <th>{label("การคืนเงินจริง", "External payout", thai)}</th>
+                  </tr></thead>
+                  <tbody>{visibleRefundCandidates.length ? visibleRefundCandidates.map(item => (
+                    <tr key={item.id}>
+                      <td className="hybrid-review-id">{item.id}</td>
+                      <td className="hybrid-review-id">{item.invoiceId}</td>
+                      <td>{recordDate(item.createdAt, intlLocale)}</td>
+                      <td>{money(item.amount, intlLocale)}</td>
+                      <td className="hybrid-review-id">{item.observedBy || "-"}</td>
+                      <td className="hybrid-adjustment-unsettled">
+                        {label("รอยืนยันจากธนาคาร", "Bank attestation pending", thai)}
+                      </td>
+                      <td className="hybrid-adjustment-unsettled">
+                        {label("ยังไม่ยืนยันการคืนเงินจริง", "Payout not confirmed", thai)}
+                      </td>
+                    </tr>
+                  )) : <tr><td colSpan={7}>{label(
+                    "ยังไม่มีรายการหลักฐานรอตรวจ", "No refund evidence candidates", thai
+                  )}</td></tr>}</tbody>
+                </table>
+              </div>
+              {moreRefundCandidates && detailsReady ? <button type="button" className="btn btn-sm"
+                disabled={loadingDetails || Boolean(pageBusyScope)}
+                onClick={() => loadMoreDetails("refund-candidates", refundCandidateCursor,
+                  listHybridRefundCandidates, setRefundCandidates,
+                  setRefundCandidateCursor, setMoreRefundCandidates)}>
+                {label("โหลดหลักฐานเพิ่มเติม", "Load more evidence candidates", thai)}
               </button> : null}
             </section>
           </>

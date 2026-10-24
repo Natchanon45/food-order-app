@@ -86,3 +86,8 @@
 .hybrid-adjustment-unsettled{color:#8d5b12;font-weight:650;line-height:1.45}
 .hybrid-adjustment-history .btn{margin-top:10px;display:inline-flex;justify-content:center;align-items:center;min-height:38px}
 @media(max-width:760px){.hybrid-adjustment-history .btn{width:100%}}
+
+/* Unverified refund evidence list is read-only and scrollable on mobile. */
+.hybrid-refund-candidate-history .hybrid-report-table-scroll table{min-width:810px}
+.hybrid-refund-candidate-history .btn{margin-top:10px;min-height:38px;display:inline-flex;justify-content:center;align-items:center}
+@media(max-width:760px){.hybrid-refund-candidate-history .btn{width:100%}}

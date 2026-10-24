@@ -120,3 +120,21 @@ test("internal approval never masquerades as a bank refund or applied credit", (
   assert.match(data, /safeFinanceText/);
   assert.match(admin, /hybrid-adjustment-unsettled/);
 });
+
+
+test("Super Admin sees refund evidence candidates without any bank settlement claim", () => {
+  assert.match(data, /export async function listHybridRefundCandidates\(/);
+  assert.match(data, /collection\(db, "tenants", tenantId, "hybridBillingRefundCandidates"\)/);
+  assert.match(data, /orderBy\("createdAt", "desc"\)/);
+  assert.match(data, /state: "awaiting_independent_bank_attestation"/);
+  assert.match(data, /bankSourceConfirmed: false/);
+  assert.match(admin, /listHybridRefundCandidates\(selectedId\)/);
+  assert.match(admin, /visibleRefundCandidates = detailsReady \? refundCandidates : \[\]/);
+  assert.match(admin, /setRefundCandidates\(\[\]\)/);
+  assert.match(admin, /loadMoreDetails\("refund-candidates", refundCandidateCursor,/);
+  assert.match(admin, /Evidence candidates only/);
+  assert.match(admin, /Bank attestation pending/);
+  assert.match(admin, /Payout not confirmed/);
+  assert.match(rules, /match \/hybridBillingRefundCandidates\/\{adjustmentId\}/);
+  assert.doesNotMatch(data, /instructionId: evidence\.|bankReferenceHash: evidence\.|destinationFingerprint: evidence\./);
+});

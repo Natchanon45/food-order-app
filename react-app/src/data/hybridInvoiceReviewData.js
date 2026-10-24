@@ -175,3 +175,39 @@ export async function listHybridAdjustmentReviewEvents(tenantId, {
     }),
   };
 }
+
+
+// This collection contains UNVERIFIED demo comparison candidates only.
+// Browser rendering cannot promote a flag or claim proof of a bank payout.
+export async function listHybridRefundCandidates(tenantId, {
+  cursor = null, pageSize = 30,
+} = {}) {
+  normalizeId(tenantId);
+  if (!Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 50) {
+    throw new RangeError("INVALID_LIMIT");
+  }
+  const result = await getDocs(query(
+    collection(db, "tenants", tenantId, "hybridBillingRefundCandidates"),
+    orderBy("createdAt", "desc"),
+    ...(cursor ? [startAfter(cursor)] : []), queryLimit(pageSize),
+  ));
+  return {
+    cursor: result.docs.at(-1) || null,
+    hasMore: result.size === pageSize,
+    items: result.docs.map(doc => {
+      const evidence = doc.data() || {};
+      return {
+        id: doc.id,
+        invoiceId: safeFinanceText(evidence.invoiceId),
+        amount: safeMoney(evidence.amount),
+        createdAt: evidence.createdAt || null,
+        observedBy: safeFinanceText(evidence.observedBy),
+        // Always render the conservative server state. Do not render raw
+        // outgoing transfer IDs, destination fingerprints or bank hash.
+        state: "awaiting_independent_bank_attestation",
+        payoutConfirmed: false,
+        bankSourceConfirmed: false,
+      };
+    }),
+  };
+}
