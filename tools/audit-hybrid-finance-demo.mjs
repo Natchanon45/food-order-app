@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 const PROJECT = "demo-penguin-hybrid";
 const REQUIRED_HOST = new Set(["127.0.0.1:8080", "localhost:8080"]);
 const HELP = [
-  "Usage: node tools/audit-hybrid-finance-demo.mjs [--format=text|json] [--max=1..500]",
+  "Usage: node tools/audit-hybrid-finance-demo.mjs [--format=text|json|packet] [--max=1..500]",
   "Local demo Firestore only. Set HYBRID_FINANCE_AUDIT_DEMO_ACK=1,",
   "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080, GCLOUD_PROJECT=demo-penguin-hybrid.",
   "Outputs a redacted worklist; never confirms a real refund or settlement.",
@@ -21,7 +21,7 @@ function parseOptions(argv) {
     if (!match || seen.has(match[1])) throw new Error("HYBRID_FINANCE_AUDIT_INVALID_ARGUMENT");
     seen.add(match[1]);
     if (match[1] === "format") {
-      if (!["json", "text"].includes(match[2])) {
+      if (!["json", "text", "packet"].includes(match[2])) {
         throw new Error("HYBRID_FINANCE_AUDIT_INVALID_FORMAT");
       }
       format = match[2];
@@ -66,6 +66,8 @@ if (options.help) {
     fnRequire("./hybrid-billing-refund-history-audit.js");
   const { buildDemoHybridFinanceWorklist, formatHybridFinanceWorklistTH } =
     fnRequire("./hybrid-billing-finance-worklist.js");
+  const { createDemoHybridFinanceReviewPacket } =
+    fnRequire("./hybrid-billing-finance-review-packet.js");
   const app = initializeApp({ projectId: PROJECT },
     "local-hybrid-finance-audit-report");
   try {
@@ -74,9 +76,11 @@ if (options.help) {
       db, maxPerSource: options.maxPerSource,
     });
     const worklist = buildDemoHybridFinanceWorklist(audit);
-    process.stdout.write(options.format === "json"
-      ? JSON.stringify(worklist, null, 2) + "\n"
-      : formatHybridFinanceWorklistTH(worklist));
+    process.stdout.write(options.format === "packet"
+      ? JSON.stringify(createDemoHybridFinanceReviewPacket(worklist), null, 2) + "\n"
+      : options.format === "json"
+        ? JSON.stringify(worklist, null, 2) + "\n"
+        : formatHybridFinanceWorklistTH(worklist));
     // Always a nonzero process exit status for unresolved finance blockers,
     // so CI/shell users can never confuse the output with "ready to settle."
     process.exitCode = 2;

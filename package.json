@@ -104,7 +104,8 @@
     "test:hybrid-refund-ui": "node --test tests/react-parity/hybrid-refund-candidate-ui.spec.mjs",
     "test:hybrid-refund-history": "node --test tests/react-parity/hybrid-refund-history-audit.spec.mjs",
     "audit:hybrid-finance-demo": "node tools/audit-hybrid-finance-demo.mjs",
-    "test:hybrid-finance-worklist": "node --test tests/react-parity/hybrid-finance-worklist.spec.mjs"
+    "test:hybrid-finance-worklist": "node --test tests/react-parity/hybrid-finance-worklist.spec.mjs",
+    "verify:hybrid-finance-packet": "node tools/verify-hybrid-finance-packet.mjs"
   },
   "repository": {
     "type": "git",
