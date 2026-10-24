@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator, doc, getDoc, getDocs,
-  collection, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+  collection, setDoc, updateDoc, deleteDoc, query, orderBy, limit } from "firebase/firestore";
 import { getStorage, connectStorageEmulator, ref as storageRef,
   uploadBytes, deleteObject, getBytes, updateMetadata, getMetadata } from "firebase/storage";
 
@@ -202,7 +202,8 @@ test("Financial compensation balance, proposals and reviewer events are never cl
   ]) {
     const path = "tenants/store-a/" + collectionName + "/" + documentId;
     await adminDb.doc(path).set({ tenantId: "store-a", invoiceId, status: "proposed",
-      amount: 500 });
+      amount: 500, proposedAt: FieldValue.serverTimestamp(),
+      reviewedAt: FieldValue.serverTimestamp() });
     for (const name of ["owner-a", "admin-a", "cashier-a",
       "super-admin", "owner-b", "anonymous"]) {
       const db = identities.get(name).firestore;
@@ -218,6 +219,31 @@ test("Financial compensation balance, proposals and reviewer events are never cl
         assert.equal((await getDoc(doc(db, path))).exists(), true);
       }
     }
+  }
+});
+
+test("only Super Admin may list the read-only adjustment and decision audit tables", async () => {
+  for (const [kind, key] of [
+    ["hybridBillingAdjustments", "proposedAt"],
+    ["hybridBillingAdjustmentEvents", "reviewedAt"],
+  ]) {
+    const tablePath = "tenants/store-a/" + kind;
+    for (const name of ["super-admin", "owner-a", "admin-a",
+      "cashier-a", "owner-b", "anonymous"]) {
+      const db = identities.get(name).firestore;
+      const table = query(collection(db, tablePath), orderBy(key, "desc"), limit(30));
+      if (name === "super-admin") {
+        const results = await getDocs(table);
+        assert.equal(results.size, 1);
+      } else {
+        await denied(getDocs(table), name + " may not list private finance adjustments");
+      }
+    }
+  }
+  for (const name of ["super-admin", "owner-a", "admin-a", "anonymous"]) {
+    const db = identities.get(name).firestore;
+    await denied(getDocs(collection(db, "tenants/store-a/hybridBillingAdjustmentBalances")),
+      "Per-invoice adjustment caps are never browser readable");
   }
 });
 
