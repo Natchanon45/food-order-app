@@ -53,3 +53,22 @@ test("hybrid report is routed, localized and uses backend preview, never payment
     assert.ok(dict[locale]?.hybrid_report?.preview_only);
   }
 });
+
+test("manual suspension outranks hybrid billing-only exception and recovery plan", () => {
+  const billingHold = { billingPolicyVersion: "hybrid_v1", active: false,
+    hybridBillingSuspended: true, suspensionReason: "hybrid_unpaid" };
+  assert.equal(tenantAccessDecision(billingHold, "owner").allowed, true);
+  for (const profile of [
+    { ...billingHold, suspensionReason: "manual_review" },
+    { ...billingHold, suspensionReason: "security_hold" },
+    { ...billingHold, revenueShareSuspended: true },
+  ]) {
+    assert.deepEqual(tenantAccessDecision(profile, "owner"), {
+      allowed: false, status: "suspended", code: "TENANT_SUSPENDED",
+    });
+    assert.equal(effectiveSubscriptionStatus(profile), "suspended");
+    assert.equal(tenantAccessDecision({
+      ...profile, hybridBillingSuspended: false,
+    }, "admin").allowed, false);
+  }
+});
