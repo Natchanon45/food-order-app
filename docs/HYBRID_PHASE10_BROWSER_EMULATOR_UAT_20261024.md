@@ -159,3 +159,31 @@ npm run build:react
 - This is **NOT confirmation of a real refund**. No bank importer, final
   settlement writer or Production callable exists. The user must approve
   any future release explicitly.
+
+
+## 24 October 2026 — Refund instruction collision and pending-only UI
+
+- Under isolated `demo-penguin-hybrid` Emulator, request a synthetic refund
+  candidate using one instruction ID and bank reference. Another candidate
+  (same tenant OR another tenant) using the same instruction ID but an alternate
+  bank reference **must** fail atomically. Another with same bank reference
+  but alternate instruction ID must also fail.
+- All Browser roles, including active Super Admin, must receive permission
+  denied on GET/LIST/SET for `hybridRefundReferenceClaims` and
+  `hybridRefundInstructionClaims`.
+- Super Admin `/react/platform/hybrid-invoices` shows an additional
+  **Unverified refund evidence** read-only table. Confirm a date-containing
+  invoice ID is not masked, notes still redact account numbers, and
+  `settlementConfirmed:true` injected into demo candidate source NEVER
+  appears as a completed payout. Switching store or refreshing discards stale
+  pages. Rapid Load More clicks do not duplicate rows.
+- Native tests after pulling safely:
+  `npm run test:hybrid-refund-candidate`,
+  `npm run test:hybrid-refund-ui`,
+  `npm run test:hybrid-billing`,
+  `npm run test:firebase-hybrid-emulator`,
+  `npm run test:react-parity`,
+  `npm run build:react`.
+- Historical/cross-channel reconciliation and real bank import are REQUIRED
+  before any Production settlement or release. A demo claim is only an
+  unverified candidate, NEVER evidence of completed refund.

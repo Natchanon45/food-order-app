@@ -88,3 +88,54 @@ native Node, React build or Firebase Emulator; the user confirmed the
    Production gating. No main merge or Firebase Production deployment yet.
 
 Final Phase 10 only; no new subphase or phase.
+
+
+## 24 October 2026 — Dual anti-replay and read-only Super Admin candidate history
+
+The private Demo candidate writer now claims two DIFFERENT global identifiers in the
+same Firestore transaction:
+
+- `hybridRefundReferenceClaims/{bankReferenceHash}` blocks reusing a posted
+  bank reference on different refunds.
+- `hybridRefundInstructionClaims/{sha256(domain + instructionId)}` blocks
+  reusing an outgoing instruction ID under a different bank reference.
+  The domain string is `hybrid-refund-instruction-v1:`; the raw ID is not
+  stored in claims or Browser-readable candidate records.
+
+A collision in EITHER namespace rejects the ENTIRE transaction before any
+candidate/audit or claim writes. Firestore Rules deny read/list/write on both
+global namespaces for EVERY Browser role, including Super Admin. Tests cover
+the two tenants using a shared instruction ID but different bank references.
+
+The Super Admin finance page now lists `hybridBillingRefundCandidates` by
+`createdAt`, tenant scoped, cursor paginated. It displays ONLY sanitized
+adjustment ID, invoice ID, amount, timestamp, observer and:
+**"Bank attestation pending / Payout not confirmed"**. Sensitive raw transfer
+identifiers, hashes, account data, bank statements and any stored
+`settlementConfirmed` field are not forwarded to the UI. Invoice IDs that
+include dates must remain intact; redact bank-account-like digit sequences
+in NOTES, not document IDs.
+
+### Historical and cross-channel completeness: still a release blocker
+
+The global claim tables are new. Their absence of a row does not prove that
+an incoming slip, older refund or third-party payout has never used that bank
+transaction/instruction. The existing `financeSlipClaims` documents are
+based on normalized raw reference values in a different domain and track
+incoming payments (Wallet, Revenue Share, Hybrid). Do NOT conflate incoming
+payments with outgoing refund instructions, or assume hashing an already
+hashed bank reference yields a comparable identifier.
+
+Before actual refunds: independently authenticate the bank statement and
+the original outgoing instruction, scope reference uniqueness by bank/account
+and money-flow direction as agreed with finance, reconcile legacy settlement
+records and cross-channel payouts, and implement an approved final
+idempotent settlement/receipt writer. **No Production candidate writer or
+true settled state exists in this phase.**
+
+Latest testing: `npm run test:hybrid-refund-candidate` (9 new unit scenarios
+in the candidate spec), `npm run test:hybrid-refund-ui` (4 new UI scenarios),
+`npm run test:firebase-hybrid-emulator` (two race types plus Browser denial),
+`npm run test:hybrid-billing`, `npm run test:react-parity`,
+`npm run build:react`. Source-level V8 candidate tests 9/9 and source/UI
+tests 15/15 passed; native Mac/Emulator still pending for these new changes.
