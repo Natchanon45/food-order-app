@@ -103,3 +103,69 @@ bank accounts/providers, and implement a separate idempotent settlement
 writer with bank receipts and finance dual control. Finish Slip2Go/App Check
 UAT and seek explicit owner authorization before any Production release,
 `main` merge or deploy. Continue inside **Final Phase 10**.
+
+
+## 24 October 2026 — Dual-control pinned verification key policy
+
+The synthetic Ed25519 preflight now uses the PRIVATE
+`functions/hybrid-billing-bank-key-policy.js` instead of accepting any
+`enabled: true` PEM from an arbitrary registry entry.
+
+Each bank/provider key entry MUST supply exactly:
+
+```
+enabled: true
+publicKeyPem: "-----BEGIN PUBLIC KEY----- ..."
+fingerprintSha256: SHA256(SPKI DER public key), lower-case hex
+validFrom: strict UTC ISO date with milliseconds
+validUntil: strict UTC ISO date with milliseconds
+revokedAt: null
+registeredBy: independently verified internal administrator UID
+reviewedBy: separate internal reviewer UID
+```
+
+The checker requires explicit own-property pinning of provider/key IDs (no
+inherited `constructor` or prototype entries), rejects all extra flags,
+checks an Ed25519 SPKI fingerprint rather than comparing PEM whitespace,
+rejects registration by one's own reviewer, and requires BOTH the posting
+time and verification time to be inside the active key window. A revoked
+or disabled key always fails closed, including for older bank postings;
+historical trust decisions would need independently authenticated revocation
+timeline evidence. Rotated keys have separate IDs/pins and old keys can be
+disabled without affecting another valid key.
+
+**Critical:** These checks validate only the SHAPE and INTERNAL dual-review
+fields of a server-supplied trust roster. They do NOT check that the bank
+issued the public key or that the two internal UIDs represent verified real
+human approvals. The actual trusted roster loader/onboarding protocol is
+**NOT implemented**. A valid test key/registry is not bank provenance.
+The verifier still always reports:
+
+- `bankProviderIdentityIndependentlyAuthenticated: false`
+- `realBankStatementSourceIntegrated: false`
+- `settlementAllowed: false`, `releaseReady: false`
+- `writesPerformed: false`
+
+No Production endpoint or banker key is registered. Do NOT use an uploaded
+public key, a property inside signed bank evidence, a client-supplied
+registry or an ordinary Firestore document to establish trust.
+
+Native Mac tests:
+
+```bash
+npm run test:hybrid-bank-key-policy
+npm run test:hybrid-bank-evidence
+npm run test:hybrid-billing
+npm run test:firebase-hybrid-emulator
+npm run test:react-parity
+npm run build:react
+```
+
+11 new unit tests validate SPKI fingerprint pinning, disabled/revoked
+signers, expired/not-yet-active keys, UTC validation, two-person approval,
+prototype-inherited registry attacks, malicious extra flags and rotation
+with test-generated keys. The existing Ed25519 signature tests were updated
+to require a complete pinned key. The 11 new key-policy cases passed in a
+mocked V8 environment; this does **not** constitute genuine Node Ed25519
+cryptographic validation. User Mac must run the native test suite on this
+new commit before further work.

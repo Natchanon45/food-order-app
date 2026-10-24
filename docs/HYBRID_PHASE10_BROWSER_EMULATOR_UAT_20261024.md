@@ -270,3 +270,23 @@ npm run build:react
   Do not treat the existing synthetic source label as trusted provenance.
   Bank onboarding, historical reconciliation and independent finance
   release are unresolved prerequisites.
+
+
+## 24 October 2026 — Synthetic bank key registry pinning UAT
+
+- Run `npm run test:hybrid-bank-key-policy` and
+  `npm run test:hybrid-bank-evidence` on Node 22. Keys are generated at
+  runtime only, never stored in the repository.
+- An Ed25519 signature must fail if its public key has no pinned SPKI DER
+  SHA256 fingerprint, if the key rotates but keeps the old fingerprint,
+  if the key is disabled or revoked, if posting/verification is outside
+  the key's configured active UTC window, or if the registrar and reviewer
+  are the same actor.
+- A signer found only on an object prototype, an unrecognized provider,
+  an added `bankOriginConfirmed:true` field, or an unsigned/modified
+  `settlementAllowed:true` must fail closed.
+- A correct synthetic signature with a valid synthetic key registry still
+  says `bankProviderIdentityIndependentlyAuthenticated:false` and
+  `settlementAllowed:false`. No bank public key has actually been
+  independently authenticated. Finance approval, bank statement import,
+  historical coverage and global settlement receipts are not implemented.
