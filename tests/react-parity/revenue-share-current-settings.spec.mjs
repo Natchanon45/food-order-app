@@ -124,3 +124,21 @@ test("Approved report design keeps the compact dashboard hierarchy and responsiv
   assert.match(css, /@media\(max-width:390px\)/);
   assert.equal(css, sourceCss);
 });
+
+test("Delivery uses the owner-selected line icon, with theme-colored SVG mask and unchanged layout", () => {
+  const asset = fs.readFileSync("react-app/public/parity/icons/delivery-bike-outline.svg", "utf8");
+  const iconOccurrences = report.match(/className="delivery-bike-line-icon"/g) || [];
+  assert.equal(iconOccurrences.length, 3, "sales, charge calculation and customer delivery fee use one Delivery glyph");
+  assert.doesNotMatch(report, /className="bi bi-scooter"/);
+  assert.doesNotMatch(report, /className="bi bi-truck"/);
+  assert.match(asset, /viewBox="3 4 76 52"/);
+  assert.match(asset, /fill="currentColor"/);
+  assert.doesNotMatch(asset, /<script|foreignObject|<image|https?:\/\/[^\s]*\.svg/);
+  assert.match(css, /\.revenue-share-dashboard \.delivery-bike-line-icon\{/);
+  assert.match(css, /background-color:currentColor/);
+  assert.match(css, /-webkit-mask:url\("\/react\/parity\/icons\/delivery-bike-outline\.svg"\)/);
+  assert.match(css, /mask:url\("\/react\/parity\/icons\/delivery-bike-outline\.svg"\)/);
+  assert.match(report, /report-channel-card delivery/);
+  assert.match(report, /report-share-month/);
+  assert.match(report, /report-related-tile/);
+});
