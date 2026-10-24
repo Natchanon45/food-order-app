@@ -33,6 +33,9 @@ const { auditDemoHybridBankKeyHistory } =
   fnRequire("./hybrid-billing-bank-key-history-audit");
 const { auditDemoHybridPhase10Readiness } =
   fnRequire("./hybrid-billing-phase10-readiness");
+const { createDemoHybridPhase10ReviewPacket,
+  verifyDemoHybridPhase10ReviewPacket } =
+  fnRequire("./hybrid-billing-phase10-review-packet");
 const { buildDemoHybridFinanceWorklist, formatHybridFinanceWorklistTH } =
   fnRequire("./hybrid-billing-finance-worklist");
 const { createDemoHybridFinanceReviewPacket,
@@ -1077,6 +1080,17 @@ test("Unified Phase 10 Readiness scans Finance and Bank Key history without rele
   assert.equal(result.eligibleForBankSettlement,false);
   assert.equal(result.productionReleaseAllowed,false);
   assert.equal(result.writesPerformed,false);
+  const reviewPacket=createDemoHybridPhase10ReviewPacket(result,{
+    generatedAt:"2026-10-24T13:15:30.000Z",
+  });
+  const checked=verifyDemoHybridPhase10ReviewPacket(reviewPacket);
+  assert.equal(checked.checksumConsistent,true);
+  assert.equal(checked.productionReleaseAllowed,false);
+  assert.equal(checked.bankStatementSourceAuthenticated,false);
+  const tamperedPacket=structuredClone(reviewPacket);
+  tamperedPacket.report.totalRecordsSeen+=1;
+  assert.throws(()=>verifyDemoHybridPhase10ReviewPacket(tamperedPacket),
+    /HYBRID_PHASE10_PACKET_/);
   assert.ok(result.taskCount>=7);
   assert.ok(result.tasks.some(task=>task.code===
     "BANK_SIGNER_OWNERSHIP_NOT_INDEPENDENTLY_VERIFIED"));
