@@ -26,6 +26,9 @@ const { recordDemoHybridRefundCandidate } =
   fnRequire("./hybrid-billing-refund-candidate");
 const { auditDemoHybridRefundHistory } =
   fnRequire("./hybrid-billing-refund-history-audit");
+const { stageDemoHybridBankKeyEnrollment,
+  reviewDemoHybridBankKeyEnrollment } =
+  fnRequire("./hybrid-billing-bank-key-enrollment");
 const { buildDemoHybridFinanceWorklist, formatHybridFinanceWorklistTH } =
   fnRequire("./hybrid-billing-finance-worklist");
 const { createDemoHybridFinanceReviewPacket,
@@ -824,4 +827,91 @@ test("Historical audit flags missing per-invoice adjustment reservation in the r
   assert.equal(result.writesPerformed, false);
   assert.equal(JSON.stringify(result).includes(adjustmentId), false,
     "Never return invoice/adjustment IDs in aggregate finance diagnostics");
+});
+
+
+test("Bank key onboarding is an untrusted, immutable, Super Admin-only Emulator audit", async () => {
+  const requestId = "bankreq_emulator_20261024_1234";
+  const providerId = "sandbox_bank", keyId = "demo_signer_oct";
+  const fingerprintSha256 = "e".repeat(64);
+  const db = {
+    app: { options: { projectId } },
+    collection: name => adminDb.collection(name),
+    runTransaction: fn => adminDb.runTransaction(fn),
+  };
+  const base = {
+    db, requestId, providerId, keyId, fingerprintSha256,
+    validFrom: "2026-10-25T00:00:00.000Z",
+    validUntil: "2026-11-30T23:59:59.000Z",
+    requestedAt: "2026-10-24T12:00:00.000Z",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  };
+  const proposal = await stageDemoHybridBankKeyEnrollment({
+    ...base, actorUid: "test-super-admin",
+  });
+  assert.equal(proposal.keyActivated, false);
+  assert.equal(proposal.trustedRegistryPromoted, false);
+  const record = await adminDb.collection("hybridBankKeyEnrollmentRequests")
+    .doc(requestId).get();
+  assert.equal(record.exists, true);
+  assert.equal(record.data().bankOriginAuthenticated, false);
+  assert.equal(Object.hasOwn(record.data(), "publicKeyPem"), false);
+  await assert.rejects(stageDemoHybridBankKeyEnrollment({
+    ...base, actorUid: "test-super-admin",
+  }), /REQUEST_ALREADY_EXISTS/);
+  await assert.rejects(stageDemoHybridBankKeyEnrollment({
+    ...base, requestId: "bankreq_different_20261024_1234",
+    actorUid: "test-super-admin", fingerprintSha256: "f".repeat(64),
+  }), /KEY_SLOT_ALREADY_CLAIMED/);
+  await assert.rejects(stageDemoHybridBankKeyEnrollment({
+    ...base, requestId: "bankreq_other_bank_20261024_1234",
+    providerId: "another_bank", keyId: "another_signer",
+    actorUid: "test-super-admin",
+  }), /FINGERPRINT_ALREADY_CLAIMED/);
+
+  const reviewer = identities.get("super-admin").uid;
+  await assert.rejects(reviewDemoHybridBankKeyEnrollment({
+    db, requestId, reviewerUid: "test-super-admin",
+    decision: "acknowledge_internal_review",
+    reviewedAt: "2026-10-24T14:00:00.000Z",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  }), /REVIEW_INTEGRITY_INVALID/);
+  const review = await reviewDemoHybridBankKeyEnrollment({
+    db, requestId, reviewerUid: reviewer,
+    decision: "acknowledge_internal_review",
+    reviewedAt: "2026-10-24T14:00:00.000Z",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  });
+  assert.equal(review.status, "internally_acknowledged_untrusted");
+  assert.equal(review.keyActivated, false);
+  assert.equal(review.bankOriginAuthenticated, false);
+  const event = await adminDb.collection("hybridBankKeyEnrollmentReviews")
+    .doc(requestId).get();
+  assert.equal(event.exists, true);
+  assert.equal(event.data().trustedRegistryPromoted, false);
+  await assert.rejects(reviewDemoHybridBankKeyEnrollment({
+    db, requestId, reviewerUid: reviewer, decision: "reject",
+    reviewedAt: "2026-10-24T15:00:00.000Z",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  }), /ALREADY_REVIEWED/);
+
+  const slotHash = createHash("sha256").update(
+    "hybrid-bank-key-enrollment-v1:key-slot:" + providerId + "/" + keyId,
+  ).digest("hex");
+  for (const [collectionName, documentId] of [
+    ["hybridBankKeyEnrollmentRequests", requestId],
+    ["hybridBankKeyEnrollmentReviews", requestId],
+    ["hybridBankKeyFingerprintClaims", fingerprintSha256],
+    ["hybridBankKeySlotClaims", slotHash],
+  ]) for (const name of ["owner-a", "admin-a", "cashier-a",
+    "owner-b", "super-admin", "anonymous"]) {
+    const browser = identities.get(name).firestore;
+    await denied(getDoc(doc(browser, collectionName + "/" + documentId)),
+      "Bank key audit cannot be viewed by any browser role");
+    await denied(getDocs(collection(browser, collectionName)),
+      "Bank key audit cannot be enumerated");
+    await denied(setDoc(doc(browser, collectionName + "/" + documentId),
+      { trustedRegistryPromoted: true, bankOriginAuthenticated: true }),
+    "Browser cannot promote a signer");
+  }
 });
