@@ -180,3 +180,47 @@ review event. A valid internal review STILL leaves
 `keyActivated:false`. The review cannot trigger key activation or cash
 settlement. Bank-provider key ownership needs independent external
 authentication before any Production use.
+
+
+## 24 October 2026 — Bounded signed bank evidence BATCH preflight (PRIVATE)
+
+`functions/hybrid-billing-bank-batch-preflight.js` composes the existing
+strict Ed25519 evidence verifier over **1–100** server-supplied expected
+records in memory. It rejects the **entire batch** for any invalid/unknown
+signer, bad signature, altered amount/recipient/scope, additional approval
+fields, duplicate **bank reference**, duplicate **outgoing instruction hash**
+or repeated **tenant+adjustment**. Bank-reference/instruction duplicates are
+checked globally across tenant IDs **within this batch**.
+
+Returned evidence contains only record counts and an order-independent,
+domain-separated SHA-256 checksum of the individually verified evidence
+content hashes; it does not expose raw bank references, user IDs, accounts,
+signatures or the test public key. The checksum is not a provider signature.
+Duplicate checks are **not persistent**: other uploads, historical archives,
+other payment channels, parallel batches and real bank history are NOT
+covered. There are **zero database/network calls or writes**, no Production
+Cloud Function export, no transfer/settlement approval. All bank authenticity,
+source integration, historical replay/coverage and settlement flags remain
+**false** even on a fully successful synthetic batch.
+
+The `trustedRegistry`, `expectedProviderId` and `expected` inputs must
+eventually be supplied by independently authenticated **server-only**
+infrastructure; they must never come from a browser/upload/request payload.
+No such real integration is implemented here.
+
+Test with synthetic runtime-generated Ed25519 keys (10 cases):
+
+```bash
+npm run test:hybrid-bank-batch
+npm run test:hybrid-bank-evidence
+npm run test:hybrid-billing
+npm run test:firebase-hybrid-emulator
+npm run test:react-parity
+npm run build:react
+```
+
+This is a preliminary offline structural/cryptographic preflight, **not**
+real bank provenance or financial release. Independent provider key onboarding,
+authenticated statement imports, cross-batch global anti-replay records,
+historical reconciliation, final idempotent settlement and owner approval
+remain mandatory.

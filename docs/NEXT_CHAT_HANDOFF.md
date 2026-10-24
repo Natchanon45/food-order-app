@@ -1,3 +1,10 @@
+## 2026-10-24 — Final Phase 10: private signed bank posting batch preflight
+
+- User confirmed HEAD `4291cf50` native tests passed and requested continuation. Branch only: `feature/react-firebase-port`.
+- Added private `functions/hybrid-billing-bank-batch-preflight.js`: verifies 1–100 synthetic signed posting envelopes using existing strict Ed25519/pinned-key verifier, server-derived expected scopes, and within-batch global duplicate bank reference/outgoing instruction/tenant+adjustment detection. Any failure rejects the whole batch. Output redacted counts and diagnostic order-independent SHA-256 only; no Firestore, network, provider API, signer activation or money movement.
+- New `test:hybrid-bank-batch` (10 native Node tests, synthetic test keys) included in `test:hybrid-billing`; UAT in `docs/HYBRID_PHASE10_BANK_EVIDENCE_CONTRACT_20261024.md`. Mac mini Remote Desktop remains OFFLINE; native suite has NOT been executed for this new commit by assistant. Run `npm run test:hybrid-bank-batch`, `npm run test:hybrid-bank-evidence`, `npm run test:hybrid-billing`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity`, `npm run build:react`.
+- Still BLOCKED: real provider signer ownership, authenticated server bank statement ingestion, global historical/cross-batch payout replay control, separate finance settlement receipts/reversals, real App Check/Slip2Go beneficiary UAT, explicit owner release approval. ALL bank trust and settlement flags remain false; no `main` merge/Production deploy. Preserve local `public/**/index.html` and never run reset/clean.
+
 ## 2026-10-24 — Final Phase 10: optional owner-pinned offline packet checksum
 
 - Baseline verified on GitHub: `feature/react-firebase-port` at `9e5edbc5`. The existing offline 16-source packet verifier checked only the checksum embedded within the received JSON, which can be recomputed by someone replacing the packet. Do not treat a valid embedded checksum as bank authenticity.
