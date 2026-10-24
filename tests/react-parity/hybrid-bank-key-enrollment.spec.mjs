@@ -116,3 +116,91 @@ test("browser and production exports never expose bank key enrollment",()=>{
   }
   assert.doesNotMatch(prod,/hybrid-billing-bank-key-enrollment/);
 });
+
+
+test("review fails closed if global fingerprint or slot reservation vanished",()=>sandbox(async f=>{
+  await stage({db:f.db,...base});
+  const reference="hybridBankKeyFingerprintClaims/"+base.fingerprintSha256;
+  const [slotPath]=[...f.docs.keys()].filter(k=>k.startsWith("hybridBankKeySlotClaims/"));
+  const storedReference=f.docs.get(reference);
+  const storedSlot=f.docs.get(slotPath);
+  f.docs.delete(reference);
+  await assert.rejects(review({db:f.db,...reviewInput}),/GLOBAL_CLAIMS_INCONSISTENT/);
+  f.docs.set(reference,storedReference);
+  f.docs.delete(slotPath);
+  await assert.rejects(review({db:f.db,...reviewInput}),/GLOBAL_CLAIMS_INCONSISTENT/);
+  f.docs.set(slotPath,storedSlot);
+  assert.equal(f.docs.has("hybridBankKeyEnrollmentReviews/"+id),false);
+}));
+
+test("tampered global claims or spoofed request fields cannot receive review",()=>sandbox(async f=>{
+  await stage({db:f.db,...base});
+  const fingerprintPath="hybridBankKeyFingerprintClaims/"+base.fingerprintSha256;
+  const [slotPath]=[...f.docs.keys()].filter(k=>k.startsWith("hybridBankKeySlotClaims/"));
+  for(const [path,changed] of [
+    [fingerprintPath,{keyId:"substituted_key"}],
+    [fingerprintPath,{requestId:"different_request_123456789"}],
+    [fingerprintPath,{state:"bank_verified"}],
+    [slotPath,{providerId:"another_bank"}],
+    [slotPath,{slotHash:"b".repeat(64)}],
+  ]){
+    const original=f.docs.get(path);
+    f.docs.set(path,{...original,...changed});
+    await assert.rejects(review({db:f.db,...reviewInput}),/GLOBAL_CLAIMS_INCONSISTENT/);
+    f.docs.set(path,original);
+  }
+  const requestPath="hybridBankKeyEnrollmentRequests/"+id;
+  for(const changed of [
+    {fingerprintSha256:"c".repeat(64)},
+    {keyId:"repointed_key"},
+    {validFrom:"2026-10-01T00:00:00.000Z"},
+    {validUntil:"2026-10-24T13:00:00.000Z"},
+    {bankOriginAuthenticated:true},
+    {providerCertified:true},
+  ]){
+    const original=f.docs.get(requestPath);
+    f.docs.set(requestPath,{...original,...changed});
+    await assert.rejects(review({db:f.db,...reviewInput}),/REVIEW_INTEGRITY_INVALID|GLOBAL_CLAIMS_INCONSISTENT/);
+    f.docs.set(requestPath,original);
+  }
+  assert.equal(f.docs.has("hybridBankKeyEnrollmentReviews/"+id),false);
+}));
+
+test("rejects extra untrusted activation, bank key and review control fields",()=>sandbox(async f=>{
+  for(const extra of [
+    {publicKeyPem:"fake_pem"},{privateKey:"never_store"},{keyActivated:true},
+    {bankOriginAuthenticated:true},{trustedRegistryPromoted:true},
+  ]){
+    await assert.rejects(stage({db:f.db,...base,...extra}),/REQUEST_FIELDS_INVALID/);
+  }
+  await stage({db:f.db,...base});
+  for(const extra of [
+    {bankOriginAuthenticated:true},{trustedRegistryPromoted:true},
+    {signedByBank:true},
+  ]){
+    await assert.rejects(review({db:f.db,...reviewInput,...extra}),/REVIEW_FIELDS_INVALID/);
+  }
+  assert.equal(f.docs.has("hybridBankKeyEnrollmentReviews/"+id),false);
+}));
+
+test("approval attempted after synthetic key lifetime expires is rejected",()=>sandbox(async f=>{
+  await stage({db:f.db,...base});
+  await assert.rejects(review({db:f.db,...reviewInput,
+    reviewedAt:"2026-12-01T00:00:00.000Z"}),/REVIEW_INTEGRITY_INVALID/);
+  assert.equal(f.docs.has("hybridBankKeyEnrollmentReviews/"+id),false);
+}));
+
+test("two simultaneous internal reviewers cannot both create an immutable review",()=>sandbox(async f=>{
+  await stage({db:f.db,...base});
+  f.docs.set("users/super-three",{role:"super_admin",active:true});
+  const results=await Promise.allSettled([
+    review({db:f.db,...reviewInput}),
+    review({db:f.db,...reviewInput,reviewerUid:"super-three"}),
+  ]);
+  assert.equal(results.filter(x=>x.status==="fulfilled").length,1);
+  assert.equal(results.filter(x=>x.status==="rejected").length,1);
+  const saved=f.docs.get("hybridBankKeyEnrollmentReviews/"+id);
+  assert.ok(["super-two","super-three"].includes(saved.reviewedBy));
+  assert.equal(saved.bankOriginAuthenticated,false);
+  assert.equal(saved.keyActivated,false);
+}));
