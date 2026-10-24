@@ -594,6 +594,22 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Untrusted internal bank-key enrollment demo audit. Admin SDK only.
+    // No Browser role (including Super Admin) can spoof key approval or
+    // read a fingerprint/private key. This does NOT activate trust.
+    match /hybridBankKeyEnrollmentRequests/{requestId} {
+      allow read, write: if false;
+    }
+    match /hybridBankKeyEnrollmentReviews/{requestId} {
+      allow read, write: if false;
+    }
+    match /hybridBankKeyFingerprintClaims/{fingerprintHash} {
+      allow read, write: if false;
+    }
+    match /hybridBankKeySlotClaims/{slotHash} {
+      allow read, write: if false;
+    }
+
     match /waitingQueuePublic/{publicToken} {
       allow get: if true;
       allow list: if wqTenantMember(resource.data.tenantId);
