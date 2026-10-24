@@ -4,6 +4,7 @@
 // Does NOT prove transfer origin, disburse cash, mark settled/paid, modify a
 // PAID invoice, consume Wallet credit or change tenant access. This is NOT a
 // production refund writer; callers must independently ingest real bank data.
+const { createHash } = require("node:crypto");
 const { planHybridRefundReconciliation } = require("./hybrid-billing-refund-reconciliation");
 const { validId, validInvoiceId } = require("./hybrid-billing-payment-policy");
 
@@ -73,6 +74,15 @@ async function recordDemoHybridRefundCandidate({
   if (!/^[a-f0-9]{64}$/.test(String(hash || ""))) {
     throw new Error("HYBRID_REFUND_INVALID_BANK_REFERENCE");
   }
+  // An outgoing instruction is a different uniqueness dimension from its
+  // posted bank reference. Hash it with a dedicated domain (no raw ID in
+  // global documents). This is demo-only and not a bank authenticity check.
+  if (!/^[A-Za-z0-9_-]{16,80}$/.test(String(disbursement.instructionId || ""))) {
+    throw new Error("HYBRID_REFUND_INVALID_INSTRUCTION_ID");
+  }
+  const instructionHash = createHash("sha256")
+    .update("hybrid-refund-instruction-v1:" + disbursement.instructionId)
+    .digest("hex");
   const reviewerRef = db.collection("users").doc(actorUid);
   const invoiceRef = tenantRef.collection("hybridBillingInvoices").doc(invoiceId);
   const adjustmentRef = tenantRef.collection("hybridBillingAdjustments").doc(adjustmentId);
@@ -80,13 +90,15 @@ async function recordDemoHybridRefundCandidate({
     .doc(adjustmentId + "-review");
   const candidateRef = tenantRef.collection("hybridBillingRefundCandidates").doc(adjustmentId);
   const bankClaimRef = db.collection("hybridRefundReferenceClaims").doc(hash);
+  const instructionClaimRef = db.collection("hybridRefundInstructionClaims")
+    .doc(instructionHash);
   return db.runTransaction(async tx => {
     // All reads finish before ANY write, including actor revocation check.
     const [actor, tenantDoc, invoiceDoc, adjustmentDoc, reviewDoc,
-      existingCandidate, existingClaim] = await Promise.all([
+      existingCandidate, existingClaim, existingInstruction] = await Promise.all([
         tx.get(reviewerRef), tx.get(tenantRef), tx.get(invoiceRef),
         tx.get(adjustmentRef), tx.get(reviewRef),
-        tx.get(candidateRef), tx.get(bankClaimRef),
+        tx.get(candidateRef), tx.get(bankClaimRef), tx.get(instructionClaimRef),
       ]);
     assertSuperAdmin(actor);
     if (!tenantDoc.exists || tenantDoc.data()?.billingPolicyVersion !== "hybrid_v1") {
@@ -97,6 +109,9 @@ async function recordDemoHybridRefundCandidate({
     if (!reviewDoc.exists) throw new Error("HYBRID_REFUND_APPROVAL_MISSING");
     if (existingCandidate.exists) throw new Error("HYBRID_REFUND_CANDIDATE_ALREADY_EXISTS");
     if (existingClaim.exists) throw new Error("HYBRID_REFUND_BANK_REFERENCE_ALREADY_CLAIMED");
+    if (existingInstruction.exists) {
+      throw new Error("HYBRID_REFUND_INSTRUCTION_ALREADY_CLAIMED");
+    }
     // Three separate active finance identities: proposer, reviewer, auditor.
     if ([adjustment.proposedBy, adjustment.reviewedBy].includes(actorUid)) {
       throw new Error("HYBRID_REFUND_SAME_ACTOR_ATTESTATION_FORBIDDEN");
@@ -121,11 +136,16 @@ async function recordDemoHybridRefundCandidate({
       invoiceId, adjustmentId, kind: "hybrid_refund_candidate",
       createdAt: serverTimestamp, state: "unverified_candidate",
     });
+    tx.create(instructionClaimRef, {
+      instructionHash, tenantId: tenantRef.id,
+      invoiceId, adjustmentId, kind: "hybrid_refund_candidate",
+      createdAt: serverTimestamp, state: "unverified_candidate",
+    });
     tx.create(candidateRef, {
       id: adjustmentId, tenantId: tenantRef.id, invoiceId,
       invoiceSignature: invoice.signature, kind: "refund_request",
       amount: preflight.amount, currency: "THB",
-      instructionId: preflight.instructionId,
+      instructionHash,
       bankReferenceHash: hash,
       destinationFingerprint: disbursement.destinationFingerprint,
       sourceIntegrationReady: false, settlementConfirmed: false,
