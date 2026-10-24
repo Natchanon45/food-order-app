@@ -36,7 +36,7 @@ const file = storage.bucket().file(slipPath);
 const cleanup = [];
 const PRICE = { deliveryThreshold: 10000, deliveryShareRate: 5, monthlyPrice: 590 };
 
-function loadRealModuleAt(day) {
+function loadRealModuleAt(day, slipResult = null) {
   const iso = day + "T00:20:00+07:00";
   const RealDate = Date;
   class Clock extends RealDate {
@@ -56,7 +56,7 @@ function loadRealModuleAt(day) {
     "./finance-slip-claims": req("./finance-slip-claims"),
     "./slip-verification": {
       // Provider unavailable: no network calls, manual-review-only.
-      inspectSlip: async () => ({
+      inspectSlip: async () => slipResult || ({
         provider: "slip2go", status: "config_required",
         reason: "slip2go_config_required", amountMatched: false,
       }),
@@ -157,4 +157,45 @@ test("actual Firestore/Auth/Storage Emulator: 75 THB due, hold, offline proof, a
   assert.equal(released.active, true);
   assert.equal((await slugRef.get()).data().active, true);
   assert.equal((await fn.__reconcileTenant(tenantId)).action, "none");
+
+  // On the following business day, the same shop has another 2,000 THB
+  // eligible Delivery sale. Exercise strict verified Slip2Go auto-approval,
+  // real Firestore claims and immediate release with no Super Admin action.
+  const nextOrder = tenantRef.collection("orders").doc("paid-2026-10-11");
+  cleanup.push(nextOrder);
+  await nextOrder.set({
+    orderType: "delivery", status: "delivered", paymentStatus: "paid",
+    paidAt: new Date("2026-10-11T12:00:00+07:00"),
+    subtotalAmount: 2000, deliveryFee: 40, totalAmount: 2040,
+  });
+  const nextFn = loadRealModuleAt("2026-10-12", {
+    provider: "slip2go", status: "matched", amountMatched: true,
+    receiverValidated: true, referenceId: "emulator-" + paymentId,
+    detectedAmount: 100,
+  });
+  assert.equal((await nextFn.__reconcileTenant(tenantId)).action, "suspended");
+  const paymentId2 = "premium_day_" + randomUUID().replaceAll("-", "").slice(0, 22);
+  const path2 = "tenants/" + tenantId + "/revenue-share-slips/" + paymentId2 + "/verified.png";
+  const file2 = storage.bucket().file(path2);
+  t.after(async () => { await file2.delete().catch(() => {}); });
+  await file2.save(Buffer.from("FAKE-SECOND-SLIP-UNTRUSTED-EMULATOR"), {
+    contentType: "image/png", resumable: false,
+  });
+  const approved = await nextFn.submitTenantRevenueSharePayment({
+    auth: { uid },
+    data: { period: "daily", date: "2026-10-11",
+      paymentId: paymentId2, slipPath: path2, slipName: "verified.png" },
+  });
+  assert.equal(approved.autoApproved, true);
+  const p2 = tenantRef.collection("revenueSharePayments").doc(paymentId2);
+  cleanup.push(p2);
+  assert.equal((await p2.get()).data().platformAmountDue, 100);
+  assert.equal((await p2.get()).data().status, "approved");
+  const moreClaims = await db.collection("financeSlipClaims").get();
+  for (const claim of moreClaims.docs) {
+    if (claim.data().recordId === paymentId2) cleanup.push(claim.ref);
+  }
+  assert.equal((await tenantRef.get()).data().revenueShareSuspended, false);
+  assert.equal((await tenantRef.get()).data().active, true);
+  assert.equal((await nextFn.__reconcileTenant(tenantId)).action, "none");
 });

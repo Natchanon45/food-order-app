@@ -24,6 +24,13 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Native Firestore/Auth/Storage Delivery Share UAT
+
+- GitHub-first Commit `6ea258e7` was pulled to Mac and the **real local** Emulator regression (not just an in-memory mock) **PASSED 1/1** at `demo-penguin-hybrid`: 3 October anchor, 10 October 75 THB, 11 October unpaid suspended + inactive slug, duplicate reconcile no-op, synthetic Storage receipt with offline Slip2Go pending, Super Admin verified review approved, restored tenant and slug. No live provider call.
+- Added second checked day to that same isolated test: +2,000 THB on 11 Oct implies 100 THB on 12 Oct, strict synthetic signed provider match auto-approves, Firestore global claims created and hold removed without manual review. This is a MOCK of Slip2Go result, NOT genuine online Slip2Go.
+- Removed unsafe Premium shortcut: unconditional manual `unlockTenantRevenueShare` now refuses Premium; its correct route is review of a submitted pending proof, not waiver of money owed. Historical emergency override retained for historical Revenue Share.
+- **Release gate:** native rerun on GitHub tip, React build + parity and owner live-UI UAT still required. No `main` merge or Production deployment.
+
 ## 2026-10-25 — Real local Auth/Firestore/Storage delivery-share workflow acceptance
 
 - Added **emulator-only** acceptance test `tests/firebase-emulator/delivery-share-actual-workflow.spec.mjs`: real Firestore tenant + orders, Auth users, Storage synthetic slip, daily 75 THB invoice calculation; reconciliation sets tenant and slug inactive next day; repeated call idempotent; upload without configured Slip2Go creates **pending** (not paid); Super Admin explicit manual approval clears only revenue-share hold; no real banking/network or production project.

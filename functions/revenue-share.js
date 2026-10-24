@@ -1023,6 +1023,13 @@ exports.unlockTenantRevenueShare = onCall({ region: REGION }, async request => {
   if (!setting.enabled || !tenant.revenueShareSuspended) {
     throw new HttpsError("failed-precondition", "Tenant is not revenue-share suspended");
   }
+  // Premium Delivery requires a REAL slip reviewed by the Super Admin (or
+  // verified Slip2Go). The historical emergency bypass is not a substitute
+  // for verified payment and must not waive daily share without evidence.
+  if (setting.premiumDeliveryShare) {
+    throw new HttpsError("failed-precondition",
+      "Premium Delivery requires verified payment review, not manual override");
+  }
   // An emergency manual override cannot cancel an unrelated subscriber hold.
   if (!subscriptionActive(tenant)) {
     throw new HttpsError("failed-precondition", "Tenant has an independent subscription hold");
