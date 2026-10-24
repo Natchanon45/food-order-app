@@ -24,6 +24,8 @@ const { recordHybridAdjustmentProposal, reviewHybridAdjustmentProposal } =
   fnRequire("./hybrid-billing-finance-records");
 const { recordDemoHybridRefundCandidate } =
   fnRequire("./hybrid-billing-refund-candidate");
+const { auditDemoHybridRefundHistory } =
+  fnRequire("./hybrid-billing-refund-history-audit");
 const { stageHybridInvoiceProof, reviewHybridInvoiceProof } =
   fnRequire("./hybrid-billing-payment");
 const { fingerprintClaims } = fnRequire("./hybrid-billing-payment-policy");
@@ -720,4 +722,31 @@ test("Emulator global instruction claim rejects separate references on same outg
     await denied(getDocs(collection(client, "hybridRefundInstructionClaims")),
       "No Browser user can enumerate global outgoing instruction hashes");
   }
+});
+
+
+test("Historical cross-channel finance inventory never claims real bank coverage", async () => {
+  const scoped = {
+    app: { options: { projectId } },
+    collection: name => adminDb.collection(name),
+    collectionGroup: name => adminDb.collectionGroup(name),
+  };
+  const result = await auditDemoHybridRefundHistory({
+    db: scoped, maxPerSource: 500,
+  });
+  assert.equal(result.releaseReady, false);
+  assert.equal(result.settlementAllowed, false);
+  assert.equal(result.historicalBankCoverageVerified, false);
+  assert.equal(result.bankSourceAuthenticated, false);
+  assert.equal(result.atomicSnapshot, false);
+  assert.equal(result.writesPerformed, false);
+  assert.equal(result.sourcesScanned.length, 9);
+  assert.ok(result.blockers.includes("LEGACY_OUTGOING_BANK_REFUNDS_NOT_MIGRATED"));
+  assert.ok(result.blockers.includes("EXTERNAL_BANK_STATEMENT_SOURCE_NOT_AUTHENTICATED"));
+  assert.equal(Object.hasOwn(result, "documents"), false);
+  // A deliberately small scan bound must fail instead of quietly inferring
+  // that the remaining refund/credit/slip history was checked.
+  await assert.rejects(auditDemoHybridRefundHistory({
+    db: scoped, maxPerSource: 1,
+  }), /HYBRID_REFUND_HISTORY_LIMIT_/);
 });
