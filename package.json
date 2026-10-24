@@ -111,7 +111,8 @@
     "test:hybrid-bank-key-policy": "node --test tests/react-parity/hybrid-bank-key-policy.spec.mjs",
     "test:hybrid-bank-enrollment": "node --test tests/react-parity/hybrid-bank-key-enrollment.spec.mjs",
     "test:hybrid-bank-key-history": "node --test tests/react-parity/hybrid-bank-key-history-audit.spec.mjs",
-    "test:hybrid-phase10-readiness": "node --test tests/react-parity/hybrid-phase10-readiness.spec.mjs"
+    "test:hybrid-phase10-readiness": "node --test tests/react-parity/hybrid-phase10-readiness.spec.mjs",
+    "verify:hybrid-phase10-packet": "node tools/verify-hybrid-phase10-packet.mjs"
   },
   "repository": {
     "type": "git",

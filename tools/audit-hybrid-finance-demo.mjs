@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 const PROJECT = "demo-penguin-hybrid";
 const REQUIRED_HOST = new Set(["127.0.0.1:8080", "localhost:8080"]);
 const HELP = [
-  "Usage: node tools/audit-hybrid-finance-demo.mjs [--format=text|json|packet|readiness] [--max=1..500]",
+  "Usage: node tools/audit-hybrid-finance-demo.mjs [--format=text|json|packet|readiness|readiness-packet] [--max=1..500]",
   "Local demo Firestore only. Set HYBRID_FINANCE_AUDIT_DEMO_ACK=1,",
   "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080, GCLOUD_PROJECT=demo-penguin-hybrid.",
   "Outputs a redacted worklist; never confirms a real refund or settlement.",
@@ -21,7 +21,7 @@ function parseOptions(argv) {
     if (!match || seen.has(match[1])) throw new Error("HYBRID_FINANCE_AUDIT_INVALID_ARGUMENT");
     seen.add(match[1]);
     if (match[1] === "format") {
-      if (!["json", "text", "packet", "readiness"].includes(match[2])) {
+      if (!["json", "text", "packet", "readiness", "readiness-packet"].includes(match[2])) {
         throw new Error("HYBRID_FINANCE_AUDIT_INVALID_FORMAT");
       }
       format = match[2];
@@ -72,6 +72,8 @@ if (options.help) {
     fnRequire("./hybrid-billing-bank-key-history-audit.js");
   const { buildDemoHybridPhase10Readiness } =
     fnRequire("./hybrid-billing-phase10-readiness.js");
+  const { createDemoHybridPhase10ReviewPacket } =
+    fnRequire("./hybrid-billing-phase10-review-packet.js");
   const app = initializeApp({ projectId: PROJECT },
     "local-hybrid-finance-audit-report");
   try {
@@ -80,7 +82,7 @@ if (options.help) {
       db, maxPerSource: options.maxPerSource,
     });
     const worklist = buildDemoHybridFinanceWorklist(audit);
-    const readiness = options.format === "readiness"
+    const readiness = ["readiness", "readiness-packet"].includes(options.format)
       ? buildDemoHybridPhase10Readiness({
         financeAudit: audit,
         keyAudit: await auditDemoHybridBankKeyHistory({
@@ -88,8 +90,10 @@ if (options.help) {
         }),
       })
       : null;
-    process.stdout.write(options.format === "readiness"
-      ? JSON.stringify(readiness, null, 2) + "\n"
+    process.stdout.write(options.format === "readiness-packet"
+      ? JSON.stringify(createDemoHybridPhase10ReviewPacket(readiness), null, 2) + "\n"
+      : options.format === "readiness"
+        ? JSON.stringify(readiness, null, 2) + "\n"
       : options.format === "packet"
       ? JSON.stringify(createDemoHybridFinanceReviewPacket(worklist), null, 2) + "\n"
       : options.format === "json"
