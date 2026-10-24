@@ -29,6 +29,8 @@ const { auditDemoHybridRefundHistory } =
 const { stageDemoHybridBankKeyEnrollment,
   reviewDemoHybridBankKeyEnrollment } =
   fnRequire("./hybrid-billing-bank-key-enrollment");
+const { auditDemoHybridBankKeyHistory } =
+  fnRequire("./hybrid-billing-bank-key-history-audit");
 const { buildDemoHybridFinanceWorklist, formatHybridFinanceWorklistTH } =
   fnRequire("./hybrid-billing-finance-worklist");
 const { createDemoHybridFinanceReviewPacket,
@@ -997,4 +999,55 @@ test("Emulator bank key review rejects a missing or tampered global fingerprint 
   const ack=await reviewDemoHybridBankKeyEnrollment(reviewOptions);
   assert.equal(ack.status,"internally_acknowledged_untrusted");
   assert.equal(ack.bankOriginAuthenticated,false);
+});
+
+
+test("Bank signing-key history inventory rejects orphan claims in real Firestore Emulator", async () => {
+  const db={app:{options:{projectId}},
+    collection:name=>adminDb.collection(name)};
+  const baseline=await auditDemoHybridBankKeyHistory({
+    db,maxPerSource:500,
+  });
+  assert.equal(baseline.scannedCollections.length,4);
+  assert.equal(baseline.bankOriginAuthenticated,false);
+  assert.equal(baseline.trustedRegistryPromoted,false);
+  assert.equal(baseline.anyKeyActivated,false);
+  assert.equal(baseline.historicalKeyCoverageVerified,false);
+  assert.equal(baseline.releaseReady,false);
+  assert.equal(baseline.settlementAllowed,false);
+  assert.equal(baseline.writesPerformed,false);
+  assert.equal(baseline.nonAtomicSnapshot,true);
+  assert.ok(baseline.counts.hybridBankKeyEnrollmentRequests>=1);
+  assert.ok(baseline.blockers.includes(
+    "BANK_SIGNER_OWNERSHIP_NOT_INDEPENDENTLY_VERIFIED"));
+  const leaked=JSON.stringify(baseline);
+  assert.equal(leaked.includes("bankreq_emulator_20261024_1234"),false);
+  assert.equal(leaked.includes("test-super-admin"),false);
+
+  const orphanHash="7".repeat(64);
+  const ref=adminDb.collection("hybridBankKeyFingerprintClaims").doc(orphanHash);
+  await ref.set({
+    requestId:"bankreq_orphan_20261024_123456",
+    providerId:"sandbox_bank",
+    keyId:"orphan_signer",
+    fingerprintSha256:orphanHash,
+    state:"pending_internal_review",
+    createdAt:FieldValue.serverTimestamp(),
+  });
+  try {
+    const findings=await auditDemoHybridBankKeyHistory({
+      db,maxPerSource:500,
+    });
+    assert.ok(findings.integrityIssueCodes.includes(
+      "ORPHAN_OR_SPOOFED_FINGERPRINT_CLAIM"));
+    assert.equal(findings.anyKeyActivated,false);
+    assert.equal(findings.releaseReady,false);
+    assert.equal(findings.bankOriginAuthenticated,false);
+    assert.equal(JSON.stringify(findings).includes(orphanHash),false);
+  } finally {
+    await ref.delete();
+  }
+  await assert.rejects(auditDemoHybridBankKeyHistory({
+    db,maxPerSource:1,
+  }), /HYBRID_BANK_KEY_AUDIT_SCAN_OVERFLOW_/);
 });
