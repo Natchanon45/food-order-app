@@ -254,10 +254,13 @@ Super Admin read inside a Firestore transaction.
   flag changes. The only \`writesPerformed:true\` result means *local demo
   claim metadata*, **never any bank transfer or payout**.
 
-**Critical limitations:** The legacy refund candidate writer does not yet
-check these **new** claims when it subsequently creates an older-style
-candidate, so this is not a universal bidirectional cross-channel replay
-barrier. Other banks, files, batches outside this emulator, archived records,
+**Bidirectional demo replay guard:** The legacy refund-candidate writer now
+also checks the signed-batch reference, instruction and tenant/adjustment
+claims inside its own Firestore transaction, and rejects collisions without
+writing any candidate. The signed-batch writer already checks the older
+refund-candidate reference/instruction claims. Both demo writers are now
+mutually guarded for matching keys. This is **NOT** a universal historical
+cross-channel or real-bank replay barrier. Other banks, files, batches outside this emulator, archived records,
 and historical disbursements are not covered. Signatures are made with
 synthetic runtime test keys only. Production-grade ingestion still requires
 independently bank-verified provider keys, secure secrets, a complete

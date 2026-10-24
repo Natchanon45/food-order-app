@@ -218,3 +218,29 @@ test("same outgoing instruction cannot be reused even with another bank hash", a
     assert.equal(store.has("hybridRefundReferenceClaims/" + alternateHash), false);
     assert.equal(store.has("hybridRefundInstructionClaims/" + instructionHash), true);
   }));
+
+
+test("reverse replay guard: refund candidate cannot reuse ANY existing bank batch claim", async () =>
+  scenario(async ({ store, payload }) => {
+    const scopeHash = createHash("sha256")
+      .update("PENGUIN-HYBRID-BANK-ADJUSTMENT-CLAIM-V1\n"
+        + JSON.stringify([tenantId, adjustmentId]), "utf8").digest("hex");
+    const paths = [
+      "hybridBankBatchReferenceClaims/" + hash,
+      "hybridBankBatchInstructionClaims/" + instructionHash,
+      "hybridBankBatchAdjustmentClaims/" + scopeHash,
+    ];
+    for (const path of paths) {
+      store.set(path, { state: "synthetic_untrusted_reservation" });
+      await assert.rejects(recordDemoHybridRefundCandidate(payload),
+        /HYBRID_REFUND_BANK_BATCH_ALREADY_RESERVED/);
+      assert.equal(store.has("hybridRefundReferenceClaims/" + hash), false);
+      assert.equal(store.has("hybridRefundInstructionClaims/" + instructionHash), false);
+      assert.equal(store.has("tenants/" + tenantId +
+        "/hybridBillingRefundCandidates/" + adjustmentId), false);
+      store.delete(path);
+    }
+    const result = await recordDemoHybridRefundCandidate(payload);
+    assert.equal(result.settlementConfirmed, false);
+    assert.equal(result.refundExecuted, false);
+  }));

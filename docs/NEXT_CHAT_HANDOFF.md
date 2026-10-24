@@ -1,3 +1,10 @@
+## 2026-10-25 — FINAL Phase 10 scope freeze: stop feature expansion
+
+- Owner requested that Phase 10 **finish**, not spawn an endless series of bank-security demo features. SEE `docs/PHASE10_DEVELOPMENT_CLOSURE_20261025.md` as the single acceptance checklist and scope boundary.
+- Fixed the sole known bidirectional DEMO replay gap: `functions/hybrid-billing-refund-candidate.js` now reads `hybridBankBatchReferenceClaims`, `hybridBankBatchInstructionClaims`, and `hybridBankBatchAdjustmentClaims` inside its EXISTING transaction, rejecting any collision; bank batch already checks legacy refund reference/instruction claims. Added unit and real Firestore Emulator reverse-direction tests. No production writer/transfer.
+- New status: `CODE-FROZEN / AWAITING HEAD TESTS + OWNER DEMO UAT`, NOT a Production banking signoff. After all acceptance commands pass on this exact HEAD and owner signs off, **mark Phase 10 demo development COMPLETE**. Do not extend it for hypothetical edge cases or external banking integrations. Any new bug is handled as an independently prioritized defect.
+- Real bank keys/statements, historical cross-provider payouts and automatic settlement are **not implemented** and are separately blocked external production dependencies. Do not merge `main`, deploy Production or enable Finance transfers without explicit owner release authorization. Preserve local files; Mac may be offline.
+
 ## 2026-10-24 — Final Phase 10: DEMO atomic cross-batch bank evidence claims
 
 - User confirmed previous HEAD \`b940b905\` native tests passed and requested continuation. Branch only \`feature/react-firebase-port\`.

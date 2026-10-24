@@ -92,13 +92,29 @@ async function recordDemoHybridRefundCandidate({
   const bankClaimRef = db.collection("hybridRefundReferenceClaims").doc(hash);
   const instructionClaimRef = db.collection("hybridRefundInstructionClaims")
     .doc(instructionHash);
+  // DEMO-ONLY bidirectional replay guard: the newer signed-batch flow
+  // reserves these IDs. A refund candidate MUST also reject them atomically.
+  // An empty claim does NOT authenticate any external bank posting.
+  const batchBankClaimRef = db.collection("hybridBankBatchReferenceClaims")
+    .doc(hash);
+  const batchInstructionClaimRef = db.collection("hybridBankBatchInstructionClaims")
+    .doc(instructionHash);
+  const scopedAdjustmentHash = createHash("sha256")
+    .update("PENGUIN-HYBRID-BANK-ADJUSTMENT-CLAIM-V1\n"
+      + JSON.stringify([tenantRef.id, adjustmentId]), "utf8").digest("hex");
+  const batchAdjustmentClaimRef = db.collection("hybridBankBatchAdjustmentClaims")
+    .doc(scopedAdjustmentHash);
   return db.runTransaction(async tx => {
     // All reads finish before ANY write, including actor revocation check.
     const [actor, tenantDoc, invoiceDoc, adjustmentDoc, reviewDoc,
-      existingCandidate, existingClaim, existingInstruction] = await Promise.all([
+      existingCandidate, existingClaim, existingInstruction,
+      existingBatchBankClaim, existingBatchInstructionClaim,
+      existingBatchAdjustmentClaim] = await Promise.all([
         tx.get(reviewerRef), tx.get(tenantRef), tx.get(invoiceRef),
         tx.get(adjustmentRef), tx.get(reviewRef),
         tx.get(candidateRef), tx.get(bankClaimRef), tx.get(instructionClaimRef),
+        tx.get(batchBankClaimRef), tx.get(batchInstructionClaimRef),
+        tx.get(batchAdjustmentClaimRef),
       ]);
     assertSuperAdmin(actor);
     if (!tenantDoc.exists || tenantDoc.data()?.billingPolicyVersion !== "hybrid_v1") {
@@ -111,6 +127,10 @@ async function recordDemoHybridRefundCandidate({
     if (existingClaim.exists) throw new Error("HYBRID_REFUND_BANK_REFERENCE_ALREADY_CLAIMED");
     if (existingInstruction.exists) {
       throw new Error("HYBRID_REFUND_INSTRUCTION_ALREADY_CLAIMED");
+    }
+    if (existingBatchBankClaim.exists || existingBatchInstructionClaim.exists
+      || existingBatchAdjustmentClaim.exists) {
+      throw new Error("HYBRID_REFUND_BANK_BATCH_ALREADY_RESERVED");
     }
     // Three separate active finance identities: proposer, reviewer, auditor.
     if ([adjustment.proposedBy, adjustment.reviewedBy].includes(actorUid)) {

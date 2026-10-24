@@ -24,6 +24,16 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Phase 10 delivery scope freeze and DEMO replay repair
+
+- **Request:** Finish Phase 10 rather than append new demo Bank Evidence modules after every green test.
+- **Root cause:** No fixed Definition of Done; prior Bank Batch reference/instruction checks were one-way (legacy Refund Candidate did not check newer batch claims).
+- **Change:** Added three symmetric global batch claim reads in the existing Refund Candidate transaction, rejecting any collision before candidate writes. Added unit and real Emulator regression coverage. No changes to live banking/settlement or customer-visible billing workflow.
+- **Files:** `functions/hybrid-billing-refund-candidate.js`, `functions/hybrid-billing-bank-batch-reservation.js` (comment clarification), `tests/react-parity/hybrid-refund-candidate.spec.mjs`, `tests/firebase-emulator/hybrid-finance-security.spec.mjs`, `docs/NEXT_CHAT_HANDOFF.md`, `docs/HYBRID_PHASE10_BANK_EVIDENCE_CONTRACT_20261024.md`, `docs/PHASE10_DEVELOPMENT_CLOSURE_20261025.md`, this worklog.
+- **Verification:** Static checks performed in connector session; native Node/Firestore Emulator/build cannot be claimed until executed on latest HEAD. Previous HEAD testing was user-confirmed, not automatically transferable to new HEAD.
+- **Deploy:** Committed/pushed only to `feature/react-firebase-port`. No `main` merge, no Firebase deploy, no real money movement.
+- **Completion rule:** Final fixed acceptance checklist in `docs/PHASE10_DEVELOPMENT_CLOSURE_20261025.md`; close Demo development when native test suite and owner UAT pass. Real bank integration is an external Production dependency, not an open-ended Phase 10 subtask.
+
 ## 2026-09-30 — Documentation discipline
 
 Request:

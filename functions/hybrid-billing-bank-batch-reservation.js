@@ -38,8 +38,8 @@ function requireDemo(db) {
  *
  * All transaction reads precede ALL creates. Existing older demo refund
  * reference/instruction claims are also checked; the existing refund writer
- * does NOT reciprocally inspect this new ledger, so this is NOT a universal
- * cross-channel anti-replay or historical bank statement check.
+ * now also checks this batch ledger inside its own transaction. These two
+ * DEMO writers are symmetric, but external historical banking is NOT covered.
  */
 async function reserveDemoHybridSignedBankBatch(input = {}) {
   if (!exact(input,required)) fail("INVALID_INPUT_FIELDS");

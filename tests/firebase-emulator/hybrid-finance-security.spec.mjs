@@ -1208,6 +1208,83 @@ test("Emulator: synthetic bank batch claims persist cross-batch, race atomically
 });
 
 
+test("Emulator: reverse refund writer blocks signed-batch reservation claims without partial writes", async () => {
+  const db = { app: { options: { projectId } },
+    collection: name => adminDb.collection(name),
+    runTransaction: work => adminDb.runTransaction(work) };
+  const tenantId = "demo-reverse-claims";
+  const invoiceId = "2026-10-24:monthly:fixed";
+  const adjustmentId = "reverse_adjustment_1234567890";
+  const refHash = createHash("sha256").update("reverse-bank-reference").digest("hex");
+  const destination = createHash("sha256").update("reverse-recipient").digest("hex");
+  const instructionId = "reverse_outgoing_20261024_123456";
+  const instructionHash = createHash("sha256")
+    .update("hybrid-refund-instruction-v1:" + instructionId).digest("hex");
+  const adjustmentHash = createHash("sha256")
+    .update("PENGUIN-HYBRID-BANK-ADJUSTMENT-CLAIM-V1\n"
+      + JSON.stringify([tenantId, adjustmentId]), "utf8").digest("hex");
+  const tenantRef = adminDb.collection("tenants").doc(tenantId);
+  await tenantRef.set({ billingPolicyVersion: "hybrid_v1", active: false,
+    hybridBillingSuspended: true });
+  await tenantRef.collection("hybridBillingInvoices").doc(invoiceId).set({
+    id: invoiceId, tenantId, status: "paid", amount: 500,
+    version: "hybrid-invoice-v1", signature: "f".repeat(64),
+  });
+  await tenantRef.collection("hybridBillingAdjustments").doc(adjustmentId).set({
+    id: adjustmentId, tenantId, invoiceId, invoiceSignature: "f".repeat(64),
+    amount: 250, amountCents: 25000, kind: "refund_request",
+    status: "approved", externallySettled: false,
+    proposedBy: "test-proposer", reviewedBy: "test-reviewer",
+  });
+  await tenantRef.collection("hybridBillingAdjustmentEvents")
+    .doc(adjustmentId + "-review").set({
+      tenantId, invoiceId, adjustmentId, invoiceSignature: "f".repeat(64),
+      action: "approve", resultStatus: "approved",
+      reviewerId: "test-reviewer", externallySettled: false,
+    });
+  const input = {
+    db, tenantRef, invoiceId, adjustmentId,
+    actorUid: "test-super-admin", at: "2026-10-24T10:00:00Z",
+    serverTimestamp: FieldValue.serverTimestamp(),
+    disbursement: {
+      tenantId, invoiceId, adjustmentId, source: "trusted_finance_disbursement",
+      state: "submitted", currency: "THB", amountCents: 25000,
+      instructionId, bankReferenceHash: refHash, destinationFingerprint: destination,
+      submittedAt: "2026-10-24T09:00:00Z",
+    },
+    bankStatement: {
+      tenantId, invoiceId, adjustmentId, source: "trusted_bank_statement",
+      direction: "debit", postingStatus: "posted", currency: "THB",
+      amountCents: 25000, bankReferenceHash: refHash,
+      destinationFingerprint: destination, postedAt: "2026-10-24T09:30:00Z",
+    },
+  };
+  for (const [collectionName, claimId] of [
+    ["hybridBankBatchReferenceClaims", refHash],
+    ["hybridBankBatchInstructionClaims", instructionHash],
+    ["hybridBankBatchAdjustmentClaims", adjustmentHash],
+  ]) {
+    const claim = adminDb.collection(collectionName).doc(claimId);
+    await claim.create({ state: "synthetic_untrusted_reservation" });
+    try {
+      await assert.rejects(recordDemoHybridRefundCandidate(input),
+        /HYBRID_REFUND_BANK_BATCH_ALREADY_RESERVED/);
+      assert.equal((await tenantRef.collection("hybridBillingRefundCandidates")
+        .doc(adjustmentId).get()).exists, false);
+      assert.equal((await adminDb.collection("hybridRefundReferenceClaims")
+        .doc(refHash).get()).exists, false);
+      assert.equal((await adminDb.collection("hybridRefundInstructionClaims")
+        .doc(instructionHash).get()).exists, false);
+    } finally {
+      await claim.delete();
+    }
+  }
+  // An unreserved synthetic candidate remains possible, but cannot settle.
+  const recorded = await recordDemoHybridRefundCandidate(input);
+  assert.equal(recorded.refundExecuted, false);
+  assert.equal(recorded.settlementConfirmed, false);
+});
+
 test("Unified Phase 10 Readiness scans Finance and Bank Key history without releasing payments", async () => {
   const db={
     app:{options:{projectId}},
