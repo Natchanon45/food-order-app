@@ -1,3 +1,12 @@
+## 2026-10-24 — Final Phase 10: private demo bank signer enrollment audit
+
+- User confirmed native Mac tests through `97248355` passed. Remote Desktop Commander Mac mini OFFLINE this turn. New commits NOT yet run with native Node or Emulator.
+- Added `functions/hybrid-billing-bank-key-enrollment.js` Demo-only (`BANK_KEY_ENROLLMENT_PRODUCTION_READY=false`, exact `demo-penguin-hybrid` project and loopback Emulator host). Two private Admin transactions: immutable key metadata request + atomic global fingerprint and provider/key slot claims; immutable review by a second currently active Super Admin (revalidates proposer), or reject. No public/private signing keys, PEM, banking credentials or raw accounts stored.
+- ALL results retain `bankOriginAuthenticated:false`, `trustedRegistryPromoted:false`, `keyActivated:false`. Review state `internally_acknowledged_untrusted` is NOT bank key authenticity; no trustedRegistry change, no payment/settlement/Wallet/tenant writes, no Production callable.
+- Added explicit deny-all Browser Firestore Rules for four global collections and tests: `test:hybrid-bank-enrollment` (6 mocked V8 source fixtures PASSED) in `test:hybrid-billing`; true Admin Firestore Emulator staging/reviewer/duplicate and every Browser role GET/LIST/WRITE denial test (native run pending).
+- Detailed UAT `docs/HYBRID_PHASE10_BANK_KEY_ENROLLMENT_20261024.md`; updated Bank Evidence Contract and hybrid Browser Emulator UAT. Full bank/provider authentication remains unimplemented and must not be inferred from internal review.
+- Continue Phase 10 only, no main merge, Production deploy, flag activation or real financial movement. Mac safe run: check clean working tree and fast-forward only, `npm run test:hybrid-bank-enrollment`, `npm run test:hybrid-bank-key-policy`, `npm run test:hybrid-bank-evidence`, `npm run test:hybrid-billing`, `npm run test:firebase-hybrid-emulator`, `npm run test:react-parity`, `npm run build:react`. Preserve dirty `public/**/index.html`.
+
 ## 2026-10-24 — FINAL Phase 10: pinned dual-control Ed25519 key lifecycle
 
 - User confirmed native Mac suite of previous HEAD `0e245e4a` PASSED and asked to continue. Mac mini Remote Desktop Commander remains OFFLINE this turn; do NOT claim new native Node/Emulator results.

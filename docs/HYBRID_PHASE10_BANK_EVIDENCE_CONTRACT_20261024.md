@@ -169,3 +169,14 @@ to require a complete pinned key. The 11 new key-policy cases passed in a
 mocked V8 environment; this does **not** constitute genuine Node Ed25519
 cryptographic validation. User Mac must run the native test suite on this
 new commit before further work.
+
+## 24 October 2026 — Independent Super Admin KEY-ENROLLMENT audit (DEMO ONLY)
+
+The [Bank Key Enrollment Audit](HYBRID_PHASE10_BANK_KEY_ENROLLMENT_20261024.md)
+introduces immutable synthetic metadata-only key requests, atomic global
+fingerprint and key-slot reservations, and a second active Super Admin
+review event. A valid internal review STILL leaves
+`bankOriginAuthenticated:false`, `trustedRegistryPromoted:false`,
+`keyActivated:false`. The review cannot trigger key activation or cash
+settlement. Bank-provider key ownership needs independent external
+authentication before any Production use.

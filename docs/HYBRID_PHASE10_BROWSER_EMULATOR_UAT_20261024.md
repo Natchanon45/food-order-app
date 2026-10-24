@@ -290,3 +290,22 @@ npm run build:react
   `settlementAllowed:false`. No bank public key has actually been
   independently authenticated. Finance approval, bank statement import,
   historical coverage and global settlement receipts are not implemented.
+
+## 24 October 2026 — Bank enrollment anti-replay and dual review (Emulator)
+
+- Run `npm run test:hybrid-bank-enrollment` and
+  `npm run test:firebase-hybrid-emulator` after safe fast-forward pull.
+- Verify exactly one immutable request and global fingerprint/key-slot claim
+  are created in an Admin transaction. Duplicate request, global fingerprint
+  reuse across banks, and reusing the same provider/key slot must be rejected.
+- A second active Super Admin can acknowledge or reject exactly once;
+  proposer/self-review, non-Super Admin, revoked proposer and repeated review
+  must fail.
+- Confirm GET/LIST/SET on all four global key collections are denied to
+  EVERY Browser role including Super Admin. No real PEM, signing key, bank
+  certificate, bank account, wallet balance or payout receipt is stored.
+- Even acknowledged enrollment is only
+  `internally_acknowledged_untrusted`: `keyActivated:false`,
+  `trustedRegistryPromoted:false`,
+  `bankOriginAuthenticated:false`. No Production Bank SDK connected and
+  no Firebase Production release allowed.
