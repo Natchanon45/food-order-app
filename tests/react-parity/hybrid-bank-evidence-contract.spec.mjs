@@ -97,7 +97,9 @@ test("editing any signed field without resigning destroys signature", () => {
     { keyId: "other_signer_2026" },
   ]) {
     const forged = { ...e, ...changed };
-    assert.throws(() => run(forged), /HYBRID_BANK_EVIDENCE_/);
+    // Tampered payload/signature rejects as evidence; unknown rotated key
+    // rejects earlier at the newly pinned bank-key trust boundary.
+    assert.throws(() => run(forged), /HYBRID_BANK_(?:EVIDENCE|KEY)_/);
   }
 });
 
