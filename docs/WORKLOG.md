@@ -24,6 +24,10 @@ Use `docs/NEXT_CHAT_HANDOFF.md` for the current continuation checkpoint and prio
 
 ---
 
+## 2026-10-25 — Read-only Admin tenant list for Premium Demo review
+
+- Existing Super Admin Review UI is inside `/admin/tenants`, which loads `listTenants` and performs `backfillTenantSubscriptions` on mount. Demo-only guarded Functions source now exposes only the existing read-only `listTenants` and a role-gated, no-op `backfillTenantSubscriptions`; **does not export Tenant mutation functions**. This prevents unrelated subscription backfill from rewriting synthetic billing states.
+
 ## 2026-10-25 — Premium Delivery browser UAT bridge (local-only)
 
 - **Blocker:** Existing Hybrid Demo Functions Emulator exported no Revenue Share endpoints, so the new owner and Super Admin UAT could not be performed in the browser even though source and Firestore tests passed.

@@ -294,3 +294,9 @@ test("Premium Delivery Browser seed refuses any real Firebase project or nonloca
   assert.match(code, /if \(\(await ref\.get\(\)\)\.exists\) continue/);
   assert.doesNotMatch(code, /firebase deploy|chat-45754|realBankTransfer/);
 });
+
+test("local Premium Super Admin review can list tenants without exposing tenant writes", () => {
+  assert.match(entrypoint, /exports\.listTenants = require\("\.\.\/tenant-admin"\)\.listTenants/);
+  assert.match(entrypoint, /exports\.backfillTenantSubscriptions = onCall\(options/);
+  assert.doesNotMatch(entrypoint, /exports\.(createTenant|deleteTenant|updateTenant|updateTenantSubscription)\s*=/);
+});

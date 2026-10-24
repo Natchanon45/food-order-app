@@ -135,3 +135,17 @@ for (const name of [
   }
   exports[name] = premiumRevenueShare[name];
 }
+
+// Existing Super Admin review is embedded in /admin/tenants, which requires
+// tenant listing to render its review queue. Reuse the production READ-only
+// listTenants callable under the same demo-only guard. Do not expose tenant
+// create/update/delete or subscription mutation functions.
+exports.listTenants = require("../tenant-admin").listTenants;
+exports.backfillTenantSubscriptions = onCall(options, async request => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
+  const reviewer = await getFirestore().collection("users").doc(request.auth.uid).get();
+  if (reviewer.data()?.role !== "super_admin" || reviewer.data()?.active === false) {
+    throw new HttpsError("permission-denied", "Super Admin required");
+  }
+  return { ok: true, updated: 0, demoOnly: true };
+});
