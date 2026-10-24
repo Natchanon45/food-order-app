@@ -195,3 +195,22 @@ npm run build:react
 3. Missing bank-reference or instruction claim, orphaned claim, forged candidate `settlementConfirmed:true`, cross-tenant candidate and scan overflow must not authorize settlement.
 4. An empty Emulator and a fully matched synthetic candidate index must both say `releaseReady:false` and `historicalBankCoverageVerified:false`. The audit is non-atomic across independent collection queries, and no bank/provider records are fetched.
 5. Real external bank statement provenance, old refunds across providers, separate Wallet credit flows, final finance approval and settlement idempotency are still required before releasing any Production flags.
+
+## 24 October 2026 — 12-source finance integrity and reserve reconciliation UAT
+
+- Run `npm run test:hybrid-refund-history` and the real
+  `npm run test:firebase-hybrid-emulator` after pulling latest feature branch.
+- Historical audit should now report `sourcesScanned.length === 12`,
+  `settlementAllowed === false`, and an array of sanitized
+  `integrityIssueCodes`; never return original bank/reference IDs or user IDs.
+- An existing `approved` refund Adjustment without
+  `hybridBillingAdjustmentBalances/{invoiceId}`, or with an incorrect
+  `reservedCents`/`count`, must report
+  `ADJUSTMENT_RESERVED_BALANCE_MISMATCH`.
+- A Candidate without the corresponding PAID Invoice, independent review
+  event or three different finance actors must be flagged; orphaned Review
+  Events and reserved Balance docs also create blockers.
+- The audit is a read-only non-atomic historical DIAGNOSTIC. Even when
+  `integrityIssueCodes` is empty, unknown external bank/legacy payouts
+  prevent final settlement. No credentials, real bank calls, automatic
+  repair, Wallet changes, tenant access changes or Production release.
