@@ -20,6 +20,8 @@ const { claimRefs, checkClaimsInTransaction, createClaimsInTransaction } =
   fnRequire("./finance-slip-claims");
 const { prepareInvoiceLedger } = fnRequire("./hybrid-billing-ledger");
 const { persistHybridInvoiceLedger } = fnRequire("./hybrid-billing-persistence");
+const { recordHybridAdjustmentProposal, reviewHybridAdjustmentProposal } =
+  fnRequire("./hybrid-billing-finance-records");
 const { stageHybridInvoiceProof, reviewHybridInvoiceProof } =
   fnRequire("./hybrid-billing-payment");
 const { fingerprintClaims } = fnRequire("./hybrid-billing-payment-policy");
@@ -423,4 +425,77 @@ test("Real Admin transaction stages slip as pending, then finance review marks p
     action: "approve", reviewerId: "test-super-admin",
     serverTimestamp: FieldValue.serverTimestamp(),
   }), /HYBRID_PAYMENT_ALREADY_REVIEWED/);
+});
+
+
+test("Admin Emulator locks concurrent adjustment reservations and forbids self-review", async () => {
+  const tenantRef = adminDb.collection("tenants").doc("finance-adj-only");
+  const financeInvoiceId = "2026-10-24:monthly:fixed";
+  const invoiceRef = tenantRef.collection("hybridBillingInvoices").doc(financeInvoiceId);
+  await tenantRef.set({
+    billingPolicyVersion: "hybrid_v1", active: false,
+    hybridBillingSuspended: true, suspensionReason: "security_hold",
+  });
+  await invoiceRef.create({
+    id: financeInvoiceId, tenantId: tenantRef.id,
+    version: "hybrid-invoice-v1", signature: "e".repeat(64),
+    amount: 500, status: "paid",
+  });
+  const make = id => recordHybridAdjustmentProposal({
+    db: adminDb, tenantRef, invoiceId: financeInvoiceId, proposerId: "test-super-admin",
+    request: { id, kind: "refund_request", amount: 350,
+      reason: "Independent reconciliation of the original test payment" },
+    serverTimestamp: FieldValue.serverTimestamp(),
+  });
+  const ids = ["finance_adjustment_a_123456", "finance_adjustment_b_123456"];
+  const outcomes = await Promise.allSettled(ids.map(id => make(id)));
+  assert.equal(outcomes.filter(item => item.status === "fulfilled").length, 1,
+    "Exactly one concurrent 350 THB refund can reserve a 500 THB invoice");
+  assert.equal(outcomes.filter(item => item.status === "rejected").length, 1);
+  const successfulId = ids[outcomes.findIndex(item => item.status === "fulfilled")];
+  const reservedRef = tenantRef.collection("hybridBillingAdjustmentBalances")
+    .doc(financeInvoiceId);
+  assert.equal((await reservedRef.get()).data().reservedCents, 35000);
+  const reviewerId = identities.get("super-admin").uid;
+  await assert.rejects(reviewHybridAdjustmentProposal({
+    db: adminDb, tenantRef, invoiceId: financeInvoiceId,
+    adjustmentId: successfulId, reviewerId: "test-super-admin",
+    action: "approve", note: "Attempt to approve own proposed financial adjustment",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  }), /SELF_REVIEW_FORBIDDEN/);
+  await adminDb.collection("users").doc(reviewerId).update({ active: false });
+  try {
+    await assert.rejects(reviewHybridAdjustmentProposal({
+      db: adminDb, tenantRef, invoiceId: financeInvoiceId,
+      adjustmentId: successfulId, reviewerId,
+      action: "approve", note: "Independent finance signoff on a synthetic transfer",
+      serverTimestamp: FieldValue.serverTimestamp(),
+    }), /SUPER_ADMIN_REQUIRED/);
+  } finally {
+    await adminDb.collection("users").doc(reviewerId).update({ active: true });
+  }
+  const reviewed = await reviewHybridAdjustmentProposal({
+    db: adminDb, tenantRef, invoiceId: financeInvoiceId,
+    adjustmentId: successfulId, reviewerId,
+    action: "reject", note: "Insufficient external bank evidence",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  });
+  assert.equal(reviewed.status, "rejected");
+  assert.equal(reviewed.refundExecuted, false);
+  assert.equal((await reservedRef.get()).data().reservedCents, 0);
+  const event = await tenantRef.collection("hybridBillingAdjustmentEvents")
+    .doc(successfulId + "-review").get();
+  assert.equal(event.data().resultStatus, "rejected");
+  assert.equal((await invoiceRef.get()).data().status, "paid");
+  assert.equal((await tenantRef.get()).data().hybridBillingSuspended, true);
+  assert.equal((await tenantRef.get()).data().active, false);
+  await assert.rejects(reviewHybridAdjustmentProposal({
+    db: adminDb, tenantRef, invoiceId: financeInvoiceId,
+    adjustmentId: successfulId, reviewerId,
+    action: "approve", note: "Attempting to reverse an audited decision",
+    serverTimestamp: FieldValue.serverTimestamp(),
+  }), /ALREADY_REVIEWED/);
+  const next = await make("finance_adjustment_c_123456");
+  assert.equal(next.status, "proposed",
+    "Rejected request releases cap for another independent proposal");
 });

@@ -168,7 +168,7 @@ test("only server Admin finance transactions can create or review adjustment rec
     + fs.readFileSync("functions/bootstrap.js", "utf8");
   for (const name of ["hybridBillingAdjustments",
     "hybridBillingAdjustmentEvents", "hybridBillingAdjustmentBalances"]) {
-    assert.match(rules, new RegExp("match /" + name + "/\\\\{"));
+    assert.ok(rules.includes("match /" + name + "/{"));
     assert.match(rules.slice(rules.indexOf("match /" + name)), /allow create, update, delete: if false;|allow read, write: if false;/);
   }
   assert.doesNotMatch(production, /hybrid-billing-finance-records/);
