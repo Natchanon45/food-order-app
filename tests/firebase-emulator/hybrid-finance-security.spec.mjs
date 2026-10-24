@@ -740,7 +740,8 @@ test("Historical cross-channel finance inventory never claims real bank coverage
   assert.equal(result.bankSourceAuthenticated, false);
   assert.equal(result.atomicSnapshot, false);
   assert.equal(result.writesPerformed, false);
-  assert.equal(result.sourcesScanned.length, 9);
+  assert.equal(result.sourcesScanned.length, 12);
+  assert.equal(Array.isArray(result.integrityIssueCodes), true);
   assert.ok(result.blockers.includes("LEGACY_OUTGOING_BANK_REFUNDS_NOT_MIGRATED"));
   assert.ok(result.blockers.includes("EXTERNAL_BANK_STATEMENT_SOURCE_NOT_AUTHENTICATED"));
   assert.equal(Object.hasOwn(result, "documents"), false);
@@ -749,4 +750,49 @@ test("Historical cross-channel finance inventory never claims real bank coverage
   await assert.rejects(auditDemoHybridRefundHistory({
     db: scoped, maxPerSource: 1,
   }), /HYBRID_REFUND_HISTORY_LIMIT_/);
+});
+
+
+test("Historical audit flags missing per-invoice adjustment reservation in the real Emulator", async () => {
+  const tenantId = "historical-audit-missing-cap";
+  const id = "2026-10-24:monthly:fixed";
+  const adjustmentId = "historical_adjustment_123456789";
+  const tenantRef = adminDb.collection("tenants").doc(tenantId);
+  await tenantRef.set({ billingPolicyVersion: "hybrid_v1", active: false,
+    hybridBillingSuspended: true });
+  await tenantRef.collection("hybridBillingInvoices").doc(id).set({
+    id, tenantId, version: "hybrid-invoice-v1", status: "paid",
+    amount: 590, signature: "c".repeat(64),
+  });
+  await tenantRef.collection("hybridBillingAdjustments").doc(adjustmentId).set({
+    id: adjustmentId, tenantId, invoiceId: id,
+    invoiceSignature: "c".repeat(64),
+    status: "approved", kind: "refund_request", amount: 250,
+    amountCents: 25000, externallySettled: false,
+    proposedBy: "other-super-admin", reviewedBy: "second-super-admin",
+  });
+  await tenantRef.collection("hybridBillingAdjustmentEvents")
+    .doc(adjustmentId + "-review").set({
+      tenantId, invoiceId: id, adjustmentId,
+      invoiceSignature: "c".repeat(64), action: "approve",
+      resultStatus: "approved", reviewerId: "second-super-admin",
+      externallySettled: false,
+    });
+  // Deliberately do NOT create hybridBillingAdjustmentBalances/{invoiceId}.
+  const db = {
+    app: { options: { projectId } },
+    collection: name => adminDb.collection(name),
+    collectionGroup: name => adminDb.collectionGroup(name),
+  };
+  const result = await auditDemoHybridRefundHistory({
+    db, maxPerSource: 500,
+  });
+  assert.ok(result.integrityIssueCodes.includes("ADJUSTMENT_RESERVED_BALANCE_MISMATCH"));
+  assert.equal(result.releaseReady, false);
+  assert.equal(result.settlementAllowed, false);
+  assert.equal(result.historicalBankCoverageVerified, false);
+  assert.equal(result.bankSourceAuthenticated, false);
+  assert.equal(result.writesPerformed, false);
+  assert.equal(JSON.stringify(result).includes(adjustmentId), false,
+    "Never return invoice/adjustment IDs in aggregate finance diagnostics");
 });
