@@ -39,7 +39,11 @@ function fixture({ missing = "", corrupt = false, extras = [], statuses = {} } =
         exists: periods.has(id), data: () => periods.get(id),
       }) }),
     } : name === "hybridBillingInvoices" ? {
-      get: async () => ({ docs: rows.map(i => ({ id: i.id, data: () => i })) }),
+      limit: cap => ({
+        get: async () => ({ docs: rows.slice(0, cap).map(i => ({
+          id: i.id, data: () => i,
+        })) }),
+      }),
     } : (() => { throw Error("unexpected collection"); })(),
   };
   return { tenantRef, tenant, now: new Date("2026-10-24T17:00:00+07:00") };
@@ -85,7 +89,7 @@ test("reader is private read-only, never wired to production Callable or schedul
   const source = fs.readFileSync("functions/hybrid-billing-recovery-reader.js", "utf8");
   const boot = fs.readFileSync("functions/bootstrap.js", "utf8") +
     fs.readFileSync("functions/index.js", "utf8");
-  assert.match(source, /invoicesCollection\.get\(\)/);
+  assert.match(source, /invoicesCollection\.limit\(MAX_INVOICES \+ 1\)\.get\(\)/);
   assert.match(source, /coverageVerified: true/);
   assert.doesNotMatch(source, /runTransaction\(|tx\.set\(|tx\.update\(|onCall\(|onSchedule\(/);
   assert.doesNotMatch(boot, /hybrid-billing-recovery-reader/);

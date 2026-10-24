@@ -56,7 +56,7 @@ async function prepareTrustedHybridRecoveryReview({
 
   // Also query ALL invoice documents, not only the period index: an extra
   // unindexed financial document could otherwise be silently ignored.
-  const all = await invoicesCollection.get();
+  const all = await invoicesCollection.limit(MAX_INVOICES + 1).get();
   if (!all || !Array.isArray(all.docs) || all.docs.length > MAX_INVOICES
     || all.docs.length !== indexed.size) {
     throw new Error("HYBRID_RECOVERY_INVOICE_COVERAGE_INCOMPLETE");
