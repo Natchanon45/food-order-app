@@ -588,6 +588,11 @@ service cloud.firestore {
     match /hybridRefundReferenceClaims/{referenceHash} {
       allow read, write: if false;
     }
+    // Global outgoing refund instruction uniqueness, regardless of tenant.
+    // Never expose raw transfer IDs or hashed identifiers to the browser.
+    match /hybridRefundInstructionClaims/{instructionHash} {
+      allow read, write: if false;
+    }
 
     match /waitingQueuePublic/{publicToken} {
       allow get: if true;

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { recordDemoHybridRefundCandidate,
@@ -11,6 +12,9 @@ const tenantId = "demo-shop", invoiceId = "2026-10-24:monthly:fixed";
 const adjustmentId = "adjustment_12345678901234";
 const at = "2026-10-24T10:00:00Z";
 const hash = "a".repeat(64), destination = "b".repeat(64);
+const instructionHash = createHash("sha256")
+  .update("hybrid-refund-instruction-v1:outgoing_20261024_123456")
+  .digest("hex");
 const invoice = { id: invoiceId, tenantId, amount: 590, status: "paid",
   version: "hybrid-invoice-v1", signature: "f".repeat(64) };
 const adjustment = { id: adjustmentId, tenantId, invoiceId,
@@ -83,12 +87,17 @@ test("one synthetic candidate atomically claims global bank hash, not cash settl
     assert.equal(result.refundExecuted, false);
     assert.equal(result.bankSourceIntegrationReady, false);
     const claim = store.get("hybridRefundReferenceClaims/" + hash);
+    const instructionClaim = store.get("hybridRefundInstructionClaims/" + instructionHash);
+    assert.equal(instructionClaim.adjustmentId, adjustmentId);
     const candidate = store.get("tenants/" + tenantId +
       "/hybridBillingRefundCandidates/" + adjustmentId);
     assert.equal(claim.adjustmentId, adjustmentId);
     assert.equal(candidate.settlementConfirmed, false);
     assert.equal(candidate.sourceIntegrationReady, false);
     assert.equal(candidate.bankReferenceHash, hash);
+    assert.equal(candidate.instructionHash, instructionHash);
+    assert.equal(Object.hasOwn(candidate, "instructionId"), false,
+      "Raw outgoing instruction must not be stored in browseable records");
     assert.equal(store.get("tenants/" + tenantId +
       "/hybridBillingInvoices/" + invoiceId).status, "paid");
     assert.equal(store.get("tenants/" + tenantId).hybridBillingSuspended, true);
@@ -181,9 +190,31 @@ test("Browser finance rules deny claims and writes; production exports are uncha
   const prod = fs.readFileSync("functions/index.js", "utf8")
     + fs.readFileSync("functions/bootstrap.js", "utf8");
   assert.match(rules, /match \/hybridRefundReferenceClaims\/\{referenceHash\}/);
+  assert.match(rules, /match \/hybridRefundInstructionClaims\/\{instructionHash\}/);
   assert.match(rules, /match \/hybridBillingRefundCandidates\/\{adjustmentId\}/);
   assert.match(rules, /allow read, write: if false/);
   assert.match(source, /HYBRID_REFUND_CANDIDATE_PRODUCTION_READY = false/);
   assert.doesNotMatch(prod, /hybrid-billing-refund-candidate/);
   assert.doesNotMatch(source, /onCall\(|https\.onRequest|onSchedule\(|uploadBytes\(/);
 });
+
+
+test("same outgoing instruction cannot be reused even with another bank hash", async () =>
+  scenario(async ({ store, payload }) => {
+    await recordDemoHybridRefundCandidate(payload);
+    const otherId = "adjustment_98765432109876";
+    store.set("tenants/" + tenantId + "/hybridBillingAdjustments/" + otherId,
+      { ...adjustment, id: otherId });
+    store.set("tenants/" + tenantId + "/hybridBillingAdjustmentEvents/" + otherId + "-review",
+      { ...approval, adjustmentId: otherId });
+    const alternateHash = "c".repeat(64);
+    await assert.rejects(recordDemoHybridRefundCandidate({
+      ...payload, adjustmentId: otherId,
+      disbursement: { ...disbursement, adjustmentId: otherId,
+        bankReferenceHash: alternateHash },
+      bankStatement: { ...bankStatement, adjustmentId: otherId,
+        bankReferenceHash: alternateHash },
+    }), /INSTRUCTION_ALREADY_CLAIMED/);
+    assert.equal(store.has("hybridRefundReferenceClaims/" + alternateHash), false);
+    assert.equal(store.has("hybridRefundInstructionClaims/" + instructionHash), true);
+  }));

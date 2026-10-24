@@ -619,6 +619,14 @@ test("Demo-only concurrent bank reference claims prevent cross-tenant refund evi
       { state: "settled" }), "No browser actor may overwrite global refund claims");
     await denied(getDocs(collection(browser, "hybridRefundReferenceClaims")),
       "No browser role may enumerate bank reference hashes");
+    const instruction = evidence.find(e => e.tenantRef.id === winningTenant)
+      .disbursement.instructionId;
+    const instructionHash = createHash("sha256")
+      .update("hybrid-refund-instruction-v1:" + instruction).digest("hex");
+    await denied(getDoc(doc(browser, "hybridRefundInstructionClaims/" + instructionHash)),
+      "No browser actor may read outgoing instruction claims");
+    await denied(setDoc(doc(browser, "hybridRefundInstructionClaims/" + instructionHash),
+      { state: "settled" }), "No browser actor may rewrite outgoing instruction claims");
     const candidatePath = "tenants/" + winningTenant + "/hybridBillingRefundCandidates/" +
       evidence.find(e => e.tenantRef.id === winningTenant).adjustmentId;
     await denied(setDoc(doc(browser, candidatePath),
@@ -629,5 +637,75 @@ test("Demo-only concurrent bank reference claims prevent cross-tenant refund evi
       await denied(getDoc(doc(browser, candidatePath)),
         "Only active Super Admin can read demo candidate");
     }
+  }
+});
+
+
+test("Emulator global instruction claim rejects separate references on same outgoing instruction", async () => {
+  const guardedDb = {
+    app: { options: { projectId } }, collection: path => adminDb.collection(path),
+    runTransaction: fn => adminDb.runTransaction(fn),
+  };
+  const financeId = "2026-10-25:monthly:fixed";
+  const instructionId = "demo_shared_outgoing_instruction_20261025";
+  const destinations = ["instr-reuse-a", "instr-reuse-b"];
+  const evidence = [];
+  for (const [index, tenantId] of destinations.entries()) {
+    const tenantRef = adminDb.collection("tenants").doc(tenantId);
+    const adjustmentId = "adjustment_ref_test_12345" + index;
+    await tenantRef.set({ billingPolicyVersion: "hybrid_v1", active: false,
+      hybridBillingSuspended: true });
+    await tenantRef.collection("hybridBillingInvoices").doc(financeId).set({
+      id: financeId, tenantId, status: "paid", version: "hybrid-invoice-v1",
+      signature: "d".repeat(64), amount: 800,
+    });
+    await tenantRef.collection("hybridBillingAdjustments").doc(adjustmentId).set({
+      id: adjustmentId, tenantId, invoiceId: financeId,
+      invoiceSignature: "d".repeat(64), amount: 200, amountCents: 20000,
+      kind: "refund_request", status: "approved", externallySettled: false,
+      proposedBy: "another-proposer", reviewedBy: "different-reviewer",
+    });
+    await tenantRef.collection("hybridBillingAdjustmentEvents")
+      .doc(adjustmentId + "-review").set({
+        tenantId, invoiceId: financeId, adjustmentId,
+        invoiceSignature: "d".repeat(64), action: "approve",
+        resultStatus: "approved", reviewerId: "different-reviewer",
+        externallySettled: false,
+      });
+    const bankHash = createHash("sha256")
+      .update("demo_outgoing_ref_" + index).digest("hex");
+    const destinationHash = createHash("sha256")
+      .update("dest_" + index).digest("hex");
+    evidence.push({
+      db: guardedDb, tenantRef, invoiceId: financeId,
+      adjustmentId, actorUid: "test-super-admin",
+      at: "2026-10-25T12:00:00Z",
+      serverTimestamp: FieldValue.serverTimestamp(),
+      disbursement: {
+        tenantId, invoiceId: financeId, adjustmentId,
+        source: "trusted_finance_disbursement", state: "submitted",
+        currency: "THB", amountCents: 20000, instructionId,
+        bankReferenceHash: bankHash, destinationFingerprint: destinationHash,
+        submittedAt: "2026-10-25T09:00:00Z",
+      },
+      bankStatement: {
+        tenantId, invoiceId: financeId, adjustmentId,
+        source: "trusted_bank_statement", direction: "debit", postingStatus: "posted",
+        currency: "THB", amountCents: 20000, bankReferenceHash: bankHash,
+        destinationFingerprint: destinationHash, postedAt: "2026-10-25T10:00:00Z",
+      },
+    });
+  }
+  const results = await Promise.allSettled(evidence.map(recordDemoHybridRefundCandidate));
+  assert.equal(results.filter(r => r.status === "fulfilled").length, 1);
+  assert.equal(results.filter(r => r.status === "rejected").length, 1);
+  const hash = createHash("sha256")
+    .update("hybrid-refund-instruction-v1:" + instructionId).digest("hex");
+  const claim = await adminDb.collection("hybridRefundInstructionClaims").doc(hash).get();
+  assert.equal(claim.exists, true);
+  for (const e of evidence) {
+    const candidate = await e.tenantRef.collection("hybridBillingRefundCandidates")
+      .doc(e.adjustmentId).get();
+    assert.equal(candidate.exists, e.tenantRef.id === claim.data().tenantId);
   }
 });
