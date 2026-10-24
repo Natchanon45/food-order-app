@@ -22,6 +22,8 @@ const { prepareInvoiceLedger } = fnRequire("./hybrid-billing-ledger");
 const { persistHybridInvoiceLedger } = fnRequire("./hybrid-billing-persistence");
 const { recordHybridAdjustmentProposal, reviewHybridAdjustmentProposal } =
   fnRequire("./hybrid-billing-finance-records");
+const { recordDemoHybridRefundCandidate } =
+  fnRequire("./hybrid-billing-refund-candidate");
 const { stageHybridInvoiceProof, reviewHybridInvoiceProof } =
   fnRequire("./hybrid-billing-payment");
 const { fingerprintClaims } = fnRequire("./hybrid-billing-payment-policy");
@@ -524,4 +526,108 @@ test("Admin Emulator locks concurrent adjustment reservations and forbids self-r
   const next = await make("finance_adjustment_c_123456");
   assert.equal(next.status, "proposed",
     "Rejected request releases cap for another independent proposal");
+});
+
+
+test("Demo-only concurrent bank reference claims prevent cross-tenant refund evidence replay", async () => {
+  const db = {
+    app: { options: { projectId } }, // explicit Firebase Emulator identity
+    collection: path => adminDb.collection(path),
+    runTransaction: callback => adminDb.runTransaction(callback),
+  };
+  const financeId = "2026-10-24:monthly:fixed";
+  const refHash = createHash("sha256").update("hybrid-refund-unique-reference-1").digest("hex");
+  const destHash = createHash("sha256").update("demo-bank-destination").digest("hex");
+  const evidence = [];
+  for (const [name, adjustId] of [
+    ["refund-demo-a", "adjustment_demo_a_123456789"],
+    ["refund-demo-b", "adjustment_demo_b_123456789"],
+  ]) {
+    const tenantRef = adminDb.collection("tenants").doc(name);
+    await tenantRef.set({ billingPolicyVersion: "hybrid_v1",
+      active: false, hybridBillingSuspended: true });
+    await tenantRef.collection("hybridBillingInvoices").doc(financeId).set({
+      id: financeId, tenantId: name, version: "hybrid-invoice-v1",
+      signature: "f".repeat(64), amount: 500, status: "paid",
+    });
+    await tenantRef.collection("hybridBillingAdjustments").doc(adjustId).set({
+      id: adjustId, tenantId: name, invoiceId: financeId,
+      invoiceSignature: "f".repeat(64), amount: 250, amountCents: 25000,
+      kind: "refund_request", status: "approved", externallySettled: false,
+      proposedBy: "first-super", reviewedBy: "second-super",
+    });
+    await tenantRef.collection("hybridBillingAdjustmentEvents")
+      .doc(adjustId + "-review").set({
+        tenantId: name, invoiceId: financeId, adjustmentId: adjustId,
+        invoiceSignature: "f".repeat(64), action: "approve",
+        resultStatus: "approved", reviewerId: "second-super",
+        externallySettled: false,
+      });
+    const record = {
+      db, tenantRef, invoiceId: financeId, adjustmentId: adjustId,
+      actorUid: "test-super-admin",
+      at: "2026-10-24T10:00:00Z",
+      serverTimestamp: FieldValue.serverTimestamp(),
+      disbursement: {
+        tenantId: name, invoiceId: financeId, adjustmentId: adjustId,
+        source: "trusted_finance_disbursement", state: "submitted",
+        currency: "THB", amountCents: 25000,
+        instructionId: "demo_instruction_123456789_" + (name.endsWith("a") ? "a" : "b"),
+        bankReferenceHash: refHash, destinationFingerprint: destHash,
+        submittedAt: "2026-10-24T09:00:00Z",
+      },
+      bankStatement: {
+        tenantId: name, invoiceId: financeId, adjustmentId: adjustId,
+        source: "trusted_bank_statement", direction: "debit",
+        postingStatus: "posted", currency: "THB", amountCents: 25000,
+        bankReferenceHash: refHash, destinationFingerprint: destHash,
+        postedAt: "2026-10-24T09:30:00Z",
+      },
+    };
+    evidence.push(record);
+  }
+  const outcomes = await Promise.allSettled(evidence.map(recordDemoHybridRefundCandidate));
+  assert.equal(outcomes.filter(x => x.status === "fulfilled").length, 1);
+  assert.equal(outcomes.filter(x => x.status === "rejected").length, 1);
+  const claim = await adminDb.collection("hybridRefundReferenceClaims").doc(refHash).get();
+  assert.equal(claim.exists, true);
+  const winningTenant = claim.data().tenantId;
+  assert.equal(["refund-demo-a", "refund-demo-b"].includes(winningTenant), true);
+  for (const e of evidence) {
+    const candidate = await e.tenantRef.collection("hybridBillingRefundCandidates")
+      .doc(e.adjustmentId).get();
+    assert.equal(candidate.exists, e.tenantRef.id === winningTenant);
+    if (candidate.exists) {
+      assert.equal(candidate.data().settlementConfirmed, false);
+      assert.equal(candidate.data().sourceIntegrationReady, false);
+      assert.equal(candidate.data().state, "awaiting_independent_bank_attestation");
+      await assert.rejects(recordDemoHybridRefundCandidate(e),
+        /CANDIDATE_ALREADY_EXISTS|BANK_REFERENCE_ALREADY_CLAIMED/);
+    }
+    const original = await e.tenantRef.collection("hybridBillingInvoices")
+      .doc(financeId).get();
+    assert.equal(original.data().status, "paid");
+    assert.equal((await e.tenantRef.get()).data().hybridBillingSuspended, true);
+  }
+
+  for (const name of ["owner-a", "admin-a", "cashier-a",
+    "owner-b", "super-admin", "anonymous"]) {
+    const browser = identities.get(name).firestore;
+    await denied(getDoc(doc(browser, "hybridRefundReferenceClaims/" + refHash)),
+      "No browser actor may read global refund claims");
+    await denied(setDoc(doc(browser, "hybridRefundReferenceClaims/" + refHash),
+      { state: "settled" }), "No browser actor may overwrite global refund claims");
+    await denied(getDocs(collection(browser, "hybridRefundReferenceClaims")),
+      "No browser role may enumerate bank reference hashes");
+    const candidatePath = "tenants/" + winningTenant + "/hybridBillingRefundCandidates/" +
+      evidence.find(e => e.tenantRef.id === winningTenant).adjustmentId;
+    await denied(setDoc(doc(browser, candidatePath),
+      { settlementConfirmed: true }), "No browser actor can forge settlement");
+    if (name === "super-admin") {
+      assert.equal((await getDoc(doc(browser, candidatePath))).exists(), true);
+    } else {
+      await denied(getDoc(doc(browser, candidatePath)),
+        "Only active Super Admin can read demo candidate");
+    }
+  }
 });
