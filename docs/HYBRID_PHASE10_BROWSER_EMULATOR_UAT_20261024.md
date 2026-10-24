@@ -113,3 +113,14 @@ npm run build:react
 Critical scenarios: (1) unpaid invoice D makes hold eligible only on D+1 Bangkok date; (2) one unpaid older-anniversary invoice keeps hold even if the newest invoice is PAID; (3) absent period index (including a zero-invoice trial) or unindexed Invoice causes a review-required error rather than recovery; (4) completed verified history permits a **proposal** to clear only `hybridBillingSuspended`; (5) separate manual/security/legacy suspension still blocks account access; (6) credit note for unpaid invoice, refund and chargeback for paid invoice only, reject duplicate/cross-tenant/over-amount/untrusted bank destination inputs; (7) no credit/refund proposal ever mutates Wallet, old Invoice, account status or real payment.
 
 The reader intentionally **fails closed on missing historical billing periods**, including pre-cutover legacy periods. Historical migration or an independently reviewed finance reconciliation will be required before enabling automatic recovery. No writer exists and none should be exposed to the browser until those controls are approved. Previous Mac test confirmation applies to the earlier HEAD only.
+
+## 24 October 2026 — Internal finance adjustment transaction UAT
+
+1. In an isolated Emulator project `demo-penguin-hybrid`, verify two simultaneously submitted refund proposals of 350 THB on one PAID 500 THB invoice result in exactly one proposed reservation, not 700 THB. Original PAID invoice and store suspension must remain unchanged.
+2. Try to approve the proposed refund using the same Super Admin who created it; reject with `HYBRID_ADJUSTMENT_SELF_REVIEW_FORBIDDEN`.
+3. Revoke or demote the second Super Admin; reviewer transaction must fail and create **no audit event**. Restore the identity. A second reviewer may approve (an internal decision, not payout) or reject.
+4. Rejecting releases only the invoice's reserved adjustment cap, without deleting the proposal/audit or issuing money; replaying review must fail. Approving keeps cap reserved until independently verified settlement logic is designed.
+5. Browser SDK attempts by owner/admin/cashier, cross-tenant user and Super Admin must fail for create/update/delete of adjustment, balance and event docs. Balance docs are fully unreadable through Browser SDK.
+6. Under NO circumstances should `approved` be displayed as `refunded` or `money sent`. No current UI/Callable exposes these private methods; Finance must still manually verify refund destination and actual bank settlement outside this feature.
+
+New `npm run test:hybrid-finance-records` is included in `test:hybrid-billing`. All changes here are **local source/isolated demo work**, no Production deploy.

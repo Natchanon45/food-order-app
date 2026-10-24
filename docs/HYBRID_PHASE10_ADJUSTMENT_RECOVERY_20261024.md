@@ -42,3 +42,16 @@ npm run build:react
 ```
 
 No Production endpoints were created and no money or account state was changed by this implementation. The owner confirmed the **previous** Mac test suite passed; these latest changes require fresh native tests.
+
+
+## 24 October 2026 — Private atomic adjustment records (still Phase 10)
+
+The prior finance policy was DRY RUN ONLY. A new unexported private module now persists **proposal and internal review records**, but **cannot execute a refund, settle an invoice, change due balances, modify delivery wallet balances or release account access**.
+
+- `hybridBillingAdjustments/{adjustmentId}`: one server-created proposal with original invoice ID and immutable signature, kind, amount, reason summary, status `proposed`, proposer and timestamps. One separate Super Admin can mark `approved` or `rejected` once.
+- `hybridBillingAdjustmentBalances/{invoiceId}`: server-private, transactional reserved-amount cap. Both proposals compete on the same per-invoice document. The cap is retained on internal approval; only rejection releases the reservation. Never send more than the original invoice amount.
+- `hybridBillingAdjustmentEvents/{adjustmentId}-review`: immutable server decision audit record. The reviewer must be a second currently-active Super Admin; neither Browser nor Super Admin client SDK can write these documents.
+- `approved` means **finance review approval only** and does not mean `settled`, `refunded`, `credited`, or `paid` at the bank. No external payout method or Production callable exists. All adjustments are independent of immutable PAID invoices.
+- To avoid stale cumulative caps, the current implementation is for NEW private adjustment records only. There is no active migration of old invoices/adjustments and no Production release. Before go-live, check all historical compensation sources and design settlement receipts, external payment identity, rejections, and retries.
+
+Tests: `npm run test:hybrid-finance-records` (9 unit), `npm run test:firebase-hybrid-emulator` (new concurrency/role and Browser Rules), `npm run test:hybrid-billing`, `npm run test:react-parity`, `npm run build:react`. Source-level mock transaction 9/9 PASS; native Mac and real Firestore Emulator pending.
