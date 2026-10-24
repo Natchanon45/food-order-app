@@ -1,0 +1,93 @@
+/* Read-only Hybrid ledger table: no payable action or unverified slip approval. */
+.hybrid-review-shell{width:min(1240px,calc(100% - 24px));margin-inline:auto}
+.hybrid-review-shell .revenue-share-hero{display:flex;justify-content:space-between;gap:16px}
+.hybrid-review-shell .revenue-share-hero h1{margin-top:14px}
+.hybrid-review-shell .hybrid-report-toolbar select{min-height:42px;min-width:220px;max-width:100%;padding:8px 11px;border:1px solid #d7e5dd;border-radius:10px;background:#fff}
+.hybrid-review-shell .hybrid-report-metrics{margin-block:14px}
+.hybrid-review-shell .hybrid-report-details{margin-block:14px}
+.hybrid-review-shell .hybrid-report-details .btn{justify-self:start}
+.hybrid-review-id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;overflow-wrap:anywhere}
+.hybrid-review-status{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:750;white-space:nowrap;background:#edf1f5;color:#35475a}
+.hybrid-review-status.pending_review{background:#fff5e2;color:#915600}
+.hybrid-review-status.paid{background:#e6f7ed;color:#146b3e}
+.hybrid-review-status.rejected{background:#fff0ef;color:#a23732}
+.hybrid-review-status.issued{background:#e9f1fd;color:#2356a0}
+.hybrid-review-inline{margin-top:16px}
+.hybrid-review-inline .hybrid-report-details{margin:0}
+@media(max-width:760px){
+  .hybrid-review-shell .hybrid-report-toolbar{flex-direction:column;align-items:stretch}
+  .hybrid-review-shell .hybrid-report-toolbar select,.hybrid-review-shell .hybrid-report-toolbar button{width:100%;min-width:0}
+  .hybrid-review-shell .hybrid-report-table-scroll{-webkit-overflow-scrolling:touch}
+  .hybrid-review-inline .hybrid-report-table-scroll table{min-width:520px}
+}
+
+/* Phase 7: finance review controls are visible in a locked preview state.
+   All mutation paths remain disabled until a separately approved rollout. */
+.hybrid-review-decision{display:flex;flex-direction:column;gap:9px;min-width:250px;max-width:360px}
+.hybrid-review-decision>label:first-child{font-size:12px;font-weight:700}
+.hybrid-review-decision textarea{width:100%;box-sizing:border-box;min-height:64px;resize:vertical;border:1px solid #d4e3d9;border-radius:10px;padding:9px 11px;font:inherit}
+.hybrid-review-decision textarea:disabled{opacity:.65;background:#f6f8f7;cursor:not-allowed}
+.hybrid-review-confirm{display:flex;align-items:start;gap:7px;font-size:12px;line-height:1.5}
+.hybrid-review-confirm input{margin-top:3px}
+.hybrid-review-actions{display:flex;gap:8px}
+.hybrid-review-actions .btn{flex:1;display:inline-flex;justify-content:center;align-items:center;min-height:35px}
+.hybrid-review-actions .btn:disabled{opacity:.48;cursor:not-allowed}
+.hybrid-review-closed{font-size:12px;line-height:1.5;color:#687770}
+@media(max-width:760px){.hybrid-review-decision{min-width:215px;max-width:260px}}
+
+/* Phase 9: tenant evidence is a LOCAL, nonpayment preview until separate release. */
+.hybrid-tenant-proof{margin-top:16px;padding:18px;display:flex;flex-direction:column;gap:12px;border:1px solid #dce9df;border-radius:14px}
+.hybrid-tenant-proof-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.hybrid-tenant-proof-heading h3{margin:0;font-size:18px}
+.hybrid-tenant-proof-heading p{margin:5px 0 0}
+.hybrid-tenant-proof-heading .btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.hybrid-tenant-proof-amount{display:flex;flex-direction:column;gap:4px}
+.hybrid-tenant-proof-amount small{font-size:12px;color:#5f7067}
+.hybrid-tenant-proof-amount strong{font-size:23px;line-height:1.25;color:#183e2c}
+.hybrid-tenant-proof-warning{display:flex;align-items:flex-start;gap:9px;border:1px solid #e7d6a1;background:#fff9e8;border-radius:9px;padding:11px 12px;color:#72500b;line-height:1.5;margin:0}
+.hybrid-tenant-proof-warning .app-icon{margin-top:3px;flex-shrink:0}
+.hybrid-tenant-proof-explain{margin:0;line-height:1.55}
+.hybrid-tenant-proof>label{font-size:13px;font-weight:700}
+.hybrid-tenant-proof input[type=file]{display:block;max-width:100%;font:inherit;font-size:13px}
+.hybrid-tenant-proof>small{line-height:1.5}
+.hybrid-tenant-proof-error{margin:0;color:#a92d29;font-size:13px}
+.hybrid-tenant-proof-summary{display:flex;align-items:flex-start;gap:9px;background:#edf8f0;border:1px solid #cae7d3;padding:11px;border-radius:9px}
+.hybrid-tenant-proof-summary>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hybrid-tenant-proof-summary strong{font-size:13px;overflow-wrap:anywhere}
+.hybrid-tenant-proof-summary small{font-size:12px;color:#3e6950}
+.hybrid-tenant-proof-actions{display:flex}
+.hybrid-tenant-proof-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px}
+.hybrid-tenant-proof-actions .btn:disabled{opacity:.48;cursor:not-allowed}
+.hybrid-tenant-proof-private{color:#5b7366}
+@media(max-width:760px){.hybrid-tenant-proof{padding:14px}.hybrid-tenant-proof-actions .btn{width:100%}.hybrid-tenant-proof-amount strong{font-size:20px}.hybrid-tenant-proof-heading h3{font-size:16px}}
+
+/* Invoice ledger refresh controls remain accessible without crowding mobile. */
+.hybrid-review-list-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hybrid-review-list-heading h2{margin:0}
+.hybrid-review-list-heading .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px}
+@media(max-width:760px){.hybrid-review-list-heading{align-items:stretch;flex-direction:column}.hybrid-review-list-heading .btn{width:100%}}
+
+/* Financial upload controls appear only with two DEV-only emulator opt-ins. */
+.hybrid-demo-banner{border:1px solid #91bed5;background:#edf7ff;color:#13466b;border-radius:10px;padding:12px 14px;line-height:1.55;margin:0}
+.hybrid-demo-step{display:block;color:#184b68;font-weight:650}
+.hybrid-tenant-proof .hybrid-demo-banner{font-size:13px}
+@media(max-width:760px){.hybrid-demo-banner{padding:10px 12px}}
+
+/* Immutable Super Admin finance audit history — read-only, no raw bank data. */
+.hybrid-review-audit .hybrid-report-table-scroll table{min-width:750px}
+.hybrid-review-audit-note{max-width:260px;overflow-wrap:anywhere;line-height:1.45}
+.hybrid-review-audit .btn{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;min-height:38px}
+@media(max-width:760px){.hybrid-review-audit .btn{width:100%}}
+
+/* Phase 10 adjustment proposals: read-only finance history, mobile scroll. */
+.hybrid-adjustment-history .hybrid-report-table-scroll table{min-width:850px}
+.hybrid-adjustment-history .hybrid-review-status.approved{background:#edf2fa;color:#28436e}
+.hybrid-adjustment-history .hybrid-review-status.proposed{background:#fff5e2;color:#915600}
+.hybrid-adjustment-unsettled{color:#8d5b12;font-weight:650;line-height:1.45}
+.hybrid-adjustment-history .btn{margin-top:10px;display:inline-flex;justify-content:center;align-items:center;min-height:38px}
+@media(max-width:760px){.hybrid-adjustment-history .btn{width:100%}}
+
+/* Unverified refund evidence list is read-only and scrollable on mobile. */
+.hybrid-refund-candidate-history .hybrid-report-table-scroll table{min-width:810px}
+.hybrid-refund-candidate-history .btn{margin-top:10px;min-height:38px;display:inline-flex;justify-content:center;align-items:center}
+@media(max-width:760px){.hybrid-refund-candidate-history .btn{width:100%}}
