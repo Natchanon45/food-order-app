@@ -1,3 +1,11 @@
+## 2026-10-24 — FINAL Phase 10: demo refund evidence anti-replay, no settlement
+
+- User confirmed previous Mac test suite `805009b3` passed and asked to continue; Mac mini Remote Desktop Commander is OFFLINE this turn. **New commits' native tests/Emulator not confirmed**.
+- Added PRIVATE `functions/hybrid-billing-refund-candidate.js` implementing `recordDemoHybridRefundCandidate`, with hard `HYBRID_REFUND_CANDIDATE_PRODUCTION_READY=false` and verified local Firestore Emulator + exact `demo-penguin-hybrid` project. Not imported by Production bootstrap.
+- The 3rd active Super Admin (neither proposer nor reviewer) rechecks paid invoice, approved adjustment, immutable decision event, and source compare in one Admin transaction; creates server-private global `hybridRefundReferenceClaims/{hash}` and immutable tenant-scoped `hybridBillingRefundCandidates/{adjustmentId}`. Concurrent/replayed/hash-reused candidates reject, including cross-tenant. No bank source is presently authenticated; candidate remains `awaiting_independent_bank_attestation`, `settlementConfirmed:false`, `sourceIntegrationReady:false`, no invoice status changes, cash payout, Wallet or tenant access changes.
+- Firestore Rules deny every Browser role reads/writes on global claims; candidate is Super Admin read-only; all client writes denied. Added `test:hybrid-refund-candidate` (8 cases) and real Firestore Emulator cross-tenant race/permissions test to `hybrid-finance-security.spec.mjs`. **8/8 V8 unit fixture tests passed**, but real Mac/Emulator tests pending for this update.
+- Full instructions and limitations in `docs/HYBRID_PHASE10_REFUND_CANDIDATE_20261024.md`. Before the user signs off on go-live, need authentic bank import, old refund reconciliation, global cross-channel claims, independent final finance attestation and settlement receipt, App Check/Slip2Go and Browser UAT. Keep Production flags OFF; no merge/main or Production deployment.
+
 ## 2026-10-24 — FINAL Phase 10: adjustment history UI and private refund bank reconciliation preflight
 
 - User confirmed native tests for `49597547` passed and requested continuation. Mac mini Remote Desktop Commander is OFFLINE during this session; **native tests on new commits are not yet confirmed**.

@@ -141,3 +141,21 @@ npm run test:hybrid-billing
 npm run test:react-parity
 npm run build:react
 ```
+
+## 24 October 2026 — Refund evidence candidate cross-tenant replay UAT
+
+- Read `docs/HYBRID_PHASE10_REFUND_CANDIDATE_20261024.md` and run
+  `npm run test:hybrid-refund-candidate`,
+  `npm run test:firebase-hybrid-emulator`,
+  `npm run test:hybrid-billing` and `npm run build:react`.
+- The new real Emulator test submits two different shops' synthetic refund
+  reconciliations with the **same bank reference hash simultaneously**. Exactly
+  one private Admin transaction must create the candidate+claim; the other
+  must fail. Both shops' PAID invoices and access state remain unchanged.
+- Browser owner/admin/cashier/other shop/Super Admin cannot read global claims
+  or forge `settlementConfirmed:true`. Only active Super Admin may read a
+  candidate, which must still say `awaiting_independent_bank_attestation`
+  and `settlementConfirmed:false`.
+- This is **NOT confirmation of a real refund**. No bank importer, final
+  settlement writer or Production callable exists. The user must approve
+  any future release explicitly.
