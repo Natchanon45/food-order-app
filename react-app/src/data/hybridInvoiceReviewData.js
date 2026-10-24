@@ -103,6 +103,13 @@ export async function listHybridPaymentReviewEvents(tenantId, {
 // ONLY: never infer bank payout, refund, credit applied or invoice settlement.
 const safeFinanceText = value => String(value || "")
   .replace(/(?:[0-9๐-๙][\s.-]?){8,20}/g, "[redacted]").slice(0, 160);
+// Trusted ledger identifiers may legitimately contain YYYY-MM-DD (8 digits).
+// Do not run bank-number redaction on document IDs; validate safe characters
+// instead. Notes continue to redact account-like digit sequences.
+const safeFinanceId = value => {
+  const id = String(value || "");
+  return /^[A-Za-z0-9_:-]{3,160}$/.test(id) ? id : "";
+};
 const safeMoney = value => Number.isFinite(value) && value > 0
   && value <= 1000000000 ? Math.round(value * 100) / 100 : 0;
 const financeKinds = new Set(["credit_note", "refund_request", "chargeback_review"]);
@@ -127,13 +134,13 @@ export async function listHybridAdjustments(tenantId, {
     items: result.docs.map(doc => {
       const record = doc.data() || {};
       return {
-        id: doc.id, invoiceId: safeFinanceText(record.invoiceId),
+        id: doc.id, invoiceId: safeFinanceId(record.invoiceId),
         kind: financeKinds.has(record.kind) ? record.kind : "unknown",
         amount: safeMoney(record.amount),
         status: financeStatuses.has(record.status) ? record.status : "unknown",
-        proposedBy: safeFinanceText(record.proposedBy),
+        proposedBy: safeFinanceId(record.proposedBy),
         proposedAt: record.proposedAt || null,
-        reviewedBy: safeFinanceText(record.reviewedBy),
+        reviewedBy: safeFinanceId(record.reviewedBy),
         // Keep internal review distinct from actual cash settlement.
         payoutConfirmed: false,
         reasonPreview: safeFinanceText(record.reasonSummary),
@@ -160,13 +167,13 @@ export async function listHybridAdjustmentReviewEvents(tenantId, {
     items: result.docs.map(doc => {
       const event = doc.data() || {};
       return {
-        id: doc.id, invoiceId: safeFinanceText(event.invoiceId),
-        adjustmentId: safeFinanceText(event.adjustmentId),
+        id: doc.id, invoiceId: safeFinanceId(event.invoiceId),
+        adjustmentId: safeFinanceId(event.adjustmentId),
         action: event.action === "approve" ? "approve"
           : event.action === "reject" ? "reject" : "unknown",
         resultStatus: financeStatuses.has(event.resultStatus)
           ? event.resultStatus : "unknown",
-        reviewerId: safeFinanceText(event.reviewerId),
+        reviewerId: safeFinanceId(event.reviewerId),
         reviewedAt: event.reviewedAt || null,
         // Ignore any externallySettled flag until real bank reconciliation.
         payoutConfirmed: false,
@@ -198,10 +205,10 @@ export async function listHybridRefundCandidates(tenantId, {
       const evidence = doc.data() || {};
       return {
         id: doc.id,
-        invoiceId: safeFinanceText(evidence.invoiceId),
+        invoiceId: safeFinanceId(evidence.invoiceId),
         amount: safeMoney(evidence.amount),
         createdAt: evidence.createdAt || null,
-        observedBy: safeFinanceText(evidence.observedBy),
+        observedBy: safeFinanceId(evidence.observedBy),
         // Always render the conservative server state. Do not render raw
         // outgoing transfer IDs, destination fingerprints or bank hash.
         state: "awaiting_independent_bank_attestation",
