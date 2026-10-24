@@ -778,8 +778,11 @@
    The mask avoids fixed black/color SVG files and preserves approved layouts. */
 .revenue-share-dashboard .delivery-bike-line-icon{
   display:inline-block;
-  width:1.6em;
-  height:1.12em;
+  /* The source SVG is square, with whitespace above/below the line art.
+     Give its mask a square footprint so its visible artwork matches other
+     icons in the 69px Delivery badge and smaller equation/payment badges. */
+  width:1.5em;
+  height:1.5em;
   flex:0 0 auto;
   background-color:currentColor;
   -webkit-mask:url("/react/parity/icons/delivery-bike-outline.svg") center / contain no-repeat;
