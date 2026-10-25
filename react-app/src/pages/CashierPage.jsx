@@ -473,9 +473,6 @@ function CashierBillPreviewModal({ preview, slipUrls, t, money, formatTime, onCl
                 }}>
                   <strong>{t("cashier.payment.slip_manual_pending")}</strong>
                   <p style={{ margin: "5px 0" }}>{slipReview.text}</p>
-                  <small style={{ display: "block", opacity: .8 }}>
-                    {slipReview.reason}{slipReview.code ? " · Slip2Go " + slipReview.code : ""}
-                  </small>
                 </div>
               ) : null}
               {previewSlipUrl
