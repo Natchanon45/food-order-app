@@ -38,6 +38,15 @@ function bangkokDateKey(value) {
   return validDateKey(key) ? key : "";
 }
 
+// Original shop registration date, NOT a renewed membership date or a
+// monthly billing anchor. Public signup and admin create both save createdAt
+// on the tenant document using the Firestore server clock. Fail closed when
+// old tenants have no recorded creation date rather than inventing one.
+export function firstTenantRegistrationDate(tenant) {
+  const key = bangkokDateKey(tenant?.createdAt);
+  return key ? key.slice(8, 10) + "/" + key.slice(5, 7) + "/" + key.slice(0, 4) : "";
+}
+
 function tenantAnchorDate(tenant) {
   // Mirror functions/billing-anniversary.js, including source priority.
   if (!tenant || typeof tenant !== "object") return "";
