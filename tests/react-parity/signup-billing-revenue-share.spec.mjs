@@ -352,6 +352,38 @@ test("Only central Delivery excess is charged regardless of stale tenant legacy 
   const revisedSummary = await loaded.exports.__summary("legacy", span("2026-10-01", "2026-11-01"), revised);
   assert.equal(revisedSummary.deliveryShareAmount, 0, "Central higher threshold wins regardless of stale Tenant config");
   assert.equal(revisedSummary.legacyShareAmount, 0, "Legacy POS/table charges disabled universally");
+  // Real screenshot regression: 1,774 THB POS + 3,484 THB Delivery
+  // under a 10,000 THB anniversary exemption MUST owe 0, not 88.70.
+  orders.splice(0, orders.length, {
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    subtotalAmount: 3484, totalAmount: 3484, deliveryFee: 0,
+    paidAt: "2026-10-25T08:00:00+07:00",
+  });
+  sales.splice(0, sales.length, {
+    totalAmount: 1774, status: "completed", createdAt: "2026-10-25T09:00:00+07:00",
+  });
+  const actualShop = loaded.exports.__setting({
+    billingMode: "revenue_share", revenueShareEnabled: true,
+    revenueShareRate: 5, revenueShareRestaurantScope: "all",
+    businessType: "both", createdAt: "2026-10-21T08:00:00+07:00",
+  }, pricing);
+  const under = await loaded.exports.__summary("screenshot", span("2026-10-25", "2026-10-26"), actualShop);
+  assert.equal(under.inStoreSales, 1774);
+  assert.equal(under.deliveryOrderSales, 3484);
+  for (const field of ["deliveryShareBase", "deliveryShareAmount", "legacyShareAmount", "revenueShare", "platformAmountDue"]) {
+    assert.equal(under[field], 0, field + " must be zero before the first 10k Delivery goods");
+  }
+  orders.push({
+    orderType: "delivery", paymentStatus: "paid", status: "delivered",
+    subtotalAmount: 7000, totalAmount: 7000, deliveryFee: 0,
+    paidAt: "2026-10-25T12:00:00+07:00",
+  });
+  const over = await loaded.exports.__summary("screenshot", span("2026-10-25", "2026-10-26"), actualShop);
+  assert.equal(over.deliveryShareBase, 484, "Only 484 THB exceeds the 10k ceiling");
+  assert.equal(over.deliveryShareAmount, 24.2, "5% of only Delivery excess");
+  assert.equal(over.platformAmountDue, 24.2);
+  assert.equal(over.legacyShareAmount, 0, "POS/table sales always excluded");
+
   assert.match(server, /revenueSetting\(tenant, await loadPricing\(getFirestore\(\)\)\)/);
   assert.match(server, /revenueSetting\(tenant, premiumPricing\)/);
   assert.match(server, /if \(!setting\.enabled\) \{/);
