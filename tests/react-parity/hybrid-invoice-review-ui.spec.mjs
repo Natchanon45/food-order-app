@@ -10,10 +10,10 @@ const admin = read("react-app/src/pages/HybridBillingReviewPage.jsx");
 const data = read("react-app/src/data/hybridInvoiceReviewData.js");
 const rules = read("firestore.rules");
 
-test("Super Admin invoice review is routed, linked from platform and role protected", () => {
+test("Super Admin invoice review route remains protected while its Platform card stays hidden", () => {
   assert.match(app, /import \{ HybridBillingReviewPage \}/);
   assert.match(app, /path="\/platform\/hybrid-invoices" element=\{<HybridBillingReviewPage \/>\}/);
-  assert.match(platform, /to="\/platform\/hybrid-invoices"/);
+  assert.doesNotMatch(platform, /to="\/platform\/hybrid-invoices"/);\n  assert.match(platform, /Hybrid invoice review route and its existing data are retained/);
   assert.match(admin, /auth\.profile\.role !== "super_admin"/);
   assert.match(admin, /<Navigate to="\/login\?next=%2Fplatform%2Fhybrid-invoices"/);
 });
