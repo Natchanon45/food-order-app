@@ -16,20 +16,17 @@ test("old Cashier bill explains unresolved Lalamove quotation without claiming t
     ...base,
     paymentReviewReason: "delivery_fee_requires_cashier_review",
   }, t);
-  assert.equal(result.reason, "delivery_fee_requires_cashier_review");
-  assert.equal(result.text, "delivery.checkout.payment.slip_manual_fee");
+  assert.deepEqual(result, { text: "delivery.checkout.payment.slip_manual_fee" });
 });
 
-test("cashier sees primary Slip2Go failure and safe six digit provider code on fallback", () => {
+test("cashier sees a localized explanation but never technical provider code or raw reason", () => {
   const result = cashierSlipReviewSummary({
     ...base,
     paymentReviewReason: "slip2go_fallback_vision",
     paymentReviewPrimaryReason: "slip2go_quota_exhausted",
     paymentReviewProviderCode: "401005",
   }, t);
-  assert.equal(result.reason, "slip2go_quota_exhausted");
-  assert.equal(result.code, "401005");
-  assert.equal(result.text, "delivery.checkout.payment.slip_manual_quota");
+  assert.deepEqual(result, { text: "delivery.checkout.payment.slip_manual_quota" });
 });
 
 test("paid and non-manual orders never show an invalid review warning", () => {
@@ -48,6 +45,10 @@ test("backend preserves fallback original error in server proof and Cashier orde
   assert.ok(engine.includes('primaryReason: String(primary?.reason'));
   assert.ok(engine.includes('primaryCode: String(primary?.code'));
   assert.ok(cashier.includes('data-cashier-slip-review-reason'));
+  assert.match(cashier, /\{slipReview\.text\}/);
+  assert.doesNotMatch(cashier, /slipReview\.reason|slipReview\.code/);
+  const helper = readFileSync("react-app/src/utils/cashierSlipReview.js", "utf8");
+  assert.doesNotMatch(helper, /reason:\s*reason\s*\|\||code:\s*\/\^/);
 });
 
 test("Slip2Go 401004 is package expiration, not invalid credentials or empty quota", () => {
@@ -56,9 +57,7 @@ test("Slip2Go 401004 is package expiration, not invalid credentials or empty quo
     paymentReviewPrimaryReason: "slip2go_package_expired",
     paymentReviewProviderCode: "401004",
   }, t);
-  assert.equal(review.reason, "slip2go_package_expired");
-  assert.equal(review.code, "401004");
-  assert.equal(review.text, "delivery.checkout.payment.slip_manual_package_expired");
+  assert.deepEqual(review, { text: "delivery.checkout.payment.slip_manual_package_expired" });
   const platform = readFileSync("functions/platform-settings.js", "utf8");
   assert.ok(platform.includes('if (normalized === "401004") return "package_expired";'));
   for (const path of ["functions/slip-verification.js", "functions/tenant-lalamove-wallet.js"]) {
@@ -66,4 +65,18 @@ test("Slip2Go 401004 is package expiration, not invalid credentials or empty quo
     assert.ok(source.includes('"401004": ["manual_review", "slip2go_package_expired", true]'), path);
     assert.ok(!source.includes('"401004": ["config_invalid"'), path);
   }
+});
+
+test("Thai cashier message names the reason without a developer status or raw API code", () => {
+  const locale = JSON.parse(readFileSync("react-app/src/i18n/parity-translations.json", "utf8"));
+  // Translation data holds the established cashier-facing explanations.
+  const thai = key => key.split(".").reduce((value, segment) => value?.[segment], locale.th) || key;
+  const output = cashierSlipReviewSummary({
+    ...base, paymentReviewReason: "slip2go_config_required",
+    paymentReviewProviderCode: "401004",
+  }, thai);
+  assert.ok(output?.text);
+  assert.match(output.text, /ตรวจสลิป|แคชเชียร์/);
+  assert.doesNotMatch(output.text, /manual_review|slip2go_config_required|401004/i);
+  assert.deepEqual(Object.keys(output), ["text"], "Cashier must receive presentation data only");
 });
