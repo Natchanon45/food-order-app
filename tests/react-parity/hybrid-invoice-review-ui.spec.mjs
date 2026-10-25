@@ -13,7 +13,8 @@ const rules = read("firestore.rules");
 test("Super Admin invoice review route remains protected while its Platform card stays hidden", () => {
   assert.match(app, /import \{ HybridBillingReviewPage \}/);
   assert.match(app, /path="\/platform\/hybrid-invoices" element=\{<HybridBillingReviewPage \/>\}/);
-  assert.doesNotMatch(platform, /to="\/platform\/hybrid-invoices"/);\n  assert.match(platform, /Hybrid invoice review route and its existing data are retained/);
+  assert.doesNotMatch(platform, /to="\/platform\/hybrid-invoices"/);
+  assert.match(platform, /Hybrid invoice review route and its existing data are retained/);
   assert.match(admin, /auth\.profile\.role !== "super_admin"/);
   assert.match(admin, /<Navigate to="\/login\?next=%2Fplatform%2Fhybrid-invoices"/);
 });
