@@ -111,35 +111,33 @@ async function assertTenantAdmin(auth) {
 }
 
 function revenueSetting(tenant = {}, premiumPricing = null) {
-  const legacyChannels = revenueShareChannels(tenant);
-  const businessType = normalizeBusinessType(tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both");
-  // One centrally administered Delivery threshold/rate applies to every
-  // restaurant-capable Tenant. Old legacy non-Delivery charges remain distinct.
+  const businessType = normalizeBusinessType(
+    tenant.businessType || tenant.signupBilling?.businessType || tenant.revenueShareBusinessType || "both"
+  );
+  // ONE billable rule: only paid Delivery goods ABOVE the central threshold
+  // in an activation-anniversary cycle. Ignore historical rate, mode and scope.
   const centralDeliveryShare = tenant.billingPolicyVersion !== "hybrid_v1"
     && businessType !== "retail" && premiumPricing != null
     && Number(premiumPricing.deliveryShareRate) > 0;
-  // Prelaunch uniform policy: empty legacy billingMode fields must not exempt
-  // a store from centrally configured paid-Delivery threshold/share rules.
-  const premiumDeliveryShare = centralDeliveryShare && !legacyChannels.enabled;
-  const channels = premiumDeliveryShare
-    ? { enabled: true, includeRestaurant: true, includeRetail: false, restaurantScope: "delivery_only" }
-    : legacyChannels;
+  const channels = {
+    enabled: centralDeliveryShare,
+    includeRestaurant: centralDeliveryShare,
+    includeRetail: false,
+    restaurantScope: "delivery_only",
+  };
   return {
-    enabled: legacyChannels.enabled || premiumDeliveryShare,
-    legacyEnabled: legacyChannels.enabled,
+    enabled: centralDeliveryShare,
+    legacyEnabled: false,
     centralDeliveryShare,
-    premiumDeliveryShare,
-    rate: legacyChannels.enabled ? Math.max(0, Math.min(100, Number(tenant.revenueShareRate || 0)))
-      : (centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0),
+    premiumDeliveryShare: centralDeliveryShare,
+    rate: centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0,
     deliveryShareRate: centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0,
-    deliveryThreshold: premiumPricing != null ? Number(premiumPricing.deliveryThreshold)
-      : Number(tenant.revenueShareDeliveryThreshold ?? 10000),
-    billingCycle: premiumDeliveryShare ? "daily"
-      : (tenant.revenueShareBillingCycle === "daily" ? "daily" : "monthly"),
+    deliveryThreshold: premiumPricing != null ? Number(premiumPricing.deliveryThreshold) : 10000,
+    billingCycle: "daily",
     billingAnchorDate: tenantAnchorDate(tenant),
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
     businessType,
-    restaurantScope: channels.restaurantScope,
+    restaurantScope: "delivery_only",
     channels,
   };
 }
@@ -172,7 +170,7 @@ async function summaryForTenant(tenantId, period, setting) {
   ]);
   let orderSales = 0, orderCount = 0, posSales = 0, posCount = 0;
   let storefrontOrderSales = 0, deliveryOrderSales = 0;
-  let shareOrderSales = 0, sharePosSales = 0, shareDeliverySales = 0;
+  let shareDeliverySales = 0;
   let customerDeliveryFees = 0, lalamoveDeliveryCost = 0, lalamoveWalletCoveredCost = 0, deliverySubsidy = 0;
 
   // Evaluate a whole Bangkok calendar month even for a daily report. Otherwise
@@ -255,11 +253,7 @@ async function summaryForTenant(tenantId, period, setting) {
     if (isDelivery) deliveryOrderSales += foodSales;
     else storefrontOrderSales += foodSales;
     orderCount += 1;
-    if (!isDelivery && setting.legacyEnabled && setting.channels.includeRestaurant
-      && restaurantOrderEligible(orderType, setting.channels.restaurantScope)) {
-      // Preserve the existing non-Delivery legacy charging rules only.
-      shareOrderSales += foodSales;
-    }
+    // In-store / table sales are reporting-only, never chargeable.
     // Paid Delivery amounts are accounted for by paidDeliveryDaily and
     // shareableDeliveryByDay below, not by summing an entire qualifying day.
     // This avoids taxing the exempt 10,000 THB and duplicated trigger-day orders.
@@ -279,7 +273,6 @@ async function summaryForTenant(tenantId, period, setting) {
     // Retail POS is shown in reporting even when excluded from the share base.
     posSales += net;
     posCount += 1;
-    if (setting.legacyEnabled && setting.channels.includeRetail) sharePosSales += net;
   });
 
   const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
@@ -301,14 +294,13 @@ async function summaryForTenant(tenantId, period, setting) {
   shareDeliverySales = [...shareableDeliveryByDay].reduce((sum, [day, cents]) =>
     day >= reportStartDate && day < reportEndExclusive && eligibleDeliveryDays.has(day)
       ? sum + cents : sum, 0) / 100;
-  const legacyShareBase = setting.legacyEnabled ? roundMoney(shareOrderSales + sharePosSales) : 0;
   const deliveryShareBase = roundMoney(shareDeliverySales);
   const deliveryShareAmount = setting.centralDeliveryShare
     ? roundMoney(deliveryShareBase * setting.deliveryShareRate / 100) : 0;
-  const legacyShareAmount = setting.legacyEnabled
-    ? roundMoney(legacyShareBase * setting.rate / 100) : 0;
-  const revenueShareBase = roundMoney(legacyShareBase + deliveryShareBase);
-  const revenueShare = roundMoney(deliveryShareAmount + legacyShareAmount);
+  // Obsolete response fields remain zero for old clients. No legacy bill.
+  const legacyShareAmount = 0;
+  const revenueShareBase = deliveryShareBase;
+  const revenueShare = deliveryShareAmount;
   // Diagnostic only: a missing or stale per-order Wallet debit stamp is NOT
   // proof that the tenant owes the Platform for a Lalamove delivery. The actual
   // Wallet debit is handled by the prepaid wallet ledger during dispatch.
@@ -323,7 +315,7 @@ async function summaryForTenant(tenantId, period, setting) {
     monthlyDeliveryStartDate: cycleStart, monthlyDeliveryEndDate: cycleEnd,
     customerDeliveryFees, lalamoveDeliveryCost, lalamoveWalletCoveredCost,
     lalamoveOutstandingCost, deliverySubsidy,
-    revenueShareEnabled: setting.legacyEnabled ?? setting.enabled,
+    revenueShareEnabled: false,
     premiumDeliveryShareEnabled: setting.premiumDeliveryShare === true,
     centralDeliveryShareEnabled: setting.centralDeliveryShare === true,
     deliveryShareRate: setting.deliveryShareRate,
@@ -575,6 +567,30 @@ async function reconcileTenant(tenantId, centralPricing = null) {
   }
   if (setting.premiumDeliveryShare && !setting.billingAnchorDate) {
     return { state: "missing_activation", action: "none" };
+  }
+  if (tenant.revenueShareSuspended) {
+    // An obsolete POS/table charge must never keep a tenant suspended.
+    // Release only a billing hold; do not override subscription/manual holds.
+    const suspendedStart = String(tenant.revenueShareSuspendedPeriodStart || "");
+    const suspendedEnd = String(tenant.revenueShareSuspendedPeriodEnd || "");
+    if (suspendedStart && suspendedEnd && subscriptionActive(tenant)) {
+      const heldPeriod = periodFromData(
+        suspendedStart === suspendedEnd
+          ? { period: "daily", date: suspendedStart }
+          : { period: "custom", startDate: suspendedStart, endDate: suspendedEnd }, tenant);
+      const held = await summaryForTenant(tenantId, heldPeriod, setting);
+      if (held.platformAmountDue <= 0) {
+        await mirrorTenantAccess(tenantRef, tenant, {
+          active: true, revenueShareSuspended: false,
+          revenueShareSuspendedAt: FieldValue.delete(),
+          revenueShareSuspendedPeriodType: FieldValue.delete(),
+          revenueShareSuspendedPeriodStart: FieldValue.delete(),
+          revenueShareSuspendedPeriodEnd: FieldValue.delete(),
+          revenueShareSuspensionReason: FieldValue.delete(),
+        });
+        tenant = { ...tenant, active: true, revenueShareSuspended: false };
+      }
+    }
   }
   if (tenant.revenueShareSuspended) {
     const payment = await latestPaymentForPeriod(tenantRef, tenant.revenueShareSuspendedPeriodStart || "", tenant.revenueShareSuspendedPeriodEnd || "");
@@ -1007,13 +1023,23 @@ exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => 
     }
   } else if (status === "rejected"
     && payment.periodEnd < dateKey(new Date())) {
-    // A same-day rejected slip does not suspend the shop before midnight.
-    await mirrorTenantAccess(tenantRef, tenant, { active: false,
-      revenueShareSuspended: true, revenueShareSuspendedAt: FieldValue.serverTimestamp(),
-      revenueShareSuspendedPeriodType: payment.periodType,
-      revenueShareSuspendedPeriodStart: payment.periodStart,
-      revenueShareSuspendedPeriodEnd: payment.periodEnd,
-      revenueShareSuspensionReason: "rejected_payment" });
+    // Never suspend for a rejected legacy POS/table proof.
+    const setting = revenueSetting(tenant, await loadPricing(db));
+    if (setting.enabled && setting.billingAnchorDate && subscriptionActive(tenant)) {
+      const period = periodFromData(
+        payment.periodStart === payment.periodEnd
+          ? { period: "daily", date: payment.periodStart }
+          : { period: "custom", startDate: payment.periodStart, endDate: payment.periodEnd }, tenant);
+      const outstanding = await summaryForTenant(tenantId, period, setting);
+      if (outstanding.platformAmountDue > 0) {
+        await mirrorTenantAccess(tenantRef, tenant, { active: false,
+          revenueShareSuspended: true, revenueShareSuspendedAt: FieldValue.serverTimestamp(),
+          revenueShareSuspendedPeriodType: payment.periodType,
+          revenueShareSuspendedPeriodStart: payment.periodStart,
+          revenueShareSuspendedPeriodEnd: payment.periodEnd,
+          revenueShareSuspensionReason: "rejected_payment" });
+      }
+    }
   }
   return { ok: true, status };
 });
