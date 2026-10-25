@@ -1000,6 +1000,31 @@ exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => 
   const tenantSnapshot = await tenantRef.get();
   if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Payment not found");
   const status = action === "approve" ? "approved" : "rejected";
+  // Never approve a pending legacy invoice for POS/table or an amount that
+  // exceeds the new Delivery-only liability. Existing approved records remain
+  // historical evidence and are not silently altered.
+  if (status === "approved") {
+    const tenant = { id: tenantSnapshot.id, ...tenantSnapshot.data() };
+    const setting = revenueSetting(tenant, await loadPricing(db));
+    const pending = await paymentRef.get();
+    if (!pending.exists) throw new HttpsError("not-found", "Payment not found");
+    const row = pending.data() || {};
+    if (!setting.enabled || !setting.billingAnchorDate
+      || !/^\d{4}-\d{2}-\d{2}$/.test(String(row.periodStart || ""))
+      || !/^\d{4}-\d{2}-\d{2}$/.test(String(row.periodEnd || ""))) {
+      throw new HttpsError("failed-precondition", "REVENUE_SHARE_NO_AMOUNT_DUE");
+    }
+    const reportPeriod = periodFromData(
+      row.periodStart === row.periodEnd
+        ? { period: "daily", date: row.periodStart }
+        : { period: "custom", startDate: row.periodStart, endDate: row.periodEnd },
+      tenant);
+    const due = await summaryForTenant(tenantId, reportPeriod, setting);
+    const originallyClaimed = Number(row.platformAmountDue ?? row.amount ?? 0);
+    if (due.platformAmountDue <= 0 || Math.abs(due.platformAmountDue - originallyClaimed) > 0.01) {
+      throw new HttpsError("failed-precondition", "REVENUE_SHARE_AMOUNT_CHANGED");
+    }
+  }
   let payment = null;
   await db.runTransaction(async transaction => {
     const paymentSnapshot = await transaction.get(paymentRef);
