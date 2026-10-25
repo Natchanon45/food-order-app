@@ -92,12 +92,12 @@ test("first-registration label reflects Firestore tenant.createdAt, not billing 
 });
 
 test("registration is displayed directly under current billing period without changing report layout", () => {
-  assert.match(component, /const firstRegisteredDate = firstTenantRegistrationDate\\(tenant\\)/);
-  assert.match(component, /id="revenueShareFirstRegistered"/);
-  assert.match(component, /วันที่สมัคร\\/เปิดใช้งานครั้งแรก/);
-  assert.match(component, /firstRegisteredDate \\|\\| rc\\("ไม่มีข้อมูล"/);
+  assert.ok(component.includes("const firstRegisteredDate = firstTenantRegistrationDate(tenant);"));
+  assert.ok(component.includes('id="revenueShareFirstRegistered"'));
+  assert.ok(component.includes("วันที่สมัคร/เปิดใช้งานครั้งแรก"));
+  assert.ok(component.includes('firstRegisteredDate || rc("ไม่มีข้อมูล"'));
   const rangePos = component.indexOf('id="revenueShareBillingPeriod"');
   const signupPos = component.indexOf('id="revenueShareFirstRegistered"');
   assert.ok(rangePos > 0 && signupPos > rangePos);
-  assert.match(component, /id="reportPeriodTitle"/);
+  assert.ok(component.includes('id="reportPeriodTitle"'));
 });
