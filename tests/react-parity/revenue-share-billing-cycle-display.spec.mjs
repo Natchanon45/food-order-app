@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { formatBillingCycleRange, billingCycleFromTenant, resolveBillingCycleRange } from "../../react-app/src/utils/billingCycleDisplay.js";
+import { formatBillingCycleRange, billingCycleFromTenant, resolveBillingCycleRange, firstTenantRegistrationDate } from "../../react-app/src/utils/billingCycleDisplay.js";
 import { cycleForDate, tenantAnchorDate } from "../../functions/billing-anniversary.js";
 
 const component = fs.readFileSync("react-app/src/pages/RevenueShareReportPage.jsx", "utf8");
@@ -65,4 +65,39 @@ test("browser display-only fallback exactly matches canonical server cycles and 
     createdAt: "2026-10-10T00:00:00+07:00" };
   assert.equal(resolveBillingCycleRange({}, priority, new Date("2026-10-25T12:00:00+07:00")),
     "03/10/2026 - 02/11/2026");
+});
+
+test("first-registration label reflects Firestore tenant.createdAt, not billing anniversary or latest activation", () => {
+  const tenant = {
+    createdAt: { seconds: Date.parse("2026-10-03T23:40:00+07:00") / 1000 },
+    billingCycleAnchorAt: "2026-10-22T08:00:00+07:00",
+    trialStartsAt: "2026-10-25T08:00:00+07:00",
+    activatedAt: "2026-11-01T08:00:00+07:00",
+    subscriptionStartedAt: "2026-11-20T08:00:00+07:00",
+  };
+  assert.equal(firstTenantRegistrationDate(tenant), "03/10/2026");
+  assert.equal(resolveBillingCycleRange({}, tenant, new Date("2026-10-25T12:00:00+07:00")),
+    "22/10/2026 - 21/11/2026", "billing cycle remains independent");
+  assert.equal(firstTenantRegistrationDate({
+    createdAt: { toDate: () => new Date("2026-10-03T23:40:00+07:00") },
+  }), "03/10/2026");
+  assert.equal(firstTenantRegistrationDate({
+    createdAt: "2026-10-03T20:30:00Z",
+  }), "04/10/2026", "registration timezone must be Asia/Bangkok");
+  assert.equal(firstTenantRegistrationDate({ createdAt: "2026-02-30" }), "");
+  assert.equal(firstTenantRegistrationDate({ createdAt: "not-a-date" }), "");
+  assert.equal(firstTenantRegistrationDate({ billingCycleAnchorAt: "2026-10-03T08:00:00+07:00" }), "",
+    "do not mislabel an invoice cycle as first registration for legacy tenants");
+  assert.equal(firstTenantRegistrationDate(null), "");
+});
+
+test("registration is displayed directly under current billing period without changing report layout", () => {
+  assert.match(component, /const firstRegisteredDate = firstTenantRegistrationDate\\(tenant\\)/);
+  assert.match(component, /id="revenueShareFirstRegistered"/);
+  assert.match(component, /วันที่สมัคร\\/เปิดใช้งานครั้งแรก/);
+  assert.match(component, /firstRegisteredDate \\|\\| rc\\("ไม่มีข้อมูล"/);
+  const rangePos = component.indexOf('id="revenueShareBillingPeriod"');
+  const signupPos = component.indexOf('id="revenueShareFirstRegistered"');
+  assert.ok(rangePos > 0 && signupPos > rangePos);
+  assert.match(component, /id="reportPeriodTitle"/);
 });
