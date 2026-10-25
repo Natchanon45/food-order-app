@@ -19,7 +19,7 @@ test("Revenue report reads central monthly, yearly, threshold and rate from auth
   assert.match(report, /access\?\.centralDeliveryShare/);
 });
 test("Share calculation displays actual server figures, not hypothetical arithmetic or fabricated totals", () => {
-  for (const field of ["deliveryShareBase", "deliveryShareAmount", "revenueShare"]) {
+  for (const field of ["deliveryShareBase", "deliveryShareAmount"]) {
     assert.ok(report.includes("money(summary." + field + ")"), field);
   }
   assert.match(report, /money\(platformSharePayable\)/);
@@ -30,10 +30,9 @@ test("Share calculation displays actual server figures, not hypothetical arithme
   assert.doesNotMatch(report, /925\.00|1,635\.00|28,500\.00/);
 });
 test("Report shows POS and food sales independently from chargeable share, without expanding charges", () => {
-  assert.match(server, /sharePosSales/);
   assert.match(server, /posSales \+= net/);
-  assert.match(server, /if \(setting\.legacyEnabled && setting\.channels\.includeRetail\) sharePosSales \+= net/);
-  assert.match(server, /shareOrderSales \+ sharePosSales/);
+  assert.doesNotMatch(server, /sharePosSales|shareOrderSales/);
+  assert.match(server, /const revenueShare = deliveryShareAmount;/);
   assert.doesNotMatch(server, /setting\.enabled && !setting\.channels\.includeRetail\) return/);
   assert.match(server, /orderSales \+= foodSales/);
 });
