@@ -10,7 +10,7 @@ const locale = JSON.parse(fs.readFileSync("react-app/src/i18n/parity-translation
 test("Zero-balance periods explain why slips cannot be submitted", () => {
   // A stale API response may still include a prepaid Lalamove debit gap in
   // platformAmountDue. Only earned revenue share may enable a payment slip.
-  assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.revenueShare \|\| 0\)\) \* 100\) \/ 100/);
+  assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.deliveryShareAmount \|\| 0\)\) \* 100\) \/ 100/);
   assert.match(report, /const noAmountDue = !loading && platformSharePayable <= 0/);
   assert.doesNotMatch(report, /const noAmountDue = !loading && Number\(summary\.platformAmountDue/);
   assert.match(report, /id="platformAmountDue">\{money\(platformSharePayable\)\}/);
