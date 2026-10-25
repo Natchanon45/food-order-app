@@ -15,7 +15,7 @@ import {
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
-import { resolveBillingCycleRange } from "@/utils/billingCycleDisplay";
+import { firstTenantRegistrationDate, resolveBillingCycleRange } from "@/utils/billingCycleDisplay";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -219,6 +219,7 @@ export function RevenueShareReportPage() {
   // those fields, so derive DISPLAY ONLY from the current Firestore tenant
   // activation timestamp (same source/priority as server billing-anniversary).
   const billingCycleRange = resolveBillingCycleRange(summary, tenant);
+  const firstRegisteredDate = firstTenantRegistrationDate(tenant);
   const monthLabel = billingCycleRange
     || displayMonth(summary.monthlyDeliveryMonth || today.slice(0, 7));
   const remainingToThreshold = Math.max(0, centralThreshold - monthlyDeliverySales);
@@ -479,7 +480,7 @@ export function RevenueShareReportPage() {
 
         <section className="card report-filter-card" aria-labelledby="reportPeriodTitle">
           <div className="report-section-heading">
-            <div><h2 id="reportPeriodTitle"><i className="bi bi-graph-up-arrow" aria-hidden="true"></i>{t("revenue_share_report.period.title")}</h2><p>{t("revenue_share_report.period.description")}</p>{billingCycleRange ? <p id="revenueShareBillingPeriod">{rc("รอบคิดค่าบริการปัจจุบัน", "Current billing cycle")}: <strong>{billingCycleRange}</strong></p> : null}</div>
+            <div><h2 id="reportPeriodTitle"><i className="bi bi-graph-up-arrow" aria-hidden="true"></i>{t("revenue_share_report.period.title")}</h2><p>{t("revenue_share_report.period.description")}</p>{billingCycleRange ? <p id="revenueShareBillingPeriod">{rc("รอบคิดค่าบริการปัจจุบัน", "Current billing cycle")}: <strong>{billingCycleRange}</strong></p> : null}<p id="revenueShareFirstRegistered" className="report-registration-date">{rc("วันที่สมัคร/เปิดใช้งานครั้งแรก", "First registered / activated")}: <strong>{firstRegisteredDate || rc("ไม่มีข้อมูล", "Not available")}</strong></p></div>
             <strong id="reportPeriodLabel">{loading ? t("revenue_share_report.states.loading") : periodLabel}</strong>
           </div>
           <div className="report-period-tabs" role="tablist" aria-label={t("revenue_share_report.period.aria")}>
