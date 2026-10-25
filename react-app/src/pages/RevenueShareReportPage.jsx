@@ -230,10 +230,10 @@ export function RevenueShareReportPage() {
     ? "daily" : (access?.billingCycle === "daily" ? "daily" : "monthly");
   const cycleLabel = t(`revenue_share_report.payment.cycles.${billingCycle}`);
   const cycleMatches = period === billingCycle;
-  // Platform settlement covers earned revenue share only. A stale Cloud Function
-  // can still include an old Lalamove Wallet stamp gap in platformAmountDue;
-  // that diagnostic is never a bill, even before backend rollout completes.
-  const platformSharePayable = Math.round(Math.max(0, Number(summary.revenueShare || 0)) * 100) / 100;
+  // Delivery-only policy: never expose obsolete POS/table legacy share as
+  // money owed, even while a previous callable version is being replaced.
+  // The backend also independently enforces the same charge on slip submission.
+  const platformSharePayable = Math.round(Math.max(0, Number(summary.deliveryShareAmount || 0)) * 100) / 100;
   const noAmountDue = !loading && platformSharePayable <= 0;
   const canSubmit = access?.enabled === true && !loading && !noAmountDue && cycleMatches && !uploading;
   const paymentUnavailableMessage = !cycleMatches
@@ -581,7 +581,6 @@ export function RevenueShareReportPage() {
             <article className="report-related-tile"><span className="report-related-icon"><i className="bi bi-box-seam" aria-hidden="true"></i></span><div><span>{rc("ต้นทุน Lalamove", "Lalamove delivery cost")}</span><strong>{money(summary.lalamoveDeliveryCost)} <small>{rc("บาท", "THB")}</small></strong><small>{rc("ไม่ใช่ฐานคิดส่วนแบ่ง", "Not part of revenue share")}</small></div></article>
             <article className="report-related-tile report-related-platform"><span className="report-related-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span><div><span>{rc("ยอดที่ต้องโอนให้ Platform", "Platform amount due")}</span><strong id="platformAmountDue">{money(platformSharePayable)} <small>{rc("บาท", "THB")}</small></strong><small>{platformSharePayable <= 0 ? rc("ไม่มีส่วนแบ่งค้างชำระ", "No share payable") : rc("เฉพาะส่วนแบ่งยอดขาย ไม่รวมค่าขนส่งที่ตัดเครดิตแล้ว", "Revenue share only; prepaid delivery is excluded")}</small></div></article>
           </div>
-          {Number(summary.legacyShareAmount || 0) > 0 ? <div className="report-legacy-share">{rc("ส่วนแบ่งรวม Delivery และสัญญาเดิม", "Total Delivery and legacy revenue share")}: <strong>{money(summary.revenueShare)} {rc("บาท", "THB")}</strong> · {rc("เฉพาะสัญญาเดิม", "Legacy portion")}: {money(summary.legacyShareAmount)} {rc("บาท", "THB")}</div> : null}
         <section className={"card report-payment-card" + (noAmountDue ? " report-payment-card-zero" : "")} aria-labelledby="reportPaymentTitle">
           <div className="report-section-heading">
             <div><h2 id="reportPaymentTitle"><i className="bi bi-file-earmark-text" aria-hidden="true"></i> {t("revenue_share_report.payment.title")}</h2><p>{t("revenue_share_report.payment.description")}</p></div>
