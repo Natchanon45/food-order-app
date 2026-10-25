@@ -23,8 +23,8 @@ test("Share calculation displays actual server figures, not hypothetical arithme
     assert.ok(report.includes("money(summary." + field + ")"), field);
   }
   assert.match(report, /money\(platformSharePayable\)/);
-  assert.match(report, /summary\.legacyShareAmount/);
-  assert.match(report, /summary\.legacyShareAmount/);
+  assert.doesNotMatch(report, /summary\.legacyShareAmount/);
+  assert.match(report, /Number\(summary\.deliveryShareAmount \|\| 0\)/);
   assert.match(report, /เรียกเก็บแยก/);
   assert.match(report, /ไม่ย้อนหลังวันก่อนหน้า/);
   assert.doesNotMatch(report, /925\.00|1,635\.00|28,500\.00/);
@@ -73,7 +73,7 @@ test("Prepaid Lalamove wallet discrepancy is diagnostic only, never billed to Pl
   const platformDue = billedShare;
   assert.equal(missingWalletStampCost, 59);
   assert.equal(platformDue, 0);
-  assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.revenueShare \|\| 0\)\) \* 100\) \/ 100/);
+  assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.deliveryShareAmount \|\| 0\)\) \* 100\) \/ 100/);
   assert.match(report, /const noAmountDue = !loading && platformSharePayable <= 0/);
   assert.match(report, /id="platformAmountDue">\{money\(platformSharePayable\)\}/);
   assert.match(report, /id="paymentAmountDue">\{money\(platformSharePayable\)\}/);
@@ -146,4 +146,18 @@ test("Delivery uses the owner-selected line icon, with theme-colored SVG mask an
   assert.match(report, /report-channel-card delivery/);
   assert.match(report, /report-share-month/);
   assert.match(report, /report-related-tile/);
+});
+
+test("Never bill 5% of POS/table while Delivery is below the 10k threshold", () => {
+  const example = { pos: 1774, paidDelivery: 3484, threshold: 10000, rate: 5 };
+  const deliveryExcess = Math.max(0, example.paidDelivery - example.threshold);
+  const due = Math.round(deliveryExcess * example.rate) / 100;
+  assert.equal(due, 0);
+  assert.equal(example.pos * example.rate / 100, 88.7, "Old incorrect charge seen in screenshot");
+  assert.match(server, /const legacyShareAmount = 0;/);
+  assert.match(server, /const revenueShare = deliveryShareAmount;/);
+  assert.match(server, /enabled: centralDeliveryShare,/);
+  assert.match(server, /billingCycle: "daily"/);
+  assert.doesNotMatch(server, /const revenueShare = roundMoney\(deliveryShareAmount \+ legacyShareAmount\)/);
+  assert.doesNotMatch(report, /report-legacy-share/);
 });
