@@ -48,7 +48,9 @@ test("all legacy tenant billing modes have one shared qualifying Delivery thresh
   ];
   const days = eligibleDeliveryShareDays(amounts, 10000, "2026-10-22");
   assert.deepEqual([...days], ["2026-11-01", "2026-11-04"]);
-  assert.match(reportServer, /const premiumDeliveryShare = centralDeliveryShare && !legacyChannels\.enabled/);
+  assert.match(reportServer, /premiumDeliveryShare: centralDeliveryShare/);
+  assert.match(reportServer, /legacyEnabled: false/);
+  assert.match(reportServer, /const revenueShare = deliveryShareAmount/);
   assert.doesNotMatch(reportServer, /tenant\.billingMode === "subscription";/);
   assert.match(reportServer, /: new Set\(\); \/\/ Missing activation date must never create an invoice/);
 });
