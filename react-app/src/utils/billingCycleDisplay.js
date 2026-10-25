@@ -46,7 +46,7 @@ export function firstTenantRegistrationDate(tenant) {
   // Reject malformed plain calendar dates instead of allowing JS Date to
   // normalize e.g. February 30 into an invented first-registration day.
   if (typeof tenant?.createdAt === "string"
-    && /^\\d{4}-\\d{2}-\\d{2}$/.test(tenant.createdAt)
+    && /^\d{4}-\d{2}-\d{2}$/.test(tenant.createdAt)
     && !validDateKey(tenant.createdAt)) return "";
   const key = bangkokDateKey(tenant?.createdAt);
   return key ? key.slice(8, 10) + "/" + key.slice(5, 7) + "/" + key.slice(0, 4) : "";
