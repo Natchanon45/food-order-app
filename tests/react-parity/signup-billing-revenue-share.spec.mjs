@@ -224,7 +224,7 @@ test("only existing Revenue Share computation is adjusted; Delivery must be PAID
   assert.match(source, /row\.subtotalAmount != null && row\.subtotalAmount !== ""/);
   assert.match(source, /const deliveryShareBase = roundMoney\(shareDeliverySales\)/);
   assert.match(source, /deliveryShareBase \* setting\.deliveryShareRate \/ 100/);
-  assert.match(source, /const revenueShare = roundMoney\(deliveryShareAmount \+ legacyShareAmount\)/);
+  assert.match(source, /const revenueShare = deliveryShareAmount;/);
   assert.match(source, /Per-Tenant commission settings are disabled/);
   assert.match(form, /id="revenueShareDeliveryThreshold"/);
   assert.match(form, /centralDeliveryPricing\.deliveryThreshold/);
@@ -232,7 +232,7 @@ test("only existing Revenue Share computation is adjusted; Delivery must be PAID
   assert.doesNotMatch(source, /issueTenantHybridInvoices|hybridBillingInvoices|processHybridBillingDaily/);
 });
 
-test("Premium monthly Delivery commission reads centrally configured pricing and excludes POS/table", async () => {
+test("Only central Delivery excess is charged regardless of stale tenant legacy settings", async () => {
   const { normalizePricing } = require("../../functions/subscription-pricing-core.js");
   const pricing = normalizePricing({ monthlyPrice: 590, deliveryThreshold: 10000, deliveryShareRate: 5 });
   assert.equal(pricing.deliveryThreshold, 10000);
@@ -309,18 +309,18 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
     revenueShareRestaurantScope: "all", revenueShareRate: 10, revenueShareDeliveryThreshold: 20000,
     createdAt: "2026-10-01T00:00:00+07:00",
   }, pricing);
-  assert.equal(legacy.premiumDeliveryShare, false);
-  assert.equal(legacy.rate, 10);
+  assert.equal(legacy.premiumDeliveryShare, true);
+  assert.equal(legacy.rate, 5);
   assert.equal(legacy.deliveryThreshold, 10000);
   assert.equal(legacy.deliveryShareRate, 5);
   assert.equal(legacy.centralDeliveryShare, true);
-  assert.equal(legacy.rate, 10, "Historical non-Delivery rate remains unchanged");
+  assert.equal(legacy.rate, 5, "Only centrally configured Delivery rate applies");
   const legacyMonth = await loaded.exports.__summary("legacy", span("2026-10-01", "2026-11-01"), legacy);
   assert.equal(legacyMonth.deliveryShareAmount, 75, "Legacy Delivery must also use 5% central at 100% threshold");
-  assert.equal(legacyMonth.legacyShareAmount, 500, "Old POS/table charges remain under original historical contract");
+  assert.equal(legacyMonth.legacyShareAmount, 0, "Old POS/table charges must never be billed");
   assert.equal(legacyMonth.lalamoveDeliveryCost, 80, "Lalamove provider delivery cost is still reported");
   assert.equal(legacyMonth.lalamoveOutstandingCost, 80, "Missing old debit stamps remain diagnostic only");
-  assert.equal(legacyMonth.platformAmountDue, 575, "Legacy plus Delivery shares never include the 80 THB Lalamove reconciliation gap");
+  assert.equal(legacyMonth.platformAmountDue, 75, "Only eligible Delivery excess is owed; POS/table and Lalamove cost excluded");
 
   const legacyDeliveryOnly = loaded.exports.__setting({
     billingMode: "revenue_share", businessType: "restaurant_cafe",
@@ -333,7 +333,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   assert.equal(beforeThreshold.revenueShare, 0, "No sales-share fee below central Delivery threshold");
   assert.equal(beforeThreshold.lalamoveOutstandingCost, 80, "Stale debit stamp may still appear for reconciliation");
   assert.equal(beforeThreshold.platformAmountDue, 0, "Prepaid Lalamove costs MUST NOT create a payable invoice");
-  assert.equal(legacy.channels.includeRetail, true);
+  assert.equal(legacy.channels.includeRetail, false);
   assert.equal(loaded.exports.__setting(tenant).enabled, false, "Unconfigured central pricing does not activate Premium");
   await assert.rejects(
     loaded.exports.updateTenantRevenueShare({ auth: { uid: "super" }, data: {
@@ -351,7 +351,7 @@ test("Premium monthly Delivery commission reads centrally configured pricing and
   assert.equal(revised.deliveryShareRate, 3);
   const revisedSummary = await loaded.exports.__summary("legacy", span("2026-10-01", "2026-11-01"), revised);
   assert.equal(revisedSummary.deliveryShareAmount, 0, "Central higher threshold wins regardless of stale Tenant config");
-  assert.equal(revisedSummary.legacyShareAmount, 3000, "Legacy non-Delivery billing remains distinct");
+  assert.equal(revisedSummary.legacyShareAmount, 0, "Legacy POS/table charges disabled universally");
   assert.match(server, /revenueSetting\(tenant, await loadPricing\(getFirestore\(\)\)\)/);
   assert.match(server, /revenueSetting\(tenant, premiumPricing\)/);
   assert.match(server, /if \(!setting\.enabled\) \{/);
