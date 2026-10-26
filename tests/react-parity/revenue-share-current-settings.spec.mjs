@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 
 const report = fs.readFileSync("react-app/src/pages/RevenueShareReportPage.jsx", "utf8");
 const server = fs.readFileSync("functions/revenue-share.js", "utf8");
@@ -130,6 +131,10 @@ test("Delivery uses the owner-selected line icon, with theme-colored SVG mask an
   assert.equal(iconOccurrences.length, 3, "sales, charge calculation and customer delivery fee use one Delivery glyph");
   assert.doesNotMatch(report, /className="bi bi-scooter"/);
   assert.doesNotMatch(report, /className="bi bi-truck"/);
+  // Verify the original SVG actually supplied by the owner, not the older #12992.
+  assert.equal(createHash("sha256").update(asset).digest("hex"),
+    "01770bef2cb55dd8fe72697a9fa330d7bbb451cf2277aa78ee507d899a7f2269");
+  assert.match(fs.readFileSync("docs/ICON_STYLE_STANDARD.md", "utf8"), /Fast Food Delivery #12983/);
   assert.match(asset, /viewBox="0 0 256 256"/);
   assert.match(asset, /fill: rgb\(0,0,0\)/);
   assert.match(asset, /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
