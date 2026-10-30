@@ -564,3 +564,11 @@ Deploy for this build: git pull --rebase origin feature/retail-pos && firebase d
 
 ### Global initial loading rule
 Every user-visible React route must render the shared full-screen `PageReadyOverlay` before its required initial data is ready. The overlay must cover the viewport, center content on both X/Y axes, show the spinner and localized shared text (`กำลังโหลดข้อมูล...` / `กรุณารอสักครู่ ...` in Thai), and stay visible until required styles plus all critical initial auth/tenant/page-component data have settled into either a ready state or an explicit error state. Never reveal a partially initialized page or leave a page-specific initial loading block visible after the full-screen overlay is removed. Redirect/compatibility routes use the same overlay while navigation is pending. **Progress bars are forbidden unless the route has a measurable real 0–100% value.** Hard-coded/estimated percentages and indeterminate/fake progress animations are not allowed. When real progress is available, pass it through `progressPercent` and display the actual percent.
+
+<!-- PENGUIN-DELIVERY-CART-TOAST-2026-10-30 -->
+### 2026-10-30 — PENGUIN Delivery: Add-to-cart success Toast
+- Repository `Natchanon45/food-order-app`, branch `feature/react-firebase-port`. Requested to bring the successful LUKKAJA Delivery fix back into original PENGUIN React/Firebase source.
+- Root cause: `react-app/src/pages/DeliveryPage.jsx` already imported the shared `showStorefrontToast` used for other notifications, but the `add(item)` cart handler updated state without emitting its success notification. Table Order and Take Away already did.
+- Surgical fix: call `showStorefrontToast(t("shared.toast.item_added", { name: item.name }))` after an allowed `setCart`. Reuses existing icon/style/duration and translations for th/en/my/lo/km; no JSX layout, CSS, Firebase data, order submission, price or payment changes.
+- Regression: `tests/react-parity/delivery-add-cart-toast.spec.mjs` covers first add, repeat add, closed store, locked PromptPay cart and five localized item names.
+- Next: run PENGUIN React tests/build, commit/push to the exact feature branch; publish Hosting only (no Functions/Firestore changes) and verify the generated frontend.

@@ -436,6 +436,7 @@ export function DeliveryPage() {
         ? current.map(row => row.id === item.id ? { ...row, qty: row.qty + 1 } : row)
         : [...current, { ...item, qty: 1, note: "" }];
     });
+    showStorefrontToast(t("shared.toast.item_added", { name: item.name }));
   };
   const increase = id => { if (!paymentLocked && storeAcceptingOrders) setCart(current => current.map(row => row.id === id ? { ...row, qty: row.qty + 1 } : row)); };
   const decrease = async item => {

@@ -375,3 +375,11 @@ Previous build note: POS Catalog Single Renderer from build `2026.07.17.002` rem
 Next Task: deploy Hosting and verify that category pagination page buttons display only `1`, `2`, `3`, and so on, while the previous/next arrow buttons and all category-management behavior remain unchanged.
 
 Deploy: git pull --rebase origin feature/retail-pos && firebase deploy --only hosting
+
+<!-- PENGUIN-DELIVERY-CART-TOAST-2026-10-30 -->
+### 2026-10-30 — PENGUIN Delivery: Add-to-cart success Toast
+- Repository `Natchanon45/food-order-app`, branch `feature/react-firebase-port`. Requested to bring the successful LUKKAJA Delivery fix back into original PENGUIN React/Firebase source.
+- Root cause: `react-app/src/pages/DeliveryPage.jsx` already imported the shared `showStorefrontToast` used for other notifications, but the `add(item)` cart handler updated state without emitting its success notification. Table Order and Take Away already did.
+- Surgical fix: call `showStorefrontToast(t("shared.toast.item_added", { name: item.name }))` after an allowed `setCart`. Reuses existing icon/style/duration and translations for th/en/my/lo/km; no JSX layout, CSS, Firebase data, order submission, price or payment changes.
+- Regression: `tests/react-parity/delivery-add-cart-toast.spec.mjs` covers first add, repeat add, closed store, locked PromptPay cart and five localized item names.
+- Next: run PENGUIN React tests/build, commit/push to the exact feature branch; publish Hosting only (no Functions/Firestore changes) and verify the generated frontend.
