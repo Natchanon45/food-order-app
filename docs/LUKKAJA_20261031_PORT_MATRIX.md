@@ -16,7 +16,7 @@
 | d99371a0 | M2.148 deployment docs | DOC-ONLY, no code to transfer |
 | a6505499 | Admin-controlled category and menu sorting | ALREADY NATIVE in Firebase menuSort and Quick Order watch |
 | c256afcf | Reviewed paid Walk-in cancellation | PENDING: authenticated Cloud Function review, source attribution and ledger safety |
-| 991cd7e2 | Paid cancellations and sales-report exclusion | PENDING: transaction and audit, cancellation attribution, financial reporting |
+| 991cd7e2 | Paid cancellations and sales-report exclusion | POLICY PREPARED (unpaid actor/no-refund guards); paid review, transactions, audit and reporting still PENDING |
 | 85f596b7 | Isolated MySQL cancellation tests | PENDING: replace with isolated Firestore/Functions Emulator integration |
 | 0d12554e | Cancellation UAT docs | DOC-ONLY |
 | 24fe0b63 | Cancelled receipt status filter / watermark | PENDING trusted cancellation event |
@@ -26,9 +26,9 @@
 | 458b4ba5 | M2.156 release docs | DOC-ONLY |
 | 0aa55507 | Wallet credit scroll and slip history spacing | PORTED: independent scoped CSS, no revenue logic change |
 | 5a085593 | M2.157 release docs | DOC-ONLY |
-| 727e8523 | Send to kitchen before payment, add-on rounds, final settlement | PENDING Firestore Cloud Function transaction, idempotency and table lock |
+| 727e8523 | Send to kitchen before payment, add-on rounds, final settlement | POLICY PREPARED (pure cents, duplicate-operation and eligibility guards tested); transactional Callable and table lock still PENDING |
 | 4d6b5ce1 | Go local runtime repair notes | DOC-ONLY |
-| 3a356543 | Deferred bill display and cashier/kitchen cancellation | PENDING: depends on unpaid bill server contract |
+| 3a356543 | Deferred bill display and cashier/kitchen cancellation | POLICY PREPARED (cashier/kitchen unpaid cancel eligibility tested); Callable, table release and UI still PENDING |
 | 70e76afd | M2.160 local runtime notes | DOC-ONLY |
 | eb2b9f8c | Google Login/Logout refresh delivery address via GPS | PORTED with Firebase-specific guest/cloud favorite merge and race guards |
 | db329335 | Preserve mobile scroll during Google Login | PORTED: initial-only full-page overlay, menu/cart DOM stays mounted |
