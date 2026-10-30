@@ -7,7 +7,8 @@
 
 - Repository: `Natchanon45/food-order-app`
 - Local path: `/Users/natchanonsripleng/Desktop/Sites/food-order-app`
-- Current active branch: `feature/react-firebase-port`
+- Source baseline branch: `feature/react-firebase-port`
+- Active deployed UI-parity branch: `feature/port-lukkaja-20261031` (Version 0.4.297 / Build 2026.10.31.527; not merged)
 - Firebase project: `chat-45754`
 - React dev URL: `http://127.0.0.1:5002/react/`
 

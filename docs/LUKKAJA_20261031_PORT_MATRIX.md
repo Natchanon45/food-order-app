@@ -64,3 +64,8 @@ Quick Order select-all tender, Pay First / Kitchen First flows and add-on mode n
 - Paid Kitchen Walk-in full cancel now mirrors SOURCE visible action and sends kitchen-sourced reviewed cancellation to Auth-protected Callable. Server rejects cashier impersonation and never releases a later bill's table.
 - Responsive Quick Order button geometry verified in browser at 320/390/440/1280px. Owner accepts independent MySQL and Firestore data; cross-DB synchronization is out of release scope.
 - Not certified: physical receipt prints, signed-in production Google OAuth, actual production tenant operator UAT, third-party PromptPay verification or pixel-by-pixel audit of all other pages.
+
+## 2026-10-31 Verified Firebase release
+
+- The previous release-candidate note is now complete: Version 0.4.297 / Build 2026.10.31.527 was deployed from feature/port-lukkaja-20261031 to Firebase Hosting penguin-food, six scoped Cloud Functions and firestore:rules, with each deploy confirmed successful. Production JS index-BJiEq6aY.js served at HTTPS 200; production paths HTTP 200 and all six functions listed.
+- Payment, refund and order writes were tested only with synthetic Auth+Firestore Emulator tenants. The live browser manual and physical printer UAT remain outstanding. No data sync required. No merge to main.
