@@ -86,7 +86,7 @@ export function QuickOrderPage() {
   const stylesReady = useParityPage({
     title: t("quick_order.meta.title"),
     bodyClass: "quick-order-page",
-    styles: ["app.css", "icons.css", "sweet-dialog.css", "quick-order.css", "page-ready-state.css", "store-hero-branding.css"],
+    styles: ["app.css", "icons.css", "sweet-dialog.css", "quick-order.css", "quick-order-emerald-port.css", "page-ready-state.css", "store-hero-branding.css"],
     attributes: { "data-roles": "owner,admin,manager,cashier" },
   });
   const allowedRole = ["owner", "admin", "manager", "cashier"].includes(profile?.role);
@@ -554,6 +554,20 @@ export function QuickOrderPage() {
 
   const deleteHeld = async row => {
     if (busy) return;
+    // A native held-bill dialog stays above regular overlays. Close it first
+    // so the shared Sweet confirmation is visible and keyboard accessible.
+    const dialog = heldDialogRef.current;
+    setHeldOpen(false);
+    if (dialog?.open) dialog.close();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    const confirmed = await sweetConfirm(t("quick_order.held.delete_confirm"), {
+      title: t("quick_order.held.delete_title"),
+      confirmText: t("quick_order.held.delete"),
+      confirmIcon: "trash",
+      cancelText: t("quick_order.payment.cancel"),
+      type: "warning",
+    });
+    if (!confirmed || busy) { setHeldOpen(true); return; }
     setBusy(true);
     try {
       await releaseQuickOrderHeldBill(tenant.id, row.id, "delete");
@@ -561,7 +575,7 @@ export function QuickOrderPage() {
     } catch (error) {
       console.error("QUICK_ORDER_DELETE_HELD_FAILED", error);
       showToast(t(error?.code === "HELD_BILL_ALREADY_RELEASED" ? "quick_order.held.already_released" : "quick_order.held.storage_error"), "error");
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setHeldOpen(true); }
   };
 
   const draftPayload = state => ({
@@ -715,7 +729,11 @@ export function QuickOrderPage() {
     if (!dialog) return;
     if (cashOpen && !dialog.open) {
       dialog.showModal?.();
-      requestAnimationFrame(() => dialog.querySelector("#quickCashReceived")?.focus({ preventScroll: true }));
+      requestAnimationFrame(() => {
+        const input = dialog.querySelector("#quickCashReceived");
+        input?.focus({ preventScroll: true });
+        input?.select();
+      });
     }
     if (!cashOpen && dialog.open) dialog.close?.();
   }, [cashOpen]);

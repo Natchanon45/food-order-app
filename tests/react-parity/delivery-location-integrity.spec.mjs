@@ -55,7 +55,9 @@ test("GPS must be accurate and fresh before automatic saved-address matching", (
 });
 
 test("Delivery waits for saved addresses, never defaults to a far pin, and never uses raw GPS as checkout pin", () => {
-  assert.ok(page.includes('if (!tenant?.id || profileLoading || initialGpsRequestedForTenantRef.current === tenant.id)'));
+  assert.ok(page.includes('if (!tenant?.id || profileLoading || !addressAuthRevision) return undefined;'));
+  assert.ok(page.includes('gpsRequestedForAddressContextRef.current === contextKey'));
+  assert.ok(page.includes('const contextKey = tenant.id + ":" + addressAuthRevision'));
   assert.ok(page.includes('if (profileLoading || initialGps.status === "pending" || locationSourceRef.current) return;'));
   assert.ok(page.includes('matchGpsSavedAddress(addresses, initialGps.point, "current-location")'));
   assert.ok(page.includes('if (nearest) selectAddress(nearest.address);'));

@@ -1,3 +1,11 @@
+## 2026-10-31 — LUKKAJA to PENGUIN isolated port (not Production)
+
+- User requested porting ALL 24 Oct 31 source commits from LUKKAJA (f9a6ddcd) to PENGUIN. Working branch feature/port-lukkaja-20261031 is based on feature/react-firebase-port d87fc375. Keep main, Production and original local checkout untouched.
+- Full commit-by-commit status, completed frontend adaptations and pending Firestore transactional work are in docs/LUKKAJA_20261031_PORT_MATRIX.md. This is only the first port increment.
+- New frontend: Delivery Google auth GPS/scroll fixes with Firebase favorites retained; Quick Order green skin/cash select-all/held deletion confirm; wallet/slip spacing; dynamic printed favicon. Tests exist.
+- HIGH PRIORITY PENDING: server-trusted paid cancellation audit + report, kitchen-first deferred unpaid bills, add-on kitchen rounds, cash settlement, table release, role and tenant guards, receipt watermark. Adapt as Cloud Functions/Firestore transactions; use isolated Firebase Emulator only. Do not copy Go/MySQL or enable unsupported payment buttons.
+- No main merge, Hosting/Functions deploy, financial writes or version release yet. Owner approval needed separately for production.
+
 ## 2026-10-25 — Owner-approved Revenue Share screen preserved; add anniversary-cycle label only
 
 - Owner explicitly requires keeping **exact** existing `/reports/revenue-share` design from penguin-food.web.app screenshots (green hero, period tabs, store/POS + Delivery tiles, threshold progress, equation, Lalamove/Wallet, history and slip upload). Do not replace it with synthetic `/reports/hybrid-billing` or redesign.

@@ -5334,6 +5334,9 @@
         "sort_amount": "ยอดสูงก่อน",
         "bill_no": "บิล #:id",
         "held_by": "พักโดย :name"
+      ,
+        "delete_confirm": "ยืนยันลบบิลที่พักไว้นี้หรือไม่? รายการนี้ไม่สามารถย้อนกลับได้",
+        "delete_title": "ยืนยันการลบบิลพัก"
       },
       "customer": {
         "label": "ชื่อลูกค้า",
@@ -11700,6 +11703,9 @@
         "sort_amount": "Highest amount",
         "bill_no": "Bill #:id",
         "held_by": "Held by :name"
+      ,
+        "delete_confirm": "Delete this held bill? This cannot be undone.",
+        "delete_title": "Confirm held bill deletion"
       },
       "customer": {
         "label": "Customer name",
@@ -18066,6 +18072,9 @@
         "sort_amount": "ငွေပမာဏအများဆုံး",
         "bill_no": "ဘီလ် #:id",
         "held_by": ":name မှ ခေတ္တသိမ်းထားသည်"
+      ,
+        "delete_confirm": "သိမ်းထားသောဘေလ်ကို ဖျက်မှာ သေချာပါသလား။ ပြန်ယူ၍မရပါ။",
+        "delete_title": "ဘေလ်ဖျက်ရန် အတည်ပြုပါ"
       },
       "customer": {
         "label": "ဖောက်သည်အမည်",
@@ -24432,6 +24441,9 @@
         "sort_amount": "ຍອດສູງກ່ອນ",
         "bill_no": "ບິນ #:id",
         "held_by": "ພັກໂດຍ :name"
+      ,
+        "delete_confirm": "ຢືນຢັນລຶບບິນທີ່ພັກໄວ້ບໍ? ບໍ່ສາມາດກູ້ຄືນໄດ້",
+        "delete_title": "ຢືນຢັນລຶບບິນພັກ"
       },
       "customer": {
         "label": "ຊື່ລູກຄ້າ",
@@ -30798,6 +30810,9 @@
         "sort_amount": "ចំនួនខ្ពស់មុន",
         "bill_no": "វិក្កយបត្រ #:id",
         "held_by": "ផ្អាកដោយ :name"
+      ,
+        "delete_confirm": "តើចង់លុបវិក្កយបត្រដែលរក្សាទុកមែនទេ? មិនអាចស្ដារឡើងវិញបានទេ។",
+        "delete_title": "បញ្ជាក់ការលុបវិក្កយបត្រ"
       },
       "customer": {
         "label": "ឈ្មោះអតិថិជន",

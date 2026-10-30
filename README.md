@@ -1,5 +1,7 @@
 # Food Order / Delivery / Retail POS
 
+> Port staging (31 October 2026): isolated branch feature/port-lukkaja-20261031, NOT released or merged. See docs/LUKKAJA_20261031_PORT_MATRIX.md for all 24 source commits and pending backend work. Existing Production Version/Build below is unchanged.
+
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console
 Current PENGUIN production release: Version 0.4.294 • Build 2026.10.18.524

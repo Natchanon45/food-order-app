@@ -60,7 +60,7 @@ export function RevenueShareReportPage() {
   const stylesReady = useParityPage({
     title: t("revenue_share_report.meta.title"),
     bodyClass: "order-delivery-workspace revenue-share-report-page",
-    styles: ["app.css", "icons.css", "tenant-admin.css", "revenue-share-report.css", "revenue-share-slip-dialog.css"],
+    styles: ["app.css", "icons.css", "tenant-admin.css", "revenue-share-report.css", "revenue-share-slip-dialog.css", "revenue-share-wallet-scroll-port.css"],
   });
 
   const today = useMemo(() => localDateKey(new Date()), []);

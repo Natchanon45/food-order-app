@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
 import { AdminCollapsibleCard } from "@/components/AdminCollapsibleCard";
+import { printFaviconLink } from "@/utils/printFavicon";
 
 function toast(message, type = "success") {
   const el = document.createElement("div");
@@ -82,7 +83,7 @@ function printHtml(paper, title) {
   cloneImage?.removeAttribute("height");
   const origin = location.origin;
   const lang = document.documentElement.lang || "th";
-  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>${printFaviconLink()}<style>
 @font-face{font-family:"TH Sarabun PSK Local";src:url("${origin}/assets/fonts/THSarabun.ttf") format("truetype");font-weight:400;font-display:block}
 @font-face{font-family:"TH Sarabun PSK Local";src:url("${origin}/assets/fonts/THSarabun-Bold.ttf") format("truetype");font-weight:700;font-display:block}
 @page{size:80mm 128mm;margin:4mm}*{box-sizing:border-box}html,body{width:72mm;margin:0;padding:0;color:#102f1e;background:#fff;overflow:visible}body{font-family:"TH Sarabun PSK Local","TH Sarabun New","Sarabun",sans-serif}
@@ -100,7 +101,7 @@ async function printTarget(paper, image, t, printName = "delivery-qr-print") {
     return;
   }
   popup.document.open();
-  popup.document.write(`<!doctype html><html lang="${document.documentElement.lang || "th"}"><meta charset="utf-8"><title>${t("admin.delivery_qr.preparing_title")}</title><body style="font-family:sans-serif;padding:24px">${t("admin.delivery_qr.preparing")}</body></html>`);
+  popup.document.write(`<!doctype html><html lang="${document.documentElement.lang || "th"}"><meta charset="utf-8"><title>${t("admin.delivery_qr.preparing_title")}</title>${printFaviconLink()}<body style="font-family:sans-serif;padding:24px">${t("admin.delivery_qr.preparing")}</body></html>`);
   popup.document.close();
   try {
     await waitForImage(image);
