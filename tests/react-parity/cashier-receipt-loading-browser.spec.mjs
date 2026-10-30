@@ -1,8 +1,14 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 
-const source = fs.readFileSync("react-app/src/utils/receiptPrintWindow.js", "utf8")
-  .replaceAll("export function ", "function ")
+// Inline the real favicon helper before the print-window module: the
+// Playwright fixture runs a plain <script>, not Vite's ESM transform.
+const faviconHelper = fs.readFileSync("react-app/src/utils/printFavicon.js", "utf8")
+  .replaceAll("export function ", "function ");
+const source = faviconHelper + "\n" +
+  fs.readFileSync("react-app/src/utils/receiptPrintWindow.js", "utf8")
+    .replace(/^import \{ printFaviconLink \} from ".\/printFavicon\.js";\s*/m, "")
+    .replaceAll("export function ", "function ")
   + "\nwindow.__receiptLoading = { openReceiptPrintLoading, updateReceiptPrintLoading };";
 
 for (const width of [390, 1280]) {

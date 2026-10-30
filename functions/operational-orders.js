@@ -824,7 +824,12 @@ exports.updateDeferredKitchen = onCall({ region: REGION, timeoutSeconds: 30 }, a
 // Paid Walk-in cancellation must be reviewed. Record sale amount and actor,
 // preserve prior payment evidence, never assert any automatic refund.
 exports.cancelReviewedPaidWalkIn = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
-  const { db, uid, profile, tenantId } = await callerContext(request);
+  const source = text(request.data?.source || "cashier", 25);
+  if (!["cashier", "kitchen"].includes(source)) invalid("CANCELLATION_SOURCE_INVALID");
+  const roles = source === "kitchen"
+    ? new Set(["owner", "admin", "manager", "kitchen", "super_admin"])
+    : WALK_IN_ROLES;
+  const { db, uid, profile, tenantId } = await callerContext(request, roles);
   const id = deferredId(request.data?.orderId);
   const ref = db.collection("tenants").doc(tenantId).collection("orders").doc(id);
   const audit = db.collection("tenants").doc(tenantId).collection("auditLogs").doc("reviewed_walkin_cancel_" + id);
@@ -848,17 +853,35 @@ exports.cancelReviewedPaidWalkIn = onCall({ region: REGION, timeoutSeconds: 30 }
     if (existingAudit.exists) conflict("CASHIER_CANCEL_AUDIT_CONFLICT");
     const cents = deferredPolicy.activeTotalCents(order.items);
     if (Math.round(Number(order.totalAmount) * 100) !== cents) conflict("CASHIER_CANCEL_TOTAL_MISMATCH");
+    // Release only a table still owned by THIS Walk-in. A paid bill settled
+    // earlier may already have freed the table for somebody else's order.
+    let ownedTable = null;
+    if (order.serviceType === "dine_in" && order.tableCode) {
+      const found = await findTable(db, tenantId, order.tableCode);
+      if (found) {
+        const snapshot = await tx.get(found.ref);
+        if (snapshot.exists && text(snapshot.data().walkInOrderId) === id &&
+          text(snapshot.data().status) === "occupied" && !text(snapshot.data().orderToken)) {
+          ownedTable = found.ref;
+        }
+      }
+    }
     const now = new Date().toISOString();
     const patch = {
       status: "cancelled", cancelledAt: now, cancelledFromStatus: order.status,
-      cancellationSource: "cashier", cancelledByUid: uid, cancelledByRole: profile.role,
+      cancellationSource: source, cancelledByUid: uid, cancelledByRole: profile.role,
       cancellationReviewRequired: true, financialReviewRequired: true,
       originalPaidTotal: cents / 100, cancelledNetAmount: cents / 100,
       updatedAt: FieldValue.serverTimestamp(),
     };
+    if (ownedTable) {
+      tx.update(ownedTable, releasedTablePatch());
+      patch.tableClosedAt = now;
+    }
     tx.update(ref, patch);
     tx.create(audit, {
-      tenantId, orderId: id, action: "cashier_order_cancelled_review_required",
+      tenantId, orderId: id, action: source === "kitchen"
+        ? "kitchen_order_cancelled_paid" : "cashier_order_cancelled_review_required",
       actorUid: uid, actorRole: profile.role, previousStatus: order.status,
       paymentStatus: "paid", originalNetAmount: cents / 100,
       manualRefundNotRecorded: true, timestamp: FieldValue.serverTimestamp(),

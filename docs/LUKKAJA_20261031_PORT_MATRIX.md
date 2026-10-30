@@ -57,3 +57,10 @@ Quick Order select-all tender, Pay First / Kitchen First flows and add-on mode n
 - **CRITICAL BACKUP LIMIT:** matching logic does not replicate MySQL to Firestore or vice versa. Orders, accounts, payments, audit, media and outstanding liabilities remain in separate databases. Actual hot standby requires data/event synchronization, deduplication, conflict resolution, security/consent rules, failover and tested restore runbooks. No such replication is deployed yet.
 
 **Status:** Business flow code is a local/isolated candidate, not an operating live backup or certified exact parity.
+
+## 2026-10-31 Release candidate 0.4.297 / 2026.10.31.527
+
+- Owner superseded prior non-release hold and approved scoped Firebase deploy from this same branch after tests, without merging main. Actual deployment must be recorded after successful cloud verification.
+- Paid Kitchen Walk-in full cancel now mirrors SOURCE visible action and sends kitchen-sourced reviewed cancellation to Auth-protected Callable. Server rejects cashier impersonation and never releases a later bill's table.
+- Responsive Quick Order button geometry verified in browser at 320/390/440/1280px. Owner accepts independent MySQL and Firestore data; cross-DB synchronization is out of release scope.
+- Not certified: physical receipt prints, signed-in production Google OAuth, actual production tenant operator UAT, third-party PromptPay verification or pixel-by-pixel audit of all other pages.

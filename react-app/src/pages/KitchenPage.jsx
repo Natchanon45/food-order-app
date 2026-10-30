@@ -10,6 +10,7 @@ import { sweetConfirm } from "@/components/sweetDialog";
 import {
   cancelOperationalOrder,
   cancelUnpaidWalkIn,
+  cancelReviewedWalkIn,
   updateDeferredWalkInKitchen,
   loadKitchenMenus,
   refreshLalamoveDispatch,
@@ -472,9 +473,6 @@ export function KitchenPage() {
 
   const cancelOrder = async order => {
     if (!order || isKitchenLocked(order)) return;
-    if (order.orderType === "walkin" && order.paymentStatus === "paid") {
-      showToast(t("quick_order.deferred.not_available"), "error"); return;
-    }
     const ok = await sweetConfirm(
       t("kitchen.confirm.cancel_order_message"),
       {
@@ -486,7 +484,12 @@ export function KitchenPage() {
     );
     if (!ok) return;
     try {
-      if (order.orderType === "walkin" && order.paymentTiming === "after") {
+      if (order.orderType === "walkin" && order.paymentStatus === "paid") {
+        const updated = await cancelReviewedWalkIn(tenant.id, order.id, "kitchen");
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+        showToast(t("cashier.cancel_order.review_recorded"));
+        return;
+      } else if (order.orderType === "walkin" && order.paymentTiming === "after") {
         const updated = await cancelUnpaidWalkIn(tenant.id, order.id, "kitchen");
         if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
       } else if (isTakeaway(order)) {

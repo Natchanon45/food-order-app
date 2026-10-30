@@ -75,6 +75,10 @@ test("LUKKAJA parallel / Firebase real Firestore transaction lifecycle (demo onl
  assert.equal((await root.collection("tables").doc(tableId).get()).data().status,"available");
  assert.equal((await invoke("cashier","settleDeferredWalkIn",{orderId:mainId,operationId:"settle-1234567",cashReceived:500,expectedTotal:376.5})).duplicate,true);
  await rejected(()=>invoke("cashier","cancelDeferredWalkIn",{orderId:mainId,source:"cashier"}),"DEFERRED_BILL_NOT_ELIGIBLE");
+ const kitchenPaidId="walkin-"+suffix+"c";
+ const kitchenPaid=await invoke("cashier","createWalkInOrder",{...data,id:kitchenPaidId,paymentTiming:undefined,cashReceived:500});
+ assert.equal(kitchenPaid.item.paymentStatus,"paid");
+ assert.equal((await root.collection("tables").doc(tableId).get()).data().walkInOrderId,kitchenPaidId);
  const reviewed=await invoke("cashier","cancelReviewedPaidWalkIn",{orderId:mainId});
  assert.equal(reviewed.item.status,"cancelled");
  assert.equal(reviewed.item.paymentStatus,"paid");
@@ -82,6 +86,16 @@ test("LUKKAJA parallel / Firebase real Firestore transaction lifecycle (demo onl
  assert.equal(reviewed.item.refundStatus,undefined);
  const audit=(await root.collection("auditLogs").doc("reviewed_walkin_cancel_"+mainId).get()).data();
  assert.equal(audit.manualRefundNotRecorded,true);
+ assert.equal((await root.collection("tables").doc(tableId).get()).data().walkInOrderId,kitchenPaidId);
+ await rejected(()=>invoke("cashier","cancelReviewedPaidWalkIn",{orderId:kitchenPaidId,source:"kitchen"}),"permission-denied");
+ const kitchenVoid=await invoke("kitchen","cancelReviewedPaidWalkIn",{orderId:kitchenPaidId,source:"kitchen"});
+ assert.equal(kitchenVoid.item.cancellationSource,"kitchen");
+ assert.equal(kitchenVoid.item.paymentStatus,"paid");
+ assert.equal(kitchenVoid.item.originalPaidTotal,251);
+ assert.equal((await root.collection("tables").doc(tableId).get()).data().status,"available");
+ const kitchenAudit=(await root.collection("auditLogs").doc("reviewed_walkin_cancel_"+kitchenPaidId).get()).data();
+ assert.equal(kitchenAudit.action,"kitchen_order_cancelled_paid");
+ assert.equal(kitchenAudit.manualRefundNotRecorded,true);
  assert.equal((await invoke("cashier","cancelReviewedPaidWalkIn",{orderId:mainId})).duplicate,true);
  const unpaidId="walkin-"+suffix+"b";
  await invoke("cashier","createWalkInOrder",{...data,id:unpaidId,serviceType:"takeaway",tableCode:""});

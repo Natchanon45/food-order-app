@@ -840,7 +840,7 @@ export function QuickOrderPage() {
             ? t(appendBill.serviceType === "takeaway" ? "quick_order.deferred.current_total_takeaway" : "quick_order.deferred.current_total", {
               amount: money(appendBill.totalAmount), table: appendBill.tableName || appendBill.tableCode || "-",
             }) : t("quick_order.deferred.not_available")}</p>
-          <a className="btn btn-sm" href="/cashier">{t("quick_order.deferred.back_to_cashier")}</a>
+          <a className="btn btn-sm" href="/cashier"><i className="bi bi-arrow-left app-icon" aria-hidden="true"></i><span>{t("quick_order.deferred.back_to_cashier")}</span></a>
         </div> : null}
 
         <section className="card quick-order-settings">

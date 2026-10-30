@@ -269,9 +269,9 @@ export async function updateDeferredWalkInKitchen(tenantId, orderId, action, ext
   } catch (error) { throw normalizeFunctionError(error); }
 }
 
-export async function cancelReviewedWalkIn(tenantId, orderId) {
+export async function cancelReviewedWalkIn(tenantId, orderId, source = "cashier") {
   try {
-    const result = await cancelReviewedPaidWalkInCallable({ tenantId: requireTenantId(tenantId), orderId });
+    const result = await cancelReviewedPaidWalkInCallable({ tenantId: requireTenantId(tenantId), orderId, source });
     return result.data;
   } catch (error) { throw normalizeFunctionError(error); }
 }

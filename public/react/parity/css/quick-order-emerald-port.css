@@ -1,0 +1,425 @@
+/*
+ * Port 2026-10-31 — PENGUIN (from LUKKAJA M2.147) Cashier Quick Order visual refresh.
+ * Destination-only skin. Keep SOURCE JSX, pinned source CSS, product image
+ * positioning, financial controls, responsive cart behavior and dialogs intact.
+ * Every rule is restricted to the existing Quick Order body route.
+ */
+body.quick-order-page {
+  --quick-fresh-950: #103b29;
+  --quick-fresh-900: #145234;
+  --quick-fresh-800: #176a40;
+  --quick-fresh-700: #20804c;
+  --quick-fresh-200: #b9d9c3;
+  --quick-fresh-100: #e3f1e8;
+  --quick-fresh-50: #f1f8f3;
+  color: #182720;
+  background:
+    radial-gradient(ellipse at 13% 0%, rgba(77, 153, 104, .22), transparent 37%),
+    radial-gradient(ellipse at 94% 42%, rgba(90, 167, 112, .15), transparent 45%),
+    linear-gradient(180deg, #dcece1 0%, #edf5ef 48%, #e3efe7 100%);
+  background-attachment: fixed;
+}
+
+body.quick-order-page .app-header {
+  border-bottom: 1px solid #b7d6c0;
+  background: linear-gradient(105deg, #f1f8f3 0%, #d8ebde 100%);
+  box-shadow: 0 5px 20px rgba(17, 73, 42, .08);
+}
+
+body.quick-order-page .app-header .brand-mark {
+  background: linear-gradient(145deg, #18834a, #105b34);
+  box-shadow: 0 3px 10px rgba(14, 91, 50, .22);
+}
+
+body.quick-order-page .quick-header-back,
+body.quick-order-page .quick-customer-display-link {
+  border: 1px solid #c7dfcf;
+  background: #e7f2e9;
+  color: #174f32;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+body.quick-order-page .quick-header-back:hover,
+body.quick-order-page .quick-customer-display-link:hover {
+  border-color: #8fbe9f;
+  background: #d7e9dd;
+}
+
+body.quick-order-page .quick-order-shell {
+  padding-top: 18px;
+}
+
+body.quick-order-page .quick-order-hero {
+  min-height: 124px;
+  overflow: hidden;
+  border: 1px solid rgba(22, 92, 50, .28);
+  border-radius: 21px;
+  box-shadow: 0 12px 30px rgba(17, 66, 37, .15);
+}
+
+body.quick-order-page .quick-order-settings {
+  position: relative;
+  gap: 18px;
+  margin-top: 14px;
+  margin-bottom: 18px;
+  padding: 17px 19px;
+  overflow: hidden;
+  border: 1px solid rgba(14, 77, 42, .5);
+  border-radius: 19px;
+  background: linear-gradient(115deg, #155734 0%, #206c44 72%, #2b8052 100%);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(17, 83, 46, .16);
+}
+
+body.quick-order-page .quick-order-settings::after {
+  position: absolute;
+  top: -76px;
+  right: -64px;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 50%;
+  box-shadow: 0 0 0 29px rgba(255, 255, 255, .035), 0 0 0 65px rgba(255, 255, 255, .025);
+  content: "";
+  pointer-events: none;
+}
+
+body.quick-order-page .quick-order-settings > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.quick-order-page .quick-order-setting-label,
+body.quick-order-page .quick-order-settings .field > span {
+  color: #fff;
+  font-size: .89rem;
+}
+
+body.quick-order-page .quick-service-default-help,
+body.quick-order-page .quick-order-settings .field small {
+  color: #d9eee0;
+}
+
+body.quick-order-page .quick-service-default-help i {
+  color: #b5e6c5;
+}
+
+body.quick-order-page .quick-order-settings .quick-segment {
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(5, 37, 21, .24);
+}
+
+body.quick-order-page .quick-order-settings .quick-segment button {
+  color: #ecfff2;
+}
+
+body.quick-order-page .quick-order-settings .quick-segment button.active {
+  background: #f1faf3;
+  color: #125d35;
+  box-shadow: 0 3px 12px rgba(6, 32, 18, .2);
+}
+
+body.quick-order-page .quick-order-settings .quick-table-field .input {
+  min-height: 43px;
+  border: 1px solid #c4ddcd;
+  border-radius: 11px;
+  background: #f9fcfa;
+  color: #1b3325;
+}
+
+body.quick-order-page .quick-menu-panel {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #bbd7c4;
+  border-radius: 21px;
+  background: linear-gradient(180deg, #e1efe6 0%, #edf6ef 100%);
+  box-shadow: 0 12px 26px rgba(19, 77, 45, .095);
+}
+
+body.quick-order-page .quick-menu-toolbar {
+  gap: 11px;
+  margin: -3px -3px 13px;
+  padding: 6px 3px 12px;
+  border-bottom: 1px solid #c7ddce;
+  background: #e1efe6;
+}
+
+body.quick-order-page .quick-menu-toolbar .category-tabs {
+  gap: 7px;
+  padding: 3px 0;
+  border: 0;
+}
+
+body.quick-order-page .quick-menu-toolbar .category-tabs button {
+  min-height: 37px;
+  border-color: #b7d4c1;
+  background: #f8fcf9;
+  color: #264534;
+  box-shadow: 0 2px 4px rgba(22, 74, 44, .04);
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+body.quick-order-page .quick-menu-toolbar .category-tabs button:hover {
+  border-color: #6da982;
+  background: #d1e8d8;
+}
+
+body.quick-order-page .quick-menu-toolbar .category-tabs button.active {
+  border-color: #125b36;
+  background: linear-gradient(140deg, #1b7747, #115631);
+  color: #fff;
+  box-shadow: 0 4px 11px rgba(15, 91, 50, .22);
+}
+
+body.quick-order-page .quick-search input {
+  min-height: 46px;
+  border: 1px solid #a7cbb3;
+  border-radius: 12px;
+  background: #fff;
+  color: #193b28;
+  box-shadow: 0 3px 10px rgba(20, 80, 42, .055);
+}
+
+body.quick-order-page .quick-search i {
+  color: #297549;
+}
+
+body.quick-order-page .quick-menu-grid {
+  gap: 11px;
+}
+
+body.quick-order-page .quick-menu-card {
+  border: 2px solid #f5fbf7;
+  border-radius: 15px;
+  box-shadow: 0 4px 11px rgba(13, 56, 30, .14);
+}
+
+body.quick-order-page .quick-menu-card:hover {
+  border-color: #65b681;
+  box-shadow: 0 9px 22px rgba(15, 77, 36, .25);
+}
+
+body.quick-order-page .quick-menu-info-overlay {
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 52, 26, .28) 27%, rgba(9, 61, 33, .84) 67%, rgba(7, 33, 20, .98) 100%);
+}
+
+body.quick-order-page .quick-menu-info-overlay .quick-menu-price-badge {
+  border-color: #d3efdc;
+  background: #e4f8e9;
+  color: #135a35;
+}
+
+body.quick-order-page .quick-cart-panel {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #9dc9ac;
+  border-radius: 20px;
+  background: #f2f8f3;
+  box-shadow: 0 16px 38px rgba(13, 61, 35, .2);
+}
+
+body.quick-order-page .quick-cart-head {
+  min-height: 66px;
+  padding: 15px 17px 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, .14);
+  background: linear-gradient(118deg, #103e29, #1b7145);
+  color: #fff;
+}
+
+body.quick-order-page .quick-cart-head h2 {
+  color: #fff;
+  letter-spacing: -.01em;
+}
+
+body.quick-order-page .quick-cart-head span {
+  color: #cdeed8;
+}
+
+body.quick-order-page .quick-cart-list {
+  padding: 13px;
+  background:
+    radial-gradient(circle at 90% 15%, rgba(125, 179, 137, .13), transparent 38%),
+    #eef5ef;
+}
+
+body.quick-order-page .quick-cart-empty {
+  align-self: start;
+  min-height: 196px;
+  gap: 12px;
+  padding: 24px 14px;
+  border: 1px dashed #90bc9e;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #f7fcf8, #e0efe4);
+  color: #355d44;
+  font-weight: 600;
+}
+
+body.quick-order-page .quick-cart-empty::before {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border: 1px solid #b9dfc4;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 40% 38%, #2a8b56 0 5px, transparent 6px),
+    radial-gradient(circle at 64% 38%, #2a8b56 0 5px, transparent 6px),
+    linear-gradient(160deg, #d6eddd, #bfe3cb);
+  box-shadow: 0 7px 16px rgba(20, 105, 57, .13);
+  content: "";
+}
+
+body.quick-order-page .quick-cart-row {
+  border-color: #d1e4d5;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(18, 62, 38, .055);
+}
+
+body.quick-order-page .quick-cart-checkout {
+  gap: 10px;
+  padding: 13px 14px 15px;
+  border-top: 1px solid #bad5c3;
+  background: #e4f0e8;
+}
+
+body.quick-order-page .quick-cart-checkout .quick-segment {
+  border-color: #b6d5c0;
+  background: #d0e3d6;
+}
+
+body.quick-order-page .quick-cart-checkout .quick-segment button {
+  color: #315340;
+}
+
+body.quick-order-page .quick-cart-checkout .quick-segment button.active {
+  background: #fff;
+  color: #146439;
+  box-shadow: 0 3px 10px rgba(27, 92, 47, .11);
+}
+
+body.quick-order-page .quick-order-note-field textarea {
+  border: 1px solid #b4d1bd;
+  border-radius: 10px;
+  background: #f9fcf9;
+  color: #1c3325;
+}
+
+body.quick-order-page .quick-cart-total {
+  min-height: 45px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(105deg, #164a31, #246d46);
+  color: #fff;
+}
+
+body.quick-order-page .quick-cart-total strong {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+body.quick-order-page .quick-submit {
+  min-height: 43px;
+  border: 1px solid #125c38;
+  border-radius: 11px;
+  background: linear-gradient(110deg, #14693d, #229252);
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(17, 92, 48, .18);
+}
+
+body.quick-order-page .quick-submit:disabled {
+  border-color: #b6d3be;
+  background: #b7d9c1;
+  color: #f8fcf9;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+body.quick-order-page .quick-hold-button,
+body.quick-order-page .quick-held-list-button {
+  border-color: #b6d0be;
+  background: #f6fbf7;
+  color: #1c5837;
+}
+
+body.quick-order-page .quick-mobile-bar button {
+  border: 1px solid rgba(184, 236, 199, .28);
+  background: linear-gradient(120deg, #103e29, #1c7d48);
+}
+
+body.quick-order-page .app-version {
+  border-color: #b5d4bd;
+  background: transparent;
+  color: #597061;
+}
+
+body.quick-order-page :is(
+  .quick-search input,
+  .quick-menu-image,
+  .quick-menu-toolbar .category-tabs button,
+  .quick-segment button,
+  .quick-submit,
+  .quick-header-back
+):focus-visible {
+  outline: 3px solid #70c692;
+  outline-offset: 2px;
+}
+
+@media (max-width: 899px) {
+  body.quick-order-page .quick-order-shell { padding-top: 12px; }
+  body.quick-order-page .quick-menu-panel { padding: 10px; border-radius: 16px; }
+  body.quick-order-page .quick-menu-toolbar { margin-bottom: 10px; }
+  body.quick-order-page .quick-cart-panel { border-radius: 20px 20px 0 0; }
+}
+
+@media (max-width: 640px) {
+  body.quick-order-page .quick-order-settings { gap: 13px; padding: 14px; }
+  body.quick-order-page .quick-order-hero { min-height: 110px; border-radius: 16px; }
+  body.quick-order-page .quick-menu-grid { gap: 8px; }
+  body.quick-order-page .quick-cart-head { min-height: 60px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.quick-order-page .quick-menu-card,
+  body.quick-order-page .quick-menu-image img,
+  body.quick-order-page .quick-header-back,
+  body.quick-order-page .quick-customer-display-link {
+    transition: none;
+  }
+}
+
+/* M2.158: two explicit order flows; owner-approved Pay first / Kitchen first.
+   Keep the existing PRIMARY green checkout visual on the pay-first action. */
+body.quick-order-page .quick-deferred-actions {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 9px;
+}
+body.quick-order-page .quick-deferred-actions .quick-submit {
+  min-height: 42px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+}
+body.quick-order-page .quick-send-kitchen {
+  background: #f0faf4;
+  color: #0e6840;
+  border: 1.5px solid #21945c;
+  font-weight: 800;
+  box-shadow: none;
+}
+body.quick-order-page .quick-send-kitchen:hover:not(:disabled) {
+  background: #dff5e7;
+  border-color: #13804c;
+}
+body.quick-order-page .quick-send-kitchen:focus-visible {
+  outline: 3px solid #83cba7;
+  outline-offset: 2px;
+}
+body.quick-order-page [data-open-walkin-bill] p {
+  margin: 5px 0 9px;
+  font-size: 13px;
+  color: #2a5940;
+}

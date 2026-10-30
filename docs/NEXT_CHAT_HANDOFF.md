@@ -1,3 +1,11 @@
+## 2026-10-31 — Owner-approved release 0.4.297 / 2026.10.31.527 pre-deploy verified
+
+- Owner approved Firebase deploy from existing isolated review branch feature/port-lukkaja-20261031 to project chat-45754, Hosting target foodapp (penguin-food.web.app); version+build bumped in react-app/src/config/release.js.
+- Demo-only Firebase Auth/Firestore money/table/role tests 2/2, pure finance/accounting 9/9, React Parity, React build/entrypoint contract, 18 browser UI + 4 Quick Order responsive UI checks all PASS. Scoped Firebase dry-run for ONLY six specified order functions plus firestore:rules plus hosting:foodapp PASS.
+- LUKKAJA Kitchen supports reviewed paid cancellation. PENGUIN now supports kitchen actor, no refund, and table release only for a table still owned by the cancelled order. Protected Walk-in Firestore writes are server-only. LUKKAJA source read-only, GitHub original main/react-firebase-port unchanged.
+- Intended selective rollout: six Functions FIRST; Hosting SECOND; Firestore Rules LAST. Check actual HTTPS 0.4.297/.527 after publishing. Until cloud success this heading is a pre-deploy record, not a deployment claim.
+- Owner specified UI parity only; databases need not be synchronized. No production payment/order data was used for testing, no user mobile login or physical print UAT verified.
+
 ## 2026-10-31 — Parallel backup intent: candidate Firebase Walk-in and cancellation, NOT released
 
 - Owner: LUKKAJA (Go/MySQL) and PENGUIN (React/Firebase) are intended as identical business-condition systems and parallel standbys. This does NOT yet mean their live transactions, financial documents, users, stock, or media are replicated between their separate databases.
