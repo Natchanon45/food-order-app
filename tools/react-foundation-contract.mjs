@@ -1622,8 +1622,9 @@ assert(
   "Cashier takeaway cancellation must use the proven operational status-update path",
 );
 assert(
-  (cashierPage.match(/bi bi-cash-coin app-icon/g)||[]).length===4
-  &&(cashierPage.match(/cashier-payment-action/g)||[]).length===4
+  (cashierPage.match(/bi bi-cash-coin app-icon/g)||[]).length===5
+  &&(cashierPage.match(/cashier-payment-action/g)||[]).length===5
+  &&cashierPage.includes('data-walkin-pay={order.id}')
   &&cashierPage.includes('onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon"')
   &&cashierPage.includes('onClick={() => actions.payTable(sorted)}><i className="bi bi-cash-coin app-icon"')
   &&cashierRefreshCss.includes(".cashier-payment-action .bi-cash-coin.app-icon::before")

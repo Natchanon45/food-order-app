@@ -1,6 +1,7 @@
 const { randomUUID } = require("crypto");
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const deferredPolicy = require("./walkin-finance-policy");
 
 const REGION = "asia-southeast1";
 const WALK_IN_ROLES = new Set(["owner", "admin", "manager", "cashier", "super_admin"]);
@@ -11,16 +12,16 @@ function text(value = "", max = 500) {
   return String(value || "").trim().slice(0, max);
 }
 function applicationError(code, message = code) {
-  return new HttpsError("failed-precondition", message, { code });
+  throw new HttpsError("failed-precondition", message, { code });
 }
 function invalid(code, message = code) {
-  return new HttpsError("invalid-argument", message, { code });
+  throw new HttpsError("invalid-argument", message, { code });
 }
 function conflict(code, message = code) {
-  return new HttpsError("already-exists", message, { code });
+  throw new HttpsError("already-exists", message, { code });
 }
 function missing(code, message = code) {
-  return new HttpsError("not-found", message, { code });
+  throw new HttpsError("not-found", message, { code });
 }
 function money(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
@@ -205,6 +206,8 @@ exports.createWalkInOrder = onCall({ region: REGION, timeoutSeconds: 30 }, async
   const requestedId = text(request.data?.id, 128);
   if (!["dine_in", "takeaway"].includes(serviceType)) invalid("WALK_IN_SERVICE_TYPE_INVALID");
   if (!["cash", "promptpay"].includes(paymentMethod)) invalid("WALK_IN_PAYMENT_METHOD_INVALID");
+  // LUKKAJA never records unverified PromptPay as a paid counter sale.
+  if (paymentMethod === "promptpay" && request.data?.paymentTiming !== "after") invalid("WALK_IN_PROMPTPAY_REVIEW_REQUIRED");
   const id = requestedId || `walkin-${randomUUID()}`;
   if (!/^[a-zA-Z0-9_-]{8,128}$/.test(id)) invalid("ORDER_ID_INVALID");
   const orderRef = db.collection("tenants").doc(tenantId).collection("orders").doc(id);
@@ -218,12 +221,18 @@ exports.createWalkInOrder = onCall({ region: REGION, timeoutSeconds: 30 }, async
   const requestedItems = normalizeRequestedItems(request.data?.items);
   const menus = await menuMap(db, tenantId, requestedItems);
   const priced = priceItems(requestedItems, menus);
+  const deferred = request.data?.paymentTiming === "after";
+  if (request.data?.paymentTiming !== undefined && request.data.paymentTiming !== "after") invalid("WALK_IN_PAYMENT_TIMING_INVALID");
+  if (deferred) {
+    try { deferredPolicy.prepareWalkInPayment(request.data, priced.total); }
+    catch (error) { invalid(error.code || "DEFERRED_PAYMENT_INVALID"); }
+  }
   const tableCode = serviceType === "dine_in" ? text(request.data?.tableCode, 120) : "";
   const selectedTable = tableCode ? await findTable(db, tenantId, tableCode) : null;
   if (tableCode && !selectedTable) conflict("TABLE_NOT_AVAILABLE");
 
   let cashReceived = null, changeAmount = 0;
-  if (paymentMethod === "cash") {
+  if (paymentMethod === "cash" && !deferred) {
     if (request.data?.cashReceived === null || request.data?.cashReceived === undefined || request.data?.cashReceived === "") invalid("CASH_RECEIVED_REQUIRED");
     cashReceived = money(request.data.cashReceived);
     if (!Number.isFinite(cashReceived) || cashReceived < 0 || cashReceived > 999999999.99) invalid("CASH_RECEIVED_INVALID");
@@ -253,8 +262,9 @@ exports.createWalkInOrder = onCall({ region: REGION, timeoutSeconds: 30 }, async
       id, tenantId, shopId: tenantId,
       ...queue,
       orderType: "walkin", orderSource: "cashier_walkin", serviceType,
-      status: "pending", paymentStatus: "paid", paymentMethod,
-      paidAt: nowIso, paymentReceivedAt: nowIso,
+      status: "pending", paymentStatus: deferred ? "unpaid" : "paid", paymentMethod,
+      paymentTiming: deferred ? "after" : "before",
+      ...(deferred ? {} : { paidAt: nowIso, paymentReceivedAt: nowIso }),
       cashReceived, changeAmount, customerName: text(request.data?.customerName, 120),
       tableCode: identity.code, tableName: identity.name,
       items: priced.items, subtotalAmount: priced.total, totalAmount: priced.total,
@@ -607,4 +617,252 @@ exports.releaseQuickOrderHeldBill = onCall({ region: REGION, timeoutSeconds: 30 
 Object.defineProperty(exports, "__test", {
   value: { bangkokDateKey, queueNumber, normalizeRequestedItems, priceItems, tableAvailable, waitingQueuePlaceholder, orderFullyServed },
   enumerable: false,
+});
+
+// PENGUIN / LUKKAJA Oct 31: trusted Firebase transactions for pay-after
+// Walk-in. All mutations run in the single tenant order's transaction and
+// are role-checked server-side; browser Firestore Rules block direct edits.
+function deferredId(value, field = "ORDER_ID_INVALID") {
+  const id = text(value, 140);
+  if (!/^[a-zA-Z0-9_-]{8,128}$/.test(id)) invalid(field);
+  return id;
+}
+function deferredFailure(error) {
+  if (error instanceof HttpsError) throw error;
+  if (error?.code && /^[A-Z][A-Z0-9_]{2,100}$/.test(error.code)) {
+    throw applicationError(error.code);
+  }
+  throw error;
+}
+async function lockedMenus(tx, db, tenantId, requested) {
+  const ids = [...new Set(requested.map(row => deferredId(row.menuId, "MENU_ID_INVALID")))];
+  const refs = ids.map(id => db.collection("tenants").doc(tenantId).collection("menus").doc(id));
+  const snap = await Promise.all(refs.map(ref => tx.get(ref)));
+  const menus = new Map();
+  snap.forEach((doc, index) => {
+    if (doc.exists) menus.set(ids[index], { ...doc.data(), id: doc.id });
+  });
+  return menus;
+}
+function walkinTableRef(db, tenantId, tableCode) {
+  return db.collection("tenants").doc(tenantId).collection("tables").doc(tableCode);
+}
+function verifyWalkinTableOwner(snapshot, orderId) {
+  if (!snapshot?.exists ||
+    text(snapshot.data()?.walkInOrderId, 140) !== orderId ||
+    text(snapshot.data()?.status, 40) !== "occupied" ||
+    text(snapshot.data()?.orderToken, 140)) conflict("WALK_IN_TABLE_MISMATCH");
+}
+function isDeferredBill(order) {
+  return order?.orderType === "walkin" && order?.paymentTiming === "after";
+}
+
+exports.appendUnpaidWalkInItems = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  const { db, tenantId, profile } = await callerContext(request);
+  const id = deferredId(request.data?.orderId);
+  const operationId = deferredId(request.data?.operationId, "OPERATION_ID_INVALID");
+  const requested = normalizeRequestedItems(request.data?.items).map(item => ({ menuId: item.menuId, qty: item.qty, note: item.note }));
+  if (request.data.items?.some(item => Object.keys(item || {}).some(key => !["menuId", "qty", "note"].includes(key)))) invalid("CLIENT_PRICE_FORBIDDEN");
+  const ref = db.collection("tenants").doc(tenantId).collection("orders").doc(id);
+  const result = await db.runTransaction(async tx => {
+    const snapshot = await tx.get(ref);
+    if (!snapshot.exists) missing("ORDER_NOT_FOUND");
+    const order = normalizeOrder(snapshot);
+    if (order?.kitchenAddOperations?.[operationId]) {
+      if (!isDeferredBill(order)) conflict("DEFERRED_BILL_NOT_ELIGIBLE");
+      return { duplicate: true, item: order };
+    }
+    try { deferredPolicy.eligibleDeferred(order, profile.role); }
+    catch (error) { deferredFailure(error); }
+    const menus = await lockedMenus(tx, db, tenantId, requested);
+    const now = new Date().toISOString();
+    let change;
+    try { change = deferredPolicy.addKitchenRound(order, profile.role, operationId, requested, menus, now); }
+    catch (error) { deferredFailure(error); }
+    if (change.duplicate) return { duplicate: true, item: order };
+    tx.update(ref, { ...change.patch, updatedAt: FieldValue.serverTimestamp() });
+    return { duplicate: false, item: { ...order, ...change.patch } };
+  });
+  return result;
+});
+
+exports.settleDeferredWalkIn = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  const { db, tenantId, profile, uid } = await callerContext(request);
+  const id = deferredId(request.data?.orderId);
+  const operationId = deferredId(request.data?.operationId, "OPERATION_ID_INVALID");
+  const ref = db.collection("tenants").doc(tenantId).collection("orders").doc(id);
+  return db.runTransaction(async tx => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) missing("ORDER_NOT_FOUND");
+    const order = normalizeOrder(snap);
+    if (isDeferredBill(order) && order.paymentStatus === "paid" && order.settlementOperationId === operationId) {
+      return { duplicate: true, item: order };
+    }
+    const now = new Date().toISOString();
+    let patch;
+    try { patch = deferredPolicy.settleDeferredWalkIn(order, profile.role, request.data?.cashReceived, request.data?.expectedTotal, now); }
+    catch (error) { deferredFailure(error); }
+    let table = null;
+    if (order.serviceType === "dine_in") {
+      // resolve real table code / ID using the existing code lookup.
+      const lookup = await findTable(db, tenantId, order.tableCode);
+      if (!lookup) conflict("WALK_IN_TABLE_MISMATCH");
+      table = await tx.get(lookup.ref);
+      verifyWalkinTableOwner(table, id);
+      // All reads complete before any writes.
+      tx.update(lookup.ref, releasedTablePatch());
+    }
+    patch.settledByUid = uid;
+    patch.settlementOperationId = operationId;
+    patch.updatedAt = FieldValue.serverTimestamp();
+    if (table) patch.tableClosedAt = now;
+    tx.update(ref, patch);
+    return { duplicate: false, item: { ...order, ...patch } };
+  });
+});
+
+exports.cancelDeferredWalkIn = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  const source = text(request.data?.source, 25);
+  if (!["cashier", "kitchen"].includes(source)) invalid("CANCELLATION_SOURCE_INVALID");
+  const roles = source === "kitchen"
+    ? new Set(["owner", "admin", "manager", "kitchen", "super_admin"])
+    : WALK_IN_ROLES;
+  const { db, tenantId, uid, profile } = await callerContext(request, roles);
+  const id = deferredId(request.data?.orderId);
+  const ref = db.collection("tenants").doc(tenantId).collection("orders").doc(id);
+  return db.runTransaction(async tx => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) missing("ORDER_NOT_FOUND");
+    const order = normalizeOrder(snap);
+    if (isDeferredBill(order) && order.status === "cancelled") return { duplicate: true, item: order };
+    const now = new Date().toISOString();
+    let patch;
+    try { patch = deferredPolicy.cancelDeferredWalkIn(order, profile.role, source, now); }
+    catch (error) { deferredFailure(error); }
+    let lookup = null;
+    if (order.serviceType === "dine_in") {
+      lookup = await findTable(db, tenantId, order.tableCode);
+      if (!lookup) conflict("WALK_IN_TABLE_MISMATCH");
+      const ownedTable = await tx.get(lookup.ref);
+      verifyWalkinTableOwner(ownedTable, id);
+      tx.update(lookup.ref, releasedTablePatch());
+    }
+    patch.cancelledByUid = uid;
+    patch.cancelledByRole = profile.role;
+    patch.cancelledFromStatus = order.status;
+    if (lookup) patch.tableClosedAt = now;
+    patch.updatedAt = FieldValue.serverTimestamp();
+    tx.update(ref, patch);
+    return { duplicate: false, item: { ...order, ...patch } };
+  });
+});
+
+exports.updateDeferredKitchen = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  const roles = new Set(["owner", "admin", "manager", "kitchen", "super_admin"]);
+  const { db, tenantId, profile, uid } = await callerContext(request, roles);
+  const id = deferredId(request.data?.orderId);
+  const action = text(request.data?.action, 30);
+  if (!["serve_item", "serve_all", "cancel_item", "status"].includes(action)) invalid("KITCHEN_ACTION_INVALID");
+  const ref = db.collection("tenants").doc(tenantId).collection("orders").doc(id);
+  return db.runTransaction(async tx => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) missing("ORDER_NOT_FOUND");
+    const order = normalizeOrder(snap);
+    const paidWalkIn = order?.orderType === "walkin" && order?.paymentStatus === "paid"
+      && ["cash", "promptpay"].includes(order?.paymentMethod)
+      && !order?.tableToken && !CLOSED_STATUSES.has(String(order.status || ""));
+    if (!paidWalkIn) {
+      try { deferredPolicy.eligibleDeferred(order, profile.role, "kitchen"); }
+      catch (error) { deferredFailure(error); }
+    } else if (action === "cancel_item") conflict("CASHIER_CANCEL_PAYMENT_REVIEW_REQUIRED");
+    const now = new Date().toISOString();
+    let patch = {};
+    const index = Number(request.data?.index);
+    if (action === "cancel_item") {
+      try { patch = deferredPolicy.cancelDeferredItem(order, profile.role, index, now); }
+      catch (error) { deferredFailure(error); }
+      if (patch.status === "cancelled") {
+        patch.cancelledByUid = uid;
+        patch.cancelledByRole = profile.role;
+      }
+    } else if (action === "serve_item" || action === "serve_all") {
+      if (action === "serve_item" && (!Number.isSafeInteger(index) || index < 0 || index >= order.items.length)) invalid("ITEM_NOT_FOUND");
+      if (action === "serve_item" && (order.items[index].cancelled || order.items[index].served || order.items[index].kitchenPreviouslyServed)) conflict("ITEM_ALREADY_SERVED");
+      const items = order.items.map((line, i) => (line.cancelled || line.served || line.kitchenPreviouslyServed || (action === "serve_item" && i !== index))
+        ? { ...line } : { ...line, served: true, servedAt: now });
+      const complete = items.filter(line => !line.cancelled).every(line => line.served || line.kitchenPreviouslyServed);
+      patch = { items, lastServedItemAt: now, ...(complete ? {
+        status: paidWalkIn ? "paid" : "served", servedAt: now,
+        ...(paidWalkIn ? { completedAt: now } : {}),
+      } : {}) };
+    } else {
+      const nextStatus = text(request.data?.status, 30);
+      if (!["accepted", "cooking", "ready", "served"].includes(nextStatus)) invalid("KITCHEN_STATUS_INVALID");
+      patch = { status: paidWalkIn && nextStatus === "served" ? "paid" : nextStatus };
+      if (nextStatus === "served") {
+        patch.items = order.items.map(line => line.cancelled || line.served ? { ...line } : { ...line, served: true, servedAt: now });
+        patch.servedAt = now;
+        patch.lastServedItemAt = now;
+        if (paidWalkIn) patch.completedAt = now;
+      }
+    }
+    // Cancel last item and release its table in the very same transaction.
+    if (patch.status === "cancelled" && order.serviceType === "dine_in") {
+      const lookup = await findTable(db, tenantId, order.tableCode);
+      if (!lookup) conflict("WALK_IN_TABLE_MISMATCH");
+      const owned = await tx.get(lookup.ref);
+      verifyWalkinTableOwner(owned, id);
+      tx.update(lookup.ref, releasedTablePatch());
+      patch.tableClosedAt = now;
+    }
+    patch.updatedAt = FieldValue.serverTimestamp();
+    tx.update(ref, patch);
+    return { item: { ...order, ...patch } };
+  });
+});
+
+// Paid Walk-in cancellation must be reviewed. Record sale amount and actor,
+// preserve prior payment evidence, never assert any automatic refund.
+exports.cancelReviewedPaidWalkIn = onCall({ region: REGION, timeoutSeconds: 30 }, async request => {
+  const { db, uid, profile, tenantId } = await callerContext(request);
+  const id = deferredId(request.data?.orderId);
+  const ref = db.collection("tenants").doc(tenantId).collection("orders").doc(id);
+  const audit = db.collection("tenants").doc(tenantId).collection("auditLogs").doc("reviewed_walkin_cancel_" + id);
+  return db.runTransaction(async tx => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) missing("ORDER_NOT_FOUND");
+    const order = normalizeOrder(snap);
+    if (order?.orderType !== "walkin" || order?.paymentStatus !== "paid" ||
+        !["cash", "promptpay"].includes(order.paymentMethod) ||
+        order.tableToken || order.lalamoveOrderId || order.lalamoveDispatchPlacedAt ||
+        !Number.isFinite(Number(order.totalAmount)) || Number(order.totalAmount) < 0) {
+      conflict("CASHIER_CANCEL_PAYMENT_REVIEW_REQUIRED");
+    }
+    if (order.status === "cancelled" && order.cancellationReviewRequired === true) {
+      return { item: order, duplicate: true };
+    }
+    if (!["pending", "accepted", "cooking", "ready", "served", "paid", "completed"].includes(String(order.status))) {
+      conflict("CASHIER_CANCEL_SESSION_REQUIRED");
+    }
+    const existingAudit = await tx.get(audit);
+    if (existingAudit.exists) conflict("CASHIER_CANCEL_AUDIT_CONFLICT");
+    const cents = deferredPolicy.activeTotalCents(order.items);
+    if (Math.round(Number(order.totalAmount) * 100) !== cents) conflict("CASHIER_CANCEL_TOTAL_MISMATCH");
+    const now = new Date().toISOString();
+    const patch = {
+      status: "cancelled", cancelledAt: now, cancelledFromStatus: order.status,
+      cancellationSource: "cashier", cancelledByUid: uid, cancelledByRole: profile.role,
+      cancellationReviewRequired: true, financialReviewRequired: true,
+      originalPaidTotal: cents / 100, cancelledNetAmount: cents / 100,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    tx.update(ref, patch);
+    tx.create(audit, {
+      tenantId, orderId: id, action: "cashier_order_cancelled_review_required",
+      actorUid: uid, actorRole: profile.role, previousStatus: order.status,
+      paymentStatus: "paid", originalNetAmount: cents / 100,
+      manualRefundNotRecorded: true, timestamp: FieldValue.serverTimestamp(),
+    });
+    return { item: { ...order, ...patch }, duplicate: false };
+  });
 });

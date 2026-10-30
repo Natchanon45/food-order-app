@@ -9,6 +9,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
   createWalkInOrder,
+  appendUnpaidWalkInItems,
   getOperationalOrder,
   loadOperationalSnapshot,
   releaseQuickOrderHeldBill,
@@ -120,6 +121,7 @@ export function QuickOrderPage() {
   const [paymentResult, setPaymentResult] = useState(null);
   const pendingOrderId = useRef("");
   const pendingSignature = useRef("");
+  const pendingAppendId = useRef("");
   const displayTimer = useRef(null);
   const displaySignature = useRef("");
   const heldDialogRef = useRef(null);
@@ -154,6 +156,21 @@ export function QuickOrderPage() {
       && order.tableCode)
       .map(order => String(order.tableCode).toUpperCase()),
   ), [orders]);
+  // Parity with LUKKAJA's existing unpaid kitchen-first bill URL.
+  // The actual append remains server-priced and idempotent on Firestore.
+  const appendToId = new URLSearchParams(location.search).get("appendTo") || "";
+  const appendBill = orders.find(order =>
+    order.id === appendToId && order.orderType === "walkin" &&
+    order.paymentStatus === "unpaid" && order.paymentTiming === "after" &&
+    !["cancelled", "completed", "paid", "voided", "deleted"].includes(order.status)
+  );
+  useEffect(() => {
+    if (!appendBill) return;
+    setServiceTypeState(appendBill.serviceType === "takeaway" ? "takeaway" : "dine_in");
+    setTableCode(String(appendBill.tableCode || ""));
+    setPaymentMethod("cash");
+  }, [appendBill?.id, appendBill?.tableCode, appendBill?.serviceType]);
+
   const availableTables = useMemo(() => tables.filter(table => {
     const code = String(table.code || table.id || "").toUpperCase();
     return activeTable(table) && !occupiedWalkInCodes.has(code);
@@ -620,26 +637,49 @@ export function QuickOrderPage() {
     throw lastError || new Error("WALK_IN_ORDER_CREATE_FAILED");
   };
 
-  const submitOrder = async ({ cashConfirmed = false } = {}) => {
+  const submitOrder = async ({ cashConfirmed = false, deferred = false } = {}) => {
     if (!summary.qty || busy) {
       if (!summary.qty) showToast(t("quick_order.errors.no_items"), "error");
       return;
     }
-    if (paymentMethod === "cash" && !cashConfirmed) {
+    if (appendToId) {
+      if (!appendBill) { showToast(t("quick_order.deferred.not_available"), "error"); return; }
+      const operationId = pendingAppendId.current || ("append-" + crypto.randomUUID());
+      pendingAppendId.current = operationId;
+      setBusy(true);
+      try {
+        await appendUnpaidWalkInItems(tenant.id, appendBill.id, operationId,
+          cartItems.map(item => ({ menuId: item.id, qty: Number(item.qty), note: item.note || "" })));
+        pendingAppendId.current = "";
+        resetDraft();
+        showToast(t("quick_order.deferred.added"));
+        window.location.assign("/cashier");
+      } catch (error) {
+        showToast(t("quick_order.deferred.add_failed") + " (" + String(error?.code || "UNKNOWN") + ")", "error");
+      } finally { setBusy(false); }
+      return;
+    }
+    if (deferred && serviceType === "dine_in" && !tableCode) {
+      showToast(t("quick_order.deferred.table_required"), "error"); return;
+    }
+    if (deferred && paymentMethod !== "cash") {
+      showToast(t("quick_order.deferred.cash_only"), "error"); return;
+    }
+    if (!deferred && paymentMethod === "cash" && !cashConfirmed) {
       setCashReceived(summary.total.toFixed(2));
       setCashReplaceNext(true);
       setCashOpen(true);
       return;
     }
-    if (paymentMethod === "cash" && cashState.received === null) {
+    if (!deferred && paymentMethod === "cash" && cashState.received === null) {
       showToast(t("quick_order.payment.cash_required"), "error");
       return;
     }
-    if (paymentMethod === "cash" && !cashState.sufficient) {
+    if (!deferred && paymentMethod === "cash" && !cashState.sufficient) {
       showToast(t("quick_order.payment.insufficient_cash", { amount: money(cashState.shortfall) }), "error");
       return;
     }
-    if (paymentMethod !== "cash") {
+    if (!deferred && paymentMethod !== "cash") {
       const ok = await sweetConfirm(t("quick_order.confirm.promptpay_message", { amount: money(summary.total) }), {
         title: t("quick_order.confirm.title"),
         confirmText: t("quick_order.actions.submit"),
@@ -649,7 +689,9 @@ export function QuickOrderPage() {
       if (!ok) return;
     }
 
-    const payload = draftPayload(cashState);
+    const payload = deferred
+      ? { ...draftPayload(cashState), paymentMethod: "cash", paymentTiming: "after", cashReceived: null }
+      : draftPayload(cashState);
     const signature = JSON.stringify(payload);
     setBusy(true);
     try {
@@ -659,8 +701,8 @@ export function QuickOrderPage() {
           pendingOrderId.current = "";
           pendingSignature.current = "";
           setCashOpen(false);
-          setPaymentResult(previous);
-          showToast(t("quick_order.toast.recovered", { queue: previous.queueNo || "-" }));
+          if (previous.paymentStatus === "paid") setPaymentResult(previous);
+          showToast(t(previous.paymentStatus === "unpaid" ? "quick_order.deferred.sent" : "quick_order.toast.recovered", { queue: previous.queueNo || "-" }));
           return;
         }
         pendingOrderId.current = "";
@@ -674,8 +716,8 @@ export function QuickOrderPage() {
       setCashOpen(false);
       resetDraft();
       setCartOpen(false);
-      setPaymentResult(order);
-      showToast(t("quick_order.toast.created", { queue: order?.queueNo || "-" }));
+      if (order.paymentStatus === "paid") setPaymentResult(order);
+      showToast(t(order.paymentStatus === "unpaid" ? "quick_order.deferred.sent" : "quick_order.toast.created", { queue: order?.queueNo || "-" }));
     } catch (error) {
       console.error("QUICK_ORDER_CREATE_FAILED", error);
       const code = String(error?.code || "");
@@ -792,13 +834,21 @@ export function QuickOrderPage() {
           </div>
         </section>
         {loadError ? <div className="upload-error" role="alert">{loadError}</div> : null}
+        {appendToId ? <div className="card" data-open-walkin-bill style={{ marginBottom: 12, padding: "12px 16px", border: "1px solid #8bc2a3", background: "#effaf2" }}>
+          <strong>{t("quick_order.deferred.add_title")}: {appendBill?.queueNo || appendToId}</strong>
+          <p>{appendBill
+            ? t(appendBill.serviceType === "takeaway" ? "quick_order.deferred.current_total_takeaway" : "quick_order.deferred.current_total", {
+              amount: money(appendBill.totalAmount), table: appendBill.tableName || appendBill.tableCode || "-",
+            }) : t("quick_order.deferred.not_available")}</p>
+          <a className="btn btn-sm" href="/cashier">{t("quick_order.deferred.back_to_cashier")}</a>
+        </div> : null}
 
         <section className="card quick-order-settings">
           <div className="quick-order-setting-block">
             <span className="quick-order-setting-label">{t("quick_order.service.title")}</span>
             <div className="quick-segment" id="quickServiceType">
-              <button type="button" className={serviceType === "dine_in" ? "active" : ""} data-service-type="dine_in" onClick={() => setServiceType("dine_in")}><i className="bi bi-shop" aria-hidden="true"></i><span>{t("quick_order.service.dine_in")}</span></button>
-              <button type="button" className={serviceType === "takeaway" ? "active" : ""} data-service-type="takeaway" onClick={() => setServiceType("takeaway")}><img className="quick-service-icon app-icon" src="/assets/vendor/bootstrap-icons/icons/bag.svg" alt="" aria-hidden="true" /><span>{t("quick_order.service.takeaway")}</span></button>
+              <button type="button" disabled={Boolean(appendToId)} className={serviceType === "dine_in" ? "active" : ""} data-service-type="dine_in" onClick={() => setServiceType("dine_in")}><i className="bi bi-shop" aria-hidden="true"></i><span>{t("quick_order.service.dine_in")}</span></button>
+              <button type="button" disabled={Boolean(appendToId)} className={serviceType === "takeaway" ? "active" : ""} data-service-type="takeaway" onClick={() => setServiceType("takeaway")}><img className="quick-service-icon app-icon" src="/assets/vendor/bootstrap-icons/icons/bag.svg" alt="" aria-hidden="true" /><span>{t("quick_order.service.takeaway")}</span></button>
             </div>
             <small className="quick-service-default-help"><i className="bi bi-pin-angle" aria-hidden="true"></i><span>{t("quick_order.service.default_help")}</span></small>
           </div>
@@ -928,7 +978,11 @@ export function QuickOrderPage() {
                   <button className="btn quick-hold-button" id="quickHoldBill" type="button" disabled={!summary.qty || busy} onClick={holdCurrentBill}><i className="bi bi-pause-circle app-icon" aria-hidden="true"></i><span>{t("quick_order.held.hold")}</span></button>
                   <button className="btn quick-held-list-button" id="quickHeldBillsButton" type="button" onClick={() => setHeldOpen(true)}><i className="bi bi-clock-history app-icon" aria-hidden="true"></i><span>{t("quick_order.held.open_list")}</span><strong className="quick-held-count" id="quickHeldCount">{heldBills.length}</strong></button>
                 </div> : null}
-                <button className="btn btn-primary quick-submit" id="quickSubmitOrder" type="button" disabled={!summary.qty || busy} onClick={() => submitOrder()}><span>{busy ? t("quick_order.actions.submitting") : t("quick_order.actions.submit")}</span></button>
+                {appendToId ? <button className="btn btn-primary quick-submit" id="quickAppendKitchenItems" type="button" disabled={!appendBill || !summary.qty || busy} onClick={() => submitOrder({ deferred: true })}><i className="bi bi-plus-circle app-icon" aria-hidden="true"></i><span>{t("quick_order.deferred.add_items")}</span></button>
+                : <div className="quick-deferred-actions">
+                  <button className="btn btn-primary quick-submit" id="quickSubmitOrder" type="button" disabled={!summary.qty || busy} onClick={() => submitOrder()}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{busy ? t("quick_order.actions.submitting") : t("quick_order.deferred.pay_first")}</span></button>
+                  <button className="btn quick-submit quick-send-kitchen" id="quickSendToKitchen" type="button" disabled={!summary.qty || busy} onClick={() => submitOrder({ deferred: true })}><i className="bi bi-egg-fried app-icon" aria-hidden="true"></i><span>{busy ? t("quick_order.actions.submitting") : t("quick_order.deferred.send_unpaid")}</span></button>
+                </div>}
               </div>
             </div>
           </aside>

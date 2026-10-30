@@ -1,3 +1,13 @@
+## 2026-10-31 — Parallel backup intent: candidate Firebase Walk-in and cancellation, NOT released
+
+- Owner: LUKKAJA (Go/MySQL) and PENGUIN (React/Firebase) are intended as identical business-condition systems and parallel standbys. This does NOT yet mean their live transactions, financial documents, users, stock, or media are replicated between their separate databases.
+- Source cosmatch/lukkhaja f9a6ddcd is READ ONLY. Worktree feature/port-lukkaja-20261031 from feature/react-firebase-port d87fc375 is isolated; original main untouched; 24 commit source matrix at docs/LUKKAJA_20261031_PORT_MATRIX.md.
+- Implemented candidate: Firebase Functions Cashier/Kitchen role-checked create unpaid cash Walk-in, immutable menu prices for add-on, unique add-operation IDs, serve-first settlement and cash change, atomic table release, kitchen cancelled-item source, unpaid full cancel, paid cashier reviewed void with tenant audit and NO automatic refund. Fixed existing operational error helpers that created HttpsErrors without throwing.
+- Firestore Rules block Browser create and update/delete of protected paid/unpaid Walk-ins; other approved orders remain editable. Auth/Firestore demo-only Emulator: transaction + client-rule tests 2/2 PASS. Local policy/accounting suite 9/9 PASS. General React Parity and React Vite candidate build PASS.
+- Sales Report shows canceled history separately with original net while excluding cancellations from counted sales, graphs and top items; 5 locale actor labels; receipt red code and -30 degree actor watermark. Prior Delivery Google auth, quick-order visual skin, branded print tab, wallet scroll unchanged.
+- NOT COMPLETE: other order types/provider cancellation reconciliation, paid item editing, real browser/physical print UAT, staging, payment provider verification, cross-system data replication and failover drills. Do not merge main or deploy Firebase Hosting/Functions/Rules without separate release approval.
+- Use JAVA_HOME=/opt/homebrew/opt/openjdk@21 with Firebase CLI for local Emulator (Java 17 is insufficient); project demo-penguin-lukkaja-parallel only. Existing unrelated test:operational Lalamove contract remains a known baseline failure; no production order writes authorized.
+
 ## 2026-10-31 — LUKKAJA to PENGUIN isolated port (not Production)
 
 - User requested porting ALL 24 Oct 31 source commits from LUKKAJA (f9a6ddcd) to PENGUIN. Working branch feature/port-lukkaja-20261031 is based on feature/react-firebase-port d87fc375. Keep main, Production and original local checkout untouched.

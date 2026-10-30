@@ -1,6 +1,6 @@
 # Food Order / Delivery / Retail POS
 
-> Port staging (31 October 2026): isolated branch feature/port-lukkaja-20261031, NOT released or merged. See docs/LUKKAJA_20261031_PORT_MATRIX.md for all 24 source commits and pending backend work. Existing Production Version/Build below is unchanged.
+> Port staging (31 October 2026): isolated branch feature/port-lukkaja-20261031. Local Firebase Walk-in transaction candidate and cancelled-receipt/accounting parity have passed demo-only Firestore/Auth Emulator guards; NOT deployed or merged. See docs/LUKKAJA_20261031_PORT_MATRIX.md. Matching code does NOT replicate live data across MySQL and Firestore. Production Version/Build below is unchanged.
 
 Current development branch: `feature/react-firebase-port`
 Current milestone: React + Firebase parity migration / Super Admin Console

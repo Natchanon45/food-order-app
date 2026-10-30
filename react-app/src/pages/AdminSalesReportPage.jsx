@@ -6,6 +6,8 @@ import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { normalizeOrderGiftItems, subscribeTenantOrders } from "@/data/salesReportData";
+import { isCancelledSalesOrder, isReceiptHistoryOrder, receiptCancellationSource,
+  historicalReceiptNet, reportedSalesNet } from "@/data/salesCancellationReport.mjs";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -57,6 +59,8 @@ function paymentMethodKey(order) {
   return "other";
 }
 function receiptGroupKey(order) {
+  // Cancelled history must not merge with normal/paid rounds.
+  if (isCancelledSalesOrder(order)) return "void:" + String(order.id || "");
   if (order.receiptNumber) return `receipt:${order.receiptNumber}`;
   if (order.billId) return `bill:${order.billId}`;
   if (order.paymentGroupId) return `group:${order.paymentGroupId}`;
@@ -102,7 +106,7 @@ export function AdminSalesReportPage() {
     styles: [
       "app.css", "icons.css", "sales-report.css", "order-delivery-workspace-theme.css",
       "sales-report-modern.css", "admin-sales-report-retail-pos-parity.css", "sales-report-period-tabs.css",
-      "super-admin-header.css",
+      "super-admin-header.css", "sales-report-cancellation-port.css",
     ],
     attributes: { "data-roles": "admin,owner", "data-admin-workspace-refresh": "1" },
   });
@@ -118,6 +122,7 @@ export function AdminSalesReportPage() {
   const [orderType, setOrderType] = useState("all");
   const [paymentMethod, setPaymentMethod] = useState("all");
   const [search, setSearch] = useState("");
+  const [receiptStatus, setReceiptStatus] = useState("");
   const [orders, setOrders] = useState([]);
   const [loadError, setLoadError] = useState("");
   const [page, setPage] = useState(1);
@@ -152,7 +157,7 @@ export function AdminSalesReportPage() {
 
   const receipts = useMemo(() => {
     const groups = new Map();
-    orders.filter(isPaidOrder).forEach(order => {
+    orders.filter(isReceiptHistoryOrder).forEach(order => {
       const key = receiptGroupKey(order);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(order);
@@ -161,12 +166,16 @@ export function AdminSalesReportPage() {
       const sorted = [...group].sort((a, b) => (paidDate(a)?.getTime() || 0) - (paidDate(b)?.getTime() || 0));
       const first = sorted[0];
       const items = sorted.flatMap(order => normalizeOrderGiftItems(order)
-        .filter(item => !isCancelledItem(item))
+        .filter(item => isCancelledSalesOrder(order) || !isCancelledItem(item))
         .map(item => ({ ...item, orderId: order.id })));
       const subtotal = sorted.reduce((sum, order) => sum + Number(order.subtotalAmount ?? (orderNet(order) - Number(order.deliveryFee || 0))), 0);
       const deliveryFee = sorted.reduce((sum, order) => sum + Number(order.deliveryFee || 0), 0);
       const discount = sorted.reduce((sum, order) => sum + Number(order.discountAmount || order.discount || 0), 0);
-      const total = sorted.reduce((sum, order) => sum + orderNet(order), 0);
+      const cancelledReceipt = sorted.every(isCancelledSalesOrder);
+      const total = reportedSalesNet(sorted);
+      const displayTotal = cancelledReceipt
+        ? sorted.reduce((sum, order) => sum + historicalReceiptNet(order), 0)
+        : total;
       const paidAt = paidDate(sorted[sorted.length - 1]) || paidDate(first) || new Date();
       const type = sorted.some(order => order.orderType === "delivery") ? "delivery"
         : sorted.some(order => order.orderType === "walkin") ? "walkin" : "table";
@@ -185,6 +194,9 @@ export function AdminSalesReportPage() {
         deliveryFee,
         discount,
         total,
+        displayTotal,
+        status: cancelledReceipt ? "cancelled" : "normal",
+        cancellationSource: receiptCancellationSource(sorted),
         paidAt,
         type,
         customer,
@@ -230,6 +242,7 @@ export function AdminSalesReportPage() {
       if (receipt.paidAt < range.start || receipt.paidAt > range.end) return false;
       if (orderType !== "all" && receipt.type !== orderType) return false;
       if (paymentMethod !== "all" && receipt.paymentKey !== paymentMethod) return false;
+      if (receiptStatus && receipt.status !== receiptStatus) return false;
       if (keyword) {
         const haystack = [
           receipt.code,
@@ -241,28 +254,32 @@ export function AdminSalesReportPage() {
       }
       return true;
     });
-  }, [receipts, range, orderType, paymentMethod, search]);
+  }, [receipts, range, orderType, paymentMethod, receiptStatus, search]);
 
-  useEffect(() => setPage(1), [period, reportDate, reportMonth, reportYear, startDate, endDate, orderType, paymentMethod, search]);
+  useEffect(() => setPage(1), [period, reportDate, reportMonth, reportYear, startDate, endDate, orderType, paymentMethod, receiptStatus, search]);
+
+  // Sales KPI, charts, and top menus exclude cancelled history.
+  const salesReceipts = useMemo(() =>
+    filteredReceipts.filter(receipt => receipt.status !== "cancelled"), [filteredReceipts]);
 
   const summary = useMemo(() => {
-    const total = filteredReceipts.reduce((sum, receipt) => sum + receipt.total, 0);
-    const count = filteredReceipts.length;
-    const items = filteredReceipts.reduce((sum, receipt) => sum + receipt.itemCount, 0);
+    const total = salesReceipts.reduce((sum, receipt) => sum + receipt.total, 0);
+    const count = salesReceipts.length;
+    const items = salesReceipts.reduce((sum, receipt) => sum + receipt.itemCount, 0);
     return { total, count, items, average: count ? total / count : 0 };
-  }, [filteredReceipts]);
+  }, [salesReceipts]);
 
   const orderBreakdown = useMemo(() => {
     const totals = { table: 0, walkin: 0, delivery: 0 };
-    filteredReceipts.forEach(receipt => { totals[receipt.type] += receipt.total; });
+    salesReceipts.forEach(receipt => { totals[receipt.type] += receipt.total; });
     return Object.entries(totals).map(([key, value]) => ({ key, label: orderTypeLabel(key), value }));
-  }, [filteredReceipts, t]);
+  }, [salesReceipts, t]);
 
   const paymentBreakdown = useMemo(() => {
     const totals = { cash: 0, promptpay: 0, cod: 0, other: 0 };
-    filteredReceipts.forEach(receipt => { totals[receipt.paymentKey] += receipt.total; });
+    salesReceipts.forEach(receipt => { totals[receipt.paymentKey] += receipt.total; });
     return Object.entries(totals).map(([key, value]) => ({ key, label: paymentLabel(key), value }));
-  }, [filteredReceipts, t]);
+  }, [salesReceipts, t]);
 
   const chart = useMemo(() => {
     if (period === "daily") {
@@ -272,7 +289,7 @@ export function AdminSalesReportPage() {
         buckets: Array.from({ length: 24 }, (_, hour) => ({
           key: hour,
           label: `${String(hour).padStart(2, "0")}:00`,
-          value: filteredReceipts.filter(receipt => receipt.paidAt.getHours() === hour).reduce((sum, receipt) => sum + receipt.total, 0),
+          value: salesReceipts.filter(receipt => receipt.paidAt.getHours() === hour).reduce((sum, receipt) => sum + receipt.total, 0),
         })),
       };
     }
@@ -284,7 +301,7 @@ export function AdminSalesReportPage() {
         buckets: Array.from({ length: 12 }, (_, month) => ({
           key: month,
           label: formatDate(new Date(year, month, 1), { month: "short" }),
-          value: filteredReceipts.filter(receipt => receipt.paidAt.getMonth() === month).reduce((sum, receipt) => sum + receipt.total, 0),
+          value: salesReceipts.filter(receipt => receipt.paidAt.getMonth() === month).reduce((sum, receipt) => sum + receipt.total, 0),
         })),
       };
     }
@@ -296,17 +313,17 @@ export function AdminSalesReportPage() {
       cursor.setDate(cursor.getDate() + 1);
     }
     const index = new Map(buckets.map(bucket => [bucket.key, bucket]));
-    filteredReceipts.forEach(receipt => {
+    salesReceipts.forEach(receipt => {
       const bucket = index.get(localDateKey(receipt.paidAt));
       if (bucket) bucket.value += receipt.total;
     });
     return { title: t("sales_report.sections.daily_sales"), yearly: false, buckets };
-  }, [period, filteredReceipts, range, intlLocale, t]);
+  }, [period, salesReceipts, range, intlLocale, t]);
   const chartMax = Math.max(0, ...chart.buckets.map(bucket => bucket.value));
 
   const topItems = useMemo(() => {
     const totals = new Map();
-    filteredReceipts.forEach(receipt => receipt.items.forEach(item => {
+    salesReceipts.forEach(receipt => receipt.items.forEach(item => {
       const key = String(item.name || t("sales_report.top_items.unnamed"));
       const current = totals.get(key) || { qty: 0, value: 0 };
       current.qty += Number(item.qty || 0);
@@ -314,11 +331,11 @@ export function AdminSalesReportPage() {
       totals.set(key, current);
     }));
     return [...totals.entries()].sort((a, b) => b[1].qty - a[1].qty || b[1].value - a[1].value).slice(0, 10);
-  }, [filteredReceipts, t]);
+  }, [salesReceipts, t]);
 
   const bestPeriod = useMemo(() => {
     const daily = new Map(), monthly = new Map();
-    filteredReceipts.forEach(receipt => {
+    salesReceipts.forEach(receipt => {
       const day = localDateKey(receipt.paidAt), month = monthKey(receipt.paidAt);
       daily.set(day, (daily.get(day) || 0) + receipt.total);
       monthly.set(month, (monthly.get(month) || 0) + receipt.total);
@@ -331,7 +348,7 @@ export function AdminSalesReportPage() {
       monthLabel: bestMonth ? formatDate(new Date(`${bestMonth[0]}-01T12:00:00`), { month: "long", year: "numeric" }) : "-",
       monthValue: bestMonth?.[1] || 0,
     };
-  }, [filteredReceipts, intlLocale]);
+  }, [salesReceipts, intlLocale]);
 
   const pageCount = Math.max(1, Math.ceil(filteredReceipts.length / pageSize));
   const safePage = Math.min(page, pageCount);
@@ -490,23 +507,34 @@ export function AdminSalesReportPage() {
         </section>
 
         <section className="card receipt-section">
-          <div className="section-title receipt-heading"><div><h2><i className="bi bi-table" aria-hidden="true"></i><span>{t("sales_report.sections.receipts")}</span></h2><div className="menu-category" id="receiptRangeLabel">{range.label}</div></div><span className="badge" id="receiptResultCount">{t("sales_report.receipt.result_count", { count: formatNumber(filteredReceipts.length, { maximumFractionDigits: 0 }) })}</span></div>
+          <div className="section-title receipt-heading"><div><h2><i className="bi bi-table" aria-hidden="true"></i><span>{t("sales_report.sections.receipts")}</span></h2><div className="menu-category" id="receiptRangeLabel">{range.label}</div></div><div className="receipt-cancellation-controls">
+            <label htmlFor="receiptStatusFilter">{t("sales_report.cancel.status_filter")}</label>
+            <select className="input" id="receiptStatusFilter" value={receiptStatus} onChange={e => setReceiptStatus(e.target.value)}>
+              <option value="">{t("sales_report.cancel.all")}</option>
+              <option value="normal">{t("sales_report.cancel.normal")}</option>
+              <option value="cancelled">{t("sales_report.cancel.cancelled")}</option>
+            </select>
+            <span className="badge" id="receiptResultCount">{t("sales_report.receipt.result_count", { count: formatNumber(filteredReceipts.length, { maximumFractionDigits: 0 }) })}</span>
+          </div></div>
           <div className="table-scroll receipt-table-scroll" data-horizontal-scroll="true" aria-label={t("sales_report.sections.receipts")}>
             <table className="table-list receipt-table">
-              <thead><tr><th>{t("sales_report.receipt.number")}</th><th>{t("sales_report.receipt.date_time")}</th><th>{t("sales_report.receipt.channel")}</th><th>{t("sales_report.receipt.customer_table")}</th><th>{t("sales_report.receipt.payment")}</th><th>{t("sales_report.receipt.quantity")}</th><th className="number">{t("sales_report.receipt.net_total")}</th><th></th></tr></thead>
+              <thead><tr><th>{t("sales_report.receipt.number")}</th><th>{t("sales_report.receipt.date_time")}</th><th>{t("sales_report.receipt.channel")}</th><th>{t("sales_report.receipt.customer_table")}</th><th>{t("sales_report.receipt.payment")}</th><th>{t("sales_report.receipt.quantity")}</th><th>{t("sales_report.cancel.status_filter")}</th><th className="number">{t("sales_report.receipt.net_total")}</th><th></th></tr></thead>
               <tbody id="receiptRows">
                 {visibleReceipts.length ? visibleReceipts.map(receipt => (
                   <tr key={receipt.key}>
-                    <td><span className="receipt-code">{receipt.code}</span></td>
+                    <td><span className={"receipt-code" + (receipt.status === "cancelled" ? " receipt-code-cancelled" : "")}>{receipt.code}</span></td>
                     <td>{formatDateTime(receipt.paidAt)}</td>
                     <td>{orderTypeLabel(receipt.type)}</td>
                     <td>{receipt.customer}</td>
                     <td>{paymentLabel(receipt.paymentKey)}</td>
                     <td>{formatNumber(receipt.itemCount, { maximumFractionDigits: 0 })}</td>
-                    <td className="number">{money(receipt.total)}</td>
+                    <td>{receipt.status === "cancelled"
+                      ? <span className="receipt-cancelled-stripe">{t("sales_report.cancel.cancelled")} · {t("sales_report.cancel.actor_" + receipt.cancellationSource)}</span>
+                      : <span className="receipt-status-normal">{t("sales_report.cancel.normal")}</span>}</td>
+                    <td className="number">{money(receipt.displayTotal)}</td>
                     <td><div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}><button type="button" className="btn btn-sm receipt-row-action receipt-view-action" data-view-receipt={receipt.key} onClick={() => openReceipt(receipt)}><i className="bi bi-eye" aria-hidden="true"></i><span>{t("sales_report.receipt.view")}</span></button><a className="btn btn-sm receipt-row-action receipt-print-row-action" href={printUrl(receipt)} target="_blank" rel="noopener"><i className="bi bi-printer" aria-hidden="true"></i><span>{t("sales_report.receipt.print")}</span></a></div></td>
                   </tr>
-                )) : <tr><td colSpan="8"><div className="empty-report">{t("sales_report.receipt.no_results")}</div></td></tr>}
+                )) : <tr><td colSpan="9"><div className="empty-report">{t("sales_report.receipt.no_results")}</div></td></tr>}
               </tbody>
             </table>
           </div>
@@ -523,7 +551,10 @@ export function AdminSalesReportPage() {
           <div className="section-title"><h2><i className="bi bi-receipt" aria-hidden="true"></i><span>{t("sales_report.sections.receipt_detail")}</span></h2><button type="button" className="receipt-dialog-close" id="closeReceiptDialog" aria-label={t("sales_report.receipt.close")} title={t("sales_report.receipt.close")} onClick={closeReceipt}><i className="bi bi-x-lg" aria-hidden="true"></i></button></div>
           <div id="receiptDetail">
             {selectedReceipt ? <>
-              <div className="receipt-detail-head"><div className="receipt-detail-identity"><span className="receipt-detail-label">{t("sales_report.receipt.number")}</span><div className="receipt-code">{selectedReceipt.code}</div></div><a className="btn btn-dark receipt-print-action" href={printUrl(selectedReceipt)} target="_blank" rel="noopener"><i className="bi bi-printer" aria-hidden="true"></i><span>{t("sales_report.receipt.print")}</span></a></div>
+              <div className="receipt-detail-head"><div className="receipt-detail-identity"><span className="receipt-detail-label">{t("sales_report.receipt.number")}</span><div className={"receipt-code" + (selectedReceipt.status === "cancelled" ? " receipt-code-cancelled" : "")}>{selectedReceipt.code}</div></div><a className="btn btn-dark receipt-print-action" href={printUrl(selectedReceipt)} target="_blank" rel="noopener"><i className="bi bi-printer" aria-hidden="true"></i><span>{t("sales_report.receipt.print")}</span></a></div>
+              {selectedReceipt.status === "cancelled"
+                ? <div className="receipt-cancelled-banner">{t("sales_report.cancel.cancelled")} · {t("sales_report.cancel.source_" + selectedReceipt.cancellationSource)}</div>
+                : null}
               <div className="receipt-detail-facts">
                 <div><span>{t("sales_report.receipt.date_time")}</span><strong>{formatDateTime(selectedReceipt.paidAt)}</strong></div>
                 <div><span>{t("sales_report.receipt.channel")}</span><strong>{orderTypeLabel(selectedReceipt.type)}</strong></div>
@@ -536,14 +567,19 @@ export function AdminSalesReportPage() {
                   const isGift = item.isGift === true;
                   const name = `${item.name || t("sales_report.receipt.item_fallback")}${isGift ? ` ${t("sales_report.receipt.gift_suffix")}` : ""}`;
                   const lineTotal = Number(item.qty || 0) * Number(item.price || 0);
-                  return <div className={"receipt-item-row" + (isGift ? " is-gift" : "")} key={`${item.orderId}-${item.menuId || item.id || index}-${index}`}><div className="receipt-item-main"><div className="receipt-item-name">{name}</div><div className="receipt-item-meta">{formatNumber(Number(item.qty || 0), { maximumFractionDigits: 0 })} × {money(item.price || 0)}{isGift ? <span className="receipt-gift-badge">{t("sales_report.receipt.gift_badge")}</span> : null}</div></div><strong className="receipt-item-total">{money(lineTotal)}</strong></div>;
+                  return <div className={"receipt-item-row" + (isGift ? " is-gift" : "") + (item.cancelled ? " is-cancelled" : "")} key={`${item.orderId}-${item.menuId || item.id || index}-${index}`}><div className="receipt-item-main"><div className="receipt-item-name">{name}{item.cancelled
+                    ? <small className="receipt-cancelled-stripe">{t("sales_report.cancel.cancelled")}</small>
+                    : null}</div><div className="receipt-item-meta">{formatNumber(Number(item.qty || 0), { maximumFractionDigits: 0 })} × {money(item.price || 0)}{isGift ? <span className="receipt-gift-badge">{t("sales_report.receipt.gift_badge")}</span> : null}</div></div><strong className="receipt-item-total">{money(lineTotal)}</strong></div>;
                 }) : <div className="empty-report">{t("sales_report.receipt.no_items")}</div>}
               </div>
               <div className="receipt-totals">
                 <div className="receipt-total-row"><span>{t("sales_report.receipt.subtotal")}</span><strong>{money(selectedReceipt.subtotal)}</strong></div>
                 {selectedReceipt.discount ? <div className="receipt-total-row"><span>{t("sales_report.receipt.discount")}</span><strong>-{money(selectedReceipt.discount)}</strong></div> : null}
                 <div className="receipt-total-row"><span>{t("sales_report.receipt.delivery_fee")}</span><strong>{money(selectedReceipt.deliveryFee)}</strong></div>
-                <div className="receipt-total-row grand"><span>{t("sales_report.receipt.total")}</span><strong>{money(selectedReceipt.total)} {t("sales_report.units.baht")}</strong></div>
+                <div className="receipt-total-row grand"><span>{t("sales_report.receipt.total")}</span><strong>{money(selectedReceipt.displayTotal)} {t("sales_report.units.baht")}</strong></div>
+                {selectedReceipt.status === "cancelled"
+                  ? <div className="receipt-total-row"><span>{t("sales_report.cancel.sales_counted_total")}</span><strong>{money(selectedReceipt.total)} {t("sales_report.units.baht")}</strong></div>
+                  : null}
               </div>
             </> : null}
           </div>

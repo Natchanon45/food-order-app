@@ -387,3 +387,39 @@ body.quick-order-page :is(
     transition: none;
   }
 }
+
+/* M2.158: two explicit order flows; owner-approved Pay first / Kitchen first.
+   Keep the existing PRIMARY green checkout visual on the pay-first action. */
+body.quick-order-page .quick-deferred-actions {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 9px;
+}
+body.quick-order-page .quick-deferred-actions .quick-submit {
+  min-height: 42px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+}
+body.quick-order-page .quick-send-kitchen {
+  background: #f0faf4;
+  color: #0e6840;
+  border: 1.5px solid #21945c;
+  font-weight: 800;
+  box-shadow: none;
+}
+body.quick-order-page .quick-send-kitchen:hover:not(:disabled) {
+  background: #dff5e7;
+  border-color: #13804c;
+}
+body.quick-order-page .quick-send-kitchen:focus-visible {
+  outline: 3px solid #83cba7;
+  outline-offset: 2px;
+}
+body.quick-order-page [data-open-walkin-bill] p {
+  margin: 5px 0 9px;
+  font-size: 13px;
+  color: #2a5940;
+}

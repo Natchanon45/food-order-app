@@ -15,6 +15,9 @@ import {
   cancelLalamoveDispatch,
   getOperationalStoreSettings,
   cancelOperationalOrder,
+  cancelUnpaidWalkIn,
+  cancelReviewedWalkIn,
+  settleUnpaidWalkIn,
   moveTableSession,
   placeLalamoveDispatch,
   quoteLalamoveDispatch,
@@ -118,6 +121,7 @@ function activeOrders(orders) {
     if (isWaitingQueuePlaceholder(order) || order.status === "cancelled") return false;
     if (lalamoveCodAwaitingSettlement(order)) return true;
     if (order.status === "completed" || lalamoveDeliveryCompleted(order)) return false;
+    if (order.orderType === "walkin" && order.paymentStatus === "paid") return true;
     if (order.status !== "paid") return true;
     return isLalamoveDelivery(order) && !lalamoveDispatchFinished(order);
   });
@@ -319,8 +323,9 @@ function WalkInCard({ order, tables, active, t, money, formatTime, busy, actions
   useEffect(() => setTableCode(String(order.tableCode || "")), [order.id, order.tableCode]);
   const title = t(dineIn ? "quick_order.cashier.dine_in_title" : "quick_order.cashier.takeaway_title");
   const tableText = order.tableCode ? t("quick_order.cashier.table", { table: order.tableCode }) : t("quick_order.cashier.table_unassigned");
+  const deferred = order.paymentStatus === "unpaid" && order.paymentTiming === "after";
   return <article className="card order-card walkin-order-card">
-    <div className="order-head"><QueueHeading order={order} title={title} t={t} formatTime={formatTime} /><span className="badge">{t("quick_order.cashier.paid")}</span></div>
+    <div className="order-head"><QueueHeading order={order} title={title} t={t} formatTime={formatTime} /><span className={"badge" + (deferred ? " warning" : "")}>{t(deferred ? "quick_order.deferred.unpaid" : "quick_order.cashier.paid")}</span></div>
     <p><strong>{dineIn ? tableText : t("quick_order.service.takeaway")}</strong>{order.customerName ? <><br />{order.customerName}</> : null}</p>
     <ItemRows order={order} t={t} money={money} /><OrderNote order={order} t={t} />
     {dineIn ? <div className="field" style={{ marginTop: 10 }}>
@@ -341,6 +346,10 @@ function WalkInCard({ order, tables, active, t, money, formatTime, busy, actions
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       <button className="btn btn-warning cashier-view-bill-action" type="button" onClick={() => actions.viewBill(order)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
+      {deferred ? <>
+        <a className="btn btn-sm" data-walkin-add-items={order.id} href={cashierRoute("/quick-order?appendTo=" + encodeURIComponent(order.id))}><i className="bi bi-plus-circle app-icon" aria-hidden="true"></i><span>{t("quick_order.deferred.add_items")}</span></a>
+        <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy || order.status !== "served"} data-walkin-pay={order.id} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t(order.status === "served" ? "quick_order.deferred.pay_and_close" : "quick_order.deferred.waiting_kitchen")}</span></button>
+      </> : null}
       <button className="btn btn-danger" type="button" disabled={busy} onClick={() => actions.cancelOrder(order)}><i className="bi bi-x-circle app-icon"></i><span>{t("cashier.actions.cancel_all")}</span></button>
     </div>
   </article>;
@@ -807,8 +816,42 @@ export function CashierPage() {
     if (printWindow && !printWindow.closed) printWindow.close();
   };
 
+  const deferredSettlementIds = useRef(new Map());
   const pay = async order => {
     if (!order || busyKey) return;
+    if (isWalkIn(order) && order.paymentTiming === "after") {
+      if (order.paymentStatus !== "unpaid" || order.status !== "served") {
+        showToast(t("quick_order.deferred.waiting_kitchen"), "error"); return;
+      }
+      const raw = await sweetPrompt(t("quick_order.deferred.pay_and_close"), Number(order.totalAmount || 0).toFixed(2), {
+        title: t("quick_order.payment.cash_received"),
+        confirmText: t("cashier.common.confirm"),
+        cancelText: t("cashier.common.cancel"), type: "warning",
+      });
+      if (raw === null) return;
+      const received = String(raw).trim();
+      if (!/^\d{1,9}(?:\.\d{1,2})?$/.test(received)
+          || Number(received) < Number(order.totalAmount || 0)) {
+        showToast(t("quick_order.payment.insufficient_cash", { amount: money(Math.max(0, Number(order.totalAmount || 0) - Number(received || 0))) }), "error");
+        return;
+      }
+      const operationId = deferredSettlementIds.current.get(order.id) || ("settle-" + crypto.randomUUID());
+      deferredSettlementIds.current.set(order.id, operationId);
+      const printWindow = openReceiptPrintWindow();
+      setBusyKey("pay:" + order.id);
+      try {
+        const result = await settleUnpaidWalkIn(tenant.id, order.id, operationId, Number(received), Number(order.totalAmount));
+        if (result?.item) setOrders(current => current.map(row => row.id === order.id ? result.item : row));
+        deferredSettlementIds.current.delete(order.id);
+        showToast(t("quick_order.deferred.closed"));
+        printOrder(printWindow, order.id);
+      } catch (error) {
+        closePrintWindow(printWindow);
+        console.error("CASHIER_DEFERRED_SETTLEMENT_FAILED", error);
+        showToast(t("cashier.toasts.payment_failed") + " (" + String(error?.code || "UNKNOWN") + ")", "error");
+      } finally { setBusyKey(""); }
+      return;
+    }
     const codSettlement = isLalamoveCod(order);
     if (codSettlement && !lalamoveDeliveryCompleted(order)) {
       showToast(t("cashier.lalamove.cod_before_delivery"), "error");
@@ -954,7 +997,15 @@ export function CashierPage() {
     if (!ok) return;
     setBusyKey(`cancel:${order.id}`);
     try {
-      if (order.orderType === "takeaway") {
+      if (isWalkIn(order) && order.paymentStatus === "paid") {
+        const result = await cancelReviewedWalkIn(tenant.id, order.id);
+        if (result?.item) setOrders(current => current.map(row => row.id === order.id ? result.item : row));
+        showToast(t("cashier.cancel_order.review_recorded"));
+        return;
+      } else if (isWalkIn(order) && order.paymentTiming === "after") {
+        const result = await cancelUnpaidWalkIn(tenant.id, order.id, "cashier");
+        if (result?.item) setOrders(current => current.map(row => row.id === order.id ? result.item : row));
+      } else if (order.orderType === "takeaway") {
         await updateOrder(order.id, { status: "cancelled" });
       } else {
         const optimistic = {

@@ -9,6 +9,8 @@ import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
   cancelOperationalOrder,
+  cancelUnpaidWalkIn,
+  updateDeferredWalkInKitchen,
   loadKitchenMenus,
   refreshLalamoveDispatch,
   settleTableSession,
@@ -187,14 +189,18 @@ function KitchenOrderCard({
       {(order.items || []).map((item, index) => (
         <li key={`${order.id}-${index}`} style={item.cancelled ? { opacity: .48, textDecoration: "line-through" } : undefined}>
           <strong>{Number(item.qty || 0)} × {String(item.name || "")}{item.isGift === true ? ` ${t("kitchen.order.gift_suffix")}` : ""}</strong>
+          {item.kitchenAddOperationId ? <span className="badge warning" style={{ marginLeft: 6 }}>{t("quick_order.deferred.new_items")}</span> : null}
           {item.note ? <><br /><small>{t("kitchen.order.item_note")} {item.note}</small></> : null}
           {item.cancelled ? <><br /><small>{t("kitchen.states.cancelled")}</small></>
+            : item.kitchenPreviouslyServed ? <div className="kitchen-item-actions"><span className="badge">{t("quick_order.deferred.already_served")}</span></div>
             : supportsItemServe(order) && item.served === true
               ? <div className="kitchen-item-actions"><span className="badge">{t("kitchen.actions.served")}</span></div>
               : locked ? <div className="kitchen-item-actions"><span className="badge">{lockedItemLabel(order, t)}</span></div>
                 : <div className="kitchen-item-actions">
-                    <button className="btn btn-sm" type="button" data-edit-item={order.id} data-item-index={index} onClick={() => onEditItem(order, index)}><i className="bi bi-pencil" aria-hidden="true"></i><span>{t("kitchen.actions.edit")}</span></button>
-                    <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button>
+                    {!(order.orderType === "walkin")
+                      ? <button className="btn btn-sm" type="button" data-edit-item={order.id} data-item-index={index} onClick={() => onEditItem(order, index)}><i className="bi bi-pencil" aria-hidden="true"></i><span>{t("kitchen.actions.edit")}</span></button>
+                      : null}
+                    {!(order.orderType === "walkin" && order.paymentStatus === "paid") ? <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button> : null}
                     {canServeItem(order, item) ? <button className="btn btn-dark btn-sm kitchen-serve-item-action" type="button" data-serve-item={order.id} data-item-index={index} onClick={() => onServeItem(order, index)}><i className="bi bi-send-check app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.serve_item")}</span></button> : null}
                   </div>}
         </li>
@@ -429,6 +435,9 @@ export function KitchenPage() {
 
   const cancelItem = async (order, itemIndex) => {
     if (!order || isKitchenLocked(order)) return;
+    if (order.orderType === "walkin" && order.paymentStatus === "paid") {
+      showToast(t("quick_order.deferred.not_available"), "error"); return;
+    }
     const selectedItem = order.items?.[itemIndex];
     if (!selectedItem || selectedItem.cancelled) return;
     const ok = await sweetConfirm(
@@ -448,7 +457,10 @@ export function KitchenPage() {
       const totals = recalculateOrder(order, items);
       const patch = { items, ...totals };
       if (totals.subtotalAmount <= 0) patch.status = "cancelled";
-      await updateOrder(order.id, patch);
+      if (order.orderType === "walkin" && order.paymentTiming === "after") {
+        const updated = await updateDeferredWalkInKitchen(tenant.id, order.id, "cancel_item", { index: itemIndex });
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else await updateOrder(order.id, patch);
       showToast(t(totals.subtotalAmount <= 0
         ? "kitchen.toast.order_cancelled_no_items"
         : "kitchen.toast.item_cancelled"));
@@ -460,6 +472,9 @@ export function KitchenPage() {
 
   const cancelOrder = async order => {
     if (!order || isKitchenLocked(order)) return;
+    if (order.orderType === "walkin" && order.paymentStatus === "paid") {
+      showToast(t("quick_order.deferred.not_available"), "error"); return;
+    }
     const ok = await sweetConfirm(
       t("kitchen.confirm.cancel_order_message"),
       {
@@ -471,7 +486,10 @@ export function KitchenPage() {
     );
     if (!ok) return;
     try {
-      if (isTakeaway(order)) {
+      if (order.orderType === "walkin" && order.paymentTiming === "after") {
+        const updated = await cancelUnpaidWalkIn(tenant.id, order.id, "kitchen");
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else if (isTakeaway(order)) {
         await updateOrder(order.id, {
           status: "cancelled",
           subtotalAmount: 0,
@@ -512,7 +530,10 @@ export function KitchenPage() {
       if (paid) patch.completedAt = now;
     }
     try {
-      await updateOrder(order.id, patch);
+      if (order.orderType === "walkin") {
+        const updated = await updateDeferredWalkInKitchen(tenant.id, order.id, "serve_item", { index: itemIndex });
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else await updateOrder(order.id, patch);
       if (complete && isTableOrder(order)) {
         await settleTableSession(tenant.id, order.id);
       }
@@ -545,7 +566,10 @@ export function KitchenPage() {
       patch.completedAt = now;
     }
     try {
-      await updateOrder(order.id, patch);
+      if (order.orderType === "walkin") {
+        const updated = await updateDeferredWalkInKitchen(tenant.id, order.id, "status", { status });
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else await updateOrder(order.id, patch);
       if (status === "served" && isTableOrder(order)) {
         await settleTableSession(tenant.id, order.id);
       }

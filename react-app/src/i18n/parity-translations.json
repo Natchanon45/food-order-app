@@ -1282,6 +1282,7 @@
         "payment_title": "รับชำระเงิน"
       },
       "cancel_order": {
+        "review_recorded": "บันทึกการยกเลิกบิลที่ชำระแล้วเพื่อรอตรวจสอบทางการเงิน (ยังไม่ได้คืนเงิน)",
         "delivery_target": "ออเดอร์ Delivery ของ :customer",
         "customer_fallback": "ลูกค้า",
         "takeaway_target": "ออเดอร์ Take Away :queue",
@@ -5309,6 +5310,7 @@
         "unavailable": "ไม่ว่าง",
         "unavailable_error": "โต๊ะนี้ไม่ว่าง กรุณาเลือกโต๊ะอื่น"
       },
+      "deferred": {"pay_first": "ชำระเงินก่อนส่งเข้าครัว", "send_unpaid": "ส่งเข้าครัว (ยังไม่ชำระเงิน)", "unpaid": "รอชำระเงิน", "add_title": "เพิ่มเมนูเข้าบิลเดิม", "current_total": "ยอดบิลเดิม :amount บาท · โต๊ะ :table", "not_available": "บิลนี้ปิดแล้วหรือไม่สามารถเพิ่มเมนูได้ กรุณากลับไปตรวจสอบที่แคชเชียร์", "back_to_cashier": "กลับหน้าแคชเชียร์", "add_items": "เพิ่มเมนูแล้วส่งเข้าครัว", "added": "เพิ่มรายการใหม่เข้าบิลเดิมและแจ้งครัวแล้ว", "add_failed": "เพิ่มเมนูไม่สำเร็จ กรุณาตรวจบิลก่อนลองอีกครั้ง", "table_required": "กรุณาเลือกโต๊ะก่อนส่งเข้าครัวโดยยังไม่ชำระเงิน", "cash_only": "การชำระภายหลังรองรับเงินสดที่แคชเชียร์เท่านั้น", "sent": "ส่งเข้าครัวแล้ว เลขคิว :queue · รอชำระเงิน", "pay_and_close": "รับชำระเงินและปิดบิล", "waiting_kitchen": "รอครัวเสิร์ฟอาหารก่อนชำระ", "closed": "รับชำระเงินเรียบร้อย ปิดบิลและคืนโต๊ะแล้ว", "new_items": "เพิ่มใหม่", "already_served": "ปรุงแล้ว (รายการเดิม)", "current_total_takeaway": "ยอดบิลเดิม :amount บาท · สั่งกลับบ้าน"},
       "held": {
         "title": "บิลที่พักไว้",
         "description": "พักออเดอร์ไว้ก่อนรับชำระ แล้วกลับมาเปิดต่อได้",
@@ -5732,6 +5734,7 @@
       }
     },
     "sales_report": {
+      "cancel": {"all": "ทั้งหมด", "status_filter": "สถานะ", "normal": "ปกติ", "cancelled": "ยกเลิก", "source_cashier": "ยกเลิกโดยแคชเชียร์", "source_kitchen": "ยกเลิกโดยครัว", "source_mixed": "ยกเลิกจากหลายฝ่าย", "source_unknown": "ไม่ระบุผู้ยกเลิก", "original_total": "มูลค่าบิลเดิม (ไม่นับเป็นยอดขาย)", "actor_cashier": "แคชเชียร์", "actor_kitchen": "ครัว", "actor_mixed": "หลายฝ่าย", "actor_unknown": "ไม่ระบุ", "sales_counted_total": "ยอดที่นำไปคิดเป็นยอดขาย"},
       "meta": {
         "title": "รายงานยอดขาย"
       },
@@ -7926,6 +7929,7 @@
         "payment_title": "Receive payment"
       },
       "cancel_order": {
+        "review_recorded": "Paid bill cancellation recorded for financial review (no refund issued)",
         "delivery_target": "Delivery order for :customer",
         "customer_fallback": "customer",
         "takeaway_target": "Take Away order :queue",
@@ -11678,6 +11682,7 @@
         "unavailable": "Unavailable",
         "unavailable_error": "This table is unavailable. Please choose another table."
       },
+      "deferred": {"pay_first": "Pay before sending to kitchen", "send_unpaid": "Send to kitchen (pay later)", "unpaid": "Awaiting payment", "add_title": "Add to existing bill", "current_total": "Current bill :amount THB · Table :table", "not_available": "This bill is closed or unavailable for additions. Check the cashier page.", "back_to_cashier": "Back to cashier", "add_items": "Add items and notify kitchen", "added": "New items added to existing bill and sent to kitchen", "add_failed": "Could not add items. Check the bill before retrying", "table_required": "Select a table to send food before payment", "cash_only": "Pay-later supports cash settlement at cashier only", "sent": "Sent to kitchen, queue :queue. Payment pending", "pay_and_close": "Collect payment and close bill", "waiting_kitchen": "Wait for kitchen to serve before collecting payment", "closed": "Payment collected, bill closed and table released", "new_items": "New items", "already_served": "Already served (prior items)", "current_total_takeaway": "Current bill :amount THB · Takeaway"},
       "held": {
         "title": "Held bills",
         "description": "Hold an order before payment and reopen it later.",
@@ -12101,6 +12106,7 @@
       }
     },
     "sales_report": {
+      "cancel": {"all": "All", "status_filter": "Status", "normal": "Normal", "cancelled": "CANCELLED", "source_cashier": "Cancelled by cashier", "source_kitchen": "Cancelled by kitchen", "source_mixed": "Cancelled by multiple roles", "source_unknown": "Cancellation source unknown", "original_total": "Original receipt value (excluded from sales)", "actor_cashier": "Cashier", "actor_kitchen": "Kitchen", "actor_mixed": "Multiple roles", "actor_unknown": "Unknown", "sales_counted_total": "Amount counted as sales"},
       "meta": {
         "title": "Sales report"
       },
@@ -14295,6 +14301,7 @@
         "payment_title": "ငွေလက်ခံမည်"
       },
       "cancel_order": {
+        "review_recorded": "ငွေပေးချေပြီးသော ဘေလ်ကို ငွေကြေးစစ်ဆေးရန် ဖျက်သိမ်းမှတ်တမ်းတင်ပြီးပါပြီ (ငွေပြန်အမ်းခြင်း မရှိသေးပါ)",
         "delivery_target": ":customer ၏ Delivery အော်ဒါ",
         "customer_fallback": "ဖောက်သည်",
         "takeaway_target": "Take Away အော်ဒါ :queue",
@@ -18047,6 +18054,7 @@
         "unavailable": "မအားပါ",
         "unavailable_error": "ဤစားပွဲ မအားပါ။ အခြားစားပွဲကို ရွေးပါ။"
       },
+      "deferred": {"pay_first": "မီးဖိုချောင်သို့မပို့မီ ငွေပေးချေပါ", "send_unpaid": "မီးဖိုချောင်သို့ပို့ပါ (နောက်မှရှင်းမည်)", "unpaid": "ငွေပေးချေရန်စောင့်ဆိုင်း", "add_title": "ရှိပြီးသားဘေလ်ထဲ ထပ်ထည့်ရန်", "current_total": "မူလဘေလ် :amount · စားပွဲ :table", "not_available": "ဤဘေလ်ကို ပိတ်ထားပြီး သို့မဟုတ် ထပ်ထည့်၍ မရပါ", "back_to_cashier": "ငွေရှင်းသို့ပြန်ရန်", "add_items": "ထပ်ထည့်ပြီး မီးဖိုချောင်သို့ပို့ရန်", "added": "မီနူးအသစ်များ ထပ်ထည့်ပြီးပါပြီ", "add_failed": "မီနူးထပ်ထည့်မှု မအောင်မြင်ပါ", "table_required": "စားပွဲရွေးရန်လိုသည်", "cash_only": "နောက်မှရှင်းလျှင် ငွေသားသာ", "sent": "မီးဖိုချောင်သို့ ပို့ပြီးပါပြီ :queue", "pay_and_close": "ငွေလက်ခံပြီး ဘေလ်ပိတ်ရန်", "waiting_kitchen": "စားစရာထုတ်ပြီးမှ ငွေရှင်းရန်", "closed": "ငွေလက်ခံပြီး ဘေလ်ပိတ်ပြီ", "new_items": "အသစ်ထပ်ထည့်", "already_served": "ယခင်က ပို့ပြီး", "current_total_takeaway": "မူလဘေလ် :amount · ပါဆယ်"},
       "held": {
         "title": "ခေတ္တသိမ်းထားသော ဘီလ်များ",
         "description": "ငွေမရှင်းမီ အော်ဒါကို ခေတ္တသိမ်းထားပြီး နောက်မှ ပြန်ဖွင့်နိုင်သည်။",
@@ -18470,6 +18478,7 @@
       }
     },
     "sales_report": {
+      "cancel": {"all": "အားလုံး", "status_filter": "အခြေအနေ", "normal": "ပုံမှန်", "cancelled": "ပယ်ဖျက်ပြီး", "source_cashier": "ငွေကိုင်က ပယ်ဖျက်သည်", "source_kitchen": "မီးဖိုချောင်က ပယ်ဖျက်သည်", "source_mixed": "ဌာနများစွာမှ ပယ်ဖျက်သည်", "source_unknown": "ပယ်ဖျက်သူမသတ်မှတ်ထား", "original_total": "မူရင်းဘေလ်တန်ဖိုး (ရောင်းအားတွင်မပါ)", "actor_cashier": "ငွေကိုင်", "actor_kitchen": "မီးဖိုချောင်", "actor_mixed": "ဌာနများစွာ", "actor_unknown": "မသိ", "sales_counted_total": "ရောင်းအားတွင် ထည့်သွင်းတွက်ချက်သည့် ပမာဏ"},
       "meta": {
         "title": "အရောင်းအစီရင်ခံစာ"
       },
@@ -20664,6 +20673,7 @@
         "payment_title": "ຮັບຊຳລະ"
       },
       "cancel_order": {
+        "review_recorded": "ບັນທຶກການຍົກເລີກບິນທີ່ຊຳລະແລ້ວເພື່ອກວດສອບການເງິນ (ຍັງບໍ່ໄດ້ຄືນເງິນ)",
         "delivery_target": "ອໍເດີ Delivery ຂອງ :customer",
         "customer_fallback": "ລູກຄ້າ",
         "takeaway_target": "ອໍເດີ Take Away :queue",
@@ -24416,6 +24426,7 @@
         "unavailable": "ບໍ່ວ່າງ",
         "unavailable_error": "ໂຕະນີ້ບໍ່ວ່າງ ກະລຸນາເລືອກໂຕະອື່ນ"
       },
+      "deferred": {"pay_first": "ຊຳລະກ່ອນສົ່ງເຂົ້າຄົວ", "send_unpaid": "ສົ່ງເຂົ້າຄົວ (ຊຳລະພາຍຫຼັງ)", "unpaid": "ລໍຖ້າຊຳລະ", "add_title": "ເພີ່ມລາຍການໃນບິນເກົ່າ", "current_total": "ຍອດບິນ :amount · ໂຕະ :table", "not_available": "ບິນປິດແລ້ວ ຫຼືເພີ່ມບໍ່ໄດ້", "back_to_cashier": "ກັບໜ້າແຄຊເຊຍ", "add_items": "ເພີ່ມເມນູແລະສົ່ງຄົວ", "added": "ເພີ່ມລາຍການແລ້ວ", "add_failed": "ເພີ່ມລາຍການບໍ່ສຳເລັດ", "table_required": "ເລືອກໂຕະກ່ອນ", "cash_only": "ຊຳລະພາຍຫຼັງດ້ວຍເງິນສົດ", "sent": "ສົ່ງຄົວແລ້ວ :queue", "pay_and_close": "ຮັບເງິນ ແລະປິດບິນ", "waiting_kitchen": "ລໍຖ້າຄົວເສີບ", "closed": "ຊຳລະ ແລະປິດບິນແລ້ວ", "new_items": "ເພີ່ມໃໝ່", "already_served": "ເສີບແລ້ວ", "current_total_takeaway": "ຍອດບິນເກົ່າ :amount · ສັ່ງກັບບ້ານ"},
       "held": {
         "title": "ບິນທີ່ພັກໄວ້",
         "description": "ພັກອໍເດີໄວ້ກ່ອນຮັບຊຳລະ ແລ້ວກັບມາເປີດຕໍ່ໄດ້",
@@ -24839,6 +24850,7 @@
       }
     },
     "sales_report": {
+      "cancel": {"all": "ທັງໝົດ", "status_filter": "ສະຖານະ", "normal": "ປົກກະຕິ", "cancelled": "ຍົກເລີກ", "source_cashier": "ແຄຊເຊຍຍົກເລີກ", "source_kitchen": "ຫ້ອງຄົວຍົກເລີກ", "source_mixed": "ຍົກເລີກຈາກຫຼາຍຝ່າຍ", "source_unknown": "ບໍ່ລະບຸຜູ້ຍົກເລີກ", "original_total": "ມູນຄ່າບິນເດີມ (ບໍ່ນັບເປັນຍອດຂາຍ)", "actor_cashier": "ແຄຊເຊຍ", "actor_kitchen": "ຫ້ອງຄົວ", "actor_mixed": "ຫຼາຍຝ່າຍ", "actor_unknown": "ບໍ່ລະບຸ", "sales_counted_total": "ຍອດທີ່ນັບເປັນຍອດຂາຍ"},
       "meta": {
         "title": "ບົດລາຍງານການຂາຍ"
       },
@@ -27033,6 +27045,7 @@
         "payment_title": "ទទួលការទូទាត់"
       },
       "cancel_order": {
+        "review_recorded": "បានកត់ត្រាការលុបវិក្កយបត្រដែលបានបង់ប្រាក់ ដើម្បីពិនិត្យហិរញ្ញវត្ថុ (មិនទាន់សងប្រាក់វិញទេ)",
         "delivery_target": "ការបញ្ជាទិញ Delivery របស់ :customer",
         "customer_fallback": "អតិថិជន",
         "takeaway_target": "ការបញ្ជាទិញ Take Away :queue",
@@ -30785,6 +30798,7 @@
         "unavailable": "មិនទំនេរ",
         "unavailable_error": "តុនេះមិនទំនេរ សូមជ្រើសរើសតុផ្សេង"
       },
+      "deferred": {"pay_first": "បង់ប្រាក់មុនបញ្ជូនទៅផ្ទះបាយ", "send_unpaid": "ផ្ញើទៅផ្ទះបាយ (បង់ពេលក្រោយ)", "unpaid": "រង់ចាំបង់ប្រាក់", "add_title": "បន្ថែមមុខម្ហូបទៅវិក្កយបត្រដើម", "current_total": "វិក្កយបត្រ :amount · តុ :table", "not_available": "វិក្កយបត្រនេះបានបិទ ឬមិនអាចបន្ថែមបានទេ", "back_to_cashier": "ត្រឡប់ទៅកាន់អ្នកគិតលុយ", "add_items": "បន្ថែមហើយផ្ញើផ្ទះបាយ", "added": "បានបន្ថែមមុខម្ហូបថ្មី", "add_failed": "មិនអាចបន្ថែមមុខម្ហូបបាន", "table_required": "សូមជ្រើសរើសតុ", "cash_only": "បង់ក្រោយជាសាច់ប្រាក់ប៉ុណ្ណោះ", "sent": "បានផ្ញើទៅផ្ទះបាយ :queue", "pay_and_close": "ទទួលប្រាក់ និងបិទវិក្កយបត្រ", "waiting_kitchen": "រង់ចាំបម្រើអាហារ", "closed": "បានទូទាត់ និងបិទវិក្កយបត្រ", "new_items": "មុខម្ហូបថ្មី", "already_served": "បានបម្រើពីមុន", "current_total_takeaway": "វិក្កយបត្រដើម :amount · យកត្រឡប់ទៅផ្ទះ"},
       "held": {
         "title": "វិក្កយបត្រដែលបានផ្អាក",
         "description": "ផ្អាកការកម្ម៉ង់មុនទូទាត់ ហើយអាចត្រឡប់មកបន្តពេលក្រោយបាន",
@@ -31208,6 +31222,7 @@
       }
     },
     "sales_report": {
+      "cancel": {"all": "ទាំងអស់", "status_filter": "ស្ថានភាព", "normal": "ធម្មតា", "cancelled": "បានលុបចោល", "source_cashier": "អ្នកគិតលុយបានលុប", "source_kitchen": "ផ្ទះបាយបានលុប", "source_mixed": "លុបពីផ្នែកច្រើន", "source_unknown": "មិនស្គាល់អ្នកលុប", "original_total": "តម្លៃវិក្កយបត្រដើម (មិនរាប់ចំណូលលក់)", "actor_cashier": "អ្នកគិតលុយ", "actor_kitchen": "ផ្ទះបាយ", "actor_mixed": "ច្រើនផ្នែក", "actor_unknown": "មិនស្គាល់", "sales_counted_total": "ចំនួនទឹកប្រាក់ដែលរាប់ក្នុងការលក់"},
       "meta": {
         "title": "របាយការណ៍លក់"
       },

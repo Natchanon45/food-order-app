@@ -153,7 +153,7 @@ function cancelDeferredItem(order, role, index, now) {
   if (!Number.isSafeInteger(index) || index < 0 || index >= order.items?.length) reject("ITEM_NOT_FOUND");
   if (order.items[index]?.cancelled) reject("ITEM_ALREADY_CANCELLED");
   if (activeTotalCents(order.items) !== cents(order.totalAmount)) reject("TOTAL_MISMATCH");
-  const items=order.items.map((line,i)=>i===index ? {...line,cancelled:true,cancelledAt:now} : {...line});
+  const items=order.items.map((line,i)=>i===index ? {...line,cancelled:true,cancelledAt:now,cancellationSource:"kitchen"} : {...line});
   const remaining=activeTotalCents(items);
   return {
     items,totalAmount:amount(remaining),subtotalAmount:amount(remaining),

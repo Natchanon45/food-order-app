@@ -6,6 +6,11 @@ import { httpsCallable } from "firebase/functions";
 import { auth, db, functions } from "@/firebase/client";
 
 const createWalkInCallable = httpsCallable(functions, "createWalkInOrder");
+const appendWalkInCallable = httpsCallable(functions, "appendUnpaidWalkInItems");
+const settleDeferredWalkInCallable = httpsCallable(functions, "settleDeferredWalkIn");
+const cancelDeferredWalkInCallable = httpsCallable(functions, "cancelDeferredWalkIn");
+const updateDeferredKitchenCallable = httpsCallable(functions, "updateDeferredKitchen");
+const cancelReviewedPaidWalkInCallable = httpsCallable(functions, "cancelReviewedPaidWalkIn");
 const assignWalkInTableCallable = httpsCallable(functions, "assignWalkInTable");
 const moveTableSessionCallable = httpsCallable(functions, "moveTableSession");
 const settleTableSessionCallable = httpsCallable(functions, "settleTableSession");
@@ -231,6 +236,46 @@ export async function createWalkInOrder(tenantId, payload) {
     throw normalizeFunctionError(error);
   }
 }
+export async function appendUnpaidWalkInItems(tenantId, orderId, operationId, items) {
+  try {
+    const result = await appendWalkInCallable({
+      tenantId: requireTenantId(tenantId), orderId, operationId, items,
+    });
+    return result.data;
+  } catch (error) { throw normalizeFunctionError(error); }
+}
+export async function settleUnpaidWalkIn(tenantId, orderId, operationId, cashReceived, expectedTotal) {
+  try {
+    const result = await settleDeferredWalkInCallable({
+      tenantId: requireTenantId(tenantId), orderId, operationId, cashReceived, expectedTotal,
+    });
+    return result.data;
+  } catch (error) { throw normalizeFunctionError(error); }
+}
+export async function cancelUnpaidWalkIn(tenantId, orderId, source) {
+  try {
+    const result = await cancelDeferredWalkInCallable({
+      tenantId: requireTenantId(tenantId), orderId, source,
+    });
+    return result.data;
+  } catch (error) { throw normalizeFunctionError(error); }
+}
+export async function updateDeferredWalkInKitchen(tenantId, orderId, action, extra = {}) {
+  try {
+    const result = await updateDeferredKitchenCallable({
+      tenantId: requireTenantId(tenantId), orderId, action, ...extra,
+    });
+    return result.data;
+  } catch (error) { throw normalizeFunctionError(error); }
+}
+
+export async function cancelReviewedWalkIn(tenantId, orderId) {
+  try {
+    const result = await cancelReviewedPaidWalkInCallable({ tenantId: requireTenantId(tenantId), orderId });
+    return result.data;
+  } catch (error) { throw normalizeFunctionError(error); }
+}
+
 export async function moveTableSession(tenantId, payload = {}) {
   try {
     const response = await moveTableSessionCallable({ tenantId: requireTenantId(tenantId), ...payload });
