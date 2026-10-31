@@ -1,10 +1,10 @@
 # Food Order / Delivery / Retail POS
 
-> Released 31 October 2026 from feature/port-lukkaja-20261031 directly to Firebase chat-45754 (penguin-food.web.app): Version 0.4.297, Build 2026.10.31.527. Six scoped Walk-in Functions, Hosting foodapp and Firestore Rules released, verified on HTTPS. No main merge. See docs/LUKKAJA_20261031_PORT_MATRIX.md for scope and unverified real-user/physical-print UAT. Data in MySQL and Firestore intentionally remains independent.
+> Released 31 October 2026 from feature/port-lukkaja-20261031 directly to Firebase chat-45754 (penguin-food.web.app): Version 0.4.298, Build 2026.10.31.528 (subsequent paid Walk-in lifecycle repair). Six scoped Walk-in Functions, Hosting foodapp and Firestore Rules released, verified on HTTPS. No main merge. See docs/LUKKAJA_20261031_PORT_MATRIX.md for scope and unverified real-user/physical-print UAT. Data in MySQL and Firestore intentionally remains independent.
 
 Current deployed development branch: `feature/port-lukkaja-20261031` (base feature/react-firebase-port and main untouched)
 Current milestone: React + Firebase parity migration / Super Admin Console
-Current PENGUIN production release: Version 0.4.297 • Build 2026.10.31.527 (Firebase deployment confirmed)
+Current PENGUIN production release: Version 0.4.298 • Build 2026.10.31.528 (Firebase Hosting + updateDeferredKitchen confirmed ACTIVE)
 Hybrid Billing DEV candidate (NOT deployable yet): Version 0.4.296 • Build 2026.10.19.526; registration guarded OFF; paid Delivery read-only estimate added; invoice/payment/suspension/Slip2Go quota pending. (Restore floating Developer Panel button on every interactive POS page; Hosting deployed 2026-10-18)
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 

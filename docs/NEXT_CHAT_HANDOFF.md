@@ -1,3 +1,12 @@
+## 2026-10-31 — Production 0.4.298 / Build 2026.10.31.528 VERIFIED (post-screenshot)
+
+- Application code commit 7e10740c0074d71ae39a00b76283ca7590247500 was pushed on feature/port-lukkaja-20261031 before cloud deploy, main/react-firebase-port unchanged.
+- Owner screenshot discrepancies handled: Quick Order Takeaway icon now inherits green theme, Cashier no longer displays completed paid Walk-ins unless table really still belongs to that order, and Kitchen can show/process only paid-but-unserved legacy operational status. No manufacturing of occupied QR tables and no change to paid totals, revenue or receipts.
+- Local verification: 7/7 lifecycle source tests, Auth+Firestore Emulator 2/2, full React Parity, Vite build contract 2026.10.31.528. Firebase Function updateDeferredKitchen dry-run PASS. Targeted production function deploy produced both Successful update operation and trailing HTTP 409 warning while cloud resource was DEPLOYING; read-only Firebase functions:list initially state DEPLOYING, then subsequently ACTIVE. **Do not claim clean/no-warning function deployment**, but final resource is ACTIVE.
+- Firebase Hosting target foodapp deploy complete; public /react/ HTML references hashed JS index-DS4OlTy0.js and new bundle GET HTTP 200 contains 0.4.298, 2026.10.31.528. Cashier, Quick Order, Kitchen, Table QR, Revenue Share each HTTP 200. Firestore Rules unchanged in this release.
+- This is a source-code/UI state fix, not manual repair of the specific Q001 production document. No gcloud read-only token was available to inspect real Q001, so whether it was already served or table really occupied remains unverified; do not auto-correct monetary or table documents without evidence. Receipt of THB 255 may correctly appear in sales when paid first.
+- Owner/browser validation still requested: reload Cashier, Kitchen and Table QR side by side and verify whether Q001 is unfinished vs fully served/closed. If Kitchen still shows nothing while actual Q001 unserved, gather exact status/items/table marker using authorized read only before modifying data.
+
 ## 2026-10-31 — Walk-in paid-first screenshot fix 0.4.298 / Build 2026.10.31.528
 
 - Owner screenshots from PENGUIN Production: Quick Order Takeaway bag black; Cashier Q001 paid THB 255 still appears, Kitchen empty, QR issued/open Walk-in tables count 0, Revenue Share THB 255. Specific Q001 Firestore document not read (no gcloud default read token); do not claim actual Kitchen completion, cash/refund or table marker state.
