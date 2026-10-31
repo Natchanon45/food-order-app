@@ -97,6 +97,23 @@ test("LUKKAJA parallel / Firebase real Firestore transaction lifecycle (demo onl
  assert.equal(kitchenAudit.action,"kitchen_order_cancelled_paid");
  assert.equal(kitchenAudit.manualRefundNotRecorded,true);
  assert.equal((await invoke("cashier","cancelReviewedPaidWalkIn",{orderId:mainId})).duplicate,true);
+ // Existing paid order whose operational status was wrongly marked closed
+ // must remain cookable only when Kitchen never served it.
+ const legacyId="walkin-"+suffix+"d";
+ const legacyCreate=await invoke("cashier","createWalkInOrder",{
+  ...data,id:legacyId,serviceType:"takeaway",tableCode:"",paymentTiming:undefined,cashReceived:500
+ });
+ assert.equal(legacyCreate.item.status,"pending");
+ await root.collection("orders").doc(legacyId).update({status:"paid"});
+ const legacyAccept=await invoke("kitchen","updateDeferredKitchen",{orderId:legacyId,action:"status",status:"accepted"});
+ assert.equal(legacyAccept.item.status,"accepted");
+ await invoke("kitchen","updateDeferredKitchen",{orderId:legacyId,action:"status",status:"cooking"});
+ await invoke("kitchen","updateDeferredKitchen",{orderId:legacyId,action:"status",status:"ready"});
+ const legacyServed=await invoke("kitchen","updateDeferredKitchen",{orderId:legacyId,action:"status",status:"served"});
+ assert.equal(legacyServed.item.status,"paid");
+ assert.equal(legacyServed.item.paymentStatus,"paid");
+ assert.ok(legacyServed.item.completedAt);
+ await rejected(()=>invoke("kitchen","updateDeferredKitchen",{orderId:legacyId,action:"status",status:"accepted"}),"DEFERRED_BILL_NOT_ELIGIBLE");
  const unpaidId="walkin-"+suffix+"b";
  await invoke("cashier","createWalkInOrder",{...data,id:unpaidId,serviceType:"takeaway",tableCode:""});
  const cancel=await invoke("kitchen","cancelDeferredWalkIn",{orderId:unpaidId,source:"kitchen"});

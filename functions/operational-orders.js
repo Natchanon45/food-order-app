@@ -768,9 +768,14 @@ exports.updateDeferredKitchen = onCall({ region: REGION, timeoutSeconds: 30 }, a
     const snap = await tx.get(ref);
     if (!snap.exists) missing("ORDER_NOT_FOUND");
     const order = normalizeOrder(snap);
+    const legacyPaidAwaitingKitchen = order?.orderType === "walkin" &&
+      String(order.status || "").toLowerCase() === "paid" &&
+      !order.completedAt && !order.tableClosedAt &&
+      (Array.isArray(order.items) ? order.items : []).some(line =>
+        line && line.cancelled !== true && line.served !== true && line.kitchenPreviouslyServed !== true);
     const paidWalkIn = order?.orderType === "walkin" && order?.paymentStatus === "paid"
       && ["cash", "promptpay"].includes(order?.paymentMethod)
-      && !order?.tableToken && !CLOSED_STATUSES.has(String(order.status || ""));
+      && !order?.tableToken && (!CLOSED_STATUSES.has(String(order.status || "")) || legacyPaidAwaitingKitchen);
     if (!paidWalkIn) {
       try { deferredPolicy.eligibleDeferred(order, profile.role, "kitchen"); }
       catch (error) { deferredFailure(error); }

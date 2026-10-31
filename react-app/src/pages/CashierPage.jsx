@@ -30,6 +30,7 @@ import {
 } from "@/data/operationalData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
+import { walkInCashierPending } from "@/data/walkInLifecycle.mjs";
 import { useLalamoveAutoRefresh } from "@/hooks/useLalamoveAutoRefresh";
 import { cashierSlipReviewSummary } from "@/utils/cashierSlipReview";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -116,12 +117,12 @@ function isWaitingQueuePlaceholder(order) {
     && items.length === 0
     && Number(order?.totalAmount ?? order?.total ?? 0) === 0;
 }
-function activeOrders(orders) {
+function activeOrders(orders, tables = []) {
   return orders.filter(order => {
     if (isWaitingQueuePlaceholder(order) || order.status === "cancelled") return false;
     if (lalamoveCodAwaitingSettlement(order)) return true;
     if (order.status === "completed" || lalamoveDeliveryCompleted(order)) return false;
-    if (order.orderType === "walkin" && order.paymentStatus === "paid") return true;
+    if (order.orderType === "walkin") return walkInCashierPending(order, tables);
     if (order.status !== "paid") return true;
     return isLalamoveDelivery(order) && !lalamoveDispatchFinished(order);
   });
@@ -610,7 +611,7 @@ export function CashierPage() {
     }) || "-";
   };
   const normalizedOrders = useMemo(() => normalizeCashierOrders(orders), [orders]);
-  const active = useMemo(() => activeOrders(normalizedOrders), [normalizedOrders]);
+  const active = useMemo(() => activeOrders(normalizedOrders, tables), [normalizedOrders, tables]);
   useEffect(() => {
     if (!tenant?.id || !allowedRole) {
       setStoreLocation(null);

@@ -848,7 +848,7 @@ export function QuickOrderPage() {
             <span className="quick-order-setting-label">{t("quick_order.service.title")}</span>
             <div className="quick-segment" id="quickServiceType">
               <button type="button" disabled={Boolean(appendToId)} className={serviceType === "dine_in" ? "active" : ""} data-service-type="dine_in" onClick={() => setServiceType("dine_in")}><i className="bi bi-shop" aria-hidden="true"></i><span>{t("quick_order.service.dine_in")}</span></button>
-              <button type="button" disabled={Boolean(appendToId)} className={serviceType === "takeaway" ? "active" : ""} data-service-type="takeaway" onClick={() => setServiceType("takeaway")}><img className="quick-service-icon app-icon" src="/assets/vendor/bootstrap-icons/icons/bag.svg" alt="" aria-hidden="true" /><span>{t("quick_order.service.takeaway")}</span></button>
+              <button type="button" disabled={Boolean(appendToId)} className={serviceType === "takeaway" ? "active" : ""} data-service-type="takeaway" onClick={() => setServiceType("takeaway")}><i className="bi bi-bag app-icon quick-service-icon" aria-hidden="true"></i><span>{t("quick_order.service.takeaway")}</span></button>
             </div>
             <small className="quick-service-default-help"><i className="bi bi-pin-angle" aria-hidden="true"></i><span>{t("quick_order.service.default_help")}</span></small>
           </div>

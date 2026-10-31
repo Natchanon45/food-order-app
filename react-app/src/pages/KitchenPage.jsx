@@ -23,9 +23,15 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useLalamoveAutoRefresh } from "@/hooks/useLalamoveAutoRefresh";
 import { useTenant } from "@/tenant/TenantProvider";
 import { deliveryKitchenAdmitted } from "@/data/deliveryKitchenGate";
+import { walkInKitchenPending, walkInKitchenStatus } from "@/data/walkInLifecycle.mjs";
 import { isKitchenLocked, isLalamoveDelivery, lalamoveDispatchActive, lalamoveStatus } from "@/utils/kitchenOrderLock";
 
 const ACTIVE_STATUSES = new Set(["pending", "accepted", "cooking", "ready", "served"]);
+function kitchenWorkLocked(order) {
+  return isKitchenLocked(order) && !(
+    String(order?.status || "").toLowerCase() === "paid" && walkInKitchenPending(order)
+  );
+}
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -104,7 +110,7 @@ function recalculateOrder(order, items) {
 }
 
 function nextActions(order, t) {
-  const status = order?.status;
+  const status = walkInKitchenStatus(order);
   if (status === "pending") return [["accepted", t("kitchen.actions.accept"), "btn-primary", "check", "kitchen-accept-action"]];
   if (status === "accepted") return [["cooking", t("kitchen.actions.start"), "btn-warning", "hourglass-split", "kitchen-start-action"]];
   if (status === "cooking") return [["ready", isDelivery(order) ? t("kitchen.actions.ready_delivery") : t("kitchen.actions.ready_serve"), "btn-primary", "check-circle", "kitchen-ready-action"]];
@@ -163,11 +169,11 @@ function LalamoveNotice({ order, t }) {
 function KitchenOrderCard({
   order, nested = false, t, formatTime, money, onEditItem, onCancelItem, onServeItem, onCancelOrder, onStatus,
 }) {
-  const locked = isKitchenLocked(order);
+  const locked = kitchenWorkLocked(order);
   const overdue = ["pending", "accepted", "cooking"].includes(order?.status) && ageMinutes(order) >= 15;
   const statusText = isTakeaway(order) && order.status === "ready"
     ? t("kitchen.states.ready_to_serve")
-    : t(`shared.status.${order.status || "pending"}`);
+    : t(`shared.status.${walkInKitchenStatus(order) || "pending"}`);
   const heading = nested ? (
     <div><h3 style={{ margin: 0 }}>{t("kitchen.order.round_title", { round: order.roundNumber || 1 })}</h3><small>{formatTime(displayTimeValue(order))}</small></div>
   ) : (
@@ -398,7 +404,9 @@ export function KitchenPage() {
   }, [tenant?.id, allowedRole, orders]);
 
   const cards = useMemo(() => {
-    const active = orders.filter(order => ACTIVE_STATUSES.has(order.status) && !lalamoveDeliveryCompleted(order) && deliveryKitchenAdmitted(order));
+    const active = orders.filter(order =>
+      (ACTIVE_STATUSES.has(order.status) || walkInKitchenPending(order)) &&
+      !lalamoveDeliveryCompleted(order) && deliveryKitchenAdmitted(order));
     const tableGroups = new Map();
     active.filter(isTableOrder).forEach(order => {
       const key = tableGroupKey(order);
@@ -435,7 +443,7 @@ export function KitchenPage() {
   };
 
   const cancelItem = async (order, itemIndex) => {
-    if (!order || isKitchenLocked(order)) return;
+    if (!order || kitchenWorkLocked(order)) return;
     if (order.orderType === "walkin" && order.paymentStatus === "paid") {
       showToast(t("quick_order.deferred.not_available"), "error"); return;
     }
@@ -472,7 +480,7 @@ export function KitchenPage() {
   };
 
   const cancelOrder = async order => {
-    if (!order || isKitchenLocked(order)) return;
+    if (!order || kitchenWorkLocked(order)) return;
     const ok = await sweetConfirm(
       t("kitchen.confirm.cancel_order_message"),
       {
@@ -548,7 +556,7 @@ export function KitchenPage() {
   };
 
   const changeStatus = async (order, status) => {
-    if (!order?.id || isKitchenLocked(order)) return;
+    if (!order?.id || kitchenWorkLocked(order)) return;
     const now = new Date().toISOString();
     const patch = { status };
     if (status === "served") {
@@ -593,7 +601,7 @@ export function KitchenPage() {
   };
 
   const saveEditor = async ({ order, index, item, menuId, qty, note, activeMenus, maxQty }) => {
-    if (!order || isKitchenLocked(order) || editorBusy) return;
+    if (!order || kitchenWorkLocked(order) || editorBusy) return;
     const selectedMenu = activeMenus.find(menu => menu.id === menuId);
     const nextQty = Number(qty);
     const nextNote = String(note || "").trim();
@@ -648,7 +656,7 @@ export function KitchenPage() {
     t,
     formatTime,
     money,
-    onEditItem: (order, index) => { if (!isKitchenLocked(order) && order?.items?.[index]?.served !== true) setEditor({ order, index }); },
+    onEditItem: (order, index) => { if (!kitchenWorkLocked(order) && order?.items?.[index]?.served !== true) setEditor({ order, index }); },
     onCancelItem: cancelItem,
     onServeItem: serveItem,
     onCancelOrder: cancelOrder,
