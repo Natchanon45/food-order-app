@@ -17,7 +17,8 @@ test("monthly and yearly captions use month name / year, other filters unchanged
 test("wide desktop custom inputs share filter row, mobile inherits existing stack",()=>{
   const index=css.lastIndexOf("/* 0.4.301 / Build 2026.10.31.531");
   assert.ok(index>0);
-  const custom=css.slice(index);
+  const next=css.indexOf("/* 0.4.302 / Build",index);
+  const custom=css.slice(index,next<0?undefined:next);
   assert.match(custom,/@media \(min-width: 1280px\)/);
   assert.match(custom,/report-period-controls \{\s*grid-column: 3; grid-row: 1/);
   assert.match(custom,/report-filter-refresh \{\s*grid-column: 4; grid-row: 1/);
@@ -29,7 +30,8 @@ test("wide desktop custom inputs share filter row, mobile inherits existing stac
 test("0.4.302 desktop Custom group moves left; date inputs vertically centered independent of labels", () => {
   const start = css.lastIndexOf("/* 0.4.302 / Build 2026.10.31.532");
   assert.ok(start > 0, "new desktop CSS override exists");
-  const override = css.slice(start);
+  const next = css.indexOf("/* 0.4.304 —", start);
+  const override = css.slice(start, next < 0 ? undefined : next);
   assert.match(override, /@media \(min-width: 1280px\)/);
   assert.match(override, /grid-template-columns: minmax\(230px, min\(28%, 310px\)\) max-content minmax\(240px, 305px\) 36px/);
   assert.match(override, /justify-content: start/);
@@ -43,7 +45,8 @@ test("0.4.302 desktop Custom group moves left; date inputs vertically centered i
 test("0.4.303 keeps original Refresh edge and adds framed wide date group", () => {
   const start=css.lastIndexOf("/* 0.4.303 / Build 2026.10.31.533");
   assert.ok(start>0);
-  const override=css.slice(start);
+  const next=css.indexOf("/* 0.4.304 —",start);
+  const override=css.slice(start,next<0?undefined:next);
   assert.match(override,/@media \(min-width: 1280px\)/);
   assert.match(override,/grid-template-columns: minmax\(195px, 1fr\) max-content minmax\(310px, 345px\) 36px/);
   assert.match(override,/justify-content: stretch/);

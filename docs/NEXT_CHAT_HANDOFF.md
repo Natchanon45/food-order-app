@@ -1,3 +1,9 @@
+## 2026-10-31 — PENGUIN 0.4.304 / Build 2026.10.31.534 mobile equation arrow (code only)
+- Owner showed Mobile Revenue Share share-calculation formula between stacked cards and requests a real icon arrow-down (↓), NOT emoji, replacing horizontal right arrow on Mobile; Desktop arrow-right and multiplication/equal symbols must remain. Also requested the parallel change for LUKKAJA only after PENGUIN.
+- Source JSX: original Bootstrap Icons bi-arrow-right retained with report-equation-arrow-desktop class, new Bootstrap Icons bi-arrow-down with report-equation-arrow-mobile class; CSS chooses down at <=700px, right above 700px. Styled in existing revenue-share-report.css and mirrored to deployment public/react/parity/css. No data/services/math changes.
+- New source + computed headless Chrome test widths 390,440,768,1280 PASS; prior Desktop monthly/calendar regression 4/4 PASS. Full npm run test:react-parity PASS. npm run build:react and generated build contract PASS, Version 0.4.304, Build 2026.10.31.534, bundle index-D1lP61q7.js.
+- Commit/push on existing feature/port-lukkaja-20261031, do not merge. Production PENGUIN still Version 0.4.303 / Build 2026.10.31.533 until owner requests Hosting deploy; no Firebase Functions/Rules or Firestore data writes. Next continue LUKKAJA code logo and mobile arrow, and seek explicit deploy permission before touching either Production.
+
 ## 2026-10-31 — PENGUIN 0.4.303 / 2026.10.31.533 Hosting Production VERIFIED
 
 - Owner approved deployment of the PENGUIN-only desktop Revenue Share custom-date frame/Refresh position improvement, based on app code commit dd2a6aef1908af22433feb7409ee2d3bf63bab1c, branch feature/port-lukkaja-20261031. Preflight: clean synced source, generated build contract PASS, Version 0.4.303 / Build 2026.10.31.533, expected bundle index-BGMyuibH.js and report CSS mirror PASS.

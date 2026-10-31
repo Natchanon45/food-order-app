@@ -596,7 +596,7 @@ export function RevenueShareReportPage() {
           </div>
           <div className="report-share-equation">
             <div className="report-share-month"><span className="report-equation-icon"><i className="delivery-bike-line-icon" aria-hidden="true"></i></span><div><span>{rc("ยอด Delivery สะสมรอบบิลนี้", "Billing-cycle Delivery total")}</span><strong>{money(monthlyDeliverySales)} <small>{rc("บาท", "THB")}</small></strong></div></div>
-            <b aria-hidden="true" className="report-equation-operator"><i className="bi bi-arrow-right"></i></b>
+            <b aria-hidden="true" className="report-equation-operator"><i className="bi bi-arrow-right report-equation-arrow-desktop"></i><i className="bi bi-arrow-down report-equation-arrow-mobile"></i></b>
             <div className="report-share-base"><span className="report-equation-icon"><i className="bi bi-cash-stack" aria-hidden="true"></i></span><div><span>{rc("ยอดที่เข้าเกณฑ์แล้ว", "Eligible amount")}</span><strong id="deliveryShareBase">{money(summary.deliveryShareBase)} <small>{rc("บาท", "THB")}</small></strong></div></div>
             <b aria-hidden="true" className="report-equation-operator">×</b>
             <div className="report-share-rate"><span className="report-equation-icon"><i className="bi bi-percent" aria-hidden="true"></i></span><div><span>{rc("อัตราส่วนแบ่ง", "Share rate")}</span><strong>{money(centralRate)} <small>%</small></strong></div></div>

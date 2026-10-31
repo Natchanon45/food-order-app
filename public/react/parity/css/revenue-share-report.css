@@ -899,3 +899,12 @@
     justify-self: end;
   }
 }
+
+/* 0.4.304 — The billing equation stacks vertically on phone screens.
+   Show a real Bootstrap arrow-down icon between the first two cards there;
+   preserve the arrow-right icon on desktop. Symbols × and = stay unchanged. */
+.revenue-share-dashboard .report-equation-arrow-mobile { display: none; }
+@media (max-width: 700px) {
+  .revenue-share-dashboard .report-equation-arrow-desktop { display: none; }
+  .revenue-share-dashboard .report-equation-arrow-mobile { display: inline-block; }
+}

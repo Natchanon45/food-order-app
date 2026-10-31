@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
-  version: "0.4.303",
-  build: "2026.10.31.533",
+  version: "0.4.304",
+  build: "2026.10.31.534",
   branch: "feature/port-lukkaja-20261031",
-  commit: "REVENUE-DESKTOP-DATE-GROUP-RESTORED-PROPORTIONS",
+  commit: "MOBILE_REVENUE_FORMULA_DOWN_ARROW_ICON",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Revenue Share restore right-edge Refresh and framed expanded custom dates",
+  milestone: "Mobile Revenue Share uses Bootstrap down-arrow when equation is stacked",
   whatsNew: [
+    "Show an actual Bootstrap Icons down-arrow in mobile stacked Revenue Share math; preserve the right-arrow on desktop",
     "Restore desktop report filter proportions and far-right Refresh, expand both dates into available space with a soft green group frame",
     "Move the desktop custom-date filter group left by limiting unused heading space; date inputs align to tab centers without labels shifting them",
     "Summarize monthly and yearly sales/share sections by October 2026 or 2026 while keeping the actual report date range and billing cycle unchanged",
