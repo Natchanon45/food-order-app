@@ -24,3 +24,17 @@ test("wide desktop custom inputs share filter row, mobile inherits existing stac
   assert.match(custom,/report-custom-period \{\s*width: 100%; min-width: 0; grid-template-columns: repeat\(2,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(custom,/@media \(max-width:/);
 });
+
+
+test("0.4.302 desktop Custom group moves left; date inputs vertically centered independent of labels", () => {
+  const start = css.lastIndexOf("/* 0.4.302 / Build 2026.10.31.532");
+  assert.ok(start > 0, "new desktop CSS override exists");
+  const override = css.slice(start);
+  assert.match(override, /@media \(min-width: 1280px\)/);
+  assert.match(override, /grid-template-columns: minmax\(230px, min\(28%, 310px\)\) max-content minmax\(240px, 305px\) 36px/);
+  assert.match(override, /justify-content: start/);
+  assert.match(override, /report-custom-period label \{[^}]*position: relative;[^}]*display: flex;[^}]*align-items: center;[^}]*justify-content: center/s);
+  assert.match(override, /report-custom-period label > span \{[^}]*position: absolute;[^}]*bottom: calc\(100% \+ 1px\)/s);
+  assert.match(override, /report-custom-period label > \.input \{[^}]*height: 34px;[^}]*min-height: 34px/s);
+  assert.doesNotMatch(override, /@media \(max-width:/);
+});

@@ -811,3 +811,47 @@
     grid-column: 4; grid-row: 1;
   }
 }
+
+
+/* 0.4.302 / Build 2026.10.31.532 — Move the Custom filter group left
+   into unused heading space. Center native date INPUTS against the tabs,
+   with labels painted separately above; label height must not shift inputs.
+   Desktop only: tablet and mobile keep the existing responsive hierarchy. */
+@media (min-width: 1280px) {
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) {
+    grid-template-columns: minmax(230px, min(28%, 310px)) max-content minmax(240px, 305px) 36px;
+    justify-content: start;
+    align-items: center;
+    column-gap: 8px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period {
+    align-items: center;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 38px;
+    min-height: 38px;
+    padding: 0 3px;
+    margin: 0;
+    border: 0;
+    background: transparent;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > span {
+    position: absolute;
+    left: 3px;
+    bottom: calc(100% + 1px);
+    white-space: nowrap;
+    line-height: 1.1;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > .input {
+    width: 100%;
+    height: 34px;
+    min-height: 34px;
+    margin: 0;
+    box-sizing: border-box;
+  }
+}

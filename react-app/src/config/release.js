@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
-  version: "0.4.301",
-  build: "2026.10.31.531",
+  version: "0.4.302",
+  build: "2026.10.31.532",
   branch: "feature/port-lukkaja-20261031",
-  commit: "REVENUE-FILTER-CAPTION-AND-DESKTOP-CUSTOM-ROW",
+  commit: "REVENUE-DESKTOP-LEFT-SHIFT-INPUT-CENTERING",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Revenue Share compact monthly/yearly summary labels and single-row desktop custom filter",
+  milestone: "Revenue Share desktop custom-filter left alignment and date input centering",
   whatsNew: [
+    "Move the desktop custom-date filter group left by limiting unused heading space; date inputs align to tab centers without labels shifting them",
     "Summarize monthly and yearly sales/share sections by October 2026 or 2026 while keeping the actual report date range and billing cycle unchanged",
     "Keep custom start/end date controls aligned on one desktop filter row; leave tablet and mobile layout intact",
     "Report the selected calendar month from day 1 to its actual last day (e.g. 01/10/2026 - 31/10/2026), not an activation-anniversary date range",
