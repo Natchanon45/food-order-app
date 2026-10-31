@@ -1,3 +1,11 @@
+## 2026-10-31 — PENGUIN 0.4.300 / 2026.10.31.530 Firebase Hosting DEPLOYED / VERIFIED
+
+- User explicitly authorized Production deployment following calendar-month report-filter fix. App GitHub commit bfdeca1af9a51fdfb50e34effa9469925a3d11f7, branch feature/port-lukkaja-20261031, was ff-only synced, clean and source/assets contract-verified before publishing.
+- Firebase project chat-45754, target hosting:foodapp / penguin-food.web.app. CLI version 15.34.0 dry run PASS; hosting-only release command firebase deploy --only hosting:foodapp --project chat-45754 --non-interactive reported 635 public files, upload complete, version finalized, release complete and Deploy complete. No Firebase Functions, Firestore Rules, data, Storage or financial mutations were part of deployment.
+- Post-release HTTPS 200 for /react/, /reports/revenue-share, /cashier, /cashier/quick-order, /kitchen, /cashier/table-qr, /cashier/receipt, /admin/sales-report. Fresh live /react/ HTML references index-CwKWE5gP.js (instead of previous .529 index-CGo6t15E.js). The downloaded production JS bytes are identical to local generated JS (SHA256 f6509f0b09ad42e0c2a0f56b9fbfef2240d21c77b1ff1d1606cc69b58f6cad48); verified release 0.4.300 / Build 2026.10.31.530 / CALENDAR-MONTH-REVENUE-REPORT-INDEPENDENT-BILLING marker.
+- Previous test evidence: 23/23 focused financial-report tests PASS, full React Parity PASS, generated build contract PASS. Current page must display October 2026 calendar report as 01/10/2026 - 31/10/2026 rather than activation anniversary; actual authenticated reports and payment flows were NOT exercised using real business transactions during smoke checks.
+- Deployment-audit documentation-only follow-up commit does not alter app bundle and needs NO further deploy. Future public code change must increment Build; main, feature/react-firebase-port and LUKKAJA unchanged.
+
 ## 2026-10-31 — Revenue Share monthly calendar report bugfix 0.4.300 / 2026.10.31.530 (SOURCE ONLY)
 
 - Owner screenshot after .529 Hosting deploy showed "รายเดือน" October 2026, but report subtotal/Delivery/share-result captions still showed 2026-10-21 to 2026-11-20, the tenant activation-anniversary billing period. Owner expects calendar 01/10/2026 - 31/10/2026 for monthly report, without choosing "กำหนดเอง".
