@@ -1,3 +1,11 @@
+## 2026-10-31 — PENGUIN 0.4.302 / Build 2026.10.31.532 Firebase Hosting DEPLOYED / VERIFIED
+
+- Owner explicitly approved PENGUIN-only desktop date-field alignment deployment for visual review. Existing app commit cd4221d0232bd2bbcbf3692b2dbf5b66e732957f, synced feature/port-lukkaja-20261031, generated Build contract 2026.10.31.532 and /react/assets/index-DcYn_uhi.js verified before release.
+- Firebase project chat-45754 Hosting target foodapp (site penguin-food). Dry-run passed; Hosting-only deploy completed (637 public files scanned, upload, finalization and release successful). Functions, Firestore Rules, Storage, database, transactions and LUKKAJA untouched.
+- Live HTTPS 200 for /react/, /reports/revenue-share, /cashier, /cashier/quick-order, /kitchen, /cashier/table-qr, /cashier/receipt and /admin/sales-report. Fresh /react/ HTML references index-DcYn_uhi.js, not previous .531 bundle. Production JS SHA256 b5beb66d339845ad7a4c6c7bf520173a1fcfce960524384ed3eab92fe54627b0 matches local bytes; Production report CSS SHA256 84ea58203cbc30083cac4a2b51126bcbceaae56c9b9761f37c10b6453a55fdfc also matches local. Embedded Version 0.4.302 / Build 2026.10.31.532 verified.
+- Headless Chrome regression verified date input and tab vertical centering and left-shift without collisions at 1648/1366/1280px, with original tablet 1024px / mobile 390px stacking intact. Full React Parity PASS, generated Build contract PASS. No images generated.
+- Authenticated browser owner visual acceptance pending at https://penguin-food.web.app/reports/revenue-share. Documentation-only audit commit does not change deployed assets or require another deploy.
+
 ## 2026-10-31 — PENGUIN desktop Custom filter alignment candidate 0.4.302 / 2026.10.31.532 (NOT DEPLOYED)
 
 - Owner supplied DevTools screenshots of report filter and explicitly corrected target to PENGUIN code only, no image generation. Goal: move Custom date tabs/inputs left to occupy blank heading space and vertically center each date INPUT on the same line as tab buttons, irrespective of label height.
