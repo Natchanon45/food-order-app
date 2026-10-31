@@ -1901,3 +1901,11 @@ Candidate Build .476 on local Mac only; React homepage and route guard updates p
 - Scoped quick-header-back icon centered Y on desktop, X+Y on mobile using 40x40 square and 18px icon box. Added mobile accessible name and regression checks.
 - Static GitHub source checks 8/8 PASS. Desktop Commander quota remains exhausted; no local tests/build or Hosting deployment performed. Production still .487.
 - This release also contains previous unreleased .488 Quick Order display pairing changes. Mac must pull ff-only, test, build, deploy Hosting, then verify both icon and QR pairing. Never reset/clean or merge main. See WORKLOG.
+
+## 2026-10-31 — Cross-system six-screen visual parity candidate 0.4.299 / 2026.10.31.529 (NOT DEPLOYED)
+
+- PENGUIN receipt detail cancellation banner precedes bill number/print action as in LUKKAJA. LUKKAJA receipt print copies PENGUIN actor watermark, red number and historical display amount in its own branch. No actual finance changes.
+- PENGUIN Revenue Share billing cycle and first registration date use Thai short-month two-digit Buddhist era, e.g. 18 ต.ค. 69 - 17 พ.ย. 69. Canonical dates, anniversary math and tenant values remain unchanged.
+- Optional Premium disclosure now includes LUKKAJA style MerchantServiceTerms with PENGUIN brand, fee numbers derived from access only, source threshold/share rate and explicit text that billing and Slip2Go quota enforcement needs separate verification. Does not enable or charge services.
+- Tests: 8/8 dedicated billing/visual tests, full React Parity and Vite Build PASS. First full suite failed two Hybrid Billing tests solely due missing worktree functions/node_modules symlink; connecting sibling Functions dependencies for tests fixed both. Test-only links will be removed after verification.
+- Version 0.4.299 / Build 2026.10.31.529 on review branch. Firebase Production remains Version 0.4.298 / Build 2026.10.31.528. No Production deployment, Firestore Rules or Functions changes.

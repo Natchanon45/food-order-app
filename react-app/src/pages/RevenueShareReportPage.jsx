@@ -16,6 +16,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { firstTenantRegistrationDate, resolveBillingCycleRange } from "@/utils/billingCycleDisplay";
+import { MerchantServiceTerms } from "@/components/MerchantServiceTerms";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -60,7 +61,7 @@ export function RevenueShareReportPage() {
   const stylesReady = useParityPage({
     title: t("revenue_share_report.meta.title"),
     bodyClass: "order-delivery-workspace revenue-share-report-page",
-    styles: ["app.css", "icons.css", "tenant-admin.css", "revenue-share-report.css", "revenue-share-slip-dialog.css", "revenue-share-wallet-scroll-port.css"],
+    styles: ["app.css", "icons.css", "tenant-admin.css", "revenue-share-report.css", "revenue-share-slip-dialog.css", "revenue-share-wallet-scroll-port.css", "merchant-service-terms-port.css"],
   });
 
   const today = useMemo(() => localDateKey(new Date()), []);
@@ -569,7 +570,18 @@ export function RevenueShareReportPage() {
           </div>
           <p className="report-rule-note" id="shareExplanation"><i className="bi bi-shield-check" aria-hidden="true"></i>
             {rc("ยอด Delivery " + money(centralThreshold) + " บาทแรกของรอบบิลได้รับยกเว้น คิดส่วนแบ่งเฉพาะยอดสินค้าที่ชำระแล้วส่วนที่เกินเพดาน และเริ่มนับใหม่เมื่อครบรอบสมัคร", "The first " + money(centralThreshold) + " THB in each anniversary billing cycle is exempt. Only paid Delivery merchandise above the threshold is charged; the exemption resets at renewal.")}</p>
-          <details className="report-pricing-disclosure"><summary><i className="bi bi-gem" aria-hidden="true"></i>{rc("ข้อมูลแพ็กเกจ Premium (เพิ่มเติม)", "Premium pricing (details)")}<i className="bi bi-chevron-down" aria-hidden="true"></i></summary><div className="report-policy-inline"><span>{rc("Premium ส่วนกลาง", "Central Premium")}: {access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} {rc("บาท/เดือน", "THB/month")} · {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท/ปี", "THB/year")} <small>{rc("(เรียกเก็บแยก ไม่รวมยอดรายงานนี้)", "(billed separately, not included in this report)")}</small></span></div></details>
+          <details className="report-pricing-disclosure"><summary><i className="bi bi-gem" aria-hidden="true"></i>{rc("ข้อมูลแพ็กเกจ Premium (เพิ่มเติม)", "Premium pricing (details)")}<i className="bi bi-chevron-down" aria-hidden="true"></i></summary><div className="report-policy-inline"><span>{rc("Premium ส่วนกลาง", "Central Premium")}: {access?.premiumMonthlyPrice != null ? money(access.premiumMonthlyPrice) : "—"} {rc("บาท/เดือน", "THB/month")} · {access?.premiumAnnualPrice != null ? money(access.premiumAnnualPrice) : "—"} {rc("บาท/ปี", "THB/year")} <small>{rc("(เรียกเก็บแยก ไม่รวมยอดรายงานนี้)", "(billed separately, not included in this report)")}</small></span></div>
+            <MerchantServiceTerms
+              locale={intlLocale}
+              pricing={{ storageReady: access != null, pricing: {
+                monthly: { payable: access?.premiumMonthlyPrice ?? null },
+                annual: { payable: access?.premiumAnnualPrice ?? null },
+              }, config: {} }}
+              threshold={Number.isFinite(centralThreshold) && centralThreshold > 0 ? centralThreshold : null}
+              shareRate={Number.isFinite(centralRate) && centralRate >= 0 ? centralRate : null}
+              context="report"
+            />
+          </details>
         </section>
 
         <section className="card report-related-amounts" aria-labelledby="reportRelatedTitle">

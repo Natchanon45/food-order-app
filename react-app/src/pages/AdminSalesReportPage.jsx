@@ -551,10 +551,10 @@ export function AdminSalesReportPage() {
           <div className="section-title"><h2><i className="bi bi-receipt" aria-hidden="true"></i><span>{t("sales_report.sections.receipt_detail")}</span></h2><button type="button" className="receipt-dialog-close" id="closeReceiptDialog" aria-label={t("sales_report.receipt.close")} title={t("sales_report.receipt.close")} onClick={closeReceipt}><i className="bi bi-x-lg" aria-hidden="true"></i></button></div>
           <div id="receiptDetail">
             {selectedReceipt ? <>
-              <div className="receipt-detail-head"><div className="receipt-detail-identity"><span className="receipt-detail-label">{t("sales_report.receipt.number")}</span><div className={"receipt-code" + (selectedReceipt.status === "cancelled" ? " receipt-code-cancelled" : "")}>{selectedReceipt.code}</div></div><a className="btn btn-dark receipt-print-action" href={printUrl(selectedReceipt)} target="_blank" rel="noopener"><i className="bi bi-printer" aria-hidden="true"></i><span>{t("sales_report.receipt.print")}</span></a></div>
               {selectedReceipt.status === "cancelled"
                 ? <div className="receipt-cancelled-banner">{t("sales_report.cancel.cancelled")} · {t("sales_report.cancel.source_" + selectedReceipt.cancellationSource)}</div>
                 : null}
+              <div className="receipt-detail-head"><div className="receipt-detail-identity"><span className="receipt-detail-label">{t("sales_report.receipt.number")}</span><div className="receipt-code">{selectedReceipt.code}</div></div><a className="btn btn-dark receipt-print-action" href={printUrl(selectedReceipt)} target="_blank" rel="noopener"><i className="bi bi-printer" aria-hidden="true"></i><span>{t("sales_report.receipt.print")}</span></a></div>
               <div className="receipt-detail-facts">
                 <div><span>{t("sales_report.receipt.date_time")}</span><strong>{formatDateTime(selectedReceipt.paidAt)}</strong></div>
                 <div><span>{t("sales_report.receipt.channel")}</span><strong>{orderTypeLabel(selectedReceipt.type)}</strong></div>

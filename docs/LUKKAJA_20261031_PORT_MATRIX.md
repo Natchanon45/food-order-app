@@ -69,3 +69,11 @@ Quick Order select-all tender, Pay First / Kitchen First flows and add-on mode n
 
 - The previous release-candidate note is now complete: Version 0.4.297 / Build 2026.10.31.527 was deployed from feature/port-lukkaja-20261031 to Firebase Hosting penguin-food, six scoped Cloud Functions and firestore:rules, with each deploy confirmed successful. Production JS index-BJiEq6aY.js served at HTTPS 200; production paths HTTP 200 and all six functions listed.
 - Payment, refund and order writes were tested only with synthetic Auth+Firestore Emulator tenants. The live browser manual and physical printer UAT remain outstanding. No data sync required. No merge to main.
+
+## 2026-10-31 — Cross-system six-screen visual parity candidate 0.4.299 / 2026.10.31.529 (NOT DEPLOYED)
+
+- PENGUIN receipt detail cancellation banner precedes bill number/print action as in LUKKAJA. LUKKAJA receipt print copies PENGUIN actor watermark, red number and historical display amount in its own branch. No actual finance changes.
+- PENGUIN Revenue Share billing cycle and first registration date use Thai short-month two-digit Buddhist era, e.g. 18 ต.ค. 69 - 17 พ.ย. 69. Canonical dates, anniversary math and tenant values remain unchanged.
+- Optional Premium disclosure now includes LUKKAJA style MerchantServiceTerms with PENGUIN brand, fee numbers derived from access only, source threshold/share rate and explicit text that billing and Slip2Go quota enforcement needs separate verification. Does not enable or charge services.
+- Tests: 8/8 dedicated billing/visual tests, full React Parity and Vite Build PASS. First full suite failed two Hybrid Billing tests solely due missing worktree functions/node_modules symlink; connecting sibling Functions dependencies for tests fixed both. Test-only links will be removed after verification.
+- Version 0.4.299 / Build 2026.10.31.529 on review branch. Firebase Production remains Version 0.4.298 / Build 2026.10.31.528. No Production deployment, Firestore Rules or Functions changes.

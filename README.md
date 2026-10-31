@@ -1,6 +1,7 @@
 # Food Order / Delivery / Retail POS
 
-> Released 31 October 2026 from feature/port-lukkaja-20261031 directly to Firebase chat-45754 (penguin-food.web.app): Version 0.4.298, Build 2026.10.31.528 (subsequent paid Walk-in lifecycle repair). Six scoped Walk-in Functions, Hosting foodapp and Firestore Rules released, verified on HTTPS. No main merge. See docs/LUKKAJA_20261031_PORT_MATRIX.md for scope and unverified real-user/physical-print UAT. Data in MySQL and Firestore intentionally remains independent.
+> Released 31 October 2026 from feature/port-lukkaja-20261031 directly to Firebase chat-45754 (penguin-food.web.app): Version 0.4.298, Build 2026.10.31.528 (subsequent paid Walk-in lifecycle repair).
+> **Unreleased UI candidate:** Version 0.4.299 / Build 2026.10.31.529, visual parity with LUKKAJA. Production remains 0.4.298 / 2026.10.31.528. Six scoped Walk-in Functions, Hosting foodapp and Firestore Rules released, verified on HTTPS. No main merge. See docs/LUKKAJA_20261031_PORT_MATRIX.md for scope and unverified real-user/physical-print UAT. Data in MySQL and Firestore intentionally remains independent.
 
 Current deployed development branch: `feature/port-lukkaja-20261031` (base feature/react-firebase-port and main untouched)
 Current milestone: React + Firebase parity migration / Super Admin Console
