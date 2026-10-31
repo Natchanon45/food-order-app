@@ -1,3 +1,9 @@
+## PENGUIN Revenue Share UI release 0.4.301 / Build 2026.10.31.531 (2026-10-31)
+
+- Owner screenshots: Custom date picker should use one desktop row instead of moving start/end inputs below tabs; month/year captions under Sales by channel and Delivery share calculation display October 2026 / 2026 (Thai month ตุลาคม 2026), while daily and custom captions, actual date filtering, anniversary progress, payment cycle and numeric totals remain unchanged.
+- Display-only React reportSummaryPeriodLabel changes only the requested captions. Intl.DateTimeFormat uses Gregorian calendar for month/year. Custom desktop CSS arranges scoped report filter as a single row for viewport widths at least 1280px; narrow tablet/mobile keep the previous stacked layout. Source and deployable CSS mirror are equal.
+- Targeted new report UI tests and full React Parity PASS, generated Build contract PASS. Version 0.4.301 / Build 2026.10.31.531, bundle index-7OdbKYT2.js. No Firebase Functions, Firestore Rules, threshold formulas, financial data or orders modified. Production deploy approved in same user request.
+
 ## 2026-10-31 — PENGUIN 0.4.300 / 2026.10.31.530 Firebase Hosting DEPLOYED / VERIFIED
 
 - User explicitly authorized Production deployment following calendar-month report-filter fix. App GitHub commit bfdeca1af9a51fdfb50e34effa9469925a3d11f7, branch feature/port-lukkaja-20261031, was ff-only synced, clean and source/assets contract-verified before publishing.

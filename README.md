@@ -576,3 +576,9 @@ Every user-visible React route must render the shared full-screen `PageReadyOver
 - Surgical fix: call `showStorefrontToast(t("shared.toast.item_added", { name: item.name }))` after an allowed `setCart`. Reuses existing icon/style/duration and translations for th/en/my/lo/km; no JSX layout, CSS, Firebase data, order submission, price or payment changes.
 - Regression: `tests/react-parity/delivery-add-cart-toast.spec.mjs` covers first add, repeat add, closed store, locked PromptPay cart and five localized item names.
 - Next: run PENGUIN React tests/build, commit/push to the exact feature branch; publish Hosting only (no Functions/Firestore changes) and verify the generated frontend.
+
+## PENGUIN Revenue Share UI release 0.4.301 / Build 2026.10.31.531 (2026-10-31)
+
+- Owner screenshots: Custom date picker should use one desktop row instead of moving start/end inputs below tabs; month/year captions under Sales by channel and Delivery share calculation display October 2026 / 2026 (Thai month ตุลาคม 2026), while daily and custom captions, actual date filtering, anniversary progress, payment cycle and numeric totals remain unchanged.
+- Display-only React reportSummaryPeriodLabel changes only the requested captions. Intl.DateTimeFormat uses Gregorian calendar for month/year. Custom desktop CSS arranges scoped report filter as a single row for viewport widths at least 1280px; narrow tablet/mobile keep the previous stacked layout. Source and deployable CSS mirror are equal.
+- Targeted new report UI tests and full React Parity PASS, generated Build contract PASS. Version 0.4.301 / Build 2026.10.31.531, bundle index-7OdbKYT2.js. No Firebase Functions, Firestore Rules, threshold formulas, financial data or orders modified. Production deploy approved in same user request.

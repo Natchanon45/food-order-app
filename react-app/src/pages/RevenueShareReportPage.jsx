@@ -103,7 +103,7 @@ export function RevenueShareReportPage() {
   const displayMonth = value => {
     if (!value) return "-";
     const parsed = new Date(`${value}-01T00:00:00`);
-    return Number.isNaN(parsed.getTime()) ? value : new Intl.DateTimeFormat(intlLocale, { year: "numeric", month: "long" }).format(parsed);
+    return Number.isNaN(parsed.getTime()) ? value : new Intl.DateTimeFormat(intlLocale, { year: "numeric", month: "long", calendar: "gregory" }).format(parsed);
   };
   const displayDateTime = value => {
     if (!value) return "-";
@@ -121,6 +121,10 @@ export function RevenueShareReportPage() {
     : period === "daily" ? displayDate(date)
       : period === "yearly" ? String(year)
         : displayDate(startDate) + " – " + displayDate(endDate);
+  // The captions summarize the selected filter, not an invoice date range.
+  // Keep periodLabel (and backend report dates) unchanged for all other UI.
+  const reportSummaryPeriodLabel = period === "monthly" ? displayMonth(month)
+    : period === "yearly" ? String(year) : periodLabel;
   const periodPayload = useMemo(() => ({
     period,
     ...(period === "daily" ? { date } : {}),
@@ -540,7 +544,7 @@ export function RevenueShareReportPage() {
           <div className="report-section-heading">
             <div>
               <h2 id="reportChannelsTitle"><i className="bi bi-check-circle-fill" aria-hidden="true"></i> {rc("แยกยอดขายร้านอาหาร / คาเฟ่", "Restaurant and café sales by channel")}</h2>
-              <p>{rc("ยอดขายอาหารตามช่วงรายงานที่เลือก แยกหน้าร้านและจัดส่งชัดเจน", "Food sales for the selected report period, separated by channel")}: {periodLabel}</p>
+              <p>{rc("ยอดขายอาหารตามช่วงรายงานที่เลือก แยกหน้าร้านและจัดส่งชัดเจน", "Food sales for the selected report period, separated by channel")}: {reportSummaryPeriodLabel}</p>
             </div>
           </div>
           <div className="report-channel-grid">
@@ -587,7 +591,7 @@ export function RevenueShareReportPage() {
         <section className="card report-share-math" aria-labelledby="reportShareMathTitle">
           <div className="report-section-heading">
             <div><h2 id="reportShareMathTitle"><i className="bi bi-calculator" aria-hidden="true"></i> {rc("ผลการคิดส่วนแบ่ง Delivery", "Delivery revenue-share result")}</h2>
-              <p>{rc("คำนวณจากฐานยอดที่เข้าเกณฑ์ในช่วงรายงาน", "Calculated on eligible merchandise for the selected reporting period")}: {periodLabel}</p></div>
+              <p>{rc("คำนวณจากฐานยอดที่เข้าเกณฑ์ในช่วงรายงาน", "Calculated on eligible merchandise for the selected reporting period")}: {reportSummaryPeriodLabel}</p></div>
             <span className={"report-share-state " + (deliveryShareDue > 0 ? "is-chargeable" : "")}>{deliveryShareDue > 0 ? rc("มีส่วนแบ่ง Delivery", "Delivery share due") : thresholdReached ? rc("เดือนนี้ถึงเกณฑ์แล้ว", "Monthly threshold reached") : rc("ยังไม่ถึงเกณฑ์ จึงไม่มีส่วนแบ่ง", "Below threshold: no share")}</span>
           </div>
           <div className="report-share-equation">

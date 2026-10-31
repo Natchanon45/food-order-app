@@ -1,0 +1,26 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+const jsx=readFileSync("react-app/src/pages/RevenueShareReportPage.jsx","utf8");
+const css=readFileSync("react-app/public/parity/css/revenue-share-report.css","utf8");
+test("monthly and yearly captions use month name / year, other filters unchanged",()=>{
+  assert.match(jsx,/const reportSummaryPeriodLabel = period === "monthly" \? displayMonth\(month\)/);
+  assert.match(jsx,/new Intl.DateTimeFormat\(intlLocale, \{ year: "numeric", month: "long", calendar: "gregory" \}\)/);
+  assert.equal(new Intl.DateTimeFormat("th-TH", {year:"numeric",month:"long",calendar:"gregory"}).format(new Date("2026-10-01T00:00:00Z")), "ตุลาคม 2026");
+  assert.match(jsx,/: period === "yearly" \? String\(year\) : periodLabel/);
+  assert.match(jsx,/Food sales for the selected report period, separated by channel"\)\}: \{reportSummaryPeriodLabel\}/);
+  assert.match(jsx,/Calculated on eligible merchandise for the selected reporting period"\)\}: \{reportSummaryPeriodLabel\}/);
+  assert.match(jsx,/const periodLabel = period === "monthly" \? monthlyReportLabel\(month\)/);
+  assert.match(jsx,/getRevenueShareReport\(reportingQuery\(periodPayload\)\)/);
+  assert.match(jsx,/const paymentPeriodLabel =/);
+});
+test("wide desktop custom inputs share filter row, mobile inherits existing stack",()=>{
+  const index=css.lastIndexOf("/* 0.4.301 / Build 2026.10.31.531");
+  assert.ok(index>0);
+  const custom=css.slice(index);
+  assert.match(custom,/@media \(min-width: 1280px\)/);
+  assert.match(custom,/report-period-controls \{\s*grid-column: 3; grid-row: 1/);
+  assert.match(custom,/report-filter-refresh \{\s*grid-column: 4; grid-row: 1/);
+  assert.match(custom,/report-custom-period \{\s*width: 100%; min-width: 0; grid-template-columns: repeat\(2,minmax\(0,1fr\)\)/);
+  assert.doesNotMatch(custom,/@media \(max-width:/);
+});
