@@ -11,11 +11,14 @@ test("Zero-balance periods explain why slips cannot be submitted", () => {
   // A stale API response may still include a prepaid Lalamove debit gap in
   // platformAmountDue. Only earned revenue share may enable a payment slip.
   assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.deliveryShareAmount \|\| 0\)\) \* 100\) \/ 100/);
-  assert.match(report, /const noAmountDue = !loading && platformSharePayable <= 0/);
+  assert.match(report, /const noAmountDue = !loading && billingSummaryReady && paymentSharePayable <= 0/);
+  assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.deliveryShareAmount \|\| 0\)\) \* 100\) \/ 100/);
+  assert.match(report, /report\.billingSummary\?\.deliveryShareAmount/);
+  assert.match(report, /const canSubmit = access\?\.enabled === true && !loading && billingSummaryReady/);
   assert.doesNotMatch(report, /const noAmountDue = !loading && Number\(summary\.platformAmountDue/);
   assert.match(report, /id="platformAmountDue">\{money\(platformSharePayable\)\}/);
-  assert.match(report, /id="paymentAmountDue">\{money\(platformSharePayable\)\}/);
-  assert.match(report, /access\?\.enabled === true && !loading && !noAmountDue && cycleMatches && !uploading/);
+  assert.match(report, /id="paymentAmountDue">\{money\(paymentSharePayable\)\}/);
+  assert.match(report, /&& !noAmountDue && cycleMatches && !uploading/);
   assert.match(report, /noAmountDue \? t\("revenue_share_report\.payment\.no_amount_due"\)/);
   assert.match(report, /if \(!canSubmit\) \{/);
   assert.match(report, /disabled=\{!canSubmit\} onChange=\{onSlipChange\}/);

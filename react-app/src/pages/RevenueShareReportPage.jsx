@@ -17,6 +17,7 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { firstTenantRegistrationDate, resolveBillingCycleRange } from "@/utils/billingCycleDisplay";
 import { MerchantServiceTerms } from "@/components/MerchantServiceTerms";
+import { monthlyReportLabel, reportingQuery, formatReportDateRange } from "@/utils/revenueReportPeriod.mjs";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -72,7 +73,10 @@ export function RevenueShareReportPage() {
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
   const [access, setAccess] = useState(null);
-  const [report, setReport] = useState({ period: null, summary: {}, wallet: {}, lalamoveFailures: [] });
+  const [report, setReport] = useState({
+    period: null, summary: {}, billingPeriod: null, billingSummary: null,
+    wallet: {}, lalamoveFailures: [],
+  });
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [initialAccessReady, setInitialAccessReady] = useState(false);
@@ -87,6 +91,7 @@ export function RevenueShareReportPage() {
   const [selectedSlipUrl, setSelectedSlipUrl] = useState("");
   const [dialogSlip, setDialogSlip] = useState(null);
   const dialogRef = useRef(null);
+  const initializedFilterTenantRef = useRef("");
 
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const rc = (th, en) => intlLocale.startsWith("th") ? th : en;
@@ -112,11 +117,10 @@ export function RevenueShareReportPage() {
     const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return match ? `${match[3]}/${match[2]}/${match[1]}` : (raw || "-");
   };
-  const periodLabel = period === "monthly" && report.period?.label
-    ? report.period.label : period === "daily" ? displayDate(date)
-    : period === "monthly" ? displayMonth(month)
+  const periodLabel = period === "monthly" ? monthlyReportLabel(month)
+    : period === "daily" ? displayDate(date)
       : period === "yearly" ? String(year)
-        : `${displayDate(startDate)} – ${displayDate(endDate)}`;
+        : displayDate(startDate) + " – " + displayDate(endDate);
   const periodPayload = useMemo(() => ({
     period,
     ...(period === "daily" ? { date } : {}),
@@ -129,12 +133,15 @@ export function RevenueShareReportPage() {
     try {
       const next = await getRevenueShareAccess();
       setAccess(next);
-      const cycle = next.billingCycle === "daily" ? "daily" : "monthly";
-      setPeriod(cycle);
-      // When suspended, point the upload form directly at the unpaid day.
-      if (next.suspended === true && next.suspendedPeriodType === "daily"
-        && /^\d{4}-\d{2}-\d{2}$/.test(String(next.suspendedPeriodStart || ""))) {
-        setDate(next.suspendedPeriodStart);
+      // Apply the billing preference only on the first load for each shop.
+      // Clicking Refresh MUST preserve the user's Daily/Monthly/Yearly/Custom filter.
+      if (initializedFilterTenantRef.current !== String(tenant?.id || "")) {
+        initializedFilterTenantRef.current = String(tenant?.id || "");
+        setPeriod(next.billingCycle === "daily" ? "daily" : "monthly");
+        if (next.suspended === true && next.suspendedPeriodType === "daily"
+          && /^\d{4}-\d{2}-\d{2}$/.test(String(next.suspendedPeriodStart || ""))) {
+          setDate(next.suspendedPeriodStart);
+        }
       }
       if (next.enabled !== true) setError(t("revenue_share_report.explanation.disabled"));
       return next;
@@ -143,7 +150,7 @@ export function RevenueShareReportPage() {
       setError(t("revenue_share_report.states.load_failed"));
       return null;
     }
-  }, [t]);
+  }, [t, tenant?.id]);
 
   const loadHistory = useCallback(async () => {
     try {
@@ -161,10 +168,23 @@ export function RevenueShareReportPage() {
     setLoading(true);
     setError("");
     try {
-      const data = await getRevenueShareReport(periodPayload);
+      // Reporting is calendar-based. Only actual monthly invoice submissions
+      // retain the original anniversary-based monthly request and amount.
+      const needsBillingSummary = periodPayload.period === "monthly" && access.billingCycle === "monthly";
+      const [data, billing] = await Promise.all([
+        getRevenueShareReport(reportingQuery(periodPayload)),
+        needsBillingSummary
+          ? getRevenueShareReport(periodPayload).catch(billingError => {
+              console.error("REVENUE_SHARE_BILLING_SUMMARY_FAILED", billingError);
+              return null; // Allow the selected report; disable invoicing until valid.
+            })
+          : Promise.resolve(null),
+      ]);
       setReport({
         period: data.period || null,
         summary: data.summary || {},
+        billingPeriod: billing?.period || null,
+        billingSummary: billing?.summary || null,
         wallet: data.wallet || {},
         lalamoveFailures: Array.isArray(data.lalamoveFailures) ? data.lalamoveFailures : [],
       });
@@ -175,7 +195,7 @@ export function RevenueShareReportPage() {
       setLoading(false);
       setInitialReportReady(true);
     }
-  }, [access?.enabled, periodPayload, t]);
+  }, [access?.enabled, access?.billingCycle, periodPayload, t]);
 
   useEffect(() => {
     if (!tenant?.id || !["owner", "admin"].includes(profile?.role)) return undefined;
@@ -232,15 +252,26 @@ export function RevenueShareReportPage() {
     ? "daily" : (access?.billingCycle === "daily" ? "daily" : "monthly");
   const cycleLabel = t(`revenue_share_report.payment.cycles.${billingCycle}`);
   const cycleMatches = period === billingCycle;
+  const paymentPeriodLabel = cycleMatches && report.billingPeriod?.startDate
+    ? formatReportDateRange(report.billingPeriod.startDate, report.billingPeriod.endDate)
+    : periodLabel;
   // Delivery-only policy: never expose obsolete POS/table legacy share as
   // money owed, even while a previous callable version is being replaced.
   // The backend also independently enforces the same charge on slip submission.
   const platformSharePayable = Math.round(Math.max(0, Number(summary.deliveryShareAmount || 0)) * 100) / 100;
-  const noAmountDue = !loading && platformSharePayable <= 0;
-  const canSubmit = access?.enabled === true && !loading && !noAmountDue && cycleMatches && !uploading;
+  // Do not submit the report-month total as an anniversary invoice amount.
+  const billingSummaryReady = period !== "monthly" || billingCycle !== "monthly"
+    || Boolean(report.billingSummary && report.billingPeriod);
+  const paymentSharePayable = cycleMatches && period === "monthly" && billingCycle === "monthly"
+    ? Math.round(Math.max(0, Number(report.billingSummary?.deliveryShareAmount || 0)) * 100) / 100
+    : platformSharePayable;
+  const noAmountDue = !loading && billingSummaryReady && paymentSharePayable <= 0;
+  const canSubmit = access?.enabled === true && !loading && billingSummaryReady
+    && !noAmountDue && cycleMatches && !uploading;
   const paymentUnavailableMessage = !cycleMatches
     ? t("revenue_share_report.payment.cycle_mismatch", { cycle: cycleLabel })
-    : noAmountDue ? t("revenue_share_report.payment.no_amount_due") : "";
+    : !billingSummaryReady ? t("revenue_share_report.states.load_failed")
+      : noAmountDue ? t("revenue_share_report.payment.no_amount_due") : "";
   const suspensionPeriod = access?.suspendedPeriodStart || access?.suspendedPeriodEnd
     ? (access?.suspendedPeriodStart === access?.suspendedPeriodEnd || !access?.suspendedPeriodEnd
         ? displayDate(access?.suspendedPeriodStart || access?.suspendedPeriodEnd)
@@ -600,8 +631,8 @@ export function RevenueShareReportPage() {
             <strong id="paymentBillingCycle">{t("revenue_share_report.payment.billing_cycle", { cycle: cycleLabel })}</strong>
           </div>
           <div className="report-payment-summary">
-            <div><span>{t("revenue_share_report.payment.selected_period")}</span><strong id="paymentPeriodLabel">{periodLabel}</strong></div>
-            <div><span>{t("revenue_share_report.payment.amount_due")}</span><strong><span id="paymentAmountDue">{money(platformSharePayable)}</span> {t("revenue_share_report.common.baht")}</strong></div>
+            <div><span>{t("revenue_share_report.payment.selected_period")}</span><strong id="paymentPeriodLabel">{paymentPeriodLabel}</strong></div>
+            <div><span>{t("revenue_share_report.payment.amount_due")}</span><strong><span id="paymentAmountDue">{money(paymentSharePayable)}</span> {t("revenue_share_report.common.baht")}</strong></div>
           </div>
           {noAmountDue ? <div className="report-payment-zero"><i className="bi bi-check-circle" aria-hidden="true"></i><span>{rc("ยังไม่มียอดต้องชำระในช่วงนี้ จึงไม่ต้องแนบสลิป", "No amount due for this period; no payment slip is required.")}</span></div> : null}
           {!noAmountDue ? <>

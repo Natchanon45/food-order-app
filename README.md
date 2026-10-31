@@ -6,6 +6,7 @@
 Current deployed development branch: `feature/port-lukkaja-20261031` (base feature/react-firebase-port and main untouched)
 Current milestone: React + Firebase parity migration / Super Admin Console
 Current PENGUIN production release: Version 0.4.299 • Build 2026.10.31.529 (Firebase Hosting only; previously deployed updateDeferredKitchen Function and Firestore Rules unchanged)
+Current UNRELEASED calendar-month Revenue Share fix: Version 0.4.300 • Build 2026.10.31.530 on feature/port-lukkaja-20261031. Monthly October 2026 report → 01/10/2026 - 31/10/2026 and the actual sales from that interval; anniversary billing/progress unchanged. React Parity and build verified; Firebase Production remains 0.4.299 / .529.
 Hybrid Billing DEV candidate (NOT deployable yet): Version 0.4.296 • Build 2026.10.19.526; registration guarded OFF; paid Delivery read-only estimate added; invoice/payment/suspension/Slip2Go quota pending. (Restore floating Developer Panel button on every interactive POS page; Hosting deployed 2026-10-18)
 Primary production Hosting: `https://penguin-food.web.app` (legacy `https://natchanon-food-order-delivery.web.app` retained for transition only)
 

@@ -74,9 +74,12 @@ test("Prepaid Lalamove wallet discrepancy is diagnostic only, never billed to Pl
   assert.equal(missingWalletStampCost, 59);
   assert.equal(platformDue, 0);
   assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.deliveryShareAmount \|\| 0\)\) \* 100\) \/ 100/);
-  assert.match(report, /const noAmountDue = !loading && platformSharePayable <= 0/);
+  assert.match(report, /const noAmountDue = !loading && billingSummaryReady && paymentSharePayable <= 0/);
+  assert.match(report, /const platformSharePayable = Math\.round\(Math\.max\(0, Number\(summary\.deliveryShareAmount \|\| 0\)\) \* 100\) \/ 100/);
+  assert.match(report, /report\.billingSummary\?\.deliveryShareAmount/);
+  assert.match(report, /const canSubmit = access\?\.enabled === true && !loading && billingSummaryReady/);
   assert.match(report, /id="platformAmountDue">\{money\(platformSharePayable\)\}/);
-  assert.match(report, /id="paymentAmountDue">\{money\(platformSharePayable\)\}/);
+  assert.match(report, /id="paymentAmountDue">\{money\(paymentSharePayable\)\}/);
   assert.doesNotMatch(report, /money\(summary\.platformAmountDue\)/);
   assert.match(report, /historicalPrepaidGap/);
   assert.match(report, /"ยอดบันทึกเดิม "/);
