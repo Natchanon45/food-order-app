@@ -13746,3 +13746,5 @@ Hosting release pending. Mac on feature/react-firebase-port at e7786e06, 0/0, wi
 - Optional Premium disclosure now includes LUKKAJA style MerchantServiceTerms with PENGUIN brand, fee numbers derived from access only, source threshold/share rate and explicit text that billing and Slip2Go quota enforcement needs separate verification. Does not enable or charge services.
 - Tests: 8/8 dedicated billing/visual tests, full React Parity and Vite Build PASS. First full suite failed two Hybrid Billing tests solely due missing worktree functions/node_modules symlink; connecting sibling Functions dependencies for tests fixed both. Test-only links will be removed after verification.
 - Version 0.4.299 / Build 2026.10.31.529 on review branch. Firebase Production remains Version 0.4.298 / Build 2026.10.31.528. No Production deployment, Firestore Rules or Functions changes.
+
+- Release candidate cleanup: removed only the unreferenced intermediate Vite asset index-9gnXUvUW.js from the review branch. HTML references the final version .529 asset index-CGo6t15E.js; no source files, financial data or deployed Production were changed by this cleanup.
