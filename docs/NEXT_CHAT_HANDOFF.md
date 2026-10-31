@@ -1,3 +1,9 @@
+## 2026-10-31 — PENGUIN 0.4.301 / 2026.10.31.531 Firebase Hosting VERIFIED
+
+- Approved owner sequencing: PENGUIN first, then LUKKAJA. React source/app commit 9b0141bf77687c190200f10dfc52b48eb39857e4, branch feature/port-lukkaja-20261031. Full React parity tests and Build Contract PASS. Hosting-only deploy in Firebase chat-45754 target foodapp returned Deploy complete (636 static files). Functions, Rules and data untouched.
+- Verified Production 200 at /react/, /reports/revenue-share, /cashier, /kitchen. Actual /react HTML uses index-7OdbKYT2.js, downloaded JS and report CSS are byte-identical to locally built assets, version 0.4.301 / Build 2026.10.31.531 embedded. Thai report captions show month name and Gregorian year instead of raw ranges for monthly/yearly; custom filters use one row on desktops >=1280px; actual data periods/invoice logic unchanged.
+- Owner authenticated browser/pixel-specific UAT remains pending. Follow-up documentation-only commit does not require redeploy.
+
 ## PENGUIN Revenue Share UI release 0.4.301 / Build 2026.10.31.531 (2026-10-31)
 
 - Owner screenshots: Custom date picker should use one desktop row instead of moving start/end inputs below tabs; month/year captions under Sales by channel and Delivery share calculation display October 2026 / 2026 (Thai month ตุลาคม 2026), while daily and custom captions, actual date filtering, anniversary progress, payment cycle and numeric totals remain unchanged.
