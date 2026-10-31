@@ -38,3 +38,18 @@ test("0.4.302 desktop Custom group moves left; date inputs vertically centered i
   assert.match(override, /report-custom-period label > \.input \{[^}]*height: 34px;[^}]*min-height: 34px/s);
   assert.doesNotMatch(override, /@media \(max-width:/);
 });
+
+
+test("0.4.303 keeps original Refresh edge and adds framed wide date group", () => {
+  const start=css.lastIndexOf("/* 0.4.303 / Build 2026.10.31.533");
+  assert.ok(start>0);
+  const override=css.slice(start);
+  assert.match(override,/@media \(min-width: 1280px\)/);
+  assert.match(override,/grid-template-columns: minmax\(195px, 1fr\) max-content minmax\(310px, 345px\) 36px/);
+  assert.match(override,/justify-content: stretch/);
+  assert.match(override,/report-custom-period \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/s);
+  assert.match(override,/report-custom-period \{[^}]*border: 1px solid #c9e4d3/sg);
+  assert.match(override,/report-filter-refresh \{[^}]*justify-self: end/s);
+  assert.match(override,/report-custom-period label > span \{[^}]*bottom: calc\(100% \+ 7px\)/s);
+  assert.doesNotMatch(override,/@media \(max-width:/);
+});

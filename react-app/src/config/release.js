@@ -1,13 +1,14 @@
 export const REACT_RELEASE = Object.freeze({
   product: "PENGUIN",
-  version: "0.4.302",
-  build: "2026.10.31.532",
+  version: "0.4.303",
+  build: "2026.10.31.533",
   branch: "feature/port-lukkaja-20261031",
-  commit: "REVENUE-DESKTOP-LEFT-SHIFT-INPUT-CENTERING",
+  commit: "REVENUE-DESKTOP-DATE-GROUP-RESTORED-PROPORTIONS",
   dataService: "Firebase / Firestore",
   environment: "production",
-  milestone: "Revenue Share desktop custom-filter left alignment and date input centering",
+  milestone: "Revenue Share restore right-edge Refresh and framed expanded custom dates",
   whatsNew: [
+    "Restore desktop report filter proportions and far-right Refresh, expand both dates into available space with a soft green group frame",
     "Move the desktop custom-date filter group left by limiting unused heading space; date inputs align to tab centers without labels shifting them",
     "Summarize monthly and yearly sales/share sections by October 2026 or 2026 while keeping the actual report date range and billing cycle unchanged",
     "Keep custom start/end date controls aligned on one desktop filter row; leave tablet and mobile layout intact",

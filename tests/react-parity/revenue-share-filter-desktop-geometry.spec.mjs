@@ -9,7 +9,7 @@ const html = [
 '<style>*,*::before,*::after{box-sizing:border-box}body{margin:0;font:14px system-ui}',
 '.card{border:1px solid #dce8e0}.input{border:1px solid #cedbd0;border-radius:8px}',
 css,'</style>',
-'<main class="revenue-share-dashboard" style="width:min(1180px,calc(100% - 28px));margin:0 auto">',
+'<main class="revenue-share-dashboard" style="width:min(968px,calc(100% - 28px));margin:0 auto">',
 '<section class="card report-filter-card">',
 '<div class="report-section-heading"><div>',
 '<h2>ช่วงเวลารายงาน</h2>',
@@ -46,14 +46,21 @@ test("custom date controls shift left and center independently of label on deskt
      return {
       outer:rect(".report-filter-card"), heading:rect(".report-section-heading"),
       tabs:rect(".report-period-tabs"),controls:rect(".report-period-controls"),
+      group:rect(".report-custom-period"),
       first:rect(".report-custom-period label:first-child input"),
       last:rect(".report-custom-period label:last-child input"),
       label:rect(".report-custom-period label:first-child span"),
       refresh:rect(".report-filter-refresh"),
+      dateGroupStyle:(() => {
+        const st=getComputedStyle(document.querySelector(".report-custom-period"));
+        return {borderWidth:st.borderTopWidth,borderStyle:st.borderTopStyle,borderRadius:st.borderRadius,background:st.backgroundColor};
+      })(),
       documentWidth:document.documentElement.scrollWidth,
      };
     });
     console.log("LAYOUT_CHECK",width,{shift:r.tabs.left-r.outer.left,
+     refreshRightGap:r.outer.right-r.refresh.right,dateGroupWidth:r.group.width,
+     rightInputToRefresh:r.refresh.left-r.last.right,
      dateCenters:[r.first.centerY,r.last.centerY],tabCenter:r.tabs.centerY});
     assert.ok(r.documentWidth<=width+1,"no document overflow "+width);
     if(width>=1280){
@@ -62,6 +69,12 @@ test("custom date controls shift left and center independently of label on deskt
      assert.ok(r.tabs.right<=r.controls.left+3,"tab/date no overlap "+width);
      assert.ok(r.controls.right<=r.refresh.left+3,"date/refresh no overlap "+width);
      assert.ok(r.refresh.right<=r.outer.right+1,"refresh inside card "+width);
+     assert.ok(r.outer.right-r.refresh.right<=19,"refresh restored to original far-right edge "+width);
+     assert.ok(r.group.width>=310,"date group expands into available space "+width);
+     assert.ok(r.refresh.left-r.last.right<=18,"final date field almost reaches refresh "+width);
+     assert.equal(r.dateGroupStyle.borderStyle,"solid");
+     assert.equal(r.dateGroupStyle.borderWidth,"1px");
+     assert.ok(parseFloat(r.dateGroupStyle.borderRadius)>=10,"date inputs have grouped border");
      for(const input of [r.first,r.last]){
       assert.ok(Math.abs(input.centerY-r.tabs.centerY)<5,"date input centered independently "+width);
      }

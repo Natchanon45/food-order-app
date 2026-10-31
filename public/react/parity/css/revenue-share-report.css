@@ -855,3 +855,47 @@
     box-sizing: border-box;
   }
 }
+
+
+/* 0.4.303 / Build 2026.10.31.533 — Restore the established desktop
+   proportions and the far-right Refresh position. Allocate the recovered
+   right-hand whitespace to BOTH native date inputs, framed as one soft-green
+   control group. Keep labels above the centered inputs, never in input flow.
+   Mobile/tablet remain untouched. */
+@media (min-width: 1280px) {
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) {
+    grid-template-columns: minmax(195px, 1fr) max-content minmax(310px, 345px) 36px;
+    justify-content: stretch;
+    column-gap: 8px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 3px 4px;
+    border: 1px solid #c9e4d3;
+    border-radius: 12px;
+    background: #f4faf6;
+    box-shadow: 0 1px 3px rgb(21 93 48 / 6%);
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label {
+    padding: 0;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > span {
+    bottom: calc(100% + 7px);
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > .input {
+    border: 1px solid #c9dfce;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > .input:focus-visible {
+    border-color: #138e4a;
+    outline: 2px solid rgb(19 142 74 / 15%);
+    outline-offset: 1px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-filter-refresh {
+    justify-self: end;
+  }
+}
