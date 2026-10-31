@@ -13748,3 +13748,11 @@ Hosting release pending. Mac on feature/react-firebase-port at e7786e06, 0/0, wi
 - Version 0.4.299 / Build 2026.10.31.529 on review branch. Firebase Production remains Version 0.4.298 / Build 2026.10.31.528. No Production deployment, Firestore Rules or Functions changes.
 
 - Release candidate cleanup: removed only the unreferenced intermediate Vite asset index-9gnXUvUW.js from the review branch. HTML references the final version .529 asset index-CGo6t15E.js; no source files, financial data or deployed Production were changed by this cleanup.
+
+## 2026-10-31 — Firebase Production Hosting-only 0.4.299 / Build 2026.10.31.529 VERIFIED
+
+- Owner approved current PENGUIN Version 0.4.299, Build 2026.10.31.529, branch feature/port-lukkaja-20261031. App commit 0d310434845de2e854a01860c8fc2e21a418d711 was clean, GitHub ff-only synced before deploy. Neither main nor feature/react-firebase-port was merged.
+- Firebase project chat-45754, Hosting target foodapp bound to penguin-food.web.app. Dry run PASS. Actual CLI command firebase deploy --only hosting:foodapp --project chat-45754 --non-interactive (15.34.0) reported version finalized, released, Deploy complete. No Functions, Firestore Rules, indexes, Storage or live order writes were deployed.
+- HTTPS: /react/, /cashier/quick-order, /cashier, /kitchen, /cashier/table-qr, /cashier/receipt, /admin/sales-report, /reports/revenue-share, /s/tuahere-somtam/delivery all HTTP 200. Live /react/ HTML references /react/assets/index-CGo6t15E.js; previous index-DS4OlTy0.js absent. JS downloaded and verified contains Version 0.4.299, Build 2026.10.31.529, release marker LUKKAJA-PENGUIN-RECEIPT-TERMS-VISUAL-PARITY. New optional terms CSS HTTP 200.
+- Full local React Parity PASS, 8/8 dedicated billing/visual tests PASS, .529 generated React build contract PASS. HTTPS smoke is not a signed-in finance test or physical print quality certification.
+- Follow-up Git commit documentation-only, no new app assets; do not redeploy without a NEW Build per hosting rule. Existing .528 Cloud Functions, Firestore Rules and separate LUKKAJA Production remain unchanged.
