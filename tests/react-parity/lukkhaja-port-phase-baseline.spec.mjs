@@ -31,7 +31,7 @@ test("all 65 distinct source JSX pages are assigned exactly once", () => {
     assert.ok(page.destinationPath.endsWith(page.filename), page.filename);
     assert.equal(page.release, "not_started", page.filename);
     assert.ok(["pending", "inventory_started", "source_form_markup_compared__firebase_read_guard_adapted__visual_pending"].includes(page.jsxReview), page.filename);
-    assert.equal(page.firebaseContract, "pending", page.filename);
+    assert.ok(["pending", "read_failure_guards_contract_pass__emulator_write_pending"].includes(page.firebaseContract), page.filename);
   }
 });
 
