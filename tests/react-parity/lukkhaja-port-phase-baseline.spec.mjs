@@ -74,7 +74,7 @@ test("P1.1 audit is visible without falsely marking Platform parity delivered", 
   assert.match(actions, /18 scenario checks/);
   const audit = readFileSync(platform.auditEvidence, "utf8");
   assert.match(audit, /Source is read-only/);
-  assert.match(audit, /not fully visually or runtime verified/);
+  assert.match(audit, /signed-in Super Admin visual and write\/read-failure UAT remain pending/);
   assert.match(audit, /LaravelAuthProvider/);
   assert.match(audit, /platformSettingsService/);
 });
