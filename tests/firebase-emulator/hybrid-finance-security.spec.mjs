@@ -316,6 +316,27 @@ test("Storage permits own owner/admin write-once slip, rejects replacement and d
   }
 });
 
+test("Tenant Delivery slip Storage reads are scoped to own staff and global Super Admin", async () => {
+  const item = "tenants/store-a/payment-slips/testorder1234567890/synthetic.png";
+  const content = Buffer.from("P1_STORE_A_PRIVATE_EMULATOR_ONLY");
+  const bucket = fnRequire("firebase-admin/storage").getStorage(adminApp).bucket();
+  await bucket.file(item).save(content, { contentType: "image/png" });
+  try {
+    const ownCashier = identities.get("cashier-a");
+    const superAdmin = identities.get("super-admin");
+    assert.deepEqual(Buffer.from(await getBytes(storageRef(ownCashier.storage, item))),
+      content);
+    assert.deepEqual(Buffer.from(await getBytes(storageRef(superAdmin.storage, item))),
+      content);
+    for (const name of ["owner-b", "inactive-a", "anonymous"]) {
+      await denied(getBytes(storageRef(identities.get(name).storage, item)),
+        name + " must not read another merchant's bank slip");
+    }
+  } finally {
+    await bucket.file(item).delete().catch(() => {});
+  }
+});
+
 test("Storage refuses unreserved paths, other owner reuse, expired and revoked upload grants", async () => {
   const owner = identities.get("owner-a");
   const admin = identities.get("admin-a");
