@@ -218,7 +218,12 @@ async function completeMerchantBillCheck({
       "manual_review"].includes(publicResult.status))
     throw Error("MERCHANT_SLIP_QUOTA_RESULT_INVALID");
   const reason = String(result?.reason || "");
-  const authInvalid = NON_BILLABLE.has(reason) && result?.provider === "slip2go";
+  // Vision fallback wraps the actual Slip2Go result in 'primary'. A rejected
+  // platform key / exhausted provider package is never a merchant bill charge.
+  const primary = result?.provider === "slip2go_fallback_vision" ? result.primary : result;
+  const nonBillableReason = String(primary?.reason || "");
+  const authInvalid = primary?.provider === "slip2go"
+    && NON_BILLABLE.has(nonBillableReason);
   const state = authInvalid ? "auth_invalid"
     : publicResult.status === "matched" ? "matched"
     : ["invalid", "duplicate", "mismatch", "receiver_mismatch"].includes(publicResult.status)
