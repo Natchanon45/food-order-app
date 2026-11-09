@@ -385,6 +385,12 @@ export function TenantControlPanel({
       <span><i className="bi bi-person" aria-hidden="true"></i>{owner}</span>
       <span><i className="bi bi-telephone" aria-hidden="true"></i>{tenant.shopPhone || "ไม่มีเบอร์โทร"}</span>
       <span><i className="bi bi-credit-card" aria-hidden="true"></i>{plan}</span>
+      <span data-tenant-first-activation={tenant.id}>
+        <i className="bi bi-calendar-check" aria-hidden="true"></i>
+        วันที่เปิดใช้งาน: {tenant.firstActivatedOn
+          ? tenantCalendarLabel(tenant.firstActivatedOn, locale)
+          : tenant.onboardingRequired === true ? "รอสร้าง Owner" : "ไม่มีข้อมูลยืนยัน"}
+      </span>
     </div>
     {suspended ? <div className="tenant-control-alert" role="status"
       data-tenant-m7-invoice-hold={financeHold ? tenant.id : undefined}>
