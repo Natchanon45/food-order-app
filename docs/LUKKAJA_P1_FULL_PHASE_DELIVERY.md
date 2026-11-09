@@ -113,3 +113,11 @@ This is **not** completed M7 financial certification. Phase 1 remains **one unde
 - **Outstanding:** the original Go/MySQL certified M7 ledger and bank-issued/settled invoice reconciliation are not equivalent to Firebase's single-period source evidence. Slip2Go monthly quota enforcement, complete provider Telegram credential/test delivery and all seven authenticated source JSX comparisons are also not yet accepted. Do not deploy or claim the full Phase complete from this checkpoint.
 
 Current live Firebase Hosting remains the preceding verified Build `index-BaKCYABy.js` at `https://penguin-food.web.app`. The current source branch changes **have not been deployed** to Production.
+
+### Hybrid Invoice threshold regression — verified in full Finance Emulator
+
+The former Hybrid Finance Emulator red test has been corrected: its original fixture assumed **one Invoice on exactly 10,000 THB Delivery sales**, contradicting the established 10,000 THB exemption. The test now independently proves that exactly 10,000 THB generates **no Delivery share invoice**, while 13,500 THB creates **one 175 THB invoice** on the 3,500 THB excess at 5%, then confirms idempotent Firestore persistence and that replay preserves the paid state. This changes **only the test fixture and assertions**, not the production fee calculation.
+
+`npm run test:firebase-hybrid-emulator` on macOS with JDK 21 and the isolated `demo-penguin-hybrid` Auth, Firestore and Storage Emulators: **24 passed / 0 failed**, including denial of unauthorized direct writes, cross-channel bank reference claims, invoice immutability and refund safeguards. Expected `PERMISSION_DENIED` log lines are from negative authorization tests; the suite exit code was 0. This removes the earlier known 23/24 regression failure. It **does not authorize** new live invoice issuance, retroactive charges, M7 bank certification or a production finance release.
+
+Full Phase 1 acceptance remains open for certified Go/MySQL M7 financial parity, customer-facing Slip2Go quota enforcement, Telegram provider delivery and final live Super Admin UAT. No new deployment.
