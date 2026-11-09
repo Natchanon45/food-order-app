@@ -14,6 +14,7 @@ import { loadAdminSubscriptionPricing } from "@/data/subscriptionPricing";
 import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
   backfillTenantSubscriptions,
+  createActiveTenantWithOwner,
   createTenant,
   deleteTenant,
   getPlatformRevenueShareSummary,
@@ -490,12 +491,14 @@ export function AdminTenantsPage() {
       "tenant-card-independent-height.css",
       "tenant-admin-clarity.css",
       "tenant-admin-compact.css",
+      "new-tenant-setup-port.css",
       "revenue-share-slip-dialog.css",
       "super-admin-header.css",
     ],
     attributes: { "data-roles": "super_admin" },
   });
   const dialogRef = useRef(null);
+  const createOperationIdRef = useRef("");
   const shareDialogRef = useRef(null);
   const reviewDialogRef = useRef(null);
   const slipDialogRef = useRef(null);
@@ -517,7 +520,8 @@ export function AdminTenantsPage() {
   const [loadingSales, setLoadingSales] = useState(false);
   const [status, setStatus] = useState("");
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", slug: "", phone: "", address: "", businessType: "both" });
+  const [form, setForm] = useState({ name: "", slug: "", phone: "", address: "", businessType: "both", ownerName: "", ownerEmail: "", ownerPassword: "", confirmPassword: "", planCode: "monthly" });
+  const [uncertainTenantWrites, setUncertainTenantWrites] = useState({});
   const [slugEdited, setSlugEdited] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reviewStatus, setReviewStatus] = useState("pending");
@@ -656,7 +660,8 @@ export function AdminTenantsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", slug: "", phone: "", address: "", businessType: "both" });
+    createOperationIdRef.current = crypto.randomUUID();
+    setForm({ name: "", slug: "", phone: "", address: "", businessType: "both", ownerName: "", ownerEmail: "", ownerPassword: "", confirmPassword: "", planCode: "monthly" });
     setSlugEdited(false);
     setStatus("");
     dialogRef.current?.showModal?.();
@@ -742,36 +747,72 @@ export function AdminTenantsPage() {
 
   const submitTenant = async event => {
     event.preventDefault();
+    const writeKey = editing ? String(editing.id) : "__create__";
+    if (saving || uncertainTenantWrites[writeKey]) return;
     const payload = {
       ...(editing ? { tenantId: editing.id } : {}),
       name: form.name.trim(),
       slug: normalizeSlug(form.slug),
       phone: form.phone.trim(),
       address: form.address.trim(),
-      ...(editing ? { businessType: form.businessType } : {}),
+      businessType: form.businessType,
     };
     if (!payload.name || !payload.slug) return;
+    if (!editing && form.ownerPassword !== form.confirmPassword) {
+      setStatus("รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน");
+      return;
+    }
+    if (!editing) Object.assign(payload, {
+      ownerName: form.ownerName.trim(), ownerEmail: form.ownerEmail.trim(),
+      ownerPassword: form.ownerPassword, planCode: form.planCode,
+      operationId: createOperationIdRef.current,
+    });
     setSaving(true);
     setStatus("");
     try {
-      if (editing) await updateTenant(payload);
-      else {
-        const result = await createTenant(payload);
-        if (result?.ok !== true || result.tenant?.active !== false
-          || result.tenant?.onboardingRequired !== true) throw new Error("TENANT_WRITE_UNCONFIRMED");
+      if (editing) {
+        await updateTenant(payload);
+      } else {
+        // The server reserves the tenant slug and creates Owner, membership
+        // and the first free month as one confirmed logical operation.
+        const created = await createActiveTenantWithOwner(payload);
+        if (created?.ok !== true || created?.tenantActivated !== true ||
+          created?.planCode !== form.planCode || !created.owner?.uid ||
+          created.owner.role !== "owner" || !created.tenant?.id) {
+          throw new Error("TENANT_WRITE_UNCONFIRMED");
+        }
+        // A successful Callable alone does not confirm the stored owner and
+        // initial state; re-read tenant data before closing this dialog.
+        const canonical = await listTenants();
+        const saved = canonical.find(row => row.id === created.tenant.id);
+        if (!saved || saved.active !== true || saved.onboardingRequired === true ||
+          saved.name !== payload.name || saved.slug !== payload.slug ||
+          saved.planCode !== form.planCode || saved.ownerUid !== created.owner.uid ||
+          saved.ownerEmail !== payload.ownerEmail.toLowerCase() ||
+          saved.ownerDisplayName !== payload.ownerName) {
+          throw new Error("TENANT_WRITE_UNCONFIRMED");
+        }
+        setTenants(canonical);
       }
-      showToast(editing ? t("admin_tenants.tenant.updated")
-        : "บันทึกร้านแบบรอเปิดใช้งานแล้ว กรุณาสร้าง Owner ที่เมนูเจ้าของร้านก่อนเริ่มทดลองใช้ฟรี");
+      showToast(t(editing ? "admin_tenants.tenant.updated" : "admin_tenants.tenant.created"));
       dialogRef.current?.close?.();
       await Promise.all([loadTenantList(), loadSales()]);
     } catch (error) {
-      console.error("TENANT_SAVE_FAILED", error);
+      console.error("TENANT_SAVE_FAILED", error?.code || error?.message);
       let message = t(editing ? "admin_tenants.tenant.update_failed" : "admin_tenants.tenant.create_failed");
-      if (error?.message === "TENANT_WRITE_UNCONFIRMED") {
-        message = "ยังไม่สามารถยืนยันผลสร้างร้านได้ กรุณารีโหลดรายชื่อร้านก่อนส่งคำสั่งซ้ำ";
+      if (error?.message === "TENANT_WRITE_UNCONFIRMED" ||
+        ["functions/deadline-exceeded", "functions/unavailable",
+          "functions/internal", "functions/unknown"].includes(error?.code) ||
+        error?.details?.code === "TENANT_PROVISION_REVIEW_REQUIRED") {
+        setUncertainTenantWrites(current => ({ ...current, [writeKey]: true }));
+        message = "ยังยืนยันผลการสร้างร้านและ Owner ไม่ได้ กรุณารีโหลดและตรวจสอบข้อมูลก่อนส่งคำสั่งซ้ำ";
+      } else if (error?.code === "functions/already-exists") {
+        message = "Slug หรืออีเมล Owner นี้ถูกใช้งานแล้ว กรุณาตรวจสอบข้อมูล";
+      } else if (error?.code === "functions/failed-precondition") {
+        message = "ยังไม่พร้อมสร้างร้าน กรุณาตรวจสอบราคาแพ็กเกจจากส่วนกลางก่อน";
+      } else if (error?.code === "functions/invalid-argument") {
+        message = error.message || t("admin_tenants.tenant.invalid");
       }
-      if (error?.code === "functions/already-exists") message = t("admin_tenants.tenant.slug_exists");
-      if (error?.code === "functions/invalid-argument") message = error?.message || t("admin_tenants.tenant.invalid");
       setStatus(message);
       showToast(message, "error");
     } finally {
