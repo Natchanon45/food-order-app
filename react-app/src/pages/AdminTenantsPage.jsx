@@ -210,182 +210,33 @@ function TenantSubscription({ tenant, t, intlLocale, onAction }) {
   );
 }
 
-function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber, intlLocale, onEdit, onShare, onRevenueNotice, onUnlock, onLalamoveApproval, lalamoveApprovalBusy = false, onWallet, onDelete, onSubscriptionAction }) {
-  const active = tenant.active !== false;
-  const shareEnabled = tenant.billingMode === "revenue_share" || summary.revenueShareEnabled === true;
-  const signupBilling = tenant.signupBilling || {};
-  const signupBillingMode = signupBilling.billingMode || (shareEnabled ? "revenue_share" : "subscription");
-  const signupBusinessType = signupBilling.businessType || tenant.businessType || "both";
-  const masterBusinessType = tenant.businessType || signupBusinessType;
-  const signupRestaurantScope = signupBilling.restaurantRevenueShareScope || tenant.revenueShareRestaurantScope || "all";
-  const signupPlanCode = signupBilling.planCode || tenant.planCode || "monthly";
-  const ownerLabel = tenant.ownerUid
-    ? (tenant.ownerDisplayName || tenant.ownerEmail || t("admin_tenants.tenant.owner_exists"))
-    : t("admin_tenants.tenant.owner_missing");
-  const statusLabel = shareEnabled && tenant.accessStatus === "revenue_share_suspended"
-    ? t("admin_tenants.tenant.revenue_share_suspended")
-    : (active ? t("admin_tenants.tenant.active") : t("admin_tenants.tenant.inactive"));
-  const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const walletNotificationCount = Number(notifications.wallet || 0);
-  const revenueNotificationCount = Number(notifications.revenueShare || 0);
-  const notificationTotal = walletNotificationCount + revenueNotificationCount;
-
+// Source TenantControlPanel already owns the visible store identity, summary,
+// status and primary actions. Only preserve PENGUIN-specific maintenance tools
+// that are not present in its source JSX; never nest a second tenant card.
+function TenantMaintenanceControls({
+  tenant, summary = {}, t, intlLocale, onUnlock, onSubscriptionAction,
+}) {
+  const shareEnabled = tenant.billingMode === "revenue_share" ||
+    summary.revenueShareEnabled === true;
   return (
-    <article className="tenant-store-card" data-tenant-card={tenant.id} data-billing-mode={shareEnabled ? "revenue_share" : "subscription"}>
-      <header className="tenant-store-head">
-        <div className="tenant-store-title">
-          <span className="tenant-store-mark">{String(tenant.name || t("admin_tenants.tenant.fallback_mark")).trim().slice(0, 1).toUpperCase()}</span>
-          <div>
-            <h3>{tenant.name || t("admin_tenants.tenant.fallback_name")}</h3>
-            <a href={`/s/${encodeURIComponent(tenant.slug || "")}/delivery`} target="_blank" rel="noopener noreferrer">/{tenant.slug || "-"}</a>
-          </div>
-        </div>
-        <span className={`tenant-status-pill ${active ? "active" : "inactive"}`}>{statusLabel}</span>
-      </header>
-
-      {notificationTotal > 0 ? (
-        <div className="tenant-card-notifications" aria-label={t("admin_tenants.notifications.tenant_aria", { count: formatNumber(notificationTotal) })}>
-          {revenueNotificationCount > 0 ? (
-            <button className="tenant-notification-chip revenue" type="button" data-tenant-revenue-notification={tenant.id} onClick={() => onRevenueNotice(tenant)}>
-              <i className="bi bi-receipt-cutoff" aria-hidden="true"></i><span>{t("admin_tenants.notifications.revenue_share", { count: formatNumber(revenueNotificationCount) })}</span><b>{formatNumber(revenueNotificationCount)}</b>
-            </button>
-          ) : null}
-          {walletNotificationCount > 0 ? (
-            <button className="tenant-notification-chip wallet" type="button" data-tenant-wallet-notification={tenant.id} onClick={() => onWallet(tenant)}>
-              <i className="bi bi-wallet2" aria-hidden="true"></i><span>{t("admin_tenants.notifications.wallet", { count: formatNumber(walletNotificationCount) })}</span><b>{formatNumber(walletNotificationCount)}</b>
-            </button>
-          ) : null}
-        </div>
+    <div className="tenant-control-maintenance" data-tenant-maintenance={tenant.id}>
+      {tenant.onboardingRequired === true && !tenant.ownerUid ? (
+        <Link to="/platform/owners" className="btn btn-primary btn-sm"
+          data-tenant-owner-pending={tenant.id}>
+          <i className="bi bi-person-plus" aria-hidden="true"></i>
+          <span>สร้าง Owner เพื่อเปิดใช้งานร้าน</span>
+        </Link>
       ) : null}
-
-      <div className="tenant-meta-row">
-        <span><i className="bi bi-person-badge" aria-hidden="true"></i>{ownerLabel}</span>
-        {shareEnabled
-          ? <span className="tenant-billing-mode revenue-share"><i className="bi bi-percent" aria-hidden="true"></i>{t("admin_tenants.tenant.revenue_share_mode", { cycle: t(`admin_tenants.share.billing_cycles.${summary.revenueShareBillingCycle === "daily" ? "daily" : "monthly"}`) })}</span>
-          : <span><i className="bi bi-calendar-check" aria-hidden="true"></i>{subscriptionStatusText(tenant, t, "member_statuses")} · {t("admin_tenants.tenant.expires", { date: subscriptionDisplayDate(tenant.subscriptionExpiresAt, intlLocale, "-") })}</span>}
-      </div>
-
-      <div className="tenant-signup-billing" data-signup-billing={tenant.id}>
-        <div className="tenant-signup-billing-title">
-          <i className="bi bi-ui-checks-grid" aria-hidden="true"></i>
-          <strong>{t("admin_tenants.signup_billing.title")}</strong>
-          <span className="tenant-signup-billing-pill"><i className="bi bi-clock-history" aria-hidden="true"></i>{t("admin_tenants.signup_billing.model")}</span>
-        </div>
-        <div className="tenant-signup-billing-layout">
-        <div className="tenant-signup-business-overview">
-          <span className="tenant-signup-business-mark"><i className="bi bi-shop-window" aria-hidden="true"></i></span>
-          <span><small>{t("admin_tenants.signup_billing.business")} (Master)</small><strong>{t(`admin_tenants.signup_billing.businesses.${masterBusinessType}`)}</strong></span>
-        </div>
-        <div className="tenant-signup-billing-grid">
-          <span>
-            <small>{t("admin_tenants.signup_billing.model")}</small>
-            <strong>{t(`admin_tenants.signup_billing.models.${signupBillingMode}`)}</strong>
-          </span>
-          <span>
-            <small>{t("admin_tenants.signup_billing.business")}</small>
-            <strong>{t(`admin_tenants.signup_billing.businesses.${signupBusinessType}`)}</strong>
-          </span>
-          {signupBillingMode === "revenue_share" ? (
-            <>
-              {signupBusinessType !== "retail" ? (
-                <span>
-                  <small>{t("admin_tenants.signup_billing.restaurant_scope")}</small>
-                  <strong>{t(`admin_tenants.signup_billing.restaurant_scopes.${signupRestaurantScope}`)}</strong>
-                </span>
-              ) : null}
-              {signupBusinessType !== "restaurant_cafe" ? (
-                <span>
-                  <small>{t("admin_tenants.signup_billing.retail_scope")}</small>
-                  <strong>{t("admin_tenants.signup_billing.retail_all")}</strong>
-                </span>
-              ) : null}
-            </>
-          ) : (
-            <span>
-              <small>{t("admin_tenants.signup_billing.subscription_cycle")}</small>
-              <strong>{t(`admin_tenants.subscription.plans.${signupPlanCode === "yearly" ? "yearly" : "monthly"}`)}</strong>
-            </span>
-          )}
-        </div>
-        </div>
-      </div>
-
-      <div className="tenant-sales-grid">
-        <article><span>{t("admin_tenants.sales.order")}</span><strong>{money(summary.orderSales)}</strong><small>{t("admin_tenants.common.items", { count: formatNumber(summary.orderCount || 0) })}</small></article>
-        <article><span>{t("admin_tenants.sales.pos")}</span><strong>{money(summary.posSales)}</strong><small>{t("admin_tenants.common.receipts", { count: formatNumber(summary.posCount || 0) })}</small></article>
-        <article className="total"><span>{t("admin_tenants.sales.combined")}</span><strong>{money(summary.combinedSales)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-        <article className="share"><span>{summary.centralDeliveryShareEnabled === true
-          ? `Delivery ${money(summary.deliveryShareRate)}%${summary.revenueShareEnabled ? " + Legacy" : ""}`
-          : shareEnabled ? t("admin_tenants.sales.share_rate", { rate: `${money(summary.revenueShareRate)}%` })
-            : t("admin_tenants.sales.share_disabled")}</span><strong>{money(summary.revenueShare)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-        <article className="delivery-customer"><span>{t("admin_tenants.sales.customer_delivery_fees")}</span><strong>{money(summary.customerDeliveryFees)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-        <article className="delivery-cost"><span>{t("admin_tenants.sales.lalamove_delivery_cost")}</span><strong>{money(summary.lalamoveDeliveryCost)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-        <article className="subsidy"><span>{t("admin_tenants.sales.delivery_subsidy")}</span><strong>{money(summary.deliverySubsidy)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-        <article className="amount-due"><span>{t("admin_tenants.sales.platform_amount_due")}</span><strong>{money(summary.platformAmountDue)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-      </div>
-
-      <div className="tenant-store-details">
-        <span title={tenant.id}><strong>{t("admin_tenants.tenant.id")}</strong>{tenant.id}</span>
-        {tenant.shopPhone ? <span><strong>{t("admin_tenants.tenant.phone")}</strong>{tenant.shopPhone}</span> : null}
-        {tenant.shopAddress ? <span><strong>{t("admin_tenants.tenant.address")}</strong>{tenant.shopAddress}</span> : null}
-        <span>
-          <strong>{t("admin_tenants.tenant.lalamove_account")}</strong>
-          {t(`admin_tenants.tenant.lalamove_modes.${tenant.lalamove?.accountMode || "disabled"}`)}
-          {tenant.lalamove?.accountMode === "fod_central"
-            ? ` · ${t(tenant.lalamove?.fodCentralApproved ? "admin_tenants.tenant.lalamove_approved" : "admin_tenants.tenant.lalamove_waiting")}`
-            : ""}
-        </span>
-        <span><strong>{t("admin_tenants.wallet.label")}</strong>{money(tenant.lalamoveWallet?.balance || 0)} {t("admin_tenants.wallet.credit_unit")}</span>
-        <span data-tenant-first-activation={tenant.id}><strong>วันที่เริ่มใช้งานครั้งแรก</strong>
-          {tenant.firstActivatedAt
-            ? subscriptionDisplayDate(tenant.firstActivatedAt, intlLocale, "-")
-            : tenant.onboardingRequired === true ? "รอสร้าง Owner ก่อนเริ่มทดลองใช้ฟรี" : "ไม่มีข้อมูลยืนยัน"}</span>
-      </div>
-
-      <div className="tenant-card-actions">
-        {tenant.onboardingRequired === true && !tenant.ownerUid ? (
-          <Link to="/platform/owners" className="btn btn-primary btn-sm" data-tenant-owner-pending={tenant.id}>
-            <i className="bi bi-person-plus" aria-hidden="true"></i><span>สร้าง Owner เพื่อเปิดใช้งานร้าน</span>
-          </Link>
-        ) : null}
-        <a className="btn btn-dark btn-sm" href={`/s/${encodeURIComponent(tenant.slug || "")}/delivery`} target="_blank" rel="noopener noreferrer">
-          <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i><span>{t("admin_tenants.tenant.open_store")}</span>
-        </a>
-        <button className="btn btn-sm" type="button" onClick={() => onEdit(tenant)}>
-          <i className="bi bi-pencil-square" aria-hidden="true"></i><span>{t("admin_tenants.tenant.edit")}</span>
+      {shareEnabled && tenant.accessStatus === "revenue_share_suspended" ? (
+        <button className="btn btn-sm tenant-share-unlock-button" type="button"
+          data-unlock-revenue-share={tenant.id} onClick={() => onUnlock(tenant)}>
+          <i className="bi bi-unlock" aria-hidden="true"></i>
+          <span>{t("admin_tenants.tenant.unlock_revenue_share")}</span>
         </button>
-        <button className="btn btn-sm tenant-share-button" type="button" data-share-tenant={tenant.id} onClick={() => onShare(tenant)}>
-          <i className="bi bi-percent" aria-hidden="true"></i><span>{t("admin_tenants.tenant.share")}</span>
-        </button>
-        {shareEnabled && tenant.accessStatus === "revenue_share_suspended" ? (
-          <button className="btn btn-sm tenant-share-unlock-button" type="button" data-unlock-revenue-share={tenant.id} onClick={() => onUnlock(tenant)}>
-            <i className="bi bi-unlock" aria-hidden="true"></i><span>{t("admin_tenants.tenant.unlock_revenue_share")}</span>
-          </button>
-        ) : null}
-        {tenant.lalamove?.accountMode === "fod_central" ? (
-          <button
-            className="btn btn-sm"
-            type="button"
-            data-lalamove-approval={tenant.id}
-            disabled={lalamoveApprovalBusy}
-            aria-busy={lalamoveApprovalBusy ? "true" : "false"}
-            onClick={() => onLalamoveApproval(tenant)}
-          >
-            {lalamoveApprovalBusy
-              ? <span className="tenant-button-spinner" aria-hidden="true"></span>
-              : <i className={`bi ${tenant.lalamove?.fodCentralApproved ? "bi-shield-x" : "bi-shield-check"}`} aria-hidden="true"></i>}
-            <span>{t(tenant.lalamove?.fodCentralApproved ? "admin_tenants.tenant.lalamove_revoke" : "admin_tenants.tenant.lalamove_approve")}</span>
-          </button>
-        ) : null}
-        <button className="btn btn-sm" type="button" data-lalamove-wallet={tenant.id} onClick={() => onWallet(tenant)}>
-          <i className="bi bi-wallet2" aria-hidden="true"></i><span>{t("admin_tenants.wallet.view")}</span>
-        </button>
-        <button className="btn btn-danger btn-sm" type="button" onClick={() => onDelete(tenant)}>
-          <i className="bi bi-trash3" aria-hidden="true"></i><span>{t("admin_tenants.tenant.delete")}</span>
-        </button>
-      </div>
-      {!shareEnabled ? <TenantSubscription tenant={tenant} t={t} intlLocale={intlLocale} onAction={onSubscriptionAction} /> : null}
-    </article>
+      ) : null}
+      {!shareEnabled ? <TenantSubscription tenant={tenant} t={t}
+        intlLocale={intlLocale} onAction={onSubscriptionAction} /> : null}
+    </div>
   );
 }
 
@@ -1317,21 +1168,12 @@ export function AdminTenantsPage() {
                       onDelete={removeTenant}
                       t={t}
                     >
-                      <TenantCard
+                      <TenantMaintenanceControls
                         tenant={tenant}
                         summary={summaries[tenant.id] || {}}
-                        notifications={adminNotifications?.byTenant?.[tenant.id] || {}}
                         t={t}
-                        formatNumber={formatNumber}
                         intlLocale={intlLocale}
-                        onEdit={openEdit}
-                        onShare={openShare}
-                        onRevenueNotice={openRevenueNotice}
                         onUnlock={unlockShare}
-                        onLalamoveApproval={toggleLalamoveApproval}
-                        lalamoveApprovalBusy={lalamoveApprovalBusy === tenant.id}
-                        onWallet={openWallet}
-                        onDelete={removeTenant}
                         onSubscriptionAction={updateSubscription}
                       />
                     </TenantControlPanel>
