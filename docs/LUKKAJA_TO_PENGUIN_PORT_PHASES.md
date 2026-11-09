@@ -72,6 +72,8 @@ P0  Baseline, component/UI/CSS inventory, source pin, test gates  [DONE: invento
 
 ### P1 — Start here: Super Admin, seven page files
 
+**P1.1 started:** source and destination `PlatformPage.jsx` compared at the pinned SHAs; detailed adapter/readiness audit in [LUKKAJA_P1_1_PLATFORM_AUDIT.md](./LUKKAJA_P1_1_PLATFORM_AUDIT.md). No frontend markup changes or release accepted yet.
+
 - **P1.1 — Platform shell and dashboard:** bring `PlatformPage.jsx` source markup/styles/components into destination without changing the approved PENGUIN branding. Check buttons, notice bell, cards, navigation, locale, overlays, and permission guards. Reuse a Firebase adapter for branding/settings instead of source Go API.
 - **P1.2 — Tenant workspace:** source `AdminTenantsPage.jsx` + dependencies such as `TenantControlPanel`, `SuperAdminNotificationBell`, owner/tenant review and source CSS, implemented with scoped Firebase Auth/Firestore/Functions. Inventory all create/edit/suspend/reset actions; **write actions require separate emulator approval**.
 - **P1.3 — Users, owners and public contact:** source `AdminUsersPage`, `PlatformOwnersPage`, `PlatformContactPage`; verify role, staff, owner invitation and delivery of email before enabling create/disable actions.
