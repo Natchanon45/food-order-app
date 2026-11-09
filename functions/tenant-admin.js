@@ -1,6 +1,7 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 const { onboardingDates } = require("./tenant-onboarding-policy");
+const { readTenantFinanceEvidence } = require("./tenant-finance-source-evidence");
 const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
 const { BUSINESS_TYPES, businessUnitsFor } = require("./revenue-share-policy");
@@ -435,4 +436,31 @@ exports.getPlatformTenantSavedPaymentAccount = onCall(
       },
     };
   },
+);
+
+/**
+ * Super Admin source-only Hybrid invoice evidence, strictly one verified period.
+ * This response is NEVER a M7 finance certification or a payment action.
+ */
+exports.getPlatformTenantHybridInvoiceEvidence = onCall(
+  { region: "asia-southeast1", timeoutSeconds: 25 }, async request => {
+    await assertSuperAdmin(request.auth);
+    const tenantId = String(request.data?.tenantId || "").trim();
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(tenantId))
+      throw new HttpsError("invalid-argument", "Invalid tenant ID");
+    const ref = getFirestore().collection("tenants").doc(tenantId);
+    const snapshot = await ref.get();
+    if (!snapshot.exists) throw new HttpsError("not-found", "Tenant not found");
+    try {
+      const response = await readTenantFinanceEvidence({
+        tenantRef: ref, tenant: snapshot.data(),
+      });
+      // Read inconsistency is not an invitation to issue bills or assume zero.
+      return response;
+    } catch {
+      throw new HttpsError("failed-precondition",
+        "Tenant finance evidence incomplete; read-only review required",
+        { code: "TENANT_FINANCE_EVIDENCE_INCOMPLETE" });
+    }
+  }
 );
