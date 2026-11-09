@@ -30,7 +30,7 @@ test("all 65 distinct source JSX pages are assigned exactly once", () => {
     assert.ok(page.sourcePath.endsWith(page.filename), page.filename);
     assert.ok(page.destinationPath.endsWith(page.filename), page.filename);
     assert.equal(page.release, "not_started", page.filename);
-    assert.ok(["pending", "inventory_started"].includes(page.jsxReview), page.filename);
+    assert.ok(["pending", "inventory_started", "source_form_markup_compared__firebase_read_guard_adapted__visual_pending"].includes(page.jsxReview), page.filename);
     assert.equal(page.firebaseContract, "pending", page.filename);
   }
 });
@@ -64,13 +64,17 @@ test("source-only components stay tracked and finance rollout remains gated", ()
 
 test("P1.1 audit is visible without falsely marking Platform parity delivered", () => {
   const platform = matrix.pages.find(page => page.phase === "P1" && page.filename === "PlatformPage.jsx");
-  assert.equal(platform.jsxReview, "inventory_started");
-  assert.equal(platform.firebaseContract, "pending");
+  assert.equal(platform.jsxReview, "source_form_markup_compared__firebase_read_guard_adapted__visual_pending");
+  assert.equal(platform.firebaseContract, "read_failure_guards_contract_pass__emulator_write_pending");
   assert.equal(platform.release, "not_started");
   assert.equal(platform.auditEvidence, "docs/LUKKAJA_P1_1_PLATFORM_AUDIT.md");
+  assert.equal(platform.actionInventoryEvidence, "docs/LUKKAJA_P1_1_PLATFORM_ACTIONS.md");
+  const actions = readFileSync(platform.actionInventoryEvidence, "utf8");
+  assert.match(actions, /22 action families inventoried/);
+  assert.match(actions, /18 scenario checks/);
   const audit = readFileSync(platform.auditEvidence, "utf8");
   assert.match(audit, /Source is read-only/);
-  assert.match(audit, /not yet implemented/);
+  assert.match(audit, /not fully visually or runtime verified/);
   assert.match(audit, /LaravelAuthProvider/);
   assert.match(audit, /platformSettingsService/);
 });
