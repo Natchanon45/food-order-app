@@ -757,6 +757,31 @@ export function DeliveryPage() {
           throw new Error("DELIVERY_SLIP_CHECK_INCOMPLETE");
         }
         if (slipCheckStatus === "manual_review") {
+          // A no-provider-check quota failure or an uncertain prior check
+          // cannot be treated as a cashier-approved bank transfer. Stop
+          // before creating an order with an unreviewable payment proof.
+          const blockedReason = String(result.reason || "");
+          const quotaBlocked = blockedReason === "merchant_slip_quota_exhausted";
+          const uncertain = [
+            "merchant_quota_outcome_uncertain", "prior_provider_check_unresolved",
+            "prior_matched_proof_must_be_confirmed",
+          ].includes(blockedReason);
+          const noVerification = [
+            "merchant_slip_quota_evidence_unavailable",
+            "merchant_quota_pricing_unavailable",
+            "merchant_quota_activation_missing",
+            "slip2go_config_required", "slip2go_config_invalid",
+            "provider_key_invalid", "slip2go_request_rate_limit",
+            "delivery_fee_requires_cashier_review",
+            "merchant_promptpay_receiver_not_supported",
+          ].includes(blockedReason);
+          if (quotaBlocked || uncertain || noVerification) {
+            const alertKey = quotaBlocked ? "slip_merchant_quota_exhausted"
+              : uncertain ? "slip_provider_outcome_uncertain"
+                : "slip_provider_unavailable_no_approval";
+            showStorefrontToast(t("delivery.checkout.payment." + alertKey), "error");
+            return;
+          }
           // The reason comes from a trusted callable. Avoid claiming the
           // service is offline when a slip is old, a quotation expired, or
           // the PENGUIN platform has no verification credentials.
