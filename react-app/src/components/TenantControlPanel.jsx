@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/firebase/client";
+import { getPlatformTenantSavedPaymentAccount } from "@/data/platformTenantService";
 import { tenantCalendarLabel } from "@/data/tenantActivationCalendar.mjs";
 import { tenantAccessReasonLabel, SIGNED_TENANT_ACCESS_REASONS } from "@/data/tenantAccessReason.mjs";
 
@@ -40,29 +39,24 @@ function useCertifiedLedger(tenantId, enabled) {
 function useLegacyOperationalSnapshot(tenantId, enabled) {
   return { tenantId, status: enabled ? "unavailable" : "idle", data: null };
 }
-function mask(value) {
-  const digits = String(value || "").replace(/[^0-9]/g, "");
-  return digits.length >= 4 ? "•••• " + digits.slice(-4) : "";
-}
 function useSavedStoreAccount(tenantId, enabled) {
   const [state, setState] = useState({ tenantId: "", status: "idle", account: null });
   useEffect(() => {
     if (!enabled || !tenantId) return undefined;
     let cancelled = false;
     setState({ tenantId, status: "loading", account: null });
-    getDoc(doc(db, "tenants", tenantId, "settings", "store")).then(snapshot => {
+    getPlatformTenantSavedPaymentAccount({ tenantId }).then(response => {
       if (cancelled) return;
-      const saved = snapshot.exists() ? snapshot.data() : {};
-      setState({ tenantId, status: "ready", account: {
-        bankName: String(saved.bankName || ""),
-        bankAccountName: String(saved.bankAccountName || ""),
-        bankAccountMasked: mask(saved.bankAccountNumber),
-        promptPayMasked: mask(saved.promptPayId),
-        promptPayName: String(saved.promptPayName || saved.promptPayAccountName || ""),
-        bankConfigured: Boolean(saved.bankName && saved.bankAccountNumber),
-        promptPayConfigured: Boolean(saved.promptPayId),
-        deliveryPromptPayEnabled: saved.deliveryPromptPayEnabled !== false,
-      }});
+      if (response?.ok !== true || response.tenantId !== tenantId ||
+        response.readOnly !== true || response.source !== "firebase_saved_store_settings" ||
+        response.account?.ownershipVerified !== false ||
+        typeof response.account?.bankAccountMasked !== "string" ||
+        typeof response.account?.promptPayMasked !== "string" ||
+        !/^((•••• [0-9]{4})?)$/.test(response.account.bankAccountMasked) ||
+        !/^((•••• [0-9]{4})?)$/.test(response.account.promptPayMasked)) {
+        throw new Error("TENANT_BANK_ACCOUNT_SOURCE_UNVERIFIED");
+      }
+      setState({ tenantId, status: "ready", account: response.account });
     }).catch(() => {
       if (!cancelled) setState({ tenantId, status: "error", account: null });
     });
