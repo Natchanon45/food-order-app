@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { randomUUID } from "node:crypto";
 const require = createRequire(new URL("../../functions/package.json", import.meta.url));
 const { initializeApp, getApps } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
@@ -11,7 +12,7 @@ const { verifyOnePeriod, readTenantFinanceEvidence } =
   require("./tenant-finance-source-evidence");
 const { LEDGER_VERSION, invoiceSignature } = require("./hybrid-billing-ledger");
 const admin = { auth: { uid: "p1-finance-evidence-admin" } };
-const tenantId = "p1-finance-evidence-tenant";
+const tenantId = "p1-finance-evidence-" + randomUUID();
 const tenantRef = db.collection("tenants").doc(tenantId);
 const cycleStartDate = "2026-10-18";
 const cycleEndExclusiveDate = "2026-11-18";
