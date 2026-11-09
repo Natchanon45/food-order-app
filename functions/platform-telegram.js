@@ -19,7 +19,7 @@ const ref = () => getFirestore().collection("platformSettings").doc(DOC);
 async function assertSuperAdmin(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Sign-in required");
   const profile = (await getFirestore().collection("users").doc(auth.uid).get()).data();
-  if (profile?.active !== true || profile.role !== "super_admin") {
+  if (!profile || profile.active === false || profile.role !== "super_admin") {
     throw new HttpsError("permission-denied", "Superadmin only");
   }
   return profile;
