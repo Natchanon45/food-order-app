@@ -40,6 +40,21 @@ Execute `node tools/verify-deployed-baseline-before-firebase-hosting.mjs` **befo
 
 Current status (9 Nov): this check is **expected to block** because new destination branch has not yet ported the required old Walk-in Functions/Rules, Cashier/Kitchen and Revenue Share UI together. The existing production deployment remains unchanged.
 
+## Release evidence: PENGUIN 0.4.305 (09/11/2026)
+
+**Hosting-only release verified.** Built `react-app/src/config/release.js` `0.4.305` / `2026.11.09.535`, on requested destination branch. Exact source commit: `fb3d249f1a15cce1f24499dd2f5026f00f0abb97`. Vite generated `public/react/assets/index-CoVwNJEQ.js`. `firebase deploy --only hosting:foodapp --project chat-45754 --non-interactive` exited 0; Firebase CLI confirmed Hosting release complete at `https://penguin-food.web.app`. **No Firebase Functions/Firestore Rules, database data, source repo or `main` deploy/merge.**
+
+Verification after deploy:
+- `https://penguin-food.web.app/platform`, `/admin/tenants`, `/cashier/quick-order`, `/reports/revenue-share`: HTTP 200.
+- Production HTML references exactly `/react/assets/index-CoVwNJEQ.js`.
+- Downloaded production JS compared byte-for-byte identical (`cmp`) to the generated tracked local file; SHA256: `62f45d8b784efd1e364862a7891abf5b29b85a555cca26ad3ef9b067f1b7d7c9`.
+- Quick Order/Revenue Share supplemental CSS and the owner-selected Delivery SVG: HTTP 200.
+- Full `npm run test:react-parity`: PASS; `npm run build:react` + generated build contract: PASS; live source preservation preflight: 12/12.
+- Synthetic/demo-only Firestore/Auth Emulator transactions and Rules: 2/2 PASS, using installed JDK 21 and `demo-penguin-lukkaja-parallel`.
+- Anonymous-browser auth boundary Playwright tests on Firebase **Hosting Emulator with actual rewrites**: 17/17 PASS. Simple static Python server cannot route `/cashier/quick-order` and its 404 is not an application error.
+
+**Remaining acceptance:** signed-in Super Admin desktop/tablet/mobile JSX comparison and authenticated Firebase settings read/failure/mutation UAT (including provider error cases) remain open. This release verifies an incremental safety adapter and preservation of existing deployed baseline, **not completion of every LUKKAJA phase or authorization for M7 billing activation**.
+
 ## Release and test gates (unmet)
 
 1. Reconcile the **old already-live** operations/reports/print UI code and its deployed backend contracts into `feature/react-firebase-port`, retaining new P1.1 guards; keep old reference branch unchanged.
