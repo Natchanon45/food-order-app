@@ -155,6 +155,8 @@ export function PlatformPage() {
   const [brandingFiles, setBrandingFiles] = useState({ logo: null, favicon: null, appIcon: null });
   const [brandingClear, setBrandingClear] = useState({ logo: false, favicon: false, appIcon: false });
   const [brandingBusy, setBrandingBusy] = useState(true);
+  const [brandingLoadError, setBrandingLoadError] = useState(false);
+  const [brandingReadReady, setBrandingReadReady] = useState(false);
   const [initialBrandingReady, setInitialBrandingReady] = useState(false);
   const [brandingPreview, setBrandingPreview] = useState({ logo: "", favicon: "", appIcon: "" });
 
@@ -164,6 +166,7 @@ export function PlatformPage() {
   const [googleBusy, setGoogleBusy] = useState(true);
   const [initialGoogleReady, setInitialGoogleReady] = useState(false);
   const [googleLoadError, setGoogleLoadError] = useState(false);
+  const [googleReadReady, setGoogleReadReady] = useState(false);
 
   const [slip, setSlip] = useState(EMPTY_SLIP);
   const [slipSecret, setSlipSecret] = useState("");
@@ -172,11 +175,14 @@ export function PlatformPage() {
   const [initialSlipReady, setInitialSlipReady] = useState(false);
   const [slipQuota, setSlipQuota] = useState("");
   const [slipLoadError, setSlipLoadError] = useState(false);
+  const [slipReadReady, setSlipReadReady] = useState(false);
 
   const [lalamove, setLalamove] = useState(EMPTY_LALAMOVE);
   const [lalamoveInput, setLalamoveInput] = useState({ apiKey: "", apiSecret: "" });
   const [lalamoveClear, setLalamoveClear] = useState({ apiKey: false, apiSecret: false });
   const [lalamoveBusy, setLalamoveBusy] = useState(true);
+  const [lalamoveLoadError, setLalamoveLoadError] = useState(false);
+  const [lalamoveReadReady, setLalamoveReadReady] = useState(false);
   const [initialLalamoveReady, setInitialLalamoveReady] = useState(false);
   const [lalamoveWebhookBusy, setLalamoveWebhookBusy] = useState(false);
   const [lalamoveWebhookStatus, setLalamoveWebhookStatus] = useState("");
@@ -235,9 +241,14 @@ export function PlatformPage() {
     setInitialLalamoveReady(false);
 
     setBrandingBusy(true);
+    setBrandingLoadError(false);
+    setBrandingReadReady(false);
     loadPlatformBranding()
       .then(item => {
         if (!active) return;
+        if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("PLATFORM_BRANDING_READ_INVALID");
+        setBrandingReadReady(true);
+        setBrandingLoadError(false);
         setBranding({ ...EMPTY_BRANDING, ...item });
         setBrandingFiles({ logo: null, favicon: null, appIcon: null });
         setBrandingClear({ logo: false, favicon: false, appIcon: false });
@@ -245,7 +256,11 @@ export function PlatformPage() {
       })
       .catch(error => {
         console.error("PLATFORM_BRANDING_LOAD_FAILED", error);
-        if (active) showToast(t("platform.branding.load_failed"), "error");
+        if (active) {
+          setBrandingReadReady(false);
+          setBrandingLoadError(true);
+          showToast(t("platform.branding.load_failed"), "error");
+        }
       })
       .finally(() => {
         if (active) {
@@ -256,15 +271,19 @@ export function PlatformPage() {
 
     setGoogleBusy(true);
     setGoogleLoadError(false);
+    setGoogleReadReady(false);
     loadPlatformGoogleApis()
       .then(data => {
         if (!active) return;
+        if (!data?.item || typeof data.item !== "object" || Array.isArray(data.item)) throw new Error("PLATFORM_GOOGLE_READ_INVALID");
         applyGoogle(data.item);
+        setGoogleReadReady(true);
         setGoogleLoadError(false);
       })
       .catch(error => {
         console.error("PLATFORM_GOOGLE_API_LOAD_FAILED", error);
         if (active) {
+          setGoogleReadReady(false);
           setGoogleLoadError(true);
           showToast(t("platform.google_api.load_failed"), "error");
         }
@@ -278,16 +297,20 @@ export function PlatformPage() {
 
     setSlipBusy(true);
     setSlipLoadError(false);
+    setSlipReadReady(false);
     loadPlatformSlipVerification()
       .then(data => {
         if (!active) return;
+        if (!data?.item || typeof data.item !== "object" || Array.isArray(data.item)) throw new Error("PLATFORM_SLIP_READ_INVALID");
         applySlip(data.item);
+        setSlipReadReady(true);
         setSlipLoadError(false);
         setSlipQuota(t("platform.slip_verification.quota_not_checked"));
       })
       .catch(error => {
         console.error("PLATFORM_SLIP_LOAD_FAILED", error);
         if (active) {
+          setSlipReadReady(false);
           setSlipLoadError(true);
           showToast(t("platform.slip_verification.load_failed"), "error");
         }
@@ -300,11 +323,21 @@ export function PlatformPage() {
       });
 
     setLalamoveBusy(true);
+    setLalamoveLoadError(false);
+    setLalamoveReadReady(false);
     loadPlatformLalamove()
-      .then(data => { if (active) applyLalamove(data.item); })
+      .then(data => {
+        if (!active) return;
+        if (!data?.item || typeof data.item !== "object" || Array.isArray(data.item)) throw new Error("PLATFORM_LALAMOVE_READ_INVALID");
+        applyLalamove(data.item);
+        setLalamoveReadReady(true);
+        setLalamoveLoadError(false);
+      })
       .catch(error => {
         console.error("PLATFORM_LALAMOVE_LOAD_FAILED", error);
         if (active) {
+          setLalamoveReadReady(false);
+          setLalamoveLoadError(true);
           setLalamoveError(t("platform.lalamove.load_failed"));
           showToast(t("platform.lalamove.load_failed"), "error");
         }
@@ -371,6 +404,7 @@ export function PlatformPage() {
 
   const saveBranding = async event => {
     event.preventDefault();
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || brandingBusy || brandingLoadError || !brandingReadReady) return;
     setBrandingBusy(true);
     try {
       const item = await savePlatformBranding({ files: brandingFiles, clear: brandingClear });
@@ -391,6 +425,7 @@ export function PlatformPage() {
 
   const saveGoogle = async event => {
     event.preventDefault();
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || googleBusy || googleLoadError || !googleReadReady) return;
     setGoogleBusy(true);
     try {
       const data = await savePlatformGoogleApis({
@@ -414,6 +449,7 @@ export function PlatformPage() {
 
   const saveSlip = async event => {
     event?.preventDefault?.();
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || slipBusy || slipLoadError || !slipReadReady) return null;
     setSlipBusy(true);
     try {
       const receiver = slip.receiver || {};
@@ -443,6 +479,7 @@ export function PlatformPage() {
   };
 
   const testSlip = async () => {
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || slipBusy || slipLoadError || !slipReadReady) return;
     setSlipBusy(true);
     setSlipQuota(t("platform.slip_verification.testing"));
     try {
@@ -480,6 +517,8 @@ export function PlatformPage() {
 
   const saveLalamove = async (event, { silent = false } = {}) => {
     event?.preventDefault?.();
+    // The source calls saveLalamove from testLalamove while the busy flag is set.
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || lalamoveLoadError || !lalamoveReadReady) throw new Error("PLATFORM_LALAMOVE_NOT_READY");
     setLalamoveBusy(true);
     setLalamoveError("");
     try {
@@ -504,6 +543,7 @@ export function PlatformPage() {
   };
 
   const testLalamove = async () => {
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || lalamoveBusy || lalamoveLoadError || !lalamoveReadReady || lalamoveTesting) return;
     setLalamoveBusy(true);
     setLalamoveTesting(true);
     setLalamoveError("");
@@ -529,6 +569,7 @@ export function PlatformPage() {
     && !["localhost", "127.0.0.1", "::1"].includes(location.hostname.toLowerCase());
 
   const registerLalamoveWebhook = async () => {
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || lalamoveBusy || lalamoveWebhookBusy || lalamoveLoadError || !lalamoveReadReady) return;
     if (!webhookPublicHttps) {
       const message = t("platform.lalamove.webhook_https_required");
       setLalamoveWebhookStatus(message);
@@ -559,6 +600,7 @@ export function PlatformPage() {
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
+  if (authState.status === "error") return <main role="alert" data-platform-auth-error>{t("shared.state.load_failed")}</main>;
   if (!profile) return <Navigate to="/login?next=%2Fplatform" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
@@ -638,14 +680,14 @@ export function PlatformPage() {
                       hidden
                       data-branding-input={item.key}
                       accept={item.accept}
-                      disabled={brandingBusy}
+                      disabled={brandingBusy || brandingLoadError || !brandingReadReady}
                       onChange={event => chooseBrandingFile(item.key, event.target.files?.[0])}
                     />
                     <div className="platform-branding-buttons">
-                      <button className="btn btn-sm" type="button" data-branding-pick={item.key} disabled={brandingBusy} onClick={() => document.getElementById(inputId)?.click()}>
+                      <button className="btn btn-sm" type="button" data-branding-pick={item.key} disabled={brandingBusy || brandingLoadError || !brandingReadReady} onClick={() => document.getElementById(inputId)?.click()}>
                         <i className="bi bi-upload" aria-hidden="true"></i><span>{t("platform.branding.choose_file")}</span>
                       </button>
-                      <button className="btn btn-sm" type="button" data-branding-clear={item.key} disabled={brandingBusy} onClick={() => clearBranding(item.key)}>
+                      <button className="btn btn-sm" type="button" data-branding-clear={item.key} disabled={brandingBusy || brandingLoadError || !brandingReadReady} onClick={() => clearBranding(item.key)}>
                         <i className="bi bi-trash" aria-hidden="true"></i><span>{t("platform.branding.clear")}</span>
                       </button>
                     </div>
@@ -658,7 +700,7 @@ export function PlatformPage() {
               <p><i className="bi bi-phone" aria-hidden="true"></i><span>{t("platform.branding.pwa_help")}</span></p>
             </div>
             <div className="platform-google-api-actions">
-              <button className="btn btn-primary" id="savePlatformBrandingButton" type="submit" disabled={brandingBusy}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.branding.save")}</span></button>
+              <button className="btn btn-primary" id="savePlatformBrandingButton" type="submit" disabled={brandingBusy || brandingLoadError || !brandingReadReady}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.branding.save")}</span></button>
             </div>
           </form>
         </ControlCard>
@@ -670,7 +712,7 @@ export function PlatformPage() {
                 id="platformGoogleMapsBrowserApiKey" clearId="clearPlatformGoogleMapsBrowserApiKey"
                 placeholder={t("platform.google_api.placeholder_new")} label={t("platform.google_api.maps_browser_key")}
                 help={t("platform.google_api.maps_browser_help")} clearText={t("platform.google_api.clear")}
-                value={googleInput.mapsBrowserKey} disabled={googleBusy}
+                value={googleInput.mapsBrowserKey} disabled={googleBusy || googleLoadError || !googleReadReady}
                 statusId="platformGoogleMapsBrowserApiStatus"
                 status={googleLoadError ? t("platform.google_api.load_failed") : googleStatusText(google.mapsBrowserConfigured, google.mapsBrowserMasked, googleClear.mapsBrowserKey)}
                 onChange={value => { setGoogleInput(current => ({ ...current, mapsBrowserKey: value })); if (value) setGoogleClear(current => ({ ...current, mapsBrowserKey: false })); }}
@@ -680,7 +722,7 @@ export function PlatformPage() {
                 id="platformGoogleRoutesApiKey" clearId="clearPlatformGoogleRoutesApiKey"
                 placeholder={t("platform.google_api.placeholder_new")} label={t("platform.google_api.routes_api_key")}
                 help={t("platform.google_api.routes_api_help")} clearText={t("platform.google_api.clear")}
-                value={googleInput.routesApiKey} disabled={googleBusy}
+                value={googleInput.routesApiKey} disabled={googleBusy || googleLoadError || !googleReadReady}
                 statusId="platformGoogleRoutesApiStatus"
                 status={googleLoadError ? t("platform.google_api.load_failed") : googleStatusText(google.routesApiConfigured, google.routesApiMasked, googleClear.routesApiKey)}
                 onChange={value => { setGoogleInput(current => ({ ...current, routesApiKey: value })); if (value) setGoogleClear(current => ({ ...current, routesApiKey: false })); }}
@@ -690,7 +732,7 @@ export function PlatformPage() {
                 id="platformGoogleVisionApiKey" clearId="clearPlatformGoogleVisionApiKey"
                 placeholder={t("platform.google_api.placeholder_new")} label={t("platform.google_api.vision_api_key")}
                 help={t("platform.google_api.vision_api_help")} clearText={t("platform.google_api.clear")}
-                value={googleInput.visionApiKey} disabled={googleBusy}
+                value={googleInput.visionApiKey} disabled={googleBusy || googleLoadError || !googleReadReady}
                 statusId="platformGoogleVisionApiStatus"
                 status={googleLoadError ? t("platform.google_api.load_failed") : googleStatusText(google.visionApiConfigured, google.visionApiMasked, googleClear.visionApiKey)}
                 onChange={value => { setGoogleInput(current => ({ ...current, visionApiKey: value })); if (value) setGoogleClear(current => ({ ...current, visionApiKey: false })); }}
@@ -702,7 +744,7 @@ export function PlatformPage() {
               <p><i className="bi bi-signpost-split" aria-hidden="true"></i><span>{t("platform.google_api.fallback_help")}</span></p>
             </div>
             <div className="platform-google-api-actions">
-              <button className="btn btn-primary" id="savePlatformGoogleApiButton" type="submit" disabled={googleBusy}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.google_api.save")}</span></button>
+              <button className="btn btn-primary" id="savePlatformGoogleApiButton" type="submit" disabled={googleBusy || googleLoadError || !googleReadReady}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.google_api.save")}</span></button>
             </div>
           </form>
         </ControlCard>
@@ -711,14 +753,14 @@ export function PlatformPage() {
           titleId="platformSlipVerificationTitle" icon="bi bi-shield-check"
           title={t("platform.slip_verification.title")} description={t("platform.slip_verification.description")}
           badge={slipLoadError ? t("platform.slip_verification.load_failed") : t(slipReady ? "platform.slip_verification.ready" : "platform.slip_verification.not_ready")}
-          badgeId="platformSlipVerificationStatus" badgeClass={slipReady && !slipLoadError ? "is-ready" : "is-error"}
+          badgeId="platformSlipVerificationStatus" badgeClass={slipReady && !slipLoadError && slipReadReady ? "is-ready" : "is-error"}
           className="platform-slip-verification-card"
         >
           <form id="platformSlipVerificationForm" className="platform-google-api-form" noValidate onSubmit={saveSlip}>
             <div className="platform-google-api-grid">
               <div className="field platform-google-api-field">
                 <label htmlFor="platformSlipVerificationProvider">{t("platform.slip_verification.provider")}</label>
-                <select className="input" id="platformSlipVerificationProvider" value={slip.provider} disabled={slipBusy} onChange={event => setSlip(current => ({ ...current, provider: event.target.value }))}>
+                <select className="input" id="platformSlipVerificationProvider" value={slip.provider} disabled={slipBusy || slipLoadError || !slipReadReady} onChange={event => setSlip(current => ({ ...current, provider: event.target.value }))}>
                   <option value="google_vision">{t("platform.slip_verification.providers.google_vision")}</option>
                   <option value="slip2go">{t("platform.slip_verification.providers.slip2go")}</option>
                   <option value="slip2go_fallback_vision">{t("platform.slip_verification.providers.slip2go_fallback_vision")}</option>
@@ -727,15 +769,15 @@ export function PlatformPage() {
               </div>
               <div className="field platform-google-api-field">
                 <label htmlFor="platformSlip2GoApiUrl">{t("platform.slip_verification.api_url")}</label>
-                <input className="input" id="platformSlip2GoApiUrl" type="url" maxLength="255" autoComplete="off" spellCheck={false} placeholder="https://...slip2go.com" value={slip.slip2GoApiUrl} disabled={slipBusy} onChange={event => setSlip(current => ({ ...current, slip2GoApiUrl: event.target.value }))} />
+                <input className="input" id="platformSlip2GoApiUrl" type="url" maxLength="255" autoComplete="off" spellCheck={false} placeholder="https://...slip2go.com" value={slip.slip2GoApiUrl} disabled={slipBusy || slipLoadError || !slipReadReady} onChange={event => setSlip(current => ({ ...current, slip2GoApiUrl: event.target.value }))} />
                 <small>{t("platform.slip_verification.api_url_help")}</small>
               </div>
               <SecretField
                 id="platformSlip2GoSecret" clearId="clearPlatformSlip2GoSecret"
                 placeholder={t("platform.slip_verification.secret_placeholder")} label={t("platform.slip_verification.secret")}
-                clearText={t("platform.slip_verification.clear")} value={slipSecret} disabled={slipBusy}
+                clearText={t("platform.slip_verification.clear")} value={slipSecret} disabled={slipBusy || slipLoadError || !slipReadReady}
                 statusId="platformSlip2GoSecretStatus"
-                status={slipSecretText(slip.slip2GoSecretConfigured, slip.slip2GoSecretMasked, slipClearSecret)}
+                status={slipLoadError ? t("platform.slip_verification.load_failed") : slipSecretText(slip.slip2GoSecretConfigured, slip.slip2GoSecretMasked, slipClearSecret)}
                 onChange={value => { setSlipSecret(value); if (value) setSlipClearSecret(false); }}
                 onClear={() => { setSlipSecret(""); setSlipClearSecret(true); }}
               />
@@ -748,16 +790,16 @@ export function PlatformPage() {
                   id="platformSlip2GoReceiverAccountType"
                   value={slip.receiver?.accountType || ""}
                   options={receiverTypes}
-                  disabled={slipBusy}
+                  disabled={slipBusy || slipLoadError || !slipReadReady}
                   searchPlaceholder={t("platform.slip_verification.receiver_search_placeholder")}
                   noResultsText={t("platform.slip_verification.receiver_no_results")}
                   loadMoreText={t("platform.slip_verification.receiver_load_more")}
                   onChange={accountType => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountType } }))}
                 />
               </div>
-              <div className="field"><label htmlFor="platformSlip2GoReceiverNameTh">{t("platform.slip_verification.receiver_name_th")}</label><input className="input" id="platformSlip2GoReceiverNameTh" maxLength="180" disabled={slipBusy} value={slip.receiver?.accountNameTH || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameTH: event.target.value } }))} /></div>
-              <div className="field"><label htmlFor="platformSlip2GoReceiverNameEn">{t("platform.slip_verification.receiver_name_en")}</label><input className="input" id="platformSlip2GoReceiverNameEn" maxLength="180" disabled={slipBusy} value={slip.receiver?.accountNameEN || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameEN: event.target.value } }))} /></div>
-              <div className="field"><label htmlFor="platformSlip2GoReceiverAccountNumber">{t("platform.slip_verification.receiver_account_number")}</label><input className="input" id="platformSlip2GoReceiverAccountNumber" maxLength="80" disabled={slipBusy} value={slip.receiver?.accountNumber || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNumber: event.target.value } }))} /></div>
+              <div className="field"><label htmlFor="platformSlip2GoReceiverNameTh">{t("platform.slip_verification.receiver_name_th")}</label><input className="input" id="platformSlip2GoReceiverNameTh" maxLength="180" disabled={slipBusy || slipLoadError || !slipReadReady} value={slip.receiver?.accountNameTH || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameTH: event.target.value } }))} /></div>
+              <div className="field"><label htmlFor="platformSlip2GoReceiverNameEn">{t("platform.slip_verification.receiver_name_en")}</label><input className="input" id="platformSlip2GoReceiverNameEn" maxLength="180" disabled={slipBusy || slipLoadError || !slipReadReady} value={slip.receiver?.accountNameEN || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameEN: event.target.value } }))} /></div>
+              <div className="field"><label htmlFor="platformSlip2GoReceiverAccountNumber">{t("platform.slip_verification.receiver_account_number")}</label><input className="input" id="platformSlip2GoReceiverAccountNumber" maxLength="80" disabled={slipBusy || slipLoadError || !slipReadReady} value={slip.receiver?.accountNumber || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNumber: event.target.value } }))} /></div>
             </div>
             <small className="platform-slip-receiver-help">{t("platform.slip_verification.receiver_help")}</small>
 
@@ -767,8 +809,8 @@ export function PlatformPage() {
               <p><i className="bi bi-speedometer2" aria-hidden="true"></i><span id="platformSlip2GoQuotaStatus">{slipQuota || t("platform.slip_verification.quota_not_checked")}</span></p>
             </div>
             <div className="platform-google-api-actions platform-lalamove-actions">
-              <button className="btn" id="testPlatformSlip2GoButton" type="button" disabled={slipBusy} onClick={testSlip}><i className="bi bi-plug" aria-hidden="true"></i><span>{t("platform.slip_verification.test")}</span></button>
-              <button className="btn btn-primary" id="savePlatformSlipVerificationButton" type="submit" disabled={slipBusy}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.slip_verification.save")}</span></button>
+              <button className="btn" id="testPlatformSlip2GoButton" type="button" disabled={slipBusy || slipLoadError || !slipReadReady} onClick={testSlip}><i className="bi bi-plug" aria-hidden="true"></i><span>{t("platform.slip_verification.test")}</span></button>
+              <button className="btn btn-primary" id="savePlatformSlipVerificationButton" type="submit" disabled={slipBusy || slipLoadError || !slipReadReady}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.slip_verification.save")}</span></button>
             </div>
           </form>
         </ControlCard>
@@ -777,14 +819,14 @@ export function PlatformPage() {
           titleId="platformLalamoveTitle" icon="bi bi-truck"
           title={t("platform.lalamove.title")} description={t("platform.lalamove.description")}
           badge={lalamoveBadge} badgeId="platformLalamoveConnectionStatus"
-          badgeClass={lalamove.ready && !lalamoveError ? "is-ready" : "is-error"}
+          badgeClass={lalamove.ready && !lalamoveError && !lalamoveLoadError ? "is-ready" : "is-error"}
           className="platform-lalamove-card"
         >
           <form id="platformLalamoveForm" className="platform-google-api-form" noValidate onSubmit={saveLalamove}>
             <div className="platform-google-api-grid">
               <div className="field platform-google-api-field">
                 <label htmlFor="platformLalamoveEnvironment">{t("platform.lalamove.environment")}</label>
-                <select className="input" id="platformLalamoveEnvironment" value={lalamove.environment} disabled={lalamoveBusy} onChange={event => setLalamove(current => ({ ...current, environment: event.target.value, ready: false }))}>
+                <select className="input" id="platformLalamoveEnvironment" value={lalamove.environment} disabled={lalamoveBusy || lalamoveLoadError || !lalamoveReadReady} onChange={event => setLalamove(current => ({ ...current, environment: event.target.value, ready: false }))}>
                   <option value="sandbox">{t("platform.lalamove.sandbox")}</option>
                   <option value="production">{t("platform.lalamove.production")}</option>
                 </select>
@@ -793,18 +835,18 @@ export function PlatformPage() {
               <SecretField
                 id="platformLalamoveApiKey" clearId="clearPlatformLalamoveApiKey"
                 placeholder={t("platform.lalamove.placeholder_new")} label={t("platform.lalamove.api_key")}
-                clearText={t("platform.lalamove.clear")} value={lalamoveInput.apiKey} disabled={lalamoveBusy}
+                clearText={t("platform.lalamove.clear")} value={lalamoveInput.apiKey} disabled={lalamoveBusy || lalamoveLoadError || !lalamoveReadReady}
                 statusId="platformLalamoveApiKeyStatus"
-                status={lalamoveCredentialText(lalamove.apiKeyConfigured, lalamove.apiKeyMasked, lalamoveClear.apiKey)}
+                status={lalamoveLoadError ? t("platform.lalamove.load_failed") : lalamoveCredentialText(lalamove.apiKeyConfigured, lalamove.apiKeyMasked, lalamoveClear.apiKey)}
                 onChange={value => { setLalamoveInput(current => ({ ...current, apiKey: value })); if (value) setLalamoveClear(current => ({ ...current, apiKey: false })); }}
                 onClear={() => { setLalamoveInput(current => ({ ...current, apiKey: "" })); setLalamoveClear(current => ({ ...current, apiKey: true })); }}
               />
               <SecretField
                 id="platformLalamoveApiSecret" clearId="clearPlatformLalamoveApiSecret"
                 placeholder={t("platform.lalamove.placeholder_new")} label={t("platform.lalamove.api_secret")}
-                clearText={t("platform.lalamove.clear")} value={lalamoveInput.apiSecret} disabled={lalamoveBusy}
+                clearText={t("platform.lalamove.clear")} value={lalamoveInput.apiSecret} disabled={lalamoveBusy || lalamoveLoadError || !lalamoveReadReady}
                 statusId="platformLalamoveApiSecretStatus"
-                status={lalamoveCredentialText(lalamove.apiSecretConfigured, lalamove.apiSecretMasked, lalamoveClear.apiSecret)}
+                status={lalamoveLoadError ? t("platform.lalamove.load_failed") : lalamoveCredentialText(lalamove.apiSecretConfigured, lalamove.apiSecretMasked, lalamoveClear.apiSecret)}
                 onChange={value => { setLalamoveInput(current => ({ ...current, apiSecret: value })); if (value) setLalamoveClear(current => ({ ...current, apiSecret: false })); }}
                 onClear={() => { setLalamoveInput(current => ({ ...current, apiSecret: "" })); setLalamoveClear(current => ({ ...current, apiSecret: true })); }}
               />
@@ -819,11 +861,11 @@ export function PlatformPage() {
                 className="btn"
                 id="registerPlatformLalamoveWebhookButton"
                 type="button"
-                disabled={lalamoveBusy || lalamoveWebhookBusy}
+                disabled={lalamoveBusy || lalamoveWebhookBusy || lalamoveLoadError || !lalamoveReadReady}
                 onClick={registerLalamoveWebhook}
               ><i className="bi bi-broadcast" aria-hidden="true"></i><span>{lalamoveWebhookBusy ? t("platform.lalamove.webhook_registering") : t("platform.lalamove.webhook_register")}</span></button>
-              <button className="btn" id="testPlatformLalamoveButton" type="button" disabled={lalamoveBusy} onClick={testLalamove}><i className="bi bi-plug" aria-hidden="true"></i><span>{t("platform.lalamove.test")}</span></button>
-              <button className="btn btn-primary" id="savePlatformLalamoveButton" type="submit" disabled={lalamoveBusy}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.lalamove.save")}</span></button>
+              <button className="btn" id="testPlatformLalamoveButton" type="button" disabled={lalamoveBusy || lalamoveLoadError || !lalamoveReadReady} onClick={testLalamove}><i className="bi bi-plug" aria-hidden="true"></i><span>{t("platform.lalamove.test")}</span></button>
+              <button className="btn btn-primary" id="savePlatformLalamoveButton" type="submit" disabled={lalamoveBusy || lalamoveLoadError || !lalamoveReadReady}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.lalamove.save")}</span></button>
             </div>
           </form>
         </ControlCard>
