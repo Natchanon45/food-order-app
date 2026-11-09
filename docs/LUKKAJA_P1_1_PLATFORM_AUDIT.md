@@ -1,6 +1,6 @@
 # P1.1 — Super Admin Platform JSX port audit (opened 09/11/2026)
 
-**Status:** `inventory_started`, **not yet implemented, not signed off, no Firebase deploy**.
+**Status:** `source_settings_readiness_adapted`, **not fully visually or runtime verified; no Firebase deploy**.
 
 | Artifact | LUKKAJA source | PENGUIN destination |
 | --- | --- | --- |
@@ -29,6 +29,22 @@
 | Slip2Go settings/test | `platformSettingsService` + backend-only verification | Server storage readiness, cannot leak API key or auto-approve mismatch |
 | Lalamove settings/test | `platformSettingsService` + backend-only test call | Readiness, failures, disabled controls, never charge on UI test |
 | Super Admin navigation badge | `platformAdminNotifications` | Preserve existing approved behavior unless source parity review explicitly replaces it |
+
+## Implemented on `feature/react-firebase-port` — first source-equivalent Firebase slice
+
+- Commit `4bbdaa6a` adapts source **read-failure and permissions guard semantics** for existing Branding, Google API, Slip Verification and Lalamove settings; disabled inputs/save/test/webhook controls remain in the original JSX UI hierarchy.
+- Unlike the LUKKAJA Go response `item.storageReady`, these Firebase Callables return an authenticated `{ item: { ... } }`. The Firebase page sets `*ReadReady=true` **only** after a valid object response; any load error or malformed response keeps it false. This prevents saving dummy defaults after read failures while maintaining the actual Firebase endpoint contract.
+- No mutations to Firebase Cloud Functions, Rules, API credentials or data stores were made. Existing PENGUIN-specific tenant notification badges, `PlatformReceiverBankSelect`, branding and previously hidden Hybrid billing navigation were preserved.
+- `tests/react-parity/platform-firebase-readiness-port.spec.mjs` plus Phase 0 tracker check: 9/9 tests PASS. `npm run test:react-parity` PASS and `npm run build:react` / Generated React build contract PASS on Mac (09/11/2026).
+- [22 grouped Platform action families + 4 pseudocode families + 18 scenarios](./LUKKAJA_P1_1_PLATFORM_ACTIONS.md) inventoried. Authenticated browser parity, real Firebase Emulator permission/write E2E, provider and responsive screen comparison **still pending**.
+
+### Critical Hosting release divergence — DO NOT deploy old branch bundle
+
+- Actual `https://penguin-food.web.app/platform` currently references `/react/assets/index-D1lP61q7.js`.
+- The exact same entrypoint is in the already-deployed old port branch `feature/port-lukkaja-20261031@fe338e1d`.
+- The requested destination `feature/react-firebase-port` baseline currently references older `index-BVCU-hXZ.js`; a fresh Build from it produces `index-a8uMEtpo.js` (generated contract version `2026.10.19.526`).
+- **Deploying all Hosting from that destination snapshot now would silently revert previously deployed UI/functions.** First selectively reconcile the deployed port baseline with the requested destination, preserving previously approved features and keeping actual Firebase data/functions rules unchanged. Rebuild, compare exact live asset functionality, run UAT and only then deploy.
+- No live Firebase deployment was performed by this P1.1 patch.
 
 ## Concrete next steps within P1.1
 
