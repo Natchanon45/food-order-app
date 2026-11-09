@@ -102,7 +102,11 @@ for (const view of [
       await page.locator("#email").fill(email);
       await page.locator("#password").fill(password);
       await page.locator("#loginButton").click();
-      await page.goto("/admin/tenants", { waitUntil: "domcontentloaded" });
+      // Never interrupt Firebase sign-in before AuthProvider persists session.
+      await page.waitForURL(url => url.pathname !== "/login", { timeout: 20000 });
+      if (new URL(page.url()).pathname !== "/admin/tenants") {
+        await page.goto("/admin/tenants", { waitUntil: "domcontentloaded" });
+      }
       const card = page.locator('[data-tenant-control="' + tenantId + '"]');
       await expect(card).toBeVisible({ timeout: 15000 });
       await expect(card.locator('[data-tenant-first-activation="' + tenantId + '"]'))
