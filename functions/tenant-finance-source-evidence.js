@@ -6,7 +6,7 @@
 const { LEDGER_VERSION, STATES, invoiceSignature } = require("./hybrid-billing-ledger");
 const PERIOD = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_INVOICES = 40;
-const KINDS = new Set(["monthly", "yearly", "delivery_daily"]);
+const KINDS = new Set(["monthly", "yearly", "fixed_monthly", "delivery_threshold", "delivery_daily"]);
 const moneyCents = amount => {
   const value = Number(amount);
   if (!Number.isFinite(value) || value < 0 || value > 100000000
