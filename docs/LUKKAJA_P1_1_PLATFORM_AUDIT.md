@@ -1,6 +1,6 @@
 # P1.1 — Super Admin Platform JSX port audit (opened 09/11/2026)
 
-**Status:** `source_settings_readiness_adapted`, **not fully visually or runtime verified; no Firebase deploy**.
+**Status:** `hosting_0.4.305_live_verified__signed_in_uat_pending` — incremental Firebase Hosting release verified, but signed-in Super Admin visual and write/read-failure UAT remain pending.
 
 | Artifact | LUKKAJA source | PENGUIN destination |
 | --- | --- | --- |
@@ -38,13 +38,21 @@
 - `tests/react-parity/platform-firebase-readiness-port.spec.mjs` plus Phase 0 tracker check: 9/9 tests PASS. `npm run test:react-parity` PASS and `npm run build:react` / Generated React build contract PASS on Mac (09/11/2026).
 - [22 grouped Platform action families + 4 pseudocode families + 18 scenarios](./LUKKAJA_P1_1_PLATFORM_ACTIONS.md) inventoried. Authenticated browser parity, real Firebase Emulator permission/write E2E, provider and responsive screen comparison **still pending**.
 
-### Critical Hosting release divergence — DO NOT deploy old branch bundle
+### Historical Hosting divergence (resolved for the 0.4.305 release)
 
 - Actual `https://penguin-food.web.app/platform` currently references `/react/assets/index-D1lP61q7.js`.
 - The exact same entrypoint is in the already-deployed old port branch `feature/port-lukkaja-20261031@fe338e1d`.
 - The requested destination `feature/react-firebase-port` baseline currently references older `index-BVCU-hXZ.js`; a fresh Build from it produces `index-a8uMEtpo.js` (generated contract version `2026.10.19.526`).
-- **Deploying all Hosting from that destination snapshot now would silently revert previously deployed UI/functions.** First selectively reconcile the deployed port baseline with the requested destination, preserving previously approved features and keeping actual Firebase data/functions rules unchanged. Rebuild, compare exact live asset functionality, run UAT and only then deploy.
-- No live Firebase deployment was performed by this P1.1 patch.
+- **At the initial 0.4.296 snapshot**, deploying this target Branch would have regressed already-live features. Those missing files were subsequently imported from the pinned old deployed Branch into the requested target by explicit allowlist and verified with the 12-group predeployment source gate, full React tests, Emulator checks and anonymous Browser Smoke.
+- The original P1.1 read-guard commit did not deploy by itself; the later integrated Hosting-only **0.4.305** release was verified on 09/11/2026.
+
+## Verified incremental release (09/11/2026)
+
+- Destination commit: `fb3d249f1a15cce1f24499dd2f5026f00f0abb97`; PENGUIN 0.4.305, Build `2026.11.09.535`.
+- Firebase Hosting **only** (`hosting:foodapp`) successfully published to `https://penguin-food.web.app`. No new Cloud Functions/Firestore Rules/data deployment, no LUKKAJA edit, and no merge into main.
+- Serving JS `/react/assets/index-CoVwNJEQ.js` confirmed identical to the build's file, SHA-256 `62f45d8b784efd1e364862a7891abf5b29b85a555cca26ad3ef9b067f1b7d7c9`.
+- Full React parity/build: PASS; preservation preflight: 12/12; synthetic Auth/Firestore Emulator Walk-in transaction/rules tests: 2/2; anonymous browser redirects through Hosting Emulator (including Platform): 17/17.
+- This is **not** completion of the fully authenticated source UI or platform/provider UAT. Review still requires actual super_admin login, request failure injection, write rights, visual screenshots and provider outcome testing. Source P1.2 Tenant audit is [here](./LUKKAJA_P1_2_SUPERADMIN_TENANTS_AUDIT.md).
 
 ## Concrete next steps within P1.1
 
