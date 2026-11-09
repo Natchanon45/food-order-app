@@ -96,6 +96,8 @@ Port cashier, kitchen, item revision/cancellation displays, receipt bill numbers
 
 ### P6 — Finance / M7 (separately gated)
 
+**Hard gate: NO financial activation, historical backfill, automatic hold/suspension, provider verification, credit settlement or invoice issuance as a side effect of visual JSX porting.** Release requires a separately reviewed Firebase business contract, isolated-provider/Emulator acceptance, and explicit authorization.
+
 Follow source JSX for readable presentation only while business rules and provider contracts are verified. Respect no retroactive billing for existing test stores, immutable original activation, owner/superadmin acceptance, correct cycle, `10,000 THB` Delivery threshold and `5%` excess-only rule under the accepted PENGUIN configuration; POS/table sales and Lalamove costs must not leak into Revenue Share. Do not automatically create invoices, suspend access, approve disputed slips or enable 00:00/00:20 jobs merely because the source UI has controls.
 
 ### P7 — System verification
