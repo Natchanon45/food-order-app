@@ -50,6 +50,6 @@ test("source new-store form is wired to a single idempotent backend, not two sep
   assert.match(page, /TENANT_WRITE_UNCONFIRMED/);
   assert.match(callable, /platformTenantProvisions/);
   assert.match(callable, /tx.create\(slugRef/);
-  assert.match(callable, /return receipt\(record, true\)/);
+  assert.match(callable, /return result\(saved, true\)/);
   assert.match(callable, /await auth.deleteUser\(createdAuth.uid\)/);
 });
