@@ -8,6 +8,8 @@ const source = fs.readFileSync("functions/revenue-share.js", "utf8");
 const policy = require("../../functions/revenue-share-policy.js");
 const anniversaries = require("../../functions/billing-anniversary.js");
 
+import { reportingQuery } from "../../react-app/src/utils/revenueReportPeriod.mjs";
+
 const pricing = { deliveryShareRate: 5, deliveryThreshold: 10000 };
 const paid = (day, amount) => ({
   orderType: "delivery", paymentStatus: "paid", status: "delivered",
@@ -83,6 +85,34 @@ test("all existing stores use their anniversary months even without cutover flag
   assert.equal(sum.monthlyDeliveryEndDate, "2026-11-20");
   assert.equal(sum.monthlyDeliverySales, 11000);
   assert.equal(sum.revenueShare, 50);
+});
+
+test("calendar month sales are exact while invoice remains anniversary-based and independent", async () => {
+  const server = serverAt("2026-11-20", [
+    paid("2026-09-30", 999),
+    paid("2026-10-01", 2000),
+    paid("2026-10-20", 3000),
+    paid("2026-10-21", 4000),
+    paid("2026-10-31", 5000),
+    paid("2026-11-01", 6000),
+  ]);
+  const t = tenant();
+  const selected = {period:"monthly",month:"2026-10"};
+  const reportPeriod = server.__periodFromData(reportingQuery(selected), t);
+  const invoicePeriod = server.__periodFromData(selected, t);
+  assert.deepEqual([reportPeriod.startDate,reportPeriod.endDate],["2026-10-01","2026-10-31"]);
+  assert.deepEqual([invoicePeriod.startDate,invoicePeriod.endDate],["2026-10-21","2026-11-20"]);
+  const setting = server.__revenueSetting(t,pricing);
+  const report = await server.__summaryForTenant("store",reportPeriod,setting);
+  const invoice = await server.__summaryForTenant("store",invoicePeriod,setting);
+  assert.equal(report.deliveryOrderSales,14000);
+  assert.equal(invoice.deliveryOrderSales,15000);
+  assert.equal(report.monthlyDeliverySales,invoice.monthlyDeliverySales,
+    "progress MUST remain anniversary-based even when report changes");
+  assert.equal(report.deliveryShareAmount,0,
+    "October calendar report is not November anniversary invoice");
+  assert.equal(invoice.deliveryShareAmount,250,
+    "invoice keeps 5% above 10,000 within anniversary cycle");
 });
 
 test("next store anniversary resets the threshold regardless of its previous billing mode", async () => {
