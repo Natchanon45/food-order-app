@@ -334,9 +334,18 @@ function TenantCard({ tenant, summary = {}, notifications = {}, t, formatNumber,
             : ""}
         </span>
         <span><strong>{t("admin_tenants.wallet.label")}</strong>{money(tenant.lalamoveWallet?.balance || 0)} {t("admin_tenants.wallet.credit_unit")}</span>
+        <span data-tenant-first-activation={tenant.id}><strong>วันที่เริ่มใช้งานครั้งแรก</strong>
+          {tenant.firstActivatedAt
+            ? subscriptionDisplayDate(tenant.firstActivatedAt, intlLocale, "-")
+            : tenant.onboardingRequired === true ? "รอสร้าง Owner ก่อนเริ่มทดลองใช้ฟรี" : "ไม่มีข้อมูลยืนยัน"}</span>
       </div>
 
       <div className="tenant-card-actions">
+        {tenant.onboardingRequired === true && !tenant.ownerUid ? (
+          <Link to="/platform/owners" className="btn btn-primary btn-sm" data-tenant-owner-pending={tenant.id}>
+            <i className="bi bi-person-plus" aria-hidden="true"></i><span>สร้าง Owner เพื่อเปิดใช้งานร้าน</span>
+          </Link>
+        ) : null}
         <a className="btn btn-dark btn-sm" href={`/s/${encodeURIComponent(tenant.slug || "")}/delivery`} target="_blank" rel="noopener noreferrer">
           <i className="bi bi-box-arrow-up-right" aria-hidden="true"></i><span>{t("admin_tenants.tenant.open_store")}</span>
         </a>
@@ -746,13 +755,21 @@ export function AdminTenantsPage() {
     setStatus("");
     try {
       if (editing) await updateTenant(payload);
-      else await createTenant(payload);
-      showToast(t(editing ? "admin_tenants.tenant.updated" : "admin_tenants.tenant.created"));
+      else {
+        const result = await createTenant(payload);
+        if (result?.ok !== true || result.tenant?.active !== false
+          || result.tenant?.onboardingRequired !== true) throw new Error("TENANT_WRITE_UNCONFIRMED");
+      }
+      showToast(editing ? t("admin_tenants.tenant.updated")
+        : "บันทึกร้านแบบรอเปิดใช้งานแล้ว กรุณาสร้าง Owner ที่เมนูเจ้าของร้านก่อนเริ่มทดลองใช้ฟรี");
       dialogRef.current?.close?.();
       await Promise.all([loadTenantList(), loadSales()]);
     } catch (error) {
       console.error("TENANT_SAVE_FAILED", error);
       let message = t(editing ? "admin_tenants.tenant.update_failed" : "admin_tenants.tenant.create_failed");
+      if (error?.message === "TENANT_WRITE_UNCONFIRMED") {
+        message = "ยังไม่สามารถยืนยันผลสร้างร้านได้ กรุณารีโหลดรายชื่อร้านก่อนส่งคำสั่งซ้ำ";
+      }
       if (error?.code === "functions/already-exists") message = t("admin_tenants.tenant.slug_exists");
       if (error?.code === "functions/invalid-argument") message = error?.message || t("admin_tenants.tenant.invalid");
       setStatus(message);
@@ -1273,7 +1290,8 @@ export function AdminTenantsPage() {
               <div>
                 <span className="tenant-dialog-eyebrow" id="tenantDialogEyebrow">{t(editing ? "admin_tenants.tenant.edit_eyebrow" : "admin_tenants.tenant.new_eyebrow")}</span>
                 <h2 id="tenantDialogTitle">{t(editing ? "admin_tenants.tenant.edit_title" : "admin_tenants.tenant.create_title")}</h2>
-                <p id="tenantDialogDescription">{editing ? (editing.name || editing.slug || editing.id) : t("admin_tenants.tenant.create_description")}</p>
+                <p id="tenantDialogDescription">{editing ? (editing.name || editing.slug || editing.id)
+                  : "สร้างข้อมูลร้านแบบยังไม่เปิดรับออร์เดอร์ จากนั้นตั้งค่า Owner และแพ็กเกจที่หน้าเจ้าของร้านก่อนเริ่มทดลองใช้ฟรี"}</p>
               </div>
             </div>
             <button type="button" className="tenant-dialog-close" aria-label={t("admin_tenants.common.close")} onClick={() => dialogRef.current?.close?.()}>

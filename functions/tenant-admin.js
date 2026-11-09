@@ -1,5 +1,6 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
-const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
+const { onboardingDates } = require("./tenant-onboarding-policy");
 const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
 const { BUSINESS_TYPES, businessUnitsFor } = require("./revenue-share-policy");
@@ -92,7 +93,10 @@ exports.createTenant = onCall(
       id: tenantId,
       slug,
       name,
-      active: true,
+      active: false,
+      // A new tenant is not yet activated: trial begins only after its first
+      // owner is provisioned; legacy tenants remain unchanged.
+      onboardingRequired: true,
       createdBy: request.auth.uid,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp()
@@ -101,7 +105,7 @@ exports.createTenant = onCall(
       tenantId,
       slug,
       name,
-      active: true,
+      active: false,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp()
     });
@@ -118,7 +122,7 @@ exports.createTenant = onCall(
     });
 
     await batch.commit();
-    return { ok: true, tenant: { id: tenantId, slug, name, active: true } };
+    return { ok: true, tenant: { id: tenantId, slug, name, active: false, onboardingRequired: true } };
   }
 );
 
@@ -149,7 +153,14 @@ exports.createTenantOwner = onCall(
     if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
 
     const tenant = tenantSnapshot.data();
-    if (tenant.active === false) throw new HttpsError("failed-precondition", "Tenant is inactive");
+    if (tenant.active === false && tenant.onboardingRequired !== true) {
+      throw new HttpsError("failed-precondition", "Tenant is inactive");
+    }
+    const onboardingRequired = tenant.onboardingRequired === true;
+    const planCode = String(request.data?.planCode || (onboardingRequired ? "" : "monthly")).trim();
+    if (onboardingRequired && !["monthly", "yearly"].includes(planCode)) {
+      throw new HttpsError("invalid-argument", "Choose a monthly or yearly plan before creating the owner");
+    }
 
     const existingOwner = await tenantRef
       .collection("memberships")
@@ -181,6 +192,10 @@ exports.createTenantOwner = onCall(
     }
 
     const now = FieldValue.serverTimestamp();
+    const activatedAt = new Date();
+    const firstActivation = onboardingRequired
+      ? onboardingDates(activatedAt, planCode)
+      : null;
     const userProfile = {
       uid: authUser.uid,
       email,
@@ -198,12 +213,32 @@ exports.createTenantOwner = onCall(
       const batch = db.batch();
       batch.set(db.collection("users").doc(authUser.uid), userProfile);
       batch.set(tenantRef.collection("memberships").doc(authUser.uid), userProfile);
+      const activationPatch = firstActivation ? {
+        onboardingRequired: false,
+        firstActivatedAt: Timestamp.fromDate(activatedAt),
+        trialStartsAt: Timestamp.fromDate(firstActivation.trialStartsAt),
+        trialEndsAt: Timestamp.fromDate(firstActivation.trialEndsAt),
+        subscriptionStartedAt: Timestamp.fromDate(activatedAt),
+        subscriptionExpiresAt: Timestamp.fromDate(firstActivation.subscriptionExpiresAt),
+        subscriptionStatus: "trialing",
+        planCode,
+        gracePeriodDays: 3,
+      } : {};
       batch.set(tenantRef, {
         ownerUid: authUser.uid,
         ownerEmail: email,
         ownerDisplayName: displayName,
+        ...activationPatch,
+        ...(firstActivation ? { active: true } : {}),
         updatedAt: now
       }, { merge: true });
+      if (firstActivation && tenant.slug) {
+        batch.set(db.collection("tenantSlugs").doc(tenant.slug), {
+          ...activationPatch,
+          active: true,
+          updatedAt: now,
+        }, { merge: true });
+      }
       await batch.commit();
     } catch (error) {
       await getAuth().deleteUser(authUser.uid).catch(() => {});

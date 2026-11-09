@@ -93,12 +93,12 @@ requireAll("Revenue share storage/callable", revenueShareData, [
 ]);
 
 requireAll("Admin Users actions", adminUsersPage, [
-  "await createStaffUser({",
-  "await updateStaffUser(user.uid, {",
+  "await createStaffUser(tenantState.tenant.id, {",
+  "await updateStaffUser(tenantState.tenant.id, user.uid, {",
   'if (profile.role !== "owner") return <Navigate',
 ]);
 requireAll("Admin Users callable mappings", adminStaff, [
-  'call("listTenantStaff")',
+  'call("listTenantStaff", { expectedTenantId })',
   'call("createTenantStaff"',
   'call("updateTenantStaff"',
 ]);
@@ -275,7 +275,9 @@ requireAll("Waiting Queue seating transaction", waitingCore, [
 
 requireAll("Admin tenant create/edit/share actions", tenants, [
   "if (editing) await updateTenant(payload)",
-  "else await createTenant(payload)",
+  "const result = await createTenant(payload)",
+  "result.tenant?.onboardingRequired !== true",
+  'data-tenant-owner-pending={tenant.id}',
   "loadAdminSubscriptionPricing",
   "await reconcileRevenueShare(tenantId ? { tenantId } : {})",
 ]);
@@ -345,8 +347,8 @@ requireAll("Platform contact actions", platformContactPage, [
 requireAll("Platform contact scoped writes", platformContactService, [
   'tenantId: "__platform__"',
   'setDoc(doc(db, "platformSettings", id), value, { merge: false })',
-  'saveSetting("publicContact", contact)',
-  'saveSetting("googleCustomerLogin"',
+  'saveAndConfirm("publicContact", contact, "PLATFORM_CONTACT_WRITE_UNCONFIRMED")',
+  'saveAndConfirm("googleCustomerLogin"',
 ]);
 requireAll("Platform contact Firestore rules", firestoreRules, [
   "settingId == 'publicContact'",

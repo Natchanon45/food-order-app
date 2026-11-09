@@ -24,16 +24,19 @@ async function call(name, payload = {}) {
   return response?.data || {};
 }
 
-export async function listStaffUsers() {
-  const data = await call("listTenantStaff");
+export async function listStaffUsers(expectedTenantId = "") {
+  const data = await call("listTenantStaff", { expectedTenantId });
   return (Array.isArray(data.users) ? data.users : [])
     .map(normalizeUser)
     .filter(user => STAFF_ROLES.has(user.role))
     .sort((a, b) => String(a.displayName || a.email).localeCompare(String(b.displayName || b.email), "th"));
 }
 
-export async function createStaffUser(payload = {}) {
+export async function createStaffUser(scopeOrPayload = {}, perhapsPayload = undefined) {
+  const expectedTenantId = typeof scopeOrPayload === "string" ? scopeOrPayload : "";
+  const payload = typeof scopeOrPayload === "string" ? perhapsPayload || {} : scopeOrPayload || {};
   const data = await call("createTenantStaff", {
+    expectedTenantId,
     displayName: String(payload.displayName || "").trim(),
     email: String(payload.email || "").trim().toLowerCase(),
     password: String(payload.password || ""),
@@ -44,8 +47,13 @@ export async function createStaffUser(payload = {}) {
   return data;
 }
 
-export async function updateStaffUser(uid, patch = {}) {
+export async function updateStaffUser(scopeOrUid, uidOrPatch = {}, perhapsPatch = undefined) {
+  const scoped = typeof uidOrPatch === "string";
+  const expectedTenantId = scoped ? scopeOrUid : "";
+  const uid = scoped ? uidOrPatch : scopeOrUid;
+  const patch = scoped ? perhapsPatch || {} : uidOrPatch || {};
   return call("updateTenantStaff", {
+    expectedTenantId,
     uid: String(uid || "").trim(),
     displayName: String(patch.displayName || "").trim(),
     role: String(patch.role || ""),

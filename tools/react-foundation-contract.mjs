@@ -1311,7 +1311,7 @@ assert(
   "Admin Users mobile header must keep Logo first, title second, Back third, and account actions last"
 );
 assert(adminUsersPage.indexOf("<LocaleSwitcher")<adminUsersPage.indexOf("<UserMenu"),"Admin Users right actions must keep locale immediately before User Menu");
-assert(adminUsersPage.includes("initialUsersReady")&&adminUsersPage.includes("!initialUsersReady"),"Admin Users full-page readiness must wait for the initial staff list");
+assert(adminUsersPage.includes("readyTenantId")&&adminUsersPage.includes("readyTenantId !== tenantState.tenant.id")&&adminUsersPage.includes("loadRequestRef.current"),"Admin Users readiness must wait for the CURRENT tenant staff list and reject stale cross-tenant responses");
 assert(
   adminUsersCss.includes(".admin-users-header-leading")
   &&adminUsersCss.includes(".admin-users-header-title")
@@ -1325,7 +1325,7 @@ assert(
 );
 assert(
   adminUsersPage.includes('className="user-mobile-list"')
-  &&adminUsersPage.includes('className="staff-user-card"')
+  &&adminUsersPage.includes('className={"staff-user-card" + (user.active ? "" : " is-suspended")}')
   &&adminUsersPage.includes('className="staff-user-card-fields"')
   &&adminUsersPage.includes('className="staff-user-card-footer"')
   &&adminUsersPage.includes('className="user-table-scroll user-desktop-table"')

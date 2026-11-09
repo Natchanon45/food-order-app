@@ -28,6 +28,11 @@ function validate(raw = {}) {
       throw new HttpsError("invalid-argument", `Invalid ${key}`);
     }
   }
+  // Missing quota from older admin clients retains the deployed 100-check default.
+  const quota = raw.monthlySlipQuota ?? 100;
+  if (!Number.isInteger(Number(quota)) || Number(quota) < 0 || Number(quota) > 1000000) {
+    throw new HttpsError("invalid-argument", "Monthly Slip2Go quota must be a whole number");
+  }
   if (!Number.isFinite(Number(raw.annualMonths)) || config.annualMonths < 1 || config.annualMonths > 60) {
     throw new HttpsError("invalid-argument", "Annual period is invalid");
   }
@@ -73,6 +78,7 @@ exports.updateSubscriptionPricing = onCall({ region: "asia-southeast1" }, async 
       monthlyPrice: config.monthlyPrice,
       deliveryThreshold: config.deliveryThreshold,
       deliveryShareRate: config.deliveryShareRate,
+      monthlySlipQuota: config.monthlySlipQuota,
       annualMonths: config.annualMonths,
       discountType: config.discountType,
       discountValue: config.discountValue,

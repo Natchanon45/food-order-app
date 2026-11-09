@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
@@ -46,20 +47,28 @@ export function PlatformPricingPage() {
   const [loading, setLoading] = useState(true);
   const [initialReady, setInitialReady] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [storageReady, setStorageReady] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  // No resubmission after an uncertain billing write until the page is reloaded.
+  const [saveUnconfirmed, setSaveUnconfirmed] = useState(false);
   const [message, setMessage] = useState("");
   const lastVatRate = useRef(7);
 
   const load = async () => {
     setLoading(true);
     setMessage("");
+    setStorageReady(false);
+    setLoadError(false);
     try {
       const data = await loadAdminSubscriptionPricing();
       setConfig(data.config);
+      setStorageReady(data.storageReady === true);
       if (Number(data.config.vatRate) > 0) lastVatRate.current = Number(data.config.vatRate);
     } catch (error) {
       console.error("PLATFORM_PRICING_LOAD_FAILED", error);
       setConfig(DEFAULT_SUBSCRIPTION_PRICING);
-      setMessage("");
+      setLoadError(true);
+      setMessage(t("platform.pricing.load_failed"));
       showToast(t("platform.pricing.load_failed"), "error");
     } finally {
       setLoading(false);
@@ -105,26 +114,35 @@ export function PlatformPricingPage() {
 
   const submit = async event => {
     event.preventDefault();
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || !storageReady || loadError || saving || saveUnconfirmed) return;
     setSaving(true);
     setMessage("");
     try {
       const data = await saveAdminSubscriptionPricing(config);
+      if (data.storageReady !== true) throw new Error("SUBSCRIPTION_PRICING_STORAGE_NOT_READY");
       setConfig(data.config);
       if (Number(data.config.vatRate) > 0) lastVatRate.current = Number(data.config.vatRate);
       setMessage("");
       showToast(t("platform.pricing.save_success"));
     } catch (error) {
       console.error("PLATFORM_PRICING_SAVE_FAILED", error);
-      setMessage("");
+      if (error?.message === "SUBSCRIPTION_PRICING_WRITE_UNCONFIRMED") {
+        setSaveUnconfirmed(true);
+        setMessage("ไม่สามารถยืนยันราคาที่บันทึกกับ Firebase ได้ โปรดรีโหลดหน้านี้และตรวจสอบราคาปัจจุบันก่อนดำเนินการต่อ");
+      } else {
+        setMessage("");
+      }
       showToast(t("platform.pricing.save_failed"), "error");
     } finally {
       setSaving(false);
     }
   };
 
-  if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
+
+  if (authState.status === "loading" || !stylesReady || (authState.status === "ready" && profile?.role === "super_admin" && !initialReady)) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
+  if (authState.status !== "ready") return <main role="alert" data-platform-pricing-auth-error>ตรวจสอบสิทธิ์กับ PENGUIN ไม่สำเร็จ กรุณาเข้าสู่ระบบใหม่</main>;
   if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fpricing" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
@@ -168,6 +186,17 @@ export function PlatformPricingPage() {
                 <span className="platform-pricing-field-label"><i className="bi bi-truck" aria-hidden="true"></i><span>{intlLocale.startsWith("th") ? "เกณฑ์ยอด Delivery สะสมต่อเดือน (บาท)" : "Monthly paid Delivery threshold (THB)"}</span></span>
                 <input id="pricingDeliveryThreshold" type="number" min="0" max="1000000000" step="0.01" required
                   value={config.deliveryThreshold} onChange={e => update({ deliveryThreshold: e.target.value })} />
+              </label>
+              <label className="platform-pricing-quota-field" style={{gridColumn:"1 / -1"}}>
+                <span className="platform-pricing-field-label"><i className="bi bi-shield-check" aria-hidden="true"></i><span>{intlLocale.startsWith("th")
+                  ? "จำนวนครั้งตรวจสลิป Slip2Go ต่อรอบบิล (ครั้ง)"
+                  : "Slip2Go verification quota per billing cycle (checks)"}</span></span>
+                <input id="pricingMonthlySlipQuota" type="number" min="0" max="1000000" step="1" required
+                  style={{maxWidth:280}}
+                  value={config.monthlySlipQuota} onChange={e => update({monthlySlipQuota:e.target.value})}/>
+                <small className="platform-pricing-quota-help" style={{display:"block",marginTop:7,fontSize:12,color:"#61766a",lineHeight:1.5}}>{intlLocale.startsWith("th")
+                  ? "นับเฉพาะบิลที่ส่งตรวจ Slip2Go จริง ไม่รวมการตรวจซ้ำ เมื่อยอด Delivery ถึงเพดานจะใช้งานได้ไม่จำกัด"
+                  : "Counts unique bills sent to Slip2Go. Unlimited after reaching the paid Delivery threshold."}</small>
               </label>
               <label>
                 <span className="platform-pricing-field-label"><i className="bi bi-percent" aria-hidden="true"></i><span>{intlLocale.startsWith("th") ? "ส่วนแบ่ง Platform จากยอด Delivery (%)" : "Platform share of paid Delivery (%)"}</span></span>

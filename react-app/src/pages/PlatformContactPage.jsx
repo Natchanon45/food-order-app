@@ -13,6 +13,7 @@ import {
 } from "@/data/platformContactService";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
+import { TelegramSettingsPanel } from "@/components/TelegramSettingsPanel";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -87,7 +88,7 @@ export function PlatformContactPage() {
   const stylesReady = useParityPage({
     title: t("platform_contact.meta.title"),
     bodyClass: "platform-contact-page",
-    styles: ["public-contact.css", "platform-contact-settings.css", "platform-google-login-settings.css", "super-admin-header.css"],
+    styles: ["public-contact.css", "platform-contact-settings.css", "platform-google-login-settings.css", "telegram-notifications-port.css", "super-admin-header.css"],
     attributes: { "data-roles": "super_admin" },
   });
 
@@ -120,11 +121,19 @@ export function PlatformContactPage() {
   const [googleBusy, setGoogleBusy] = useState(true);
   const [initialGoogleReady, setInitialGoogleReady] = useState(false);
   const [googleSaving, setGoogleSaving] = useState(false);
+  const [contactLoadError, setContactLoadError] = useState(false);
+  const [googleLoadError, setGoogleLoadError] = useState(false);
+  const [googleStorageReady, setGoogleStorageReady] = useState(false);
+  // Ambiguous writes may already have changed Laravel. Don't permit a duplicate
+  // PUT until the operator reloads this page and checks canonical settings.
+  const [contactUnconfirmed, setContactUnconfirmed] = useState(false);
+  const [googleUnconfirmed, setGoogleUnconfirmed] = useState(false);
 
   const patchContact = patch => setContact(current => ({ ...current, ...patch }));
 
   const loadContact = async ({ announce = false } = {}) => {
     setContactBusy(true);
+    setContactLoadError(false);
     setContactStatus(t("platform_contact.contact.status.loading"));
     setContactStatusType("success");
     try {
@@ -134,6 +143,7 @@ export function PlatformContactPage() {
       if (announce) showToast(t("platform_contact.contact.toast.loaded"));
     } catch (error) {
       console.error("PLATFORM_CONTACT_LOAD_FAILED", error);
+      setContactLoadError(true);
       setContactStatus(t("platform_contact.contact.status.load_failed"));
       setContactStatusType("error");
     } finally {
@@ -144,17 +154,21 @@ export function PlatformContactPage() {
 
   const loadGoogle = async ({ announce = false } = {}) => {
     setGoogleBusy(true);
+    setGoogleLoadError(false);
+    setGoogleStorageReady(false);
     setGoogleStatus(t("platform_contact.google.status.loading"));
     setGoogleStatusType("success");
     try {
       const data = await loadGoogleCustomerLogin();
       setGoogle(data);
+      setGoogleStorageReady(data.storageReady === true);
       setGoogleStatus(data.source === "database"
         ? t("platform_contact.google.status.loaded_database")
         : t("platform_contact.google.status.loaded_environment"));
       if (announce) showToast(t("platform_contact.google.toast.loaded"));
     } catch (error) {
       console.error("GOOGLE_CUSTOMER_LOGIN_LOAD_FAILED", error);
+      setGoogleLoadError(true);
       setGoogleStatus(t("platform_contact.google.status.load_failed"));
       setGoogleStatusType("error");
     } finally {
@@ -208,6 +222,7 @@ export function PlatformContactPage() {
 
   const submitContact = async event => {
     event.preventDefault();
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || contactBusy || contactLoadError || contactUnconfirmed) return;
     const data = normalizedContact();
     const error = validateContact(data);
     if (error) {
@@ -219,16 +234,21 @@ export function PlatformContactPage() {
     setContactSaving(true);
     setContactStatus(t("platform_contact.contact.status.saving"));
     try {
-      await savePublicContact(data);
-      setContact(data);
+      const saved = await savePublicContact(data);
+      setContact({ ...defaults, ...saved.contact });
       setContactStatus(t("platform_contact.contact.status.saved"));
       setContactStatusType("success");
       showToast(t("platform_contact.contact.toast.saved"));
     } catch (error) {
       console.error("PLATFORM_CONTACT_SAVE_FAILED", error);
-      setContactStatus(t(error?.code === "permission-denied"
-        ? "platform_contact.contact.errors.permission_denied"
-        : "platform_contact.contact.errors.save_failed"));
+      if (error?.message === "PLATFORM_CONTACT_WRITE_UNCONFIRMED") {
+        setContactUnconfirmed(true);
+        setContactStatus("ไม่สามารถยืนยันช่องทางติดต่อที่บันทึกใน Firebase ได้ กรุณารีโหลดหน้านี้เพื่อตรวจสอบข้อมูลก่อนบันทึกอีกครั้ง");
+      } else {
+        setContactStatus(t(error?.code === "permission-denied"
+          ? "platform_contact.contact.errors.permission_denied"
+          : "platform_contact.contact.errors.save_failed"));
+      }
       setContactStatusType("error");
     } finally {
       setContactSaving(false);
@@ -258,6 +278,7 @@ export function PlatformContactPage() {
 
   const submitGoogle = async event => {
     event.preventDefault();
+    if (authState.status !== "ready" || profile?.role !== "super_admin" || googleBusy || !googleStorageReady || googleLoadError || googleUnconfirmed) return;
     const data = {
       enabled: google.enabled === true,
       clientId: String(google.clientId || "").trim(),
@@ -275,12 +296,18 @@ export function PlatformContactPage() {
     try {
       const saved = await saveGoogleCustomerLogin(data);
       setGoogle(saved);
+      setGoogleStorageReady(saved.storageReady === true);
       setGoogleStatus(t("platform_contact.google.status.saved"));
       setGoogleStatusType("success");
       showToast(t("platform_contact.google.toast.saved"));
     } catch (error) {
       console.error("GOOGLE_CUSTOMER_LOGIN_SAVE_FAILED", error);
-      setGoogleStatus(t("platform_contact.google.errors.save_failed"));
+      if (error?.message === "GOOGLE_LOGIN_WRITE_UNCONFIRMED") {
+        setGoogleUnconfirmed(true);
+        setGoogleStatus("ไม่สามารถยืนยันค่า Google Customer Login ที่บันทึกใน Firebase ได้ กรุณารีโหลดหน้านี้เพื่อตรวจสอบก่อนบันทึกอีกครั้ง");
+      } else {
+        setGoogleStatus(t("platform_contact.google.errors.save_failed"));
+      }
       setGoogleStatusType("error");
     } finally {
       setGoogleSaving(false);
@@ -302,6 +329,7 @@ export function PlatformContactPage() {
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
+  if (authState.status !== "ready") return <main role="alert" data-platform-contact-auth-error>ตรวจสอบสิทธิ์กับ PENGUIN ไม่สำเร็จ</main>;
   if (!profile) return <Navigate to="/login?next=%2Fplatform%2Fcontact" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
@@ -350,17 +378,17 @@ export function PlatformContactPage() {
                 <ContactChannel channel="email" icon="envelope-fill" title={t("platform_contact.contact.channels.email")} enabled={contact.emailEnabled} onEnabled={value => patchContact({ emailEnabled: value })} label={contact.emailLabel} onLabel={value => patchContact({ emailLabel: value })} value={contact.email} onValue={value => patchContact({ email: value })} valueId="contactEmail" valueLabel={t("platform_contact.contact.fields.email")} placeholder="support@example.com" type="email" t={t} />
               </div>
 
-              <div className="platform-contact-form-status" id="contactFormStatus" data-type={contactStatusType} hidden={!contactStatus}>{contactStatus}</div>
+              <div className="platform-contact-form-status" id="contactFormStatus" data-type={contactStatusType} data-write-unconfirmed={contactUnconfirmed ? "true" : undefined} hidden={!contactStatus}>{contactStatus}</div>
               <div className="platform-contact-actions">
                 <button className="btn" id="reloadContactButton" type="button" disabled={contactBusy} onClick={() => loadContact({ announce: true })}><i className="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>{t("platform_contact.contact.actions.reload")}</span></button>
-                <button className="btn btn-primary" id="saveContactButton" type="submit" disabled={contactBusy}>{contactSaving ? <><span className="platform-contact-saving" aria-hidden="true"></span><span>{t("platform_contact.contact.status.saving")}</span></> : <><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform_contact.contact.actions.save")}</span></>}</button>
+                <button className="btn btn-primary" id="saveContactButton" type="submit" disabled={contactBusy || contactLoadError || contactUnconfirmed}>{contactSaving ? <><span className="platform-contact-saving" aria-hidden="true"></span><span>{t("platform_contact.contact.status.saving")}</span></> : <><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform_contact.contact.actions.save")}</span></>}</button>
               </div>
             </form>
           </section>
 
           <aside className="card platform-contact-preview-card">
             <div className="section-title"><div><h2>{t("platform_contact.contact.preview.title")}</h2><p>{t("platform_contact.contact.preview.subtitle")}</p></div></div>
-            <section className="public-contact-card platform-contact-preview" id="contactPreview" hidden={previewContact.enabled !== true}>
+            <section className="public-contact-card platform-contact-preview" id="contactPreview" hidden={contactLoadError || previewContact.enabled !== true}>
               <div className="public-contact-copy">
                 <span className="public-contact-kicker"><i className="bi bi-chat-heart" aria-hidden="true"></i><span>{t("platform_contact.contact.preview.kicker")}</span></span>
                 <h2 id="previewHeading">{previewContact.heading}</h2>
@@ -374,6 +402,7 @@ export function PlatformContactPage() {
           </aside>
         </div>
 
+        <TelegramSettingsPanel scope="platform" />
         <div className="platform-google-login-layout">
           <section className="card platform-google-login-card">
             <div className="section-title">
@@ -388,6 +417,7 @@ export function PlatformContactPage() {
               </span>
             </div>
 
+            {!googleStorageReady ? <p role="alert" data-google-storage-unavailable>{googleLoadError ? t("platform_contact.google.status.load_failed") : "ฐานข้อมูล Google Login ยังไม่พร้อม กรุณาตรวจสอบ Migration"}</p> : null}
             <form id="googleCustomerLoginForm" className="platform-google-login-form" noValidate onSubmit={submitGoogle}>
               <label className="platform-google-login-toggle">
                 <span><strong>{t("platform_contact.google.toggle.title")}</strong><small>{t("platform_contact.google.toggle.help")}</small></span>
@@ -433,11 +463,11 @@ export function PlatformContactPage() {
                 <small>{t("platform_contact.google.origins.help")}</small>
               </div>
 
-              <div className="platform-contact-form-status" id="googleLoginSettingsStatus" data-type={googleStatusType} hidden={!googleStatus}>{googleStatus}</div>
+              <div className="platform-contact-form-status" id="googleLoginSettingsStatus" data-type={googleStatusType} data-write-unconfirmed={googleUnconfirmed ? "true" : undefined} hidden={!googleStatus}>{googleStatus}</div>
               <div className="platform-google-login-actions">
                 <button className="btn" id="reloadGoogleLoginSettings" type="button" disabled={googleBusy} onClick={() => loadGoogle({ announce: true })}><i className="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>{t("platform_contact.google.actions.reload")}</span></button>
                 <button className="btn" id="validateGoogleLoginSettings" type="button" disabled={googleBusy} onClick={validateGoogleNow}><i className="bi bi-shield-check" aria-hidden="true"></i><span>{t("platform_contact.google.actions.validate")}</span></button>
-                <button className="btn btn-primary" id="saveGoogleLoginSettings" type="submit" disabled={googleBusy}>{googleSaving ? <><span className="platform-contact-saving" aria-hidden="true"></span><span>{t("platform_contact.google.status.saving")}</span></> : <><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform_contact.google.actions.save")}</span></>}</button>
+                <button className="btn btn-primary" id="saveGoogleLoginSettings" type="submit" disabled={googleBusy || googleLoadError || !googleStorageReady || googleUnconfirmed}>{googleSaving ? <><span className="platform-contact-saving" aria-hidden="true"></span><span>{t("platform_contact.google.status.saving")}</span></> : <><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform_contact.google.actions.save")}</span></>}</button>
               </div>
             </form>
           </section>

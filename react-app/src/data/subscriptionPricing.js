@@ -7,6 +7,7 @@ export const DEFAULT_SUBSCRIPTION_PRICING = Object.freeze({
   monthlyPrice: 590,
   deliveryThreshold: 10000,
   deliveryShareRate: 5,
+  monthlySlipQuota: 100,
   annualMonths: 12,
   discountType: "amount",
   discountValue: 1180,
@@ -24,6 +25,7 @@ export function normalizeSubscriptionPricing(input = {}) {
     monthlyPrice: Math.max(0, round2(finite(input.monthlyPrice, 590))),
     deliveryThreshold: Math.max(0, round2(finite(input.deliveryThreshold, 10000))),
     deliveryShareRate: Math.max(0, round2(finite(input.deliveryShareRate, 5))),
+    monthlySlipQuota: Math.max(0, Math.round(finite(input.monthlySlipQuota, 100))),
     annualMonths: Math.max(1, Math.round(finite(input.annualMonths, 12))),
     discountType: ["none", "amount", "percent"].includes(String(input.discountType || ""))
       ? String(input.discountType) : "amount",
@@ -101,14 +103,25 @@ export async function loadAdminSubscriptionPricing() {
     exists: response?.data?.exists === true,
     config,
     pricing: calculateSubscriptionPricing(config),
+    storageReady: response?.data?.ok === true,
   };
 }
 
 export async function saveAdminSubscriptionPricing(input = {}) {
   const config = normalizeSubscriptionPricing(input);
   const response = await httpsCallable(functions, "updateSubscriptionPricing")(config);
+  if (response?.data?.ok !== true) throw new Error("SUBSCRIPTION_PRICING_WRITE_UNCONFIRMED");
   const saved = normalizeSubscriptionPricing(response?.data?.config || config);
-  return { config: saved, pricing: calculateSubscriptionPricing(saved) };
+  let confirmed;
+  try {
+    confirmed = await loadAdminSubscriptionPricing();
+  } catch {
+    throw new Error("SUBSCRIPTION_PRICING_WRITE_UNCONFIRMED");
+  }
+  if (!confirmed.storageReady || Object.keys(saved).some(key => confirmed.config[key] !== saved[key])) {
+    throw new Error("SUBSCRIPTION_PRICING_WRITE_UNCONFIRMED");
+  }
+  return confirmed;
 }
 
 export function subscriptionVatLabel(config, t, formatNumber) {

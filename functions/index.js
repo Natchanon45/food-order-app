@@ -281,6 +281,12 @@ exports.cancelDeferredWalkIn = operationalOrders.cancelDeferredWalkIn;
 exports.updateDeferredKitchen = operationalOrders.updateDeferredKitchen;
 exports.cancelReviewedPaidWalkIn = operationalOrders.cancelReviewedPaidWalkIn;
 
+// Superadmin-only encrypted Telegram bot settings and explicit test delivery.
+const platformTelegram = require("./platform-telegram");
+exports.getPlatformTelegramSettings = platformTelegram.getPlatformTelegramSettings;
+exports.savePlatformTelegramSettings = platformTelegram.savePlatformTelegramSettings;
+exports.testPlatformTelegramSettings = platformTelegram.testPlatformTelegramSettings;
+
 const lalamoveWebhook = require("./lalamove-webhook");
 exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook;
 

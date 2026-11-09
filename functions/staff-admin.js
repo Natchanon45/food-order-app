@@ -19,6 +19,13 @@ async function getCallerProfile(auth) {
   return { uid: auth.uid, ...profile };
 }
 
+function assertRequestedTenant(request, tenant) {
+  const expected = String(request.data?.expectedTenantId || "").trim();
+  if (expected && expected !== tenant.id) {
+    throw new HttpsError("permission-denied", "Staff operation tenant does not match the signed-in owner");
+  }
+}
+
 function tenantFromProfile(profile) {
   const tenantId = String(profile.tenantId || "").trim();
   if (!tenantId) throw new HttpsError("failed-precondition", "Tenant is missing from profile");
@@ -62,6 +69,7 @@ function isManagedStaff(user = {}) {
 exports.listTenantStaff = onCall({ region: "asia-southeast1" }, async request => {
   const caller = await getCallerProfile(request.auth);
   const tenant = tenantFromProfile(caller);
+  assertRequestedTenant(request, tenant);
   const snapshot = await getFirestore()
     .collection("tenants")
     .doc(tenant.id)
@@ -79,6 +87,7 @@ exports.listTenantStaff = onCall({ region: "asia-southeast1" }, async request =>
 exports.createTenantStaff = onCall({ region: "asia-southeast1" }, async request => {
   const caller = await getCallerProfile(request.auth);
   const tenant = tenantFromProfile(caller);
+  assertRequestedTenant(request, tenant);
   const email = String(request.data?.email || "").trim().toLowerCase();
   const password = String(request.data?.password || "");
   const displayName = String(request.data?.displayName || "").trim();
@@ -132,6 +141,7 @@ exports.createTenantStaff = onCall({ region: "asia-southeast1" }, async request 
 exports.updateTenantStaff = onCall({ region: "asia-southeast1" }, async request => {
   const caller = await getCallerProfile(request.auth);
   const tenant = tenantFromProfile(caller);
+  assertRequestedTenant(request, tenant);
   const uid = String(request.data?.uid || "").trim();
   if (!uid || uid === caller.uid) throw new HttpsError("invalid-argument", "Invalid staff account");
 

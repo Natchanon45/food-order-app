@@ -1,0 +1,74 @@
+.lukkaja-telegram-panel {
+  display:grid;gap:17px;padding:22px;margin:20px 0;
+  background:var(--card,#fff);border:1px solid #d6e9dc;border-radius:17px;
+  box-shadow:0 4px 16px rgba(12,52,34,.035);color:#163d2b;
+}
+.lukkaja-telegram-heading{display:flex;align-items:center;gap:12px;min-width:0;}
+.lukkaja-telegram-heading .lukkaja-telegram-icon{
+  display:grid;place-items:center;flex:0 0 44px;height:44px;border-radius:13px;
+  background:#e4f3ec;color:#187849;font-size:23px;
+}
+.lukkaja-telegram-heading > div:nth-child(2){flex:1;min-width:0;}
+.lukkaja-telegram-heading h2{font-size:18px;font-weight:800;margin:0 0 5px;}
+.lukkaja-telegram-heading p,.lukkaja-telegram-channel p{margin:0;color:#677d6d;font-size:12px;line-height:1.6;}
+.lukkaja-telegram-heading button,.lukkaja-telegram-actions button{display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+.lukkaja-telegram-info{padding:11px 14px;background:#f1f8f4;border:1px solid #d7eadd;border-radius:10px;line-height:1.65;font-size:12px;color:#466351;}
+.lukkaja-telegram-info a{color:#1769af;text-decoration:underline;}
+.lukkaja-telegram-info span{display:block;}
+.lukkaja-telegram-channel{border:1px solid #dce9e0;border-radius:13px;padding:17px 18px;background:#fdfefd;min-width:0;}
+.lukkaja-telegram-channel legend{font-weight:800;font-size:14px;padding:0 5px;color:#18533a;}
+.lukkaja-telegram-checkbox,.lukkaja-telegram-clear{display:flex;gap:9px;align-items:center;font-size:12px;font-weight:650;margin:12px 0;}
+.lukkaja-telegram-clear{color:#b94b42;}
+.lukkaja-telegram-input-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;}
+.lukkaja-telegram-input-grid label{display:grid;gap:6px;min-width:0;font-size:12px;}
+.lukkaja-telegram-input-grid label strong{font-size:12px;}
+.lukkaja-telegram-input-grid input{width:100%;min-width:0;padding:10px 11px;border:1px solid #cadcd0;border-radius:9px;background:#fff;color:#153d2a;font:inherit;font-size:13px;}
+.lukkaja-telegram-input-grid input:focus{outline:2px solid #278e5c;outline-offset:1px;}
+.lukkaja-telegram-input-grid label small{color:#607a6c;font-size:11px;line-height:1.4;}
+.lukkaja-telegram-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;}
+.lukkaja-telegram-actions button{min-height:35px;padding:8px 12px;font-size:12px;border-radius:8px;}
+.lukkaja-telegram-message{border-radius:9px;padding:10px 12px;background:#e9f8ed;color:#16663d;font-size:12px;margin:0;}
+.lukkaja-telegram-message.error{background:#fff0ed;color:#a73528;}
+@media(max-width:640px){
+ .lukkaja-telegram-panel{padding:15px;margin:14px 0;}
+ .lukkaja-telegram-input-grid{grid-template-columns:1fr;}
+ .lukkaja-telegram-heading{flex-wrap:wrap;}
+ .lukkaja-telegram-heading button{margin-left:auto;}
+ .lukkaja-telegram-channel{padding:14px;}
+}
+
+
+/* Merchant Telegram settings are an independent accordion inside the store
+ * settings parent card. Preserve all existing green Telegram interior styling.
+ * Keep it outside #storeForm so Telegram saves cannot submit store fields. */
+body.admin-vr-page [data-admin-card-key="store"] > .admin-card-body > #storeTelegramGroup {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-top: 12px;
+}
+body.admin-vr-page [data-admin-card-key="store"] #storeTelegramGroup .lukkaja-telegram-panel {
+  margin: 0;
+  box-shadow: none;
+  border-color: #d6e9dc;
+}
+body.admin-vr-page [data-admin-card-key="store"] #storeTelegramGroup .admin-settings-group-body {
+  padding: 12px;
+}
+@media (max-width: 640px) {
+  body.admin-vr-page [data-admin-card-key="store"] #storeTelegramGroup .admin-settings-group-body {
+    padding: 8px;
+  }
+}
+
+/* Telegram is directly above the Store Save action, but remains outside
+ * #storeForm so its separate Bot actions never submit store settings.
+ * The external submit button belongs to #storeForm via its form attribute. */
+body.admin-vr-page [data-admin-card-key="store"] > .admin-card-body > #storeSettingsSaveButton {
+  width: 100% !important;
+  max-width: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 12px;
+}

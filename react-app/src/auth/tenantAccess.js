@@ -51,7 +51,9 @@ export function effectiveSubscriptionStatus(tenant = {}, now = new Date()) {
   if (!expiresAt) return stored || "active";
 
   if (now.getTime() <= expiresAt.getTime()) {
-    return stored === "trialing" ? "trialing" : "active";
+    const trialEndsAt = tenantDate(tenant.trialEndsAt);
+    return stored === "trialing" && trialEndsAt && now <= trialEndsAt
+      ? "trialing" : "active";
   }
 
   const graceDays = Math.max(0, Math.min(30, Number(tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS) || 0));

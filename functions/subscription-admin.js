@@ -36,7 +36,11 @@ function effectiveStatus(tenant, now = new Date()) {
   if (!expiresAt) return tenant.subscriptionStatus || "active";
   const graceDays = Number(tenant.gracePeriodDays ?? DEFAULT_GRACE_DAYS);
   const graceEndsAt = addDays(expiresAt, graceDays);
-  if (now <= expiresAt) return "active";
+  if (now <= expiresAt) {
+    const trialEndsAt = asDate(tenant.trialEndsAt);
+    return tenant.subscriptionStatus === "trialing" && trialEndsAt && now <= trialEndsAt
+      ? "trialing" : "active";
+  }
   if (now <= graceEndsAt) return "grace";
   return "expired";
 }
@@ -75,7 +79,7 @@ exports.initializeTenantSubscription = onDocumentCreated(
     const snapshot = event.data;
     if (!snapshot) return;
     const tenant = snapshot.data();
-    if (tenant.billingPolicyVersion === "hybrid_v1") return;
+    if (tenant.billingPolicyVersion === "hybrid_v1" || tenant.onboardingRequired === true) return;
     if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return;
     const db = getFirestore();
     const batch = db.batch();
@@ -95,7 +99,7 @@ exports.backfillTenantSubscriptions = onCall(
     let updated = 0;
     for (const tenantDoc of snapshot.docs) {
       const tenant = tenantDoc.data();
-      if (tenant.billingPolicyVersion === "hybrid_v1") continue;
+      if (tenant.billingPolicyVersion === "hybrid_v1" || tenant.onboardingRequired === true) continue;
       if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) continue;
       const batch = db.batch();
       const patch = defaultPatch(new Date(), tenant);
@@ -191,7 +195,7 @@ exports.syncExpiredTenants = onSchedule(
     let changed = 0;
     for (const tenantDoc of snapshot.docs) {
       const tenant = tenantDoc.data();
-      if (tenant.billingPolicyVersion === "hybrid_v1") continue;
+      if (tenant.billingPolicyVersion === "hybrid_v1" || tenant.onboardingRequired === true) continue;
       if (revenueShareEnabled(tenant) || tenant.revenueShareSuspended === true) continue;
       if (!tenant.subscriptionExpiresAt) {
         const batch = db.batch();
@@ -204,7 +208,7 @@ exports.syncExpiredTenants = onSchedule(
       }
       if (tenant.subscriptionStatus === "suspended") continue;
       const status = effectiveStatus(tenant);
-      const active = status === "active" || status === "grace";
+      const active = status === "active" || status === "grace" || status === "trialing";
       if (status === tenant.subscriptionStatus && active === (tenant.active !== false)) continue;
       const patch = { subscriptionStatus: status, active, updatedAt: FieldValue.serverTimestamp() };
       const batch = db.batch();

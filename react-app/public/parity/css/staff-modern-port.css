@@ -1,0 +1,366 @@
+/*
+ * LUKKAJA Staff Workspace refresh — local-only presentation overlay.
+ * Load after pinned SOURCE CSS. No API, persistence or permission changes.
+ */
+body.admin-users-page {
+  --staff-forest: #0d3f2a;
+  --staff-emerald: #087e51;
+  --staff-line: #e2ece7;
+  --staff-muted: #697d72;
+}
+body.admin-users-page .container {
+  width: min(1250px, 100%);
+  max-width: 1250px;
+  padding: clamp(14px, 2.4vw, 28px) clamp(12px, 2vw, 24px) 92px;
+}
+body.admin-users-page .staff-hero {
+  min-height: 180px;
+  margin: 0 0 19px;
+  padding: clamp(24px, 3vw, 38px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 25px;
+  background: linear-gradient(112deg, #0a3022 0%, #075c3a 55%, #0d9d5c 100%);
+  box-shadow: 0 22px 48px rgba(9, 84, 52, .16);
+}
+body.admin-users-page .staff-hero::before {
+  width: 270px; height: 270px; right: 2%; top: -172px;
+  background: rgba(130, 242, 180, .16);
+}
+body.admin-users-page .staff-hero::after {
+  width: 195px; height: 195px; right: -52px; bottom: -125px;
+  background: rgba(182, 255, 202, .13);
+}
+body.admin-users-page .staff-hero-kicker {
+  padding: 6px 11px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: rgba(255,255,255,.1);
+  color: #d8ffe6;
+  letter-spacing: .02em;
+}
+body.admin-users-page .staff-hero h1 { font-size: clamp(27px, 3vw, 38px); letter-spacing: -.025em; line-height: 1.25; }
+body.admin-users-page .staff-hero p { max-width: 560px; font-size: 14px; line-height: 1.8; color: #d5f3e2; opacity: 1; }
+body.admin-users-page .staff-create-trigger {
+  position: relative; z-index: 1;
+  min-width: 166px; min-height: 47px;
+  border-radius: 13px; border: 1px solid #d5ffe4;
+  background: #f6fff9; color: #0b6b42;
+  font-size: 14px; font-weight: 700;
+  box-shadow: 0 11px 24px rgba(0, 44, 24, .16);
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+body.admin-users-page .staff-create-trigger:hover:not(:disabled) {
+  transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0, 44, 24, .23);
+}
+body.admin-users-page .staff-overview {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px; margin: 0 0 18px;
+}
+body.admin-users-page .staff-metric {
+  position: relative; display: flex; align-items: center; gap: 15px;
+  min-width: 0; min-height: 110px; padding: 18px 19px;
+  border: 1px solid #e2ebe6; border-radius: 21px;
+  background: #fff; box-shadow: 0 10px 27px rgba(21, 63, 45, .047);
+}
+body.admin-users-page .staff-metric-icon {
+  display: grid; flex: 0 0 54px; width: 54px; height: 54px;
+  place-items: center; border-radius: 16px; font-size: 22px;
+  background: #dff5e9; color: #098c51;
+}
+body.admin-users-page .staff-metric-total .staff-metric-icon {
+  background: #e0edff; color: #3765b7;
+}
+body.admin-users-page .staff-metric-suspended .staff-metric-icon {
+  background: #fff1e2; color: #ba792a;
+}
+body.admin-users-page .staff-metric > div { min-width: 0; display: grid; gap: 3px; }
+body.admin-users-page .staff-metric-label { color: #60746a; font-size: 12px; line-height: 1.45; }
+body.admin-users-page .staff-metric-value { color: #103e2c; font-size: 32px; line-height: 1.14; letter-spacing: -.04em; }
+body.admin-users-page .staff-metric-corner { position: absolute; right: 18px; top: 16px; color: #94aabc; font-size: 17px; }
+body.admin-users-page .staff-metric-status-dot { position: absolute; top: 20px; right: 18px; width: 9px; height: 9px; border-radius: 50%; background: #23b775; box-shadow: 0 0 0 4px #e2f8ed; }
+body.admin-users-page .staff-metric-suspended .staff-metric-status-dot { background: #e2a25c; box-shadow: 0 0 0 4px #fff2df; }
+body.admin-users-page .staff-list-card {
+  margin-top: 0; border: 1px solid #e1ebe4; border-radius: 24px;
+  background: #fff; box-shadow: 0 18px 46px rgba(25, 62, 43, .075);
+}
+body.admin-users-page .staff-list-heading {
+  margin: 0; padding: 22px 24px 15px;
+  border-bottom: 0; align-items: center;
+}
+body.admin-users-page .staff-list-heading h2 { font-size: 21px; color: #143f2c; }
+body.admin-users-page .staff-list-heading p { margin-top: 5px; font-size: 12px; color: #77867e; }
+body.admin-users-page .staff-list-heading .badge {
+  border: 1px solid #d9f0e1; border-radius: 999px;
+  padding: 7px 13px; color: #086d41; background: #eaf9ef;
+}
+body.admin-users-page .staff-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 15px; padding: 0 24px 20px;
+}
+body.admin-users-page .staff-search {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1 1 310px; max-width: 480px; min-width: 0; min-height: 46px;
+  padding: 0 14px; border: 1px solid #dae7df; border-radius: 13px;
+  color: #6e9080; background: #f8fbf9;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+body.admin-users-page .staff-search:focus-within { border-color: #169c63; box-shadow: 0 0 0 3px rgba(20, 157, 98, .1); }
+body.admin-users-page .staff-search > input {
+  min-width: 0; width: 100%; height: 44px; padding: 0;
+  border: 0; outline: none; color: #173e2c; background: transparent; font-size: 13px;
+}
+body.admin-users-page .staff-search > input::placeholder { color: #879b90; }
+body.admin-users-page .staff-search-clear {
+  width: 26px; height: 26px; padding: 0; flex: 0 0 26px;
+  border: 0; border-radius: 8px; background: #e5eee8; color: #476a58;
+}
+body.admin-users-page .staff-status-filters {
+  display: flex; flex: 0 0 auto; gap: 4px; padding: 4px;
+  border: 1px solid #e3ebe7; border-radius: 13px; background: #f3f7f5;
+}
+body.admin-users-page .staff-filter {
+  display: flex; align-items: center; gap: 7px; min-height: 36px;
+  padding: 7px 11px; border: 1px solid transparent;
+  border-radius: 10px; color: #728277; background: transparent;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+body.admin-users-page .staff-filter span {
+  min-width: 20px; padding: 1px 5px; border-radius: 7px;
+  background: #e7eeea; color: #607a6a; font-size: 11px;
+}
+body.admin-users-page .staff-filter.is-current {
+  color: #0a7146; border-color: #d1e8da; background: white;
+  box-shadow: 0 3px 9px rgba(9, 70, 39, .08);
+}
+body.admin-users-page .staff-filter.is-current span { color: #087346; background: #e2f6e9; }
+body.admin-users-page .staff-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; min-height: 135px; color: #82978a;
+}
+body.admin-users-page .staff-empty i { font-size: 26px; color: #8db7a2; }
+body.admin-users-page .user-table-scroll { padding: 0 20px 22px; }
+body.admin-users-page .user-table {
+  width: 100%; min-width: 900px;
+  border-collapse: separate; border-spacing: 0 8px;
+}
+body.admin-users-page .user-table th {
+  padding: 9px 13px; color: #718779; border: none;
+  font-size: 11px; letter-spacing: .02em; text-transform: none;
+}
+body.admin-users-page .user-table td {
+  padding: 12px 11px; border-top: 1px solid #e7efea; border-bottom: 1px solid #e7efea;
+  background: #fafcfb; color: #234234;
+  transition: background .16s ease, border-color .16s ease;
+}
+/* The global .table-list cell rule wins in the compiled stylesheet and
+ * leaves inline text at the top, above the input/select/button centerline.
+ * Explicitly center the entire row and give text-only cells control-height
+ * line boxes. Do not convert <td> to flex (that breaks native table columns). */
+body.admin-users-page .user-table tbody td {
+  vertical-align: middle !important;
+}
+body.admin-users-page .user-table tr:hover td { background: #f0faf4; border-color: #d4ebdd; }
+body.admin-users-page .user-table tbody tr.is-suspended td { background: #fffdfa; }
+body.admin-users-page .user-table tbody td:first-child { border-left: 1px solid #e7efea; border-radius: 14px 0 0 14px; }
+body.admin-users-page .user-table tbody td:last-child { border-right: 1px solid #e7efea; border-radius: 0 14px 14px 0; }
+body.admin-users-page .user-table td:nth-child(2) { min-width: 175px; max-width: 255px; color: #678076; font-size: 12px; }
+body.admin-users-page .staff-desktop-person { display: flex; align-items: center; gap: 9px; min-width: 0; }
+body.admin-users-page .staff-desktop-avatar {
+  display: grid; place-items: center; width: 36px; height: 36px;
+  flex: 0 0 36px; border-radius: 11px;
+  background: #def4e8; color: #0e9154; font-size: 16px;
+}
+body.admin-users-page .staff-desktop-person .input { min-width: 128px; background: #fff; font-weight: 700; }
+body.admin-users-page .staff-desktop-email {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 40px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  word-break: normal;
+  line-height: 40px;
+}
+body.admin-users-page .user-table .input {
+  min-height: 39px; border: 1px solid #e1eae5;
+  border-radius: 10px; color: #1b4430; background: #fff; font-size: 12px;
+}
+body.admin-users-page .staff-desktop-active {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 40px; max-width: 100%;
+  color: #28784b; font-size: 11px; white-space: nowrap;
+}
+body.admin-users-page .staff-desktop-active span {
+  white-space: nowrap;
+}
+body.admin-users-page .staff-desktop-active input { width: 17px; height: 17px; accent-color: #0a9657; }
+body.admin-users-page .user-table tr.is-suspended .staff-desktop-active { color: #ad7a39; }
+body.admin-users-page .user-save-button {
+  min-height: 37px; padding-inline: 13px; border-radius: 10px; white-space: nowrap;
+}
+body.admin-users-page .staff-user-card {
+  border: 1px solid #e2ece6; border-radius: 17px;
+  background: #fff; box-shadow: 0 7px 20px rgba(25, 70, 48, .06);
+}
+body.admin-users-page .staff-user-card.is-suspended { border-color: #f0e7d9; background: #fffcf8; }
+body.admin-users-page .staff-user-card-status { display: flex; justify-content: flex-end; margin: 8px 0 0; }
+body.admin-users-page .staff-state-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 650;
+}
+body.admin-users-page .staff-state-tag > span { width: 7px; height: 7px; border-radius: 50%; }
+body.admin-users-page .staff-state-tag.is-active { color: #087747; background: #e4f8eb; }
+body.admin-users-page .staff-state-tag.is-active > span { background: #14a765; }
+body.admin-users-page .staff-state-tag.is-suspended { color: #a76e21; background: #fff0dc; }
+body.admin-users-page .staff-state-tag.is-suspended > span { background: #e5a449; }
+body.admin-users-page .staff-dialog {
+  border: 1px solid rgba(255, 255, 255, .8); border-radius: 25px;
+  box-shadow: 0 34px 100px rgba(10, 35, 24, .30);
+}
+body.admin-users-page .staff-dialog::backdrop { background: rgba(8, 33, 22, .62); backdrop-filter: blur(6px); }
+body.admin-users-page .staff-dialog-header {
+  background: linear-gradient(105deg, #f2fbf5, #f8fcfa);
+  border-bottom: 1px solid #e1ece4;
+}
+body.admin-users-page .staff-dialog-header h2 { color: #16432d; }
+body.admin-users-page .staff-dialog-icon { background: #dcf5e8; color: #079451; }
+body.admin-users-page .staff-dialog-body .input {
+  border: 1px solid #e1eae5; border-radius: 12px; background: #fafdfe;
+}
+body.admin-users-page .staff-dialog-body .input:focus { border-color: #119c5c; box-shadow: 0 0 0 3px rgba(12, 151, 87, .11); }
+body.admin-users-page .staff-active-option { background: #f5fbf7; border-color: #dcece3; }
+body.admin-users-page .staff-active-option input { accent-color: #0b9455; }
+body.admin-users-page .staff-dialog-footer {
+  border-top: 1px solid #e1ece4;
+  background: #f7fbf8; border-radius: 0 0 24px 24px;
+}
+body.admin-users-page .staff-dialog-footer .btn { border-radius: 12px; }
+body.admin-users-page :is(.staff-filter,.staff-search-clear,.staff-create-trigger,.user-save-button,.staff-user-save,.staff-dialog-close):focus-visible {
+  outline: 3px solid rgba(18, 156, 89, .32); outline-offset: 2px;
+}
+/* Card layout replaces the cramped wide-table overflow on tablet and phone. */
+@media (max-width: 900px) {
+  body.admin-users-page .user-desktop-table { display: none; }
+  body.admin-users-page .user-mobile-list {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px; padding: 0 18px 22px;
+  }
+  body.admin-users-page .staff-user-card { min-width: 0; padding: 16px; }
+  body.admin-users-page .staff-user-card-head {
+    display: grid; grid-template-columns: 40px minmax(0, 1fr);
+    gap: 11px; align-items: start;
+  }
+  body.admin-users-page .staff-user-avatar {
+    display: grid; width: 40px; height: 40px; margin-top: 18px;
+    place-items: center; border-radius: 12px;
+    background: #def5e9; color: #0d8d50; font-size: 17px;
+  }
+  body.admin-users-page .staff-user-identity,
+  body.admin-users-page .staff-user-field { min-width: 0; }
+  body.admin-users-page .staff-user-field { display: grid; gap: 7px; }
+  body.admin-users-page .staff-user-field > span { font-size: 11px; font-weight: 600; color: #6f8677; }
+  body.admin-users-page .staff-user-field .input {
+    width: 100%; min-height: 42px; min-width: 0;
+    padding: 8px 10px; border-radius: 10px;
+    border: 1px solid #e0eae4; font-size: 12px; background: #fafdfb;
+  }
+  body.admin-users-page .staff-user-name-field .input { font-weight: 700; font-size: 13px; background: #fff; }
+  body.admin-users-page .staff-user-email {
+    display: flex; align-items: center; gap: 6px; min-width: 0;
+    margin-top: 8px; color: #708477; font-size: 11px;
+  }
+  body.admin-users-page .staff-user-email span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.admin-users-page .staff-user-card-fields {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px; margin-top: 12px; padding-top: 14px; border-top: 1px solid #eef2ef;
+  }
+  body.admin-users-page .staff-user-card-footer {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px; margin-top: 13px; padding-top: 13px; border-top: 1px solid #eef2ef;
+  }
+  body.admin-users-page .staff-user-active {
+    display: flex; justify-content: space-between; align-items: center; gap: 7px;
+    min-height: 43px; padding: 8px 9px; border-radius: 10px;
+    color: #557465; background: #f3f8f5; font-size: 11px;
+  }
+  body.admin-users-page .staff-user-switch {
+    position: relative; display: block; width: 40px; height: 24px; flex: 0 0 40px;
+    padding: 0; border: 1px solid #c7dace; border-radius: 999px; background: #f1f3f2;
+  }
+  body.admin-users-page .staff-user-switch.is-on { border-color: #0da65f; background: #0ca765; }
+  body.admin-users-page .staff-user-switch-knob {
+    position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 4px #0002;
+    transition: transform .2s ease;
+  }
+  body.admin-users-page .staff-user-switch.is-on .staff-user-switch-knob { transform: translateX(16px); }
+  body.admin-users-page .staff-user-save { width: 100%; min-height: 43px; border-radius: 10px; }
+  body.admin-users-page .staff-toolbar { flex-wrap: wrap; }
+  body.admin-users-page .staff-search { max-width: none; flex: 1 1 100%; }
+  body.admin-users-page .staff-status-filters { flex: 1 1 auto; justify-content: space-between; }
+  body.admin-users-page .staff-filter { flex: 1 1 auto; justify-content: center; }
+}
+@media (max-width: 600px) {
+  body.admin-users-page .container { padding: 14px 12px 78px; }
+  body.admin-users-page .staff-hero { min-height: 0; gap: 14px; padding: 22px; border-radius: 21px; }
+  body.admin-users-page .staff-hero h1 { font-size: 27px; }
+  body.admin-users-page .staff-hero p { font-size: 12px; }
+  body.admin-users-page .staff-create-trigger { width: 100%; }
+  body.admin-users-page .staff-overview { gap: 8px; margin-bottom: 14px; }
+  body.admin-users-page .staff-metric {
+    flex-direction: column; align-items: flex-start; min-height: 112px;
+    gap: 8px; padding: 11px 12px; border-radius: 15px;
+  }
+  body.admin-users-page .staff-metric-icon { width: 31px; height: 31px; flex: 0 0 31px; border-radius: 9px; font-size: 15px; }
+  body.admin-users-page .staff-metric-value { font-size: 23px; }
+  body.admin-users-page .staff-metric-label { font-size: 10px; }
+  body.admin-users-page .staff-metric-corner, body.admin-users-page .staff-metric-status-dot { display: none; }
+  body.admin-users-page .staff-list-card { border-radius: 20px; }
+  body.admin-users-page .staff-list-heading { padding: 18px 15px 13px; }
+  body.admin-users-page .staff-list-heading h2 { font-size: 18px; }
+  body.admin-users-page .staff-toolbar { gap: 10px; padding: 0 13px 16px; }
+  body.admin-users-page .staff-filter { padding: 7px 5px; font-size: 11px; }
+  body.admin-users-page .user-mobile-list { grid-template-columns: minmax(0, 1fr); padding: 0 12px 15px; }
+  body.admin-users-page .staff-user-card { padding: 14px; }
+  body.admin-users-page .staff-dialog { max-height: calc(100dvh - 16px); width: calc(100% - 16px); border-radius: 18px; }
+  body.admin-users-page .staff-dialog-header { padding: 15px 14px; }
+  body.admin-users-page .staff-dialog-body { padding: 15px 14px; }
+  body.admin-users-page .staff-dialog-footer { gap: 8px; padding: 12px; }
+  body.admin-users-page .staff-dialog-footer .btn { min-width: 0; padding-inline: 8px; font-size: 12px; }
+}
+@media (max-width: 350px) {
+  body.admin-users-page .staff-overview { gap: 6px; }
+  body.admin-users-page .staff-metric { padding: 10px 9px; }
+  body.admin-users-page .staff-metric-label { font-size: 9px; }
+  body.admin-users-page .staff-filter { gap: 4px; font-size: 10px; }
+  body.admin-users-page .staff-filter span { min-width: 17px; padding-inline: 3px; }
+  body.admin-users-page .staff-user-card-fields { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.admin-users-page .staff-create-trigger,
+  body.admin-users-page .user-table td,
+  body.admin-users-page .staff-user-switch-knob { transition: none; }
+}
+
+body.admin-users-page .staff-back-symbol { display: none; }
+body.admin-users-page .staff-metric-icon svg { width: 24px; height: 24px; }
+@media (max-width: 350px) {
+  body.admin-users-page .app-header { min-width: 0; width: 100%; }
+  body.admin-users-page .admin-users-header-title { display: none; }
+  body.admin-users-page .admin-users-header-back { width: 36px; min-width: 36px; height: 36px; padding: 0 !important; }
+  body.admin-users-page .admin-users-header-back .staff-back-text,
+  body.admin-users-page .admin-users-header-back .app-icon { display: none !important; }
+  body.admin-users-page .admin-users-header-back .staff-back-symbol { display: inline; font-size: 23px; line-height: 1; }
+  body.admin-users-page .admin-users-header-leading { gap: 6px; }
+  body.admin-users-page .admin-users-header-actions { gap: 3px; }
+}
+@media (max-width: 600px) {
+  body.admin-users-page .staff-metric-icon svg { width: 17px; height: 17px; }
+}
+
+@media (max-width: 350px) {
+  body.admin-users-page .staff-user-card-footer { grid-template-columns: 1fr; }
+  body.admin-users-page .staff-user-active { min-height: 42px; }
+}
