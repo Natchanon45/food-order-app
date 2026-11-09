@@ -809,6 +809,10 @@ export function AdminTenantsPage() {
         setUncertainTenantWrites(current => ({ ...current, [writeKey]: true }));
         message = "ยังยืนยันผลการสร้างร้านและ Owner ไม่ได้ กรุณารีโหลดและตรวจสอบข้อมูลก่อนส่งคำสั่งซ้ำ";
       } else if (error?.code === "functions/already-exists") {
+        // A confirmed rejection did not create the requested shop. A corrected
+        // email/slug must use a fresh request ID, while ambiguous requests
+        // remain locked against retries.
+        if (!editing) createOperationIdRef.current = crypto.randomUUID();
         message = "Slug หรืออีเมล Owner นี้ถูกใช้งานแล้ว กรุณาตรวจสอบข้อมูล";
       } else if (error?.code === "functions/failed-precondition") {
         message = "ยังไม่พร้อมสร้างร้าน กรุณาตรวจสอบราคาแพ็กเกจจากส่วนกลางก่อน";
