@@ -1394,10 +1394,12 @@ for(const locale of ["th","en","my","lo","km"]) {
 }
 
 const adminTenantsPage=read("react-app/src/pages/AdminTenantsPage.jsx");
+const tenantControlPanel=read("react-app/src/components/TenantControlPanel.jsx");
 assert(
   adminTenantsPage.includes('className="card tenant-admin-notification-panel"')
-  &&adminTenantsPage.includes("data-tenant-revenue-notification={tenant.id}")
-  &&adminTenantsPage.includes("data-tenant-wallet-notification={tenant.id}")
+  &&tenantControlPanel.includes("data-tenant-revenue-notification={tenant.id}")
+  &&tenantControlPanel.includes("data-tenant-wallet-notification={tenant.id}")
+  &&adminTenantsPage.includes("<TenantControlPanel")
   &&adminTenantsPage.includes('setReviewStatus("all")')
   &&adminTenantsPage.includes("refreshAdminNotifications({ force: true })")
   &&tenantAdminClarityCss.includes(".tenant-admin-notification-panel")
