@@ -82,6 +82,10 @@ exports.verifyDeliveryPaymentSlip = onCall(
       throw new HttpsError("failed-precondition", "DELIVERY_CHECKOUT_TOTAL_MISMATCH");
     }
     const itemsSignature = normalizedItems(menuRows);
+    const blockedWithoutProvider = reason => ({
+      status: "manual_review", reason, verification: "cashier",
+      proofId: orderId, paymentVerified: false,
+    });
     const manualProof = async reason => {
       console.info("DELIVERY_SLIP_REVIEW_REASON", { reason });
       await proofRef.set({
@@ -197,9 +201,9 @@ exports.verifyDeliveryPaymentSlip = onCall(
       itemsSignature, receiverAccount: account,
     });
     const anchor = tenantAnchorDate(tenant);
-    if (!anchor) return manualProof("merchant_quota_activation_missing");
+    if (!anchor) return blockedWithoutProvider("merchant_quota_activation_missing");
     const cycle = cycleForDate(anchor, bangkokDateKey(new Date()));
-    if (!cycle) return manualProof("merchant_quota_activation_missing");
+    if (!cycle) return blockedWithoutProvider("merchant_quota_activation_missing");
     const [priceSnap, verifierSnap, observed] = await Promise.all([
       db.collection("platformSettings").doc("subscriptionPricing").get(),
       db.collection("platformPrivateSettings").doc("slipVerification").get(),
@@ -212,7 +216,7 @@ exports.verifyDeliveryPaymentSlip = onCall(
     if (!priceSnap.exists || !Number.isSafeInteger(freeBills)
       || freeBills < 0 || freeBills > 1000000
       || !Number.isSafeInteger(thresholdCents) || thresholdCents <= 0) {
-      return manualProof("merchant_quota_pricing_unavailable");
+      return blockedWithoutProvider("merchant_quota_pricing_unavailable");
     }
     if (!providerSettings.slip2GoApiUrl || !providerSettings.slip2GoSecret) {
       // No external verification was made: this is not a quota event.
