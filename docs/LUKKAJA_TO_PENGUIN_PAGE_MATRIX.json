@@ -34,7 +34,7 @@
       "sourceOnlyCount": 0,
       "scope": "Platform cards, tenants, owners, accounts, pricing, role guards, notification and admin UIs",
       "releaseGate": "Verified super_admin-only access and Firestore write scoping; finance actions remain disabled unless separately accepted",
-      "status": "P1_1_hosting_increment_live__P1_2_tenants_audit_started__signed_in_uat_open"
+      "status": "whole_phase_in_progress__source_tenant_control_and_onecall_owner_tests_pass__m7_backend_and_signed_in_uat_open"
     },
     {
       "id": "P2",
@@ -163,11 +163,11 @@
       "sourcePath": "resources/js/react-port/pages/AdminTenantsPage.jsx",
       "destinationPath": "react-app/src/pages/AdminTenantsPage.jsx",
       "destinationPresence": "filename_exists__ui_not_verified",
-      "jsxReview": "source_delta_2341_vs_1578_reviewed__port_pending",
+      "jsxReview": "source_control_panel_and_onboarding_ported__m7_backend_pending",
       "cssAssetsReview": "pending",
-      "firebaseContract": "pending",
+      "firebaseContract": "atomic_onboarding_emulator_pass__m7_certification_missing",
       "rolesAndTenantScope": "pending",
-      "actionScenarioInventory": "source_features_mapped__per_control_inventory_pending",
+      "actionScenarioInventory": "source_three_step_form__5_demo_emulator_provision_tests__finance_disabled",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
       "release": "not_started",
@@ -1199,11 +1199,11 @@
   "latestVerifiedHosting": {
     "version": "0.4.305",
     "build": "2026.11.09.535",
-    "gitCommit": "fb3d249f1a15cce1f24499dd2f5026f00f0abb97",
-    "bundle": "/react/assets/index-CoVwNJEQ.js",
-    "sha256": "62f45d8b784efd1e364862a7891abf5b29b85a555cca26ad3ef9b067f1b7d7c9",
+    "gitCommit": "e42bc4398f16908f5b76d2bc1ac2a946e4e69424",
+    "bundle": "/react/assets/index-BaKCYABy.js",
+    "sha256": "d3ecef416b01486740e9bbbffb67935cb184d6a326533a752beb42d3f5d8402e",
     "host": "https://penguin-food.web.app",
-    "status": "hosting_live_verified__p1_signed_in_uat_pending",
-    "backendDeploy": "none_this_release"
+    "status": "hosting_live_verified__new_tenant_source_not_deployed",
+    "backendDeploy": "14_scoped_functions_at_e42bc439__new_onecall_not_deployed"
   }
 }
