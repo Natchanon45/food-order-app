@@ -46,6 +46,7 @@ function serverAt(day, orders = []) {
     // the Revenue Share module even when this test only checks billing dates.
     "node:crypto": require("node:crypto"),
     "./finance-slip-claims": require("../../functions/finance-slip-claims.js"),
+    "./finance-manual-review-policy": require("../../functions/finance-manual-review-policy.js"),
     "./slip-verification": { inspectSlip: async () => ({}) },
     "./subscription-pricing-core": {
       loadPricing: async () => pricing, calculatePricing: () => ({ monthly: {}, annual: {} }),
