@@ -151,14 +151,14 @@ test("unlimited entitlement still reserves unique provider checks without creati
 });
 test("same order concurrent reservation cannot spend twice; another tenant cannot reuse slip image", async () => {
   const [first, second] = await Promise.all([
-    policy.reserveMerchantBillCheck(input(id(8))),
-    policy.reserveMerchantBillCheck(input(id(8))),
+    policy.reserveMerchantBillCheck(input(id(8), "A", 1000000)),
+    policy.reserveMerchantBillCheck(input(id(8), "A", 1000000)),
   ]);
   assert.equal([first, second].filter(r => r.submitted).length, 1);
   assert.equal([first, second].filter(r => r.reused).length, 1);
   const otherTenant = db.collection("tenants").doc("p1-slip-other-" + randomUUID());
   await assert.rejects(policy.reserveMerchantBillCheck({
-    ...input(id(9)), tenantRef: otherTenant,
+    ...input(id(9), "A", 1000000), tenantRef: otherTenant,
     slipSha256: input(id(8)).slipSha256,
   }), /MERCHANT_SLIP_QUOTA_IMAGE_ALREADY_USED/);
 });
