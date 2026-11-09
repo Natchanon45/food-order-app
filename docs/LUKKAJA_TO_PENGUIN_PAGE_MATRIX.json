@@ -1176,5 +1176,19 @@
     "TenantControlPanel.jsx",
     "WaitingQueueNavigationBridge.jsx"
   ],
-  "methodology": "Counts reflect direct JSX files under each specified pages/ and components/ directory; not distinct URLs or working end-to-end routes. Extra Master/Bridge pages may be helper-only. Source snapshots are pinned; refresh explicitly at phase boundaries. No JSX/DOM or business functionality is considered ported merely because a filename exists."
+  "methodology": "Counts reflect direct JSX files under each specified pages/ and components/ directory; not distinct URLs or working end-to-end routes. Extra Master/Bridge pages may be helper-only. Source snapshots are pinned; refresh explicitly at phase boundaries. No JSX/DOM or business functionality is considered ported merely because a filename exists.",
+  "previousPortCandidate": {
+    "repository": "Natchanon45/food-order-app",
+    "branch": "feature/port-lukkaja-20261031",
+    "commit": "fe338e1d",
+    "sourceBaseline": "f9a6ddcd655da5c8c12e023a28880c74246ef768",
+    "aheadOfDestinationBaseline": 20,
+    "changedFiles": 123,
+    "disposition": "read_only_reference__selectively_reuse_after_tests__never_whole_branch_merge"
+  },
+  "sourceEvolution": {
+    "fromPriorPortSource": "f9a6ddcd655da5c8c12e023a28880c74246ef768",
+    "toCurrentSource": "e84c899028eb16c67401dcc05c5faed84bf48f63",
+    "aheadCommits": 432
+  }
 }
