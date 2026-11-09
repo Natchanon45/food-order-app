@@ -148,16 +148,20 @@ test("proof can release kitchen only when it exactly matches pending PromptPay o
   assert.equal(policy.proofValidForOrder({ ...order, paymentStatus: "paid" }, proof, now), false);
 });
 
-test("cashier manual review approval is a trusted callable, not a client payment patch", () => {
+test("Super Admin alone reviews technical Slip2Go failures; Cashier cannot approve bank slips", () => {
   const backend = fs.readFileSync("functions/delivery-slip.js", "utf8");
   const exportsSource = fs.readFileSync("functions/index.js", "utf8");
   const cashier = fs.readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
   assert.ok(backend.includes("exports.approveDeliveryPaymentReview = onCall"));
-  assert.ok(backend.includes("CASHIER_PERMISSION_REQUIRED"));
-  assert.ok(backend.includes('slipVerificationProvider: "cashier_manual"'));
+  assert.ok(backend.includes("SUPERADMIN_SLIP_REVIEW_ONLY"));
+  assert.ok(backend.includes("DELIVERY_MANUAL_REVIEW_NOT_ELIGIBLE"));
+  assert.ok(backend.includes('slipVerificationProvider: "superadmin_manual"'));
+  assert.ok(backend.includes("deliverySlipManualReviewAudit"));
   assert.ok(exportsSource.includes("exports.approveDeliveryPaymentReview"));
-  assert.ok(cashier.includes('httpsCallable(functions, "approveDeliveryPaymentReview"'));
-  assert.ok(!cashier.includes('patch.slipVerificationProvider = "cashier_manual"'));
+  assert.ok(exportsSource.includes("exports.listPlatformDeliveryManualReviews"));
+  assert.ok(!cashier.includes('httpsCallable(functions, "approveDeliveryPaymentReview"'));
+  assert.ok(cashier.includes("data-delivery-superadmin-review={order.id}"));
+  assert.ok(cashier.includes('t("cashier.payment.slip_manual_superadmin")'));
 });
 
 test("delivery checkout exposes localized Slip2Go outcomes and customer can switch to COD", () => {
@@ -182,15 +186,15 @@ test("Slip2Go customer/cashier copy is localized in every supported locale", () 
     for (const key of ["slip_duplicate", "slip_mismatch", "slip_receiver_mismatch", "slip_invalid", "slip_manual"]) {
       assert.ok(customer[key], `${locale} missing delivery payment ${key}`);
     }
-    assert.ok(cashier.slip_manual_release, `${locale} missing cashier slip_manual_release`);
-    assert.ok(cashier.slip_manual_approved, `${locale} missing cashier slip_manual_approved`);
+    assert.ok(cashier.slip_manual_superadmin, `${locale} missing cashier Super Admin review guidance`);
   }
 });
 
-test("server owns manual-review state and expired proofs cannot strand cashier approval", () => {
+test("server uses only proven technical provider evidence to schedule Super Admin review", () => {
   const backend = fs.readFileSync("functions/delivery-slip.js", "utf8");
   assert.ok(backend.includes('return manualProof("verification_expired")'));
-  assert.ok(backend.includes('proof.status === "manual_review" && proofBoundToOrder(current, proof)'));
+  assert.ok(backend.includes('proof.manualReviewEligible === true && proofBoundToOrder(current, proof)'));
+  assert.ok(backend.includes('proof.providerAttempted === true'));
   assert.ok(backend.includes("paymentReviewRequired: true"));
   assert.ok(backend.includes('slipVerificationStatus: "manual_review"'));
 });
@@ -203,17 +207,21 @@ test("delivery slip backend has no undefined verification guard and exports all 
     "verifyDeliveryPaymentSlip",
     "finalizeDeliveryPaymentSlip",
     "approveDeliveryPaymentReview",
+    "listPlatformDeliveryManualReviews",
     "notifyKitchenDeliveryAdmitted",
   ]) assert.ok(exportsSource.includes(`exports.${name}`), `missing export ${name}`);
 });
 
-test("non-service verification paths preserve a server proof for cashier approval", () => {
+test("no-provider-call verification paths cannot create an approvable proof", () => {
   const backend = fs.readFileSync("functions/delivery-slip.js", "utf8");
   assert.match(backend, /const manualProof = async reason =>/);
   assert.match(backend, /return manualProof\("verification_expired"\)/);
   assert.match(backend, /return manualProof\("merchant_promptpay_receiver_not_supported"\)/);
   assert.match(backend, /return manualProof\("slip2go_request_rate_limit"\)/);
-  assert.match(backend, /proof.status === "manual_review"/);
+  assert.match(backend, /const manualProof = async reason =>/);
+  const manualBody = backend.split("const manualProof = async reason =>")[1]
+    ?.split("// An accepted proof belongs")[0] || "";
+  assert.doesNotMatch(manualBody, /proofRef\.set\(/);
   assert.match(backend, /proofBoundToOrder\(order, proof\)/);
 });
 
@@ -230,18 +238,18 @@ test("server blocks unapproved staff payment changes while a Delivery slip needs
   assert.match(orderRule, /deliveryPaymentReviewFieldsUnchanged\(\)/);
 });
 
-test("legacy pre-Slip2Go cashier approval is audited and bounded to historical slip orders", () => {
-  const source = fs.readFileSync("functions/delivery-slip.js", "utf8");
-  assert.match(source, /!proofSnap.exists && created > 0/);
-  assert.match(source, /created < Date.parse\("2026-10-08T00:00:00\+07:00"\)/);
-  assert.match(source, /order.paymentSlipPath \|\| order.paymentSlipUrl/);
-  assert.match(source, /Number\(order.totalAmount\) > 0/);
-  assert.match(source, /slipVerificationStatus: legacySlip \? "legacy_cashier_approved"/);
-  assert.match(source, /paymentReviewedByUid: actor.uid/);
+test("legacy cashier approvals are disabled; only Super Admin technical fallback is audited", () => {
+  const backend = fs.readFileSync("functions/delivery-slip.js", "utf8");
   const cashier = fs.readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
-  assert.match(cashier, /const manualDeliveryReview = order.orderType === "delivery"/);
-  assert.match(cashier, /approveDeliveryPaymentReview\(\{ tenantId: tenant.id, orderId: order.id \}\)/);
+  assert.doesNotMatch(backend, /legacySlip = !proofSnap.exists/);
+  assert.doesNotMatch(backend, /legacy_cashier_approved/);
+  assert.match(backend, /await superAdminReviewer\(request.auth\)/);
+  assert.match(backend, /tx.create\(auditRef/);
+  assert.match(backend, /paymentReviewedByRole: "super_admin"/);
+  assert.doesNotMatch(cashier, /await approveDeliveryPaymentReview\(/);
+  assert.match(cashier, /if \(order.orderType === "delivery" && order.paymentMethod === "promptpay"\)/);
 });
+
 test("kitchen audio notifies on payment admission rather than on unpaid order creation", () => {
   const source = fs.readFileSync("react-app/src/components/CashierOrderNotifier.jsx", "utf8");
   assert.match(source, /surface !== "kitchen" \|\| deliveryKitchenAdmitted\(order\)/);
