@@ -766,7 +766,7 @@ export function DeliveryPage() {
             "merchant_quota_outcome_uncertain", "prior_provider_check_unresolved",
             "prior_matched_proof_must_be_confirmed",
           ].includes(blockedReason);
-          const noVerification = [
+          const noVerification = result.manualReviewEligible !== true || [
             "merchant_slip_quota_evidence_unavailable",
             "merchant_quota_pricing_unavailable",
             "merchant_quota_activation_missing",
