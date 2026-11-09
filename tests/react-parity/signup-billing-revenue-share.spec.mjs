@@ -165,7 +165,10 @@ test("Super Admin can change master business without rewriting signup and share 
   const edit = backend.slice(backend.indexOf("exports.updateTenant ="), backend.indexOf("exports.deleteTenant ="));
   assert.match(ui, /id="tenantMasterBusinessType"/);
   assert.match(ui, /businessType: form.businessType/);
-  assert.match(ui, /tenant-signup-business-overview/);
+  const sourceControl = fs.readFileSync("react-app/src/components/TenantControlPanel.jsx", "utf8");
+  assert.match(sourceControl, /const businessType = tenant.businessType/);
+  assert.match(sourceControl, /value=\{registrationType\}/);
+  assert.match(ui, /id="tenantNewBusinessType"/);
   assert.match(edit, /BUSINESS_TYPES\.has\(requestedBusinessType\)/);
   assert.match(edit, /businessUnitsFor\(requestedBusinessType\)/);
   assert.doesNotMatch(edit, /signupBilling\s*:/);
@@ -269,6 +272,7 @@ test("Only central Delivery excess is charged regardless of stale tenant legacy 
     // The revenue-share calculator now uses Bangkok anniversary periods.
     // Supply the real pure helper in this isolated Cloud Functions harness.
     "./billing-anniversary": require("../../functions/billing-anniversary.js"),
+    "./finance-manual-review-policy": require("../../functions/finance-manual-review-policy.js"),
   };
   const loaded = { exports: {} };
   const server = fs.readFileSync("functions/revenue-share.js", "utf8");
