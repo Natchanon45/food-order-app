@@ -25,9 +25,16 @@ test("source M7 screen must never present unverified Firestore Revenue Share as 
   assert.match(panel, /status: enabled && tenantId \? "unverified"/);
   assert.match(panel, /Firebase ยังไม่มีทะเบียน SQL M7/);
   assert.match(panel, /ไม่แสดง Invoice, Service Credit หรือ COD Reconciliation/);
-  assert.match(panel, /function mask\(value\)/);
-  assert.match(panel, /bankAccountMasked: mask\(saved.bankAccountNumber\)/);
-  assert.match(panel, /promptPayMasked: mask\(saved.promptPayId\)/);
+  assert.match(panel, /getPlatformTenantSavedPaymentAccount\(\{ tenantId \}\)/);
+  assert.match(panel, /TENANT_BANK_ACCOUNT_SOURCE_UNVERIFIED/);
+  assert.match(panel, /ownershipVerified !== false/);
+  assert.doesNotMatch(panel, /getDoc\(doc\(db, "tenants"/);
+  const backend = readFileSync("functions/tenant-admin.js", "utf8");
+  assert.match(backend, /exports.getPlatformTenantSavedPaymentAccount = onCall/);
+  assert.match(backend, /await assertSuperAdmin\(request.auth\)/);
+  assert.match(backend, /bankAccountMasked: maskAccount\(saved.bankAccountNumber\)/);
+  assert.match(backend, /promptPayMasked: maskAccount\(saved.promptPayId\)/);
+  assert.doesNotMatch(backend.split("exports.getPlatformTenantSavedPaymentAccount = onCall")[1], /bankAccountNumber:\s*saved.bankAccountNumber/);
   assert.doesNotMatch(panel, /api\.post\(|updateDoc\(|setDoc\(|deleteDoc\(/);
 });
 
