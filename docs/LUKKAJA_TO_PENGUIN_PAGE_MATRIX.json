@@ -34,7 +34,7 @@
       "sourceOnlyCount": 0,
       "scope": "Platform cards, tenants, owners, accounts, pricing, role guards, notification and admin UIs",
       "releaseGate": "Verified super_admin-only access and Firestore write scoping; finance actions remain disabled unless separately accepted",
-      "status": "whole_phase_in_progress__source_tenant_control_and_onecall_owner_tests_pass__m7_backend_and_signed_in_uat_open"
+      "status": "whole_phase_in_progress__tenant_source_emulator_and_desktop_mobile_uat_pass__certified_m7_and_full_action_parity_pending"
     },
     {
       "id": "P2",
@@ -163,13 +163,13 @@
       "sourcePath": "resources/js/react-port/pages/AdminTenantsPage.jsx",
       "destinationPath": "react-app/src/pages/AdminTenantsPage.jsx",
       "destinationPresence": "filename_exists__ui_not_verified",
-      "jsxReview": "source_control_panel_and_onboarding_ported__m7_backend_pending",
+      "jsxReview": "source_control_panel_onboarding_and_readonly_hybrid_invoice_evidence_ported__m7_certification_pending",
       "cssAssetsReview": "pending",
-      "firebaseContract": "atomic_onboarding_emulator_pass__m7_certification_missing",
-      "rolesAndTenantScope": "pending",
-      "actionScenarioInventory": "source_three_step_form__5_demo_emulator_provision_tests__finance_disabled",
-      "browserVisual": "pending",
-      "firebaseEmulator": "pending",
+      "firebaseContract": "atomic_onboarding_masked_account_and_single_cycle_source_invoice_emulator_pass__bank_certification_missing",
+      "rolesAndTenantScope": "emulator_superadmin_only_invoice_account_and_onboarding_reads_pass__other_actions_pending",
+      "actionScenarioInventory": "source_three_step_owner_and_readonly_hybrid_evidence__no_finance_mutations",
+      "browserVisual": "desktop_mobile_authenticated_emulator_browser_2_of_2_pass__source_pixel_comparison_pending",
+      "firebaseEmulator": "onboarding_masked_account_and_single_cycle_signed_invoice_tests_pass__complete_m7_backend_pending",
       "release": "not_started",
       "auditEvidence": "docs/LUKKAJA_P1_2_SUPERADMIN_TENANTS_AUDIT.md"
     },
