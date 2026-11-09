@@ -34,7 +34,7 @@
       "sourceOnlyCount": 0,
       "scope": "Platform cards, tenants, owners, accounts, pricing, role guards, notification and admin UIs",
       "releaseGate": "Verified super_admin-only access and Firestore write scoping; finance actions remain disabled unless separately accepted",
-      "status": "in_progress_P1_1_readiness_adapted__visual_and_emulator_pending"
+      "status": "P1_1_hosting_increment_live__P1_2_tenants_audit_started__signed_in_uat_open"
     },
     {
       "id": "P2",
@@ -100,11 +100,13 @@
       "firebaseContract": "read_failure_guards_contract_pass__emulator_write_pending",
       "rolesAndTenantScope": "pending",
       "actionScenarioInventory": "22_grouped_actions_4_pseudocode_families_18_scenarios__runtime_pending",
-      "browserVisual": "pending",
-      "firebaseEmulator": "pending",
-      "release": "not_started",
+      "browserVisual": "anonymous_route_17_of_17_pass__signed_in_visual_pending",
+      "firebaseEmulator": "walkin_regression_2_of_2_pass__platform_settings_write_emulator_pending",
+      "release": "hosting_0_4_305__signed_in_superadmin_uat_pending",
       "auditEvidence": "docs/LUKKAJA_P1_1_PLATFORM_AUDIT.md",
-      "actionInventoryEvidence": "docs/LUKKAJA_P1_1_PLATFORM_ACTIONS.md"
+      "actionInventoryEvidence": "docs/LUKKAJA_P1_1_PLATFORM_ACTIONS.md",
+      "releaseCommit": "fb3d249f1a15cce1f24499dd2f5026f00f0abb97",
+      "releaseAsset": "react/assets/index-CoVwNJEQ.js"
     },
     {
       "id": "P1-02",
@@ -161,14 +163,15 @@
       "sourcePath": "resources/js/react-port/pages/AdminTenantsPage.jsx",
       "destinationPath": "react-app/src/pages/AdminTenantsPage.jsx",
       "destinationPresence": "filename_exists__ui_not_verified",
-      "jsxReview": "pending",
+      "jsxReview": "source_delta_2341_vs_1578_reviewed__port_pending",
       "cssAssetsReview": "pending",
       "firebaseContract": "pending",
       "rolesAndTenantScope": "pending",
-      "actionScenarioInventory": "pending",
+      "actionScenarioInventory": "source_features_mapped__per_control_inventory_pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "auditEvidence": "docs/LUKKAJA_P1_2_SUPERADMIN_TENANTS_AUDIT.md"
     },
     {
       "id": "P1-06",
@@ -1192,5 +1195,15 @@
     "fromPriorPortSource": "f9a6ddcd655da5c8c12e023a28880c74246ef768",
     "toCurrentSource": "e84c899028eb16c67401dcc05c5faed84bf48f63",
     "aheadCommits": 432
+  },
+  "latestVerifiedHosting": {
+    "version": "0.4.305",
+    "build": "2026.11.09.535",
+    "gitCommit": "fb3d249f1a15cce1f24499dd2f5026f00f0abb97",
+    "bundle": "/react/assets/index-CoVwNJEQ.js",
+    "sha256": "62f45d8b784efd1e364862a7891abf5b29b85a555cca26ad3ef9b067f1b7d7c9",
+    "host": "https://penguin-food.web.app",
+    "status": "hosting_live_verified__p1_signed_in_uat_pending",
+    "backendDeploy": "none_this_release"
   }
 }
