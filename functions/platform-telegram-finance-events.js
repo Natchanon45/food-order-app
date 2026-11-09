@@ -65,7 +65,7 @@ function eventMessage({ channel, tenantId, receiptId, outcome, amount }) {
   if (!["wallet_topup", "delivery_share"].includes(channel)
     || !TENANT.test(tenantId) || !ID.test(receiptId)
     || !resultText[outcome] || typeof amount !== "number"
-    || !Number.isFinite(amount) || amount < 0 || amount > MAX_AMOUNT_BAHT)
+    || !Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT_BAHT)
     return null;
   const satang = Math.round(amount * 100);
   if (!Number.isSafeInteger(satang)) return null;
