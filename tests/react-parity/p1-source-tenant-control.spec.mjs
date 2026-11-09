@@ -13,7 +13,9 @@ test("source Tenant Control layout retains actual PENGUIN approved actions and n
       panel.includes(`id="${part}"`), part);
   }
   assert.match(page, /<TenantControlPanel key=\{tenant\.id\}/);
-  assert.match(page, /<TenantCard/);
+  assert.match(page, /<TenantMaintenanceControls/);
+  assert.doesNotMatch(page, /<TenantCard/);
+  assert.match(panel, /data-tenant-first-activation=\{tenant.id\}/);
   assert.match(page, /onSubscriptionAction=\{updateSubscription\}/);
   assert.match(panel, /data-tenant-revenue-notification=\{tenant.id\}/);
   assert.match(panel, /data-tenant-wallet-notification=\{tenant.id\}/);
