@@ -30,8 +30,8 @@ test("all 65 distinct source JSX pages are assigned exactly once", () => {
     assert.ok(page.sourcePath.endsWith(page.filename), page.filename);
     assert.ok(page.destinationPath.endsWith(page.filename), page.filename);
     assert.ok(["not_started", "hosting_0_4_305__signed_in_superadmin_uat_pending"].includes(page.release), page.filename);
-    assert.ok(["pending", "inventory_started", "source_form_markup_compared__firebase_read_guard_adapted__visual_pending", "source_delta_2341_vs_1578_reviewed__port_pending"].includes(page.jsxReview), page.filename);
-    assert.ok(["pending", "read_failure_guards_contract_pass__emulator_write_pending"].includes(page.firebaseContract), page.filename);
+    assert.ok(["pending", "inventory_started", "source_form_markup_compared__firebase_read_guard_adapted__visual_pending", "source_delta_2341_vs_1578_reviewed__port_pending", "source_control_panel_and_onboarding_ported__m7_backend_pending"].includes(page.jsxReview), page.filename);
+    assert.ok(["pending", "read_failure_guards_contract_pass__emulator_write_pending", "atomic_onboarding_emulator_pass__m7_certification_missing"].includes(page.firebaseContract), page.filename);
   }
 });
 
@@ -87,9 +87,9 @@ test("P1.1 live Hosting evidence and P1.2 source audit do not claim completed UA
   assert.match(platform.browserVisual, /signed_in_visual_pending/);
   assert.match(platform.firebaseEmulator, /platform_settings_write_emulator_pending/);
   assert.equal(matrix.latestVerifiedHosting.version, "0.4.305");
-  assert.equal(matrix.latestVerifiedHosting.backendDeploy, "none_this_release");
-  assert.equal(matrix.latestVerifiedHosting.sha256, "62f45d8b784efd1e364862a7891abf5b29b85a555cca26ad3ef9b067f1b7d7c9");
-  assert.equal(tenants.jsxReview, "source_delta_2341_vs_1578_reviewed__port_pending");
+  assert.equal(matrix.latestVerifiedHosting.backendDeploy, "14_scoped_functions_at_e42bc439__new_onecall_not_deployed");
+  assert.equal(matrix.latestVerifiedHosting.sha256, "d3ecef416b01486740e9bbbffb67935cb184d6a326533a752beb42d3f5d8402e");
+  assert.equal(tenants.jsxReview, "source_control_panel_and_onboarding_ported__m7_backend_pending");
   assert.equal(tenants.release, "not_started");
   assert.equal(tenants.auditEvidence, "docs/LUKKAJA_P1_2_SUPERADMIN_TENANTS_AUDIT.md");
   const audit = readFileSync(tenants.auditEvidence, "utf8");
@@ -99,4 +99,17 @@ test("P1.1 live Hosting evidence and P1.2 source audit do not claim completed UA
   const verification = readFileSync("docs/LUKKAJA_LIVE_BASELINE_RECONCILIATION.md", "utf8");
   assert.match(verification, /Hosting-only release verified/);
   assert.match(verification, /17\/17 PASS/);
+});
+
+test("single Phase 1 deliverable remains blocked on certified M7 and authenticated UAT", () => {
+  const tenants = matrix.pages.find(page => page.phase === "P1" && page.filename === "AdminTenantsPage.jsx");
+  assert.equal(tenants.firebaseContract, "atomic_onboarding_emulator_pass__m7_certification_missing");
+  assert.equal(tenants.release, "not_started");
+  assert.match(matrix.phaseSummaries.find(item => item.id === "P1").status, /whole_phase_in_progress/);
+  const progress = readFileSync("docs/LUKKAJA_P1_FULL_PHASE_DELIVERY.md", "utf8");
+  assert.match(progress, /No synthetic zero balances/);
+  assert.match(progress, /M7 \/ SQL certification is not migrated/);
+  assert.match(progress, /no further Firebase Production deploy/);
+  const test = readFileSync("tests/react-parity/p1-source-tenant-control.spec.mjs", "utf8");
+  assert.match(test, /source M7 screen must never present unverified/);
 });
