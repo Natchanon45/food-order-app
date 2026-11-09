@@ -172,9 +172,31 @@ exports.createActiveTenantWithOwner = onCall(
             { code: "TENANT_PROVISION_REVIEW_REQUIRED" });
         }
       }
-      // Do not reuse the same slug automatically after an uncertain operation.
-      await opRef.update({ status: "failed_review_required", failedAt: Timestamp.now() })
-        .catch(() => {});
+      // The Auth rollback is confirmed and Firestore is still reserved.
+      // Release an uncommitted slug so a corrected email can be submitted with
+      // a NEW operation ID. Never release a committed tenant or an unknown owner.
+      let released = false;
+      try {
+        await db.runTransaction(async tx => {
+          const tenantRef = db.collection("tenants").doc(tenantId);
+          const [current, slug, tenant] = await Promise.all([
+            tx.get(opRef), tx.get(slugRef), tx.get(tenantRef),
+          ]);
+          if (current.data()?.status !== "reserved" ||
+            current.data()?.tenantId !== tenantId ||
+            slug.data()?.provisioningId !== input.operationId ||
+            tenant.exists) {
+            throw new Error("RESERVATION_UNCERTAIN");
+          }
+          tx.delete(slugRef);
+          tx.update(opRef, { status: "failed_released", failedAt: Timestamp.now() });
+        });
+        released = true;
+      } catch { /* leave the reservation locked if its ownership is uncertain */ }
+      if (!released) {
+        throw new HttpsError("failed-precondition", "Provision requires review before retry",
+          { code: "TENANT_PROVISION_REVIEW_REQUIRED" });
+      }
       if (error instanceof HttpsError) throw error;
       if (error?.code === "auth/email-already-exists")
         throw new HttpsError("already-exists", "Owner email already registered");
