@@ -107,7 +107,7 @@ test("single Phase 1 deliverable remains blocked on certified M7 and authenticat
   assert.equal(tenants.release, "not_started");
   assert.match(matrix.phaseSummaries.find(item => item.id === "P1").status, /whole_phase_in_progress/);
   const progress = readFileSync("docs/LUKKAJA_P1_FULL_PHASE_DELIVERY.md", "utf8");
-  assert.match(progress, /No synthetic zero balances/);
+  assert.match(progress, /does not synthesize.*Invoice, Service Credit/);
   assert.match(progress, /M7 \/ SQL certification is not migrated/);
   assert.match(progress, /no further Firebase Production deploy/);
   const test = readFileSync("tests/react-parity/p1-source-tenant-control.spec.mjs", "utf8");
