@@ -34,6 +34,12 @@ As of the first selective import, `git diff HEAD feature/port-lukkaja-20261031` 
 
 These remaining differences require *feature-by-feature review*, not a mechanical branch merge. The old rules tighten direct browser writes on Walk-in orders; Cloud Functions implement server-side transactional create/append/serve/settle/reviewed cancel and audit. They previously passed synthetic Firestore/Auth Emulator tests. Do **not** import them piecemeal such that a frontend can invoke absent callable names, or deploy Functions/Rules without a full staging review.
 
+## Automated fail-closed predeploy source baseline check
+
+Execute `node tools/verify-deployed-baseline-before-firebase-hosting.mjs` **before** any Hosting deployment. It verifies 12 indispensable source-level behavior groups from the already-deployed October 31 release, including the actual payment-safe Walk-in callables/Rules, Quick Order skin, Cashier/Kitchen state, Revenue Share calendar reporting and printed favicon. While the baseline is incomplete, this command returns a nonzero exit and lists the missing features; **do not deploy**. A zero exit is only one necessary release gate, **not** browser/Emulator acceptance.
+
+Current status (9 Nov): this check is **expected to block** because new destination branch has not yet ported the required old Walk-in Functions/Rules, Cashier/Kitchen and Revenue Share UI together. The existing production deployment remains unchanged.
+
 ## Release and test gates (unmet)
 
 1. Reconcile the **old already-live** operations/reports/print UI code and its deployed backend contracts into `feature/react-firebase-port`, retaining new P1.1 guards; keep old reference branch unchanged.
