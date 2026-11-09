@@ -17,6 +17,16 @@
 6. **Never** copy LUKKAJA SQL, transaction rows, historical effective dates, payment slips, credentials or test orders into PENGUIN Production. Preserve PENGUIN tenants and billing history. Existing completed PENGUIN features must be compared before replacing.
 7. Source M7 finance rules are **not automatically live/accepted** merely because React+Go source has them. Source's 09/11 production M7 report explicitly says monetary activation/holds/00:00–00:20 automation are OFF and migration/real-provider UAT remains gated. On Firebase, payment authorization, historical invoices, Slip2Go, settlement, COD fee and automatic suspension require separate business-rule agreement, isolated Firebase Emulator tests and explicit release approval.
 
+## Existing 31 October port — REUSE, DO NOT REIMPLEMENT
+
+A separate historical PENGUIN worktree/branch already exists:
+- `feature/port-lukkaja-20261031` at `fe338e1d` (20 commits ahead of base `d87fc375`, 123 changed files), built against LUKKAJA source `f9a6ddcd655da5c8c12e023a28880c74246ef768`.
+- Its original ledger is `docs/LUKKAJA_20261031_PORT_MATRIX.md` **on that historical branch**. It records verified/candidate work in Quick Order, Google-login Delivery address, Cashier/Kitchen cancelled/deferred Walk-in flows, Revenue Share presentation, receipts, Firebase Callables and Security Rules.
+- The previous branch reports Firebase releases through `0.4.304`; this does **not** mean every signed action/physical print/provider flow is accepted, or that those patches are merged into `feature/react-firebase-port`.
+- LUKKAJA source has **432 commits after** that historical `f9a6ddcd` reference through the new pinned `e84c8990` HEAD. GitHub compare returns 300 changed-file entries and can truncate very large comparisons; use route/component and behavioral diffs, not that list as an exhaustive inventory.
+- **Reuse prior tested patches and evidence selectively.** Do **not** cherry-pick the entire branch (it includes Functions, Rules and financial candidate work), do not reset the separate worktree, and do not rebuild features that are already correct in the requested destination. Mark each prior feature `reuse_verified`, `needs_rebase`, or `superseded_by_source` after actual comparison.
+- **Live deployment safety:** the historical branch has previously deployed Firebase Hosting/Functions/Rules. A docs-only Phase 0 must not deploy its older `feature/react-firebase-port` frontend to the same URL, or the site could regress. Before any P1 UI deployment, compare the currently served Hosting asset and release against the proposed destination build and explicitly preserve approved behavior.
+
 ## Verified baseline (file inventory, NOT validated functionality)
 
 | Type | LUKKAJA source JSX | PENGUIN destination JSX | What this means |
