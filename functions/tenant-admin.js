@@ -398,3 +398,41 @@ exports.deleteTenant = onCall(
     return { ok: true, tenantId };
   }
 );
+
+function maskAccount(value) {
+  const raw = String(value || "").replace(/[^0-9]/g, "");
+  return raw.length >= 4 ? "•••• " + raw.slice(-4) : "";
+}
+
+// Source-equivalent Tenant Control account summary. Do not return full bank
+// or PromptPay identifiers to the browser, and do not claim bank ownership.
+exports.getPlatformTenantSavedPaymentAccount = onCall(
+  { region: "asia-southeast1" }, async request => {
+    await assertSuperAdmin(request.auth);
+    const tenantId = String(request.data?.tenantId || "").trim();
+    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(tenantId))
+      throw new HttpsError("invalid-argument", "Invalid tenant ID");
+    const db = getFirestore();
+    const tenantDoc = await db.collection("tenants").doc(tenantId).get();
+    if (!tenantDoc.exists) throw new HttpsError("not-found", "Tenant not found");
+    const settingsSnap = await tenantDoc.ref.collection("settings").doc("store").get();
+    const saved = settingsSnap.exists ? settingsSnap.data() || {} : {};
+    return {
+      ok: true,
+      readOnly: true,
+      tenantId,
+      source: "firebase_saved_store_settings",
+      account: {
+        bankName: String(saved.bankName || "").slice(0, 120),
+        bankAccountName: String(saved.bankAccountName || "").slice(0, 120),
+        bankAccountMasked: maskAccount(saved.bankAccountNumber),
+        promptPayMasked: maskAccount(saved.promptPayId),
+        promptPayName: String(saved.promptPayName || saved.promptPayAccountName || "").slice(0, 120),
+        bankConfigured: Boolean(saved.bankName && saved.bankAccountNumber),
+        promptPayConfigured: Boolean(saved.promptPayId),
+        deliveryPromptPayEnabled: saved.deliveryPromptPayEnabled !== false,
+        ownershipVerified: false,
+      },
+    };
+  },
+);
