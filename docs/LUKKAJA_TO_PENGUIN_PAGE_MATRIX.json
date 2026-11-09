@@ -34,7 +34,7 @@
       "sourceOnlyCount": 0,
       "scope": "Platform cards, tenants, owners, accounts, pricing, role guards, notification and admin UIs",
       "releaseGate": "Verified super_admin-only access and Firestore write scoping; finance actions remain disabled unless separately accepted",
-      "status": "not_started"
+      "status": "in_progress_P1_1"
     },
     {
       "id": "P2",
@@ -95,14 +95,15 @@
       "sourcePath": "resources/js/react-port/pages/PlatformPage.jsx",
       "destinationPath": "react-app/src/pages/PlatformPage.jsx",
       "destinationPresence": "filename_exists__ui_not_verified",
-      "jsxReview": "pending",
+      "jsxReview": "inventory_started",
       "cssAssetsReview": "pending",
       "firebaseContract": "pending",
       "rolesAndTenantScope": "pending",
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "auditEvidence": "docs/LUKKAJA_P1_1_PLATFORM_AUDIT.md"
     },
     {
       "id": "P1-02",
