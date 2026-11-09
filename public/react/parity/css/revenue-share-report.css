@@ -788,3 +788,123 @@
   -webkit-mask:url("/react/parity/icons/delivery-bike-outline.svg") center / contain no-repeat;
   mask:url("/react/parity/icons/delivery-bike-outline.svg") center / contain no-repeat;
 }
+
+
+/* 0.4.301 / Build 2026.10.31.531 — At roomy desktop widths the Custom
+   start/end inputs share the same filter row as report mode and Refresh.
+   Preserve the existing stacked layout at tablet and mobile widths. */
+@media (min-width: 1280px) {
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) {
+    grid-template-columns: minmax(190px,1fr) auto minmax(280px,305px) 36px;
+    column-gap: 8px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-period-tabs {
+    grid-column: 2; grid-row: 1;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-period-controls {
+    grid-column: 3; grid-row: 1; min-width: 0; width: 100%;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period {
+    width: 100%; min-width: 0; grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-filter-refresh {
+    grid-column: 4; grid-row: 1;
+  }
+}
+
+
+/* 0.4.302 / Build 2026.10.31.532 — Move the Custom filter group left
+   into unused heading space. Center native date INPUTS against the tabs,
+   with labels painted separately above; label height must not shift inputs.
+   Desktop only: tablet and mobile keep the existing responsive hierarchy. */
+@media (min-width: 1280px) {
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) {
+    grid-template-columns: minmax(230px, min(28%, 310px)) max-content minmax(240px, 305px) 36px;
+    justify-content: start;
+    align-items: center;
+    column-gap: 8px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period {
+    align-items: center;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 38px;
+    min-height: 38px;
+    padding: 0 3px;
+    margin: 0;
+    border: 0;
+    background: transparent;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > span {
+    position: absolute;
+    left: 3px;
+    bottom: calc(100% + 1px);
+    white-space: nowrap;
+    line-height: 1.1;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > .input {
+    width: 100%;
+    height: 34px;
+    min-height: 34px;
+    margin: 0;
+    box-sizing: border-box;
+  }
+}
+
+
+/* 0.4.303 / Build 2026.10.31.533 — Restore the established desktop
+   proportions and the far-right Refresh position. Allocate the recovered
+   right-hand whitespace to BOTH native date inputs, framed as one soft-green
+   control group. Keep labels above the centered inputs, never in input flow.
+   Mobile/tablet remain untouched. */
+@media (min-width: 1280px) {
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) {
+    grid-template-columns: minmax(195px, 1fr) max-content minmax(310px, 345px) 36px;
+    justify-content: stretch;
+    column-gap: 8px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 3px 4px;
+    border: 1px solid #c9e4d3;
+    border-radius: 12px;
+    background: #f4faf6;
+    box-shadow: 0 1px 3px rgb(21 93 48 / 6%);
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label {
+    padding: 0;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > span {
+    bottom: calc(100% + 7px);
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > .input {
+    border: 1px solid #c9dfce;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-custom-period label > .input:focus-visible {
+    border-color: #138e4a;
+    outline: 2px solid rgb(19 142 74 / 15%);
+    outline-offset: 1px;
+  }
+  .revenue-share-dashboard .report-filter-card:has(.report-custom-period:not([hidden])) .report-filter-refresh {
+    justify-self: end;
+  }
+}
+
+/* 0.4.304 — The billing equation stacks vertically on phone screens.
+   Show a real Bootstrap arrow-down icon between the first two cards there;
+   preserve the arrow-right icon on desktop. Symbols × and = stay unchanged. */
+.revenue-share-dashboard .report-equation-arrow-mobile { display: none; }
+@media (max-width: 700px) {
+  .revenue-share-dashboard .report-equation-arrow-desktop { display: none; }
+  .revenue-share-dashboard .report-equation-arrow-mobile { display: inline-block; }
+}

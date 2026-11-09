@@ -1,0 +1,46 @@
+/* LUKKAJA 31 Oct parity: actor-framed cancelled paid/unpaid receipt.
+   Display-only, never changes payment, cash received or sales history. */
+body.od-receipt-page #receipt.receipt-is-cancelled {
+  position: relative;
+}
+body.od-receipt-page #receipt .receipt-cancelled-watermark {
+  position: absolute;
+  top: 42%; left: 50%;
+  z-index: 8;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 90%;
+  padding: 17px 24px;
+  border: 3px solid #ad1717;
+  border-radius: 13px;
+  color: #ad1717;
+  background: rgba(255,255,255,.12);
+  opacity: .28;
+  font-weight: 900;
+  font-size: clamp(19px, 5vw, 34px);
+  text-align: center;
+  letter-spacing: .035em;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  transform-origin: center;
+  pointer-events: none;
+  user-select: none;
+}
+body.od-receipt-page #receipt .receipt-cancelled-code {
+  color: #b91c1c !important;
+  font-weight: 900;
+}
+@media print {
+  body.od-receipt-page #receipt .receipt-cancelled-watermark {
+    color: #ad1717 !important;
+    border-color: #ad1717 !important;
+    opacity: .28 !important;
+    background: transparent !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  body.od-receipt-page #receipt .receipt-cancelled-code {
+    color: #b91c1c !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
