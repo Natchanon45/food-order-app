@@ -125,8 +125,10 @@ test("Super Admin Tenant modal shows only central Delivery settings, without per
     "loadAdminSubscriptionPricing", "centralDeliveryPricing", "centralPricingLoading",
     'data-central-delivery-settings="true"', 'id="revenueShareRate"',
     'id="revenueShareDeliveryThreshold"', 'id="openCentralDeliveryPricing"',
-    'to="/platform/pricing"', "tenant.signupBilling",
+    'to="/platform/pricing"',
   ]) assert.ok(source.includes(token), `AdminTenantsPage missing ${token}`);
+  const control = fs.readFileSync("react-app/src/components/TenantControlPanel.jsx", "utf8");
+  assert.match(control, /tenant.signupBilling/);
   assert.doesNotMatch(source, /await updateTenantRevenueShare\(/);
   assert.doesNotMatch(source, /id="revenueShareEnabled"|id="saveRevenueShareButton"|setShareRate\(/);
   assert.match(source, /if \(!result\.exists\) throw new Error\("CENTRAL_DELIVERY_PRICING_MISSING"\)/);
