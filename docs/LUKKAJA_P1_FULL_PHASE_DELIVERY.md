@@ -121,3 +121,25 @@ The former Hybrid Finance Emulator red test has been corrected: its original fix
 `npm run test:firebase-hybrid-emulator` on macOS with JDK 21 and the isolated `demo-penguin-hybrid` Auth, Firestore and Storage Emulators: **24 passed / 0 failed**, including denial of unauthorized direct writes, cross-channel bank reference claims, invoice immutability and refund safeguards. Expected `PERMISSION_DENIED` log lines are from negative authorization tests; the suite exit code was 0. This removes the earlier known 23/24 regression failure. It **does not authorize** new live invoice issuance, retroactive charges, M7 bank certification or a production finance release.
 
 Full Phase 1 acceptance remains open for certified Go/MySQL M7 financial parity, customer-facing Slip2Go quota enforcement, Telegram provider delivery and final live Super Admin UAT. No new deployment.
+
+
+## Phase 1 — Merchant Slip2Go entitlement and technical-only Delivery review (09/11/2026)
+
+**Candidate only; not a Phase 1 delivery and not deployed to Firebase Production.** This continuation ports the server-side business rule from the source Go/MySQL `merchant_slip_quota_policy.go` rather than reimplementing the JSX layout. The source repository and destination `main` remain untouched.
+
+### Delivery merchant quota (Firebase backend)
+- Added `functions/merchant-slip-quota.js`: immutable original Bangkok activation anniversary; central Premium `subscriptionPricing.monthlySlipQuota` (default configured 100), server paid non-refunded Delivery goods excluding shipping/refund; exactly the central `deliveryThreshold` unlocks unlimited *merchant allowance*, **not** purchased provider balance.
+- Firestore transactional `merchantSlipQuotaCycles`, `merchantSlipBillChecks`, global `merchantSlipImageClaims`: one unique bill counts once, repeated/in-flight attempt does not call provider, mismatched order binding or reused image fails closed, replacement image only after rejection (max 3). Known provider credential/package/quota failure releases merchant quota without changing bank payment state.
+- `verifyDeliveryPaymentSlip` checks original tenant, cart/fee, receiver, rate limiter, private provider settings, central pricing, verified Delivery merchandise and quota **before** real Slip2Go HTTP. Incomplete quota source/activation/config/uncertain prior result returns without a cashier-approvable proof. Customer checkout stops on these states, advises contacting merchant and never promises paid status.
+- Demo Auth/Firestore Emulator quota tests **7/7 passed**; actual Delivery Callable with synthetic mocked Slip2Go over Firestore/Storage Emulator **4/4 passed** (replay, exhaustion no external call, exactly 10k unlimited, invalid provider key no merchant charge). No actual Slip2Go provider call made.
+
+### Delivery slip manual approval restrictions
+- Existing `approveDeliveryPaymentReview` now rejects all Cashier/Owner roles and requires an active Super Admin plus server-scoped Slip2Go **technical outage after real attempt**, validated by `finance-manual-review-policy.js`. Mismatch, duplicate, receiver/date error, unverified amount, Vision-only evidence, no-provider-call, unsupported key/config and manually forged order flag never meet authorization.
+- Approval transaction atomically creates `deliverySlipManualReviewAudit/{orderId}` and marks payment paid/kitchen admitted; duplicate approval cannot create a second audit event. New `listPlatformDeliveryManualReviews` is a Super Admin-only, tenant-scoped worklist with 50-entry cap and explicit eligibility.
+- Preserved source `TenantControlPanel` page hierarchy: the M7 section now embeds `TenantDeliveryManualReview.jsx` with proof-image link, explicit Super Admin approval prompt and uncertain-outcome lock. Cashier bank-slip approval button is replaced with a non-clickable waiting status.
+- Tightened Storage `tenants/{tenantId}/payment-slips` read rules to own-tenant active staff or active global Super Admin, not arbitrary signed-in staff. Cross-tenant negative tests added.
+- Actual Auth/Firestore Emulator Super Admin approval **3/3 passed**; combined Delivery Callable + review **7/7 passed**; full Hybrid Finance Auth/Firestore/Storage Emulator **25/25 passed**, including new cross-tenant Storage visibility case. Local React parity suite PASS, build + generated-react-build-contract PASS with **local candidate** `index-BpzcrCJM.js`.
+- **Not deployed:** production still serves `index-BaKCYABy.js`. The candidate changes touch Functions, Storage rules and UI and require staged release acceptance before deploying as one Phase 1 bundle.
+
+### Remaining release blockers
+Complete Firebase M7 issued invoice/subscription/COD/Service Credit equivalence and signed-in real-data testing; verify provider purchased-credit preflight and actual Slip2Go transport; validate Telegram credentials and live outcome notifications, remaining seven-page source/browser role parity, and staged deployment approval. Mocked provider and Emulator green tests alone are not production sign-off.
