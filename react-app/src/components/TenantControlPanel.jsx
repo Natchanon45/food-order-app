@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPlatformTenantSavedPaymentAccount } from "@/data/platformTenantService";
+import { TenantFinanceSourceEvidence } from "@/components/TenantFinanceSourceEvidence";
 import { tenantCalendarLabel } from "@/data/tenantActivationCalendar.mjs";
 import { tenantAccessReasonLabel, SIGNED_TENANT_ACCESS_REASONS } from "@/data/tenantAccessReason.mjs";
 
@@ -410,6 +411,7 @@ export function TenantControlPanel({
           ไม่แสดง Invoice, Service Credit หรือ COD Reconciliation จากข้อมูลที่ยังไม่ยืนยัน
           และไม่เปิดปุ่มอนุมัติการเงินจนกว่าจะมี Firebase Backend ที่ตรวจรับรองได้
         </p>
+        <TenantFinanceSourceEvidence tenantId={tenant.id} />
       </Section>
       <Section id="access" icon="shield-check" title="Module Access Status"
         subtitle="แสดงสิทธิ์ตามสถานะการระงับจากระบบกลาง ไม่ใช่ผลทดสอบหน้าเว็บรายโมดูล">
