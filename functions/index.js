@@ -178,6 +178,7 @@ exports.notifyDeliveryOrderCreated = onDocumentCreated(
 const tenantAdmin = require("./tenant-admin");
 exports.listTenants = tenantAdmin.listTenants;
 exports.getPlatformTenantSavedPaymentAccount = tenantAdmin.getPlatformTenantSavedPaymentAccount;
+exports.getPlatformTenantHybridInvoiceEvidence = tenantAdmin.getPlatformTenantHybridInvoiceEvidence;
 exports.createTenant = tenantAdmin.createTenant;
 exports.createTenantOwner = tenantAdmin.createTenantOwner;
 const tenantProvision = require("./tenant-provision");
