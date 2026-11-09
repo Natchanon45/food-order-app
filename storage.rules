@@ -37,6 +37,16 @@ service firebase.storage {
       return hasRole(['owner', 'admin', 'super_admin', 'cashier', 'kitchen']);
     }
 
+    function tenantSlipReader(tenantId) {
+      // Never let one merchant's cashier fetch another merchant's payment
+      // proof merely by guessing its Storage path.
+      return hasRole(['super_admin'])
+        || (signedIn()
+          && staffProfile().active == true
+          && staffProfile().tenantId == tenantId
+          && staffProfile().role in ['owner', 'admin', 'cashier', 'kitchen', 'manager']);
+    }
+
     function validImage(maxBytes) {
       return request.resource != null
         && request.resource.size <= maxBytes
@@ -153,7 +163,7 @@ service firebase.storage {
 
     match /tenants/{tenantId}/payment-slips/{orderId}/{fileName} {
       allow create: if validImage(8 * 1024 * 1024);
-      allow read: if staffRole();
+      allow read: if tenantSlipReader(tenantId);
       allow update: if false;
       allow delete: if hasRole(['owner', 'super_admin']);
     }
