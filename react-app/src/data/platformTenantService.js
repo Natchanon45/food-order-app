@@ -17,6 +17,18 @@ function dateValue(value) {
   if (typeof value.seconds === "number") return new Date(value.seconds * 1000).toISOString();
   return value;
 }
+function bangkokDate(value) {
+  const converted = dateValue(value);
+  if (!converted) return null;
+  const date = new Date(converted);
+  if (Number.isNaN(date.getTime())) return null;
+  const fields = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok",
+      year: "numeric", month: "2-digit", day: "2-digit" })
+      .formatToParts(date).filter(part => part.type !== "literal")
+      .map(part => [part.type, part.value]));
+  return `${fields.year}-${fields.month}-${fields.day}`;
+}
 function normalizeLalamoveMode(value = "") {
   const mode = String(value || "").trim().toLowerCase();
   if (mode === "partner") return "tenant";
@@ -32,6 +44,8 @@ export function normalizeTenant(tenant = {}) {
     shopPhone: tenant.shopPhone ?? tenant.phone ?? "",
     shopAddress: tenant.shopAddress ?? tenant.address ?? "",
     subscriptionExpiresAt: dateValue(tenant.subscriptionExpiresAt),
+    firstActivatedAt: dateValue(tenant.firstActivatedAt),
+    firstActivatedOn: bangkokDate(tenant.firstActivatedAt),
     suspendedAt: dateValue(tenant.suspendedAt),
     billingMode: revenueShareEnabled ? "revenue_share" : "subscription",
     accessStatus: tenant.revenueShareSuspended === true
@@ -72,6 +86,7 @@ async function hydrateTenantLalamoveState(tenant = {}) {
       lalamoveWallet: {
         ...normalized.lalamoveWallet,
         ...wallet,
+        storageReady: walletSnapshot.exists(),
       },
     });
   } catch (error) {
