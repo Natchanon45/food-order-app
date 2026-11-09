@@ -112,7 +112,7 @@ test("single Phase 1 deliverable remains blocked on certified M7 and authenticat
   assert.match(progress, /no further Firebase Production deploy/);
   assert.match(progress, /single_cycle_only/);
   assert.match(progress, /bankSourceVerified:false/);
-  assert.match(progress, /authenticated local browser UAT using real Emulator Auth/);
+  assert.match(progress, /Authenticated local browser UAT using real Emulator Auth/);
   assert.match(progress, /current source branch changes \*\*have not been deployed\*\*/);
 
   const test = readFileSync("tests/react-parity/p1-source-tenant-control.spec.mjs", "utf8");
