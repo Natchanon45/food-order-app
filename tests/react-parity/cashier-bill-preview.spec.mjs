@@ -22,7 +22,8 @@ test("Cashier eye actions open in-page bill modal across all four order types", 
 test("Cashier bill preview retains independent printing and original payment approval gates", () => {
   assert.doesNotMatch(page, /href=\{slipUrl\} target="_blank"/);
   assert.match(page, /const receiptUrl = cashierRoute\(/);
-  assert.match(page, /await approveDeliveryPaymentReview\(\{ tenantId: tenant.id, orderId: order.id \}\)/);
+  assert.doesNotMatch(page, /await approveDeliveryPaymentReview\(/);
+  assert.match(page, /data-delivery-superadmin-review=\{order.id\}/);
   assert.match(page, /await updateOrder\(order.id, patch\)/);
   assert.match(page, /printOrder\(printWindow, order.id\)/);
   assert.match(page, /if \(event\.key === "Escape"\)/);
