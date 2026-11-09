@@ -388,14 +388,23 @@ test("Actual Admin Firestore transactions serialize cross-channel bank reference
 
 test("Actual Admin Firestore invoice writer is idempotent and preserves PAID", async () => {
   const ref = adminDb.collection("tenants").doc("store-b");
-  const sales = [{ date: "2026-11-02", amount: 10000 }];
+  // Exactly the 10,000-baht exemption does NOT issue a Delivery invoice.
+  // The first invoice must charge only the 3,500-baht excess at 5%.
+  const sales = [{ date: "2026-11-02", amount: 13500 }];
   const params = {
     cycleStartDate: "2026-10-22", cycleEndExclusiveDate: "2026-11-22",
     asOfDate: "2026-11-03", firstMonth: false, dailyDeliverySales: sales,
     settings: { monthlyFee: 590, deliveryThreshold: 10000,
       deliveryShareRate: 5, monthlySlipQuota: 100 },
   };
+  const atThreshold = prepareInvoiceLedger({
+    ...params, dailyDeliverySales: [{ date: "2026-11-02", amount: 10000 }],
+  });
+  assert.equal(atThreshold.expectedInvoices.length, 0);
   const first = prepareInvoiceLedger(params);
+  assert.equal(first.expectedInvoices.length, 1);
+  assert.equal(first.expectedInvoices[0].amount, 175);
+  assert.equal(first.expectedInvoices[0].calculationBase, 3500);
   const issued = await persistHybridInvoiceLedger({
     db: adminDb, tenantRef: ref, ledger: first,
     serverTimestamp: FieldValue.serverTimestamp(),
