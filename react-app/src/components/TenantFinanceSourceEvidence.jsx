@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getPlatformTenantHybridInvoiceEvidence } from "@/data/platformTenantService";
 
 const formatBaht = amountCents =>
@@ -59,22 +59,25 @@ function validEvidence(value, tenantId) {
 }
 export function TenantFinanceSourceEvidence({ tenantId }) {
   const [state, setState] = useState({ id: "", status: "loading", data: null });
+  const requestSequence = useRef(0);
   const reload = useCallback(() => {
     const id = String(tenantId || "");
-    if (!id) return () => {};
-    let active = true;
+    if (!id) return;
+    const sequence = ++requestSequence.current;
     setState({ id, status: "loading", data: null });
     getPlatformTenantHybridInvoiceEvidence({ tenantId: id }).then(response => {
-      if (!active) return;
+      if (sequence !== requestSequence.current) return;
       if (!validEvidence(response, id)) throw new Error("TENANT_FINANCE_SOURCE_UNVERIFIED");
       setState({ id, status: response.available ? "ready" : "unverified",
         data: response.available ? response.invoiceEvidence : null });
     }).catch(() => {
-      if (active) setState({ id, status: "error", data: null });
+      if (sequence === requestSequence.current) setState({ id, status: "error", data: null });
     });
-    return () => { active = false; };
   }, [tenantId]);
-  useEffect(() => reload(), [reload]);
+  useEffect(() => {
+    reload();
+    return () => { requestSequence.current += 1; };
+  }, [reload]);
   const current = state.id === tenantId ? state :
     { status: "loading", data: null };
   const data = current.data;
