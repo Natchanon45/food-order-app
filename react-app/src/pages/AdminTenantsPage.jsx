@@ -5,6 +5,7 @@ import { useAuth } from "@/auth/AuthProvider";
 import { storage } from "@/firebase/client";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { TenantControlPanel } from "@/components/TenantControlPanel";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm, sweetPrompt } from "@/components/sweetDialog";
@@ -492,6 +493,7 @@ export function AdminTenantsPage() {
       "tenant-admin-clarity.css",
       "tenant-admin-compact.css",
       "new-tenant-setup-port.css",
+      "tenant-control-panel-port.css",
       "revenue-share-slip-dialog.css",
       "super-admin-header.css",
     ],
@@ -1297,24 +1299,38 @@ export function AdminTenantsPage() {
               ? <div className="tenant-list-loading">{t("admin_tenants.list.loading")}</div>
               : visibleTenants.length
                 ? visibleTenants.map(tenant => (
-                    <TenantCard
-                      key={tenant.id}
+                    <TenantControlPanel key={tenant.id}
                       tenant={tenant}
-                      summary={summaries[tenant.id] || {}}
+                      locale={intlLocale}
                       notifications={adminNotifications?.byTenant?.[tenant.id] || {}}
-                      t={t}
-                      formatNumber={formatNumber}
-                      intlLocale={intlLocale}
+                      onReload={() => { void loadTenantList({ silent: true }); void loadSales(); }}
                       onEdit={openEdit}
                       onShare={openShare}
-                      onRevenueNotice={openRevenueNotice}
-                      onUnlock={unlockShare}
+                      onWallet={openWallet}
+                      onReview={openRevenueNotice}
                       onLalamoveApproval={toggleLalamoveApproval}
                       lalamoveApprovalBusy={lalamoveApprovalBusy === tenant.id}
-                      onWallet={openWallet}
                       onDelete={removeTenant}
-                      onSubscriptionAction={updateSubscription}
-                    />
+                      t={t}
+                    >
+                      <TenantCard
+                        tenant={tenant}
+                        summary={summaries[tenant.id] || {}}
+                        notifications={adminNotifications?.byTenant?.[tenant.id] || {}}
+                        t={t}
+                        formatNumber={formatNumber}
+                        intlLocale={intlLocale}
+                        onEdit={openEdit}
+                        onShare={openShare}
+                        onRevenueNotice={openRevenueNotice}
+                        onUnlock={unlockShare}
+                        onLalamoveApproval={toggleLalamoveApproval}
+                        lalamoveApprovalBusy={lalamoveApprovalBusy === tenant.id}
+                        onWallet={openWallet}
+                        onDelete={removeTenant}
+                        onSubscriptionAction={updateSubscription}
+                      />
+                    </TenantControlPanel>
                   ))
                 : <div className="tenant-list-empty"><i className="bi bi-shop" aria-hidden="true"></i><strong>{t("admin_tenants.list.empty_title")}</strong><span>{t("admin_tenants.list.empty_help")}</span></div>}
           </div>
