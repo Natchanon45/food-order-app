@@ -143,3 +143,53 @@ Full Phase 1 acceptance remains open for certified Go/MySQL M7 financial parity,
 
 ### Remaining release blockers
 Complete Firebase M7 issued invoice/subscription/COD/Service Credit equivalence and signed-in real-data testing; verify provider purchased-credit preflight and actual Slip2Go transport; validate Telegram credentials and live outcome notifications, remaining seven-page source/browser role parity, and staged deployment approval. Mocked provider and Emulator green tests alone are not production sign-off.
+
+## Integrated local continuation from `474fc172` — 09/11/2026
+
+**Phase 1 is still NOT complete; production release is NOT safe.** This is one continuation of the seven-page acceptance unit, not a new delivery slice. Branch and HEAD were verified as `feature/react-firebase-port` / `474fc172fa89b0daedcc289b93be1221228d8892`. The code was developed and validated locally; no deployment, production DB mutation, source modification, main change or alternative app was performed. The integration commit may be published to the destination feature branch without asserting Phase 1 acceptance.
+
+### Implemented and exercised
+
+- Closed a monetary authorization defect in `finance-manual-review-policy.js`: package expiry (`401004`), provider purchased-credit exhaustion (`401005`/`401006`) and rate limiting (`429000`) are **not actual bank/provider outages** and cannot authorize manual settlement. This applies even to old pending records carrying `fallbackAllowed:true`. Actual bank error `200502` and attempted network-unavailable evidence remain eligible under the existing guards. Rejected, mismatched, duplicated, date-invalid, unknown and Vision-only slips remain ineligible.
+- Shared and Wallet Slip2Go response adapters now set `fallbackAllowed:false` for credentials/configuration, package, quota, rate-limit and unknown provider codes. No purchased balance, provider health response, payment or bank verification is invented. This is a result-side provider guard, **not proof of a purchased-credit preflight API or live provider entitlement**.
+- Added `notifyPlatformDeliveryReviewOutcome` to the existing exported Telegram outbox event paths. A committed Delivery order requiring review must have a real-attempt technical proof bound to its items, amount, fee and slip path. An approved notice requires the matching committed Super Admin audit, reviewer and amount. Deterministic IDs prevent duplicate trigger delivery from resetting an event. Notification processing cannot alter payment, kitchen release or finance state. Existing Wallet/Revenue Share channels remain intact.
+- Added encrypted-token transport tests for confirmed and ambiguous Telegram results. Successful mocked responses mark the outbox sent once; a lost response marks it unconfirmed without automatic resend. These are synthetic transport tests, **not live Bot delivery**.
+- Preserved the Pricing and SaaS JSX layout. Pricing Save now visibly disables after failed/unavailable config or an uncertain write. SaaS inspection rejects malformed/wrong-target summaries, clears stale inspection counts on refresh, disables migration without a valid inspection and locks blind retry after an uncertain multi-call migration. No migration was executed in browser UAT.
+- Added actual SaaS callable authorization/inspection coverage: anonymous, Owner and inactive Super Admin denied; active Super Admin reads only the fixed legacy source/target; caller-supplied scope cannot redirect inspection; inspection does not provision a tenant. The existing migration writer has **not** gained atomic rollback/recovery certification.
+
+### Seven-route browser coverage and its limits
+
+`tests/react-parity/p1-tenant-source-auth-browser.spec.mjs`: **9/9 passed**, Desktop 1440×900, Tablet 768×1024, Mobile 390×844, local Vite with both demo flags and real isolated Auth/Firestore Emulator sign-in.
+
+| Page | Newly exercised | Still not accepted |
+|---|---|---|
+| PlatformPage | Signed-in route renders at all 3 sizes | Successful settings/provider actions and direct pinned-source visual comparison |
+| PlatformOwnersPage | Signed-in route renders at all 3 sizes | Browser Owner create/edit/recovery actions with actual Callable transport |
+| PlatformContactPage | Signed-in route renders at all 3 sizes | Contact/Google writes and real Telegram settings/test delivery |
+| PlatformPricingPage | Signed-in route and failed-config Save disabled at all 3 sizes | Actual authenticated save/re-read and provider entitlement UAT |
+| AdminTenantsPage | Source card, activation, masked account, evidence panel and Owner form at all 3 sizes | Certified M7/COD/Credit backend and complete real-transport financial/action UAT |
+| AdminUsersPage | Owner sees staff from actual scoped list handler; create dialog opens; Super Admin rejected | Browser create/update/disable/retry and full tenant-switch UAT |
+| SaasSetupPage | Signed-in route; failed inspection blocks migration at all 3 sizes | Successful browser inspection/migration recovery and pinned-source visual comparison |
+
+Owner staff browser reads verify the real Emulator ID token and call the actual server handler through a read-only test bridge. Other platform Callable responses are **explicit read fixtures or explicit errors**, not live Functions transport. Browser UAT proves rendering/guards, not every backend action, pixel parity, every locale, or financial acceptance. Existing provisioning/security Emulator suites separately exercise server handlers. The source pin was read using Git objects because the local source worktree is at a newer HEAD; none of its worktree files were changed.
+
+### Local verification commands
+
+Use JDK21: `JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home` and prepend `$JAVA_HOME/bin` to PATH.
+
+- `npm run test:react-parity` — PASS after the final UI changes; updated only the obsolete test expectation that package expiry permits fallback.
+- `npm run build:react` — PASS, including generated entrypoint contract; local candidate `/react/assets/index-m5r58bqG.js`. Generated Hosting entrypoints/assets remain local, not released.
+- `node --test tests/react-parity/p1-superadmin-onboarding-integrity.spec.mjs tests/react-parity/p1-source-tenant-control.spec.mjs` — **10/10 PASS**.
+- `firebase emulators:exec --project demo-penguin-hybrid --config firebase.hybrid-emulator.json --only auth,firestore,storage "node --test --test-concurrency=1 tests/firebase-emulator/p1-*.spec.mjs tests/firebase-emulator/hybrid-finance-security.spec.mjs"` — **60/60 PASS** on the final source, including SaaS and final Delivery proof binding. Sequential execution is required because these pre-existing suites share central pricing fixtures. The initial concurrent run had a pricing-fixture collision, not a passing result.
+- With `VITE_USE_FIREBASE_EMULATORS=true VITE_HYBRID_DEMO_PAYMENT_E2E=true` Vite on port 5002, run `FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npx playwright test tests/react-parity/p1-tenant-source-auth-browser.spec.mjs` inside demo emulators — **9/9 PASS**. Initial browser launch omitted the second demo flag and failed sign-in; the corrected run above is the acceptance evidence.
+- Final targeted encrypted outbox/proof-binding suite — **5/5 PASS**. `git diff --check` PASS.
+
+### Every remaining release blocker
+
+1. **M7 monetary model and source parity:** no certified Go/MySQL-equivalent all-period invoice/subscription ledger, issued/settled invoice reconciliation, COD reconciliation, Service Credit policy, or financial test-mode/override controls. Existing read-only single-cycle Firebase evidence grants no settlement, issuance or release authority. No historical invoice generation, backdating, trial reset, activation-anniversary change, 10,000-THB exemption change or 5%-excess rule change was made.
+2. **Slip2Go purchased provider entitlement:** merchant quotas and negative result guards are covered locally; actual purchased-credit preflight/remaining balance and real provider transport/receiver UAT are unverified. Merchant unlimited allowance never implies unlimited purchased credits. No provider API or response has been fabricated.
+3. **Telegram operational acceptance:** real configured Bot/chat delivery, secret access and deployed Eventarc trigger networking remain unverified. Delivery technical-review/manual-approved events are now wired locally; certified M7 monthly/yearly/daily invoice notices still lack an accepted Firebase event model.
+4. **Seven-page action and visual acceptance:** the table above lists the missing successful writes/recovery checks. No direct side-by-side pinned-source screenshots or full locale parity acceptance, no complete seven-page real Functions transport UAT, and no production-data sign-off.
+5. **SaaS migration recovery:** fixed-target migration remains a non-atomic multi-call legacy operation. The UI blocks uncertain replay, but partial-copy reconciliation and overwrite recovery still require a reviewed server contract and isolated acceptance before operator use.
+6. **Existing public store-settings exposure:** the masking Callable does not resolve the previously documented public Firestore store-settings read permissions. A separately verified field-splitting/rules migration is still required to settle the exposure assessment without breaking checkout.
+7. **Release procedure:** no staged Functions/Rules/Hosting rollout or operator release acceptance has occurred for this candidate. Green local tests do not grant production release authority.

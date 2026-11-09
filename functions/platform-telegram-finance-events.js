@@ -7,8 +7,10 @@ const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { createHash } = require("node:crypto");
 const { _privateForTests: telegramSecrets } = require("./platform-telegram");
-const { walletTopupManualReviewAllowed, revenueShareManualReviewAllowed } =
+const { walletTopupManualReviewAllowed, revenueShareManualReviewAllowed, allowManualReview } =
   require("./finance-manual-review-policy");
+
+const { proofBoundToOrder } = require("./delivery-slip-policy");
 
 const secret = defineSecret("PENGUIN_TELEGRAM_ENCRYPTION_KEY");
 const REGION = "asia-southeast1";
@@ -20,6 +22,7 @@ const TENANT = /^[a-zA-Z0-9_-]{1,128}$/;
 const labels = Object.freeze({
   wallet_topup: "เติมเครดิต Lalamove",
   delivery_share: "ส่วนแบ่ง Delivery",
+  delivery_payment: "หลักฐานชำระ Delivery",
   verified: "Slip2Go ตรวจผ่าน และบันทึกรายการชำระแล้ว",
   provider_rejected: "ผลตรวจไม่ผ่านเงื่อนไข ห้ามอนุมัติด้วยคนแทน",
   manual_review: "Slip2Go ขัดข้องทางเทคนิค อาจตรวจด้วยคนได้ตามสิทธิ์",
@@ -62,7 +65,7 @@ function outcomeForReview(before, after) {
   return "";
 }
 function eventMessage({ channel, tenantId, receiptId, outcome, amount }) {
-  if (!["wallet_topup", "delivery_share"].includes(channel)
+  if (!["wallet_topup", "delivery_share", "delivery_payment"].includes(channel)
     || !TENANT.test(tenantId) || !ID.test(receiptId)
     || !resultText[outcome] || typeof amount !== "number"
     || !Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT_BAHT)
@@ -142,6 +145,45 @@ exports.notifyPlatformRevenueShareOutcome = onDocumentWritten({
   region: REGION,
 }, async event => processReceipt("delivery_share", event, "paymentId"));
 
+// Read the committed server proof/audit, never a client-supplied review flag.
+// These notices are observations only; neither this trigger nor the outbox
+// changes an order, releases a kitchen hold or grants monetary authority.
+async function processDelivery(event) {
+  const { before, after } = snapshotRows(event);
+  const { tenantId, orderId } = event.params || {};
+  if (!after || !TENANT.test(String(tenantId || ""))
+    || !ID.test(String(orderId || "")) || after.orderType !== "delivery"
+    || after.paymentMethod !== "promptpay") return;
+  const tenantRef = getFirestore().collection("tenants").doc(tenantId);
+  let outcome = "";
+  if (after.paymentStatus === "pending_verification"
+    && after.paymentReviewRequired === true
+    && !(before?.paymentStatus === "pending_verification"
+      && before?.paymentReviewRequired === true)) {
+    const proof = (await tenantRef.collection("deliverySlipChecks").doc(orderId).get()).data();
+    if (proof?.tenantId === tenantId && proof.orderId === orderId
+      && proof.providerAttempted === true && proof.manualReviewEligible === true
+      && proofBoundToOrder(after, proof)
+      && allowManualReview({ provider: "slip2go", status: "manual_review",
+        proof: proof.manualReviewEvidence })) outcome = "manual_review";
+  } else if (after.paymentStatus === "paid" && before?.paymentStatus !== "paid"
+    && after.slipVerificationStatus === "superadmin_technical_fallback") {
+    const audit = (await tenantRef.collection("deliverySlipManualReviewAudit").doc(orderId).get()).data();
+    if (audit?.tenantId === tenantId && audit.orderId === orderId
+      && audit.kind === "slip2go_technical_fallback"
+      && audit.reviewerRole === "super_admin"
+      && audit.reviewedBy === after.paymentReviewedByUid
+      && audit.amountCents === Math.round(Number(after.totalAmount) * 100))
+      outcome = "admin_approved";
+  }
+  if (!outcome) return;
+  await enqueue(eventMessage({ channel: "delivery_payment", tenantId,
+    receiptId: orderId, outcome, amount: after.totalAmount }));
+}
+exports.notifyPlatformDeliveryReviewOutcome = onDocumentWritten({
+  document: "tenants/{tenantId}/orders/{orderId}", region: REGION,
+}, processDelivery);
+
 async function deliver(outboxId) {
   if (!/^[a-f0-9]{64}$/.test(String(outboxId || ""))) return;
   const db = getFirestore();
@@ -184,4 +226,4 @@ exports.deliverPlatformTelegramFinanceEvent = onDocumentCreated({
 }, async event => deliver(event.params.eventId));
 
 exports._privateForTests = { classifyChange, outcomeForNewRecord,
-  outcomeForReview, eventMessage, enqueue, deliver, OUTBOX };
+  outcomeForReview, eventMessage, enqueue, deliver, processDelivery, OUTBOX };

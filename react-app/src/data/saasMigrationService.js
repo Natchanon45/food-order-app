@@ -13,7 +13,16 @@ const migrateCallable = httpsCallable(functions, "migrateLegacySaasStore");
 
 export async function inspectLegacyData() {
   const response = await inspectCallable({});
-  return response?.data?.summary || {};
+  const summary = response?.data?.summary;
+  if (response?.data?.ok !== true || !summary
+    || summary.tenantId !== SAAS_TARGET_TENANT.id
+    || summary.tenantSlug !== SAAS_TARGET_TENANT.slug
+    || typeof summary.tenantExists !== "boolean"
+    || !["menus", "tables", "orders", "deliveryCustomers", "settings"].every(key =>
+      Number.isSafeInteger(summary[key]) && summary[key] >= 0)) {
+    throw new Error("SAAS_INSPECTION_INVALID");
+  }
+  return summary;
 }
 
 export async function migrateLegacyStore({ overwrite = false, onProgress = () => {} } = {}) {

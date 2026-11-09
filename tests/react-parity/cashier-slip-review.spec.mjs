@@ -62,7 +62,7 @@ test("Slip2Go 401004 is package expiration, not invalid credentials or empty quo
   assert.ok(platform.includes('if (normalized === "401004") return "package_expired";'));
   for (const path of ["functions/slip-verification.js", "functions/tenant-lalamove-wallet.js"]) {
     const source = readFileSync(path, "utf8");
-    assert.ok(source.includes('"401004": ["manual_review", "slip2go_package_expired", true]'), path);
+    assert.ok(source.includes('"401004": ["manual_review", "slip2go_package_expired", false]'), path);
     assert.ok(!source.includes('"401004": ["config_invalid"'), path);
   }
 });

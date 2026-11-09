@@ -391,15 +391,15 @@ async function inspectTopupSlip(buffer, mime, filename, expectedAmount) {
       "200500": ["invalid", "slip2go_fraud", false],
       "200501": ["duplicate", "slip2go_duplicate", false],
       "200502": ["manual_review", "slip2go_bank_error", true],
-      "401001": ["config_invalid", "slip2go_config_invalid", true],
-      "401002": ["config_invalid", "slip2go_config_invalid", true],
-      "401003": ["config_invalid", "slip2go_config_invalid", true],
-      "401004": ["manual_review", "slip2go_package_expired", true],
-      "401007": ["config_invalid", "slip2go_config_invalid", true],
-      "401005": ["manual_review", "slip2go_quota_exhausted", true],
-      "401006": ["manual_review", "slip2go_quota_exhausted", true],
-      "429000": ["manual_review", "slip2go_rate_limited", true],
-    }[code] || ["manual_review", "slip2go_error", true];
+      "401001": ["config_invalid", "slip2go_config_invalid", false],
+      "401002": ["config_invalid", "slip2go_config_invalid", false],
+      "401003": ["config_invalid", "slip2go_config_invalid", false],
+      "401004": ["manual_review", "slip2go_package_expired", false],
+      "401007": ["config_invalid", "slip2go_config_invalid", false],
+      "401005": ["manual_review", "slip2go_quota_exhausted", false],
+      "401006": ["manual_review", "slip2go_quota_exhausted", false],
+      "429000": ["manual_review", "slip2go_rate_limited", false],
+    }[code] || ["manual_review", "slip2go_error", false];
     const result = { ...base, ...details, status: mapped[0], reason: mapped[1], fallbackAllowed: mapped[2] };
     if (provider === "slip2go_fallback_vision" && result.fallbackAllowed) {
       return slipFallbackResult(result, await inspectGoogleVisionTopupSlip(buffer, mime, expectedAmount), expectedAmount);

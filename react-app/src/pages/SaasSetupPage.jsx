@@ -60,11 +60,13 @@ export function SaasSetupPage() {
   const [busy, setBusy] = useState(true);
   const [initialReady, setInitialReady] = useState(false);
   const [logLines, setLogLines] = useState([]);
+  const [migrationUnconfirmed, setMigrationUnconfirmed] = useState(false);
 
   const appendLog = message => setLogLines(lines => [...lines, String(message || "")]);
 
   const refreshSummary = async () => {
     setStateKey("runtime.state.checking");
+    setSummary(null);
     setBusy(true);
     try {
       const data = await inspectLegacyData();
@@ -88,6 +90,7 @@ export function SaasSetupPage() {
   }, [profile?.role]);
 
   const startMigration = async () => {
+    if (busy || !summary || migrationUnconfirmed) return;
     const confirmed = await sweetConfirm(
       overwrite
         ? t("runtime.confirm.overwrite")
@@ -124,6 +127,9 @@ export function SaasSetupPage() {
       await refreshSummary();
     } catch (error) {
       console.error("SAAS_SETUP_MIGRATION_FAILED", error);
+      // Any of the multi-call steps may have committed despite a lost reply.
+      // Inspection counts cannot prove completion or authorize a blind retry.
+      setMigrationUnconfirmed(true);
       setStateKey("runtime.state.migration_failed");
       appendLog(t("runtime.log.error", { message: error?.message || error }));
       showToast(t("runtime.toast.migration_failed"), "error");
@@ -185,7 +191,7 @@ export function SaasSetupPage() {
             <button className="btn" id="refreshMigration" type="button" disabled={busy} onClick={refreshSummary}>
               {t("actions.refresh")}
             </button>
-            <button className="btn btn-primary" id="startMigration" type="button" disabled={busy} onClick={startMigration}>
+            <button className="btn btn-primary" id="startMigration" type="button" disabled={busy || !summary || migrationUnconfirmed} onClick={startMigration}>
               {t("actions.start")}
             </button>
           </div>

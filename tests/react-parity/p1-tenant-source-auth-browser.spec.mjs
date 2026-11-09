@@ -10,6 +10,7 @@ const db = getFirestore();
 const auth = getAuth();
 const tenantId = "p1-browser-tenant";
 const email = "p1-browser-superadmin@example.com";
+const ownerEmail = "p1-browser-owner@example.com";
 const password = "p1-browser-emulator-only-987";
 const tenant = {
   id: tenantId, name: "ร้านตัวอย่าง Phase 1", slug: "p1-browser-shop",
@@ -34,6 +35,16 @@ test.beforeAll(async () => {
   await db.collection("users").doc(u.uid).set({
     uid: u.uid, email, role: "super_admin", active: true,
     displayName: "Demo Super Admin",
+  });
+  let owner;
+  try { owner = await auth.getUserByEmail(ownerEmail); }
+  catch { owner = await auth.createUser({ email: ownerEmail, password, emailVerified: true }); }
+  await db.collection("users").doc(owner.uid).set({ uid: owner.uid, email: ownerEmail,
+    role: "owner", active: true, tenantId, tenantSlug: tenant.slug });
+  await db.collection("tenants").doc(tenantId).collection("memberships").doc("p1-browser-cashier").set({
+    uid: "p1-browser-cashier", tenantId, role: "cashier", active: true,
+    displayName: "Emulator Cashier", email: "cashier-demo@example.com", businessScope: "order_delivery",
+    staffScope: "restaurant", businessUnit: "order_delivery",
   });
   await db.collection("tenants").doc(tenantId).set(tenant);
   await db.collection("tenants").doc(tenantId).collection("settings").doc("store")
@@ -108,10 +119,67 @@ async function mockNonMutatingFunctions(page) {
 }
 for (const view of [
   { name: "desktop", width: 1440, height: 900 },
+  { name: "tablet", width: 768, height: 1024 },
   { name: "mobile", width: 390, height: 844 },
 ]) {
   test.describe("Authenticated P1 source Tenant Control " + view.name, () => {
     test.use({ viewport: { width: view.width, height: view.height } });
+    test("Owner staff page uses the actual scoped list handler and denies platform access", async ({ page }) => {
+      let reads = 0;
+      await page.route("**/demo-penguin-hybrid/asia-southeast1/**", async route => {
+        const allow = { "access-control-allow-origin": "*", "access-control-allow-headers": "*",
+          "access-control-allow-methods": "POST, OPTIONS", "content-type": "application/json" };
+        if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: allow });
+        const endpoint = new URL(route.request().url()).pathname.split("/").pop();
+        if (endpoint !== "listTenantStaff") return route.fulfill({ status: 403, headers: allow,
+          body: JSON.stringify({ error: { status: "PERMISSION_DENIED", message: "Read-only test bridge" } }) });
+        const bearer = route.request().headers().authorization?.replace(/^Bearer /, "");
+        const decoded = await auth.verifyIdToken(bearer);
+        const data = route.request().postDataJSON().data;
+        expect(data.expectedTenantId).toBe(tenantId);
+        const result = await require("./staff-admin").listTenantStaff.run({
+          auth: { uid: decoded.uid, token: decoded }, data,
+        });
+        reads++;
+        return route.fulfill({ status: 200, headers: allow, body: JSON.stringify({ result }) });
+      });
+      await page.goto("/login?next=%2Fadmin%2Fusers");
+      await page.locator("#email").fill(ownerEmail);
+      await page.locator("#password").fill(password);
+      await page.locator("#loginButton").click();
+      await page.waitForURL(url => url.pathname !== "/login", { timeout: 20000 });
+      await page.goto("/admin/users");
+      await expect(page.locator("#openCreateUserModal")).toBeEnabled({ timeout: 15000 });
+      await expect(page.getByText("cashier-demo@example.com").filter({ visible: true }).first()).toBeVisible();
+      expect(reads).toBeGreaterThan(0);
+      await page.locator("#openCreateUserModal").click();
+      await expect(page.locator("dialog #displayName")).toBeVisible();
+      await page.goto("/platform/pricing");
+      await page.waitForURL(url => url.pathname !== "/platform/pricing", { timeout: 15000 });
+    });
+    test("six platform routes render with signed-in Auth and staff route rejects Super Admin", async ({ page }) => {
+      const errors = [];
+      page.on("pageerror", e => errors.push(String(e.message || e)));
+      await mockNonMutatingFunctions(page);
+      await page.goto("/login?next=%2Fplatform");
+      await page.locator("#email").fill(email);
+      await page.locator("#password").fill(password);
+      await page.locator("#loginButton").click();
+      await page.waitForURL(url => url.pathname !== "/login", { timeout: 20000 });
+      for (const path of ["/platform", "/platform/owners", "/platform/contact",
+        "/platform/pricing", "/admin/tenants", "/super-admin/saas-setup"]) {
+        await page.goto(path, { waitUntil: "domcontentloaded" });
+        await expect(page.locator("main h1").first()).toBeVisible({ timeout: 15000 });
+        expect(new URL(page.url()).pathname).toBe(path);
+        // These two read callables intentionally fail in the read-only fixture.
+        // Their write controls must stay closed after inspection/config failure.
+        if (path === "/platform/pricing") await expect(page.locator("#pricingSave")).toBeDisabled();
+        if (path === "/super-admin/saas-setup") await expect(page.locator("#startMigration")).toBeDisabled();
+      }
+      await page.goto("/admin/users", { waitUntil: "domcontentloaded" });
+      await page.waitForURL(url => url.pathname !== "/admin/users", { timeout: 15000 });
+      expect(errors).toEqual([]);
+    });
     test("displays source card, activation date, masked account and 3-step store setup", async ({ page }) => {
       const errors = [];
       page.on("pageerror", e => errors.push(String(e.message || e)));

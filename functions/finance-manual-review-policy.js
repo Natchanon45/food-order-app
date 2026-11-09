@@ -3,12 +3,12 @@
 // failure AFTER its verification HTTP call was attempted. A rejected,
 // mismatched, duplicated, unverified, unsupported or Vision-only slip never
 // becomes manual-review eligible.
+// Purchased credit, package expiry and rate limits are operator capacity
+// failures, not bank/provider outages. They never authorize settlement.
 const TECHNICAL_REASONS = new Set([
   "slip2go_unavailable", "slip2go_bank_error",
-  "slip2go_rate_limited", "slip2go_quota_exhausted",
-  "slip2go_package_expired",
 ]);
-const ALLOWED_CODES = new Set(["200502", "401004", "401005", "401006", "429000"]);
+const ALLOWED_CODES = new Set(["200502"]);
 
 function allowManualReview({provider, status, proof}) {
   if (provider !== "slip2go" || status !== "manual_review"
@@ -26,9 +26,6 @@ function allowManualReview({provider, status, proof}) {
   }
   const expectedByReason = {
     slip2go_bank_error: ["200502"],
-    slip2go_rate_limited: ["429000"],
-    slip2go_quota_exhausted: ["401005", "401006"],
-    slip2go_package_expired: ["401004"],
   };
   return ALLOWED_CODES.has(code)
     && (expectedByReason[proof.reason] || []).includes(code);

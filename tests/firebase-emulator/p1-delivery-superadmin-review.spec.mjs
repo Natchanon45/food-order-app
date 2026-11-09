@@ -67,6 +67,11 @@ test("Super Admin worklist verifies proof and denies merchant Cashier scope", as
 });
 test("invalid, rejected, unverified and no-provider-call slips cannot settle", async () => {
   const cases = [
+    ...[["slip2go_package_expired", "401004"],
+      ["slip2go_quota_exhausted", "401005"],
+      ["slip2go_quota_exhausted", "401006"],
+      ["slip2go_rate_limited", "429000"]].map(([reason, code]) =>
+        ({ manualReviewEvidence: { ...validTechnical, reason, code } })),
     { manualReviewEvidence: { ...validTechnical,
       reason: "amount_not_matched", status: "mismatch", fallbackAllowed: false }},
     { manualReviewEvidence: { ...validTechnical,

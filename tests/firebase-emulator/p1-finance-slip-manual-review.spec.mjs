@@ -31,6 +31,11 @@ test("manual approval policy only accepts checked Slip2Go technical failures", (
   assert.equal(policy.walletTopupManualReviewAllowed(baseWallet("good", technical)), true);
   assert.equal(policy.revenueShareManualReviewAllowed(baseRevenue("good", technical)), true);
   const variants = [
+    ...[["slip2go_package_expired", "401004"],
+      ["slip2go_quota_exhausted", "401005"],
+      ["slip2go_quota_exhausted", "401006"],
+      ["slip2go_rate_limited", "429000"]].map(([reason, code]) =>
+        ({ ...technical, reason, code })),
     { ...technical, reason: "amount_not_matched", status: "mismatch", fallbackAllowed: false },
     { ...technical, reason: "slip2go_receiver_mismatch", status: "receiver_mismatch", fallbackAllowed: false },
     { ...technical, reason: "slip2go_duplicate", status: "duplicate", fallbackAllowed: false },
@@ -56,7 +61,7 @@ test("manual approval policy only accepts checked Slip2Go technical failures", (
   })), true);
   assert.equal(policy.walletTopupManualReviewAllowed(baseWallet("b", {
     ...technical, reason: "slip2go_rate_limited", code: "429000",
-  })), true);
+  })), false);
 });
 
 test("Wallet review rejects mismatched slip without credit and allows technical-only approval", async () => {
@@ -122,4 +127,26 @@ test("Revenue Share manual review refuses a persisted Slip2Go mismatch before se
   }), error => error.code === "failed-precondition"
     && error.message.includes("SLIP_MANUAL_REVIEW_NOT_ELIGIBLE"));
   assert.equal((await ref.get()).data().status, "pending");
+});
+
+test("exhausted, expired and rate-limited provider accounts cannot credit Wallet or settle Revenue Share", async () => {
+  const balanceBefore = (await tenantRef.collection("settings").doc("lalamoveWallet").get()).data().balance;
+  for (const [reason, code] of [["slip2go_package_expired", "401004"],
+    ["slip2go_quota_exhausted", "401005"], ["slip2go_quota_exhausted", "401006"],
+    ["slip2go_rate_limited", "429000"]]) {
+    const proof = { ...technical, reason, code };
+    const topupId = "p1-capacity-wallet-" + code;
+    const paymentId = "p1-capacity-share-" + code;
+    await tenantRef.collection("lalamoveWalletTopups").doc(topupId).set(baseWallet(topupId, proof));
+    await tenantRef.collection("revenueSharePayments").doc(paymentId).set(baseRevenue(paymentId, proof));
+    await assert.rejects(wallet.reviewTenantLalamoveWalletTopup.run({ ...admin,
+      data: { tenantId, topupId, action: "approve" },
+    }), error => error.code === "failed-precondition");
+    await assert.rejects(revenue.reviewRevenueSharePayment.run({ ...admin,
+      data: { tenantId, paymentId, action: "approve" },
+    }), error => error.code === "failed-precondition");
+    assert.equal((await tenantRef.collection("lalamoveWalletTopups").doc(topupId).get()).data().status, "pending");
+    assert.equal((await tenantRef.collection("revenueSharePayments").doc(paymentId).get()).data().status, "pending");
+  }
+  assert.equal((await tenantRef.collection("settings").doc("lalamoveWallet").get()).data().balance, balanceBefore);
 });

@@ -1,0 +1,80 @@
+/* New Superadmin tenant creation, scoped to the original dialog.
+   Existing editing and other admin/finance dialogs remain unchanged. */
+#tenantDialog:has([data-new-store-flow="true"]) {
+  width: min(790px, calc(100vw - 28px));
+  max-width: min(790px, calc(100vw - 28px));
+}
+#tenantDialog [data-new-store-flow="true"] {
+  width: 100%;
+  max-width: 100%;
+}
+#tenantDialog [data-new-store-flow="true"] .tenant-dialog-body {
+  max-height: min(67vh, 700px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+#tenantDialog [data-new-store-flow="true"] .tenant-new-step-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px 10px;
+  margin: 13px 0 12px;
+  color: #174c35;
+}
+#tenantDialog [data-new-store-flow="true"] .tenant-new-step-title:first-child {
+  margin-top: 0;
+}
+#tenantDialog [data-new-store-flow="true"] .tenant-new-step-title > span {
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: #e8f7ed;
+  border: 1px solid #cce8d5;
+  color: #117642;
+  font-weight: 800;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+#tenantDialog [data-new-store-flow="true"] .tenant-new-step-title > strong {
+  font-size: 14px;
+}
+#tenantDialog [data-new-store-flow="true"] .tenant-new-step-title > small {
+  font-weight: 400;
+  color: #738578;
+  font-size: 11px;
+}
+#tenantDialog [data-new-store-flow="true"] [data-new-store-owner-fields] {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e6eee8;
+}
+#tenantDialog [data-new-store-flow="true"] [data-new-store-plan] {
+  border-radius: 13px;
+  background: #f4faf6;
+  border: 1px solid #d9ebdf;
+  padding: 13px;
+}
+#tenantDialog [data-new-store-flow="true"] [data-new-store-plan] .field {
+  max-width: 330px;
+}
+#tenantDialog [data-new-store-flow="true"] [data-new-store-plan] p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #326246;
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+#tenantDialog [data-new-store-flow="true"] [data-new-store-plan] i {
+  color: #11934c;
+  margin-top: 2px;
+}
+@media (max-width: 640px) {
+  #tenantDialog [data-new-store-flow="true"] .tenant-new-step-title > small {
+    flex-basis: 100%;
+    padding-left: 38px;
+  }
+  #tenantDialog [data-new-store-flow="true"] .tenant-dialog-body {
+    max-height: min(68vh, 680px);
+  }
+}

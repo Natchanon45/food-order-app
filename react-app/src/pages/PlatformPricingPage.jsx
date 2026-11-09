@@ -270,7 +270,7 @@ export function PlatformPricingPage() {
                 <i className="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                 <span>{t("platform.pricing.reset")}</span>
               </button>
-              <button id="pricingSave" className="btn btn-primary platform-pricing-save" type="submit" disabled={saving}>
+              <button id="pricingSave" className="btn btn-primary platform-pricing-save" type="submit" disabled={saving || loading || !storageReady || loadError || saveUnconfirmed}>
                 <i className={`bi ${saving ? "bi-arrow-repeat" : "bi-floppy"}`} aria-hidden="true"></i>
                 <span>{saving ? t("platform.pricing.saving") : t("platform.pricing.save")}</span>
               </button>

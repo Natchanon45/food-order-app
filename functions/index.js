@@ -293,6 +293,7 @@ exports.testPlatformTelegramSettings = platformTelegram.testPlatformTelegramSett
 const telegramFinanceEvents = require("./platform-telegram-finance-events");
 exports.notifyPlatformWalletTopupOutcome = telegramFinanceEvents.notifyPlatformWalletTopupOutcome;
 exports.notifyPlatformRevenueShareOutcome = telegramFinanceEvents.notifyPlatformRevenueShareOutcome;
+exports.notifyPlatformDeliveryReviewOutcome = telegramFinanceEvents.notifyPlatformDeliveryReviewOutcome;
 exports.deliverPlatformTelegramFinanceEvent = telegramFinanceEvents.deliverPlatformTelegramFinanceEvent;
 
 const lalamoveWebhook = require("./lalamove-webhook");
