@@ -57,6 +57,24 @@ async function mockNonMutatingFunctions(page) {
     getTenantLalamoveWallet: {
       wallet: { balance: 0 }, items: [], topups: [],
     },
+    getPlatformTenantHybridInvoiceEvidence: {
+      ok: true, available: true, tenantId,
+      source: "hybrid_billing_period_firestore", status: "source_records_only",
+      coverage: "single_cycle_only", bankSourceVerified: false,
+      originalSignupVerified: false, canIssueRealInvoice: false,
+      canSettleMoney: false, canReleaseTenant: false,
+      invoiceEvidence: {
+        cycleStartDate: "2026-10-18", cycleEndExclusiveDate: "2026-11-18",
+        invoiceCount: 1, recordedAmountCents: 17500,
+        recordedOpenAmountCents: 17500,
+        invoices: [{
+          id: "2026-10-18:delivery:trigger",
+          kind: "delivery_threshold", date: "2026-11-05",
+          dueDate: "2026-11-05", status: "issued", amountCents: 17500,
+          bankVerified: false, settlementAuthority: false,
+        }],
+      },
+    },
     getPlatformTenantSavedPaymentAccount: {
       ok: true, readOnly: true, tenantId,
       source: "firebase_saved_store_settings",
@@ -114,6 +132,10 @@ for (const view of [
       await expect(card.locator("[data-tenant-summary-cards]")).toBeVisible();
       await card.locator("button.tenant-control-expand-btn").click();
       await expect(card.locator('[data-tenant-control-section="registration"]')).toBeVisible();
+      const evidence = card.locator('[data-tenant-hybrid-finance-evidence="' + tenantId + '"]');
+      await expect(evidence).toHaveAttribute("data-tenant-hybrid-evidence-state", "ready");
+      await expect(evidence).toContainText("175.00");
+      await expect(evidence).toContainText("ไม่ใช่หลักฐานธนาคาร");
       const payment = card.locator('[data-tenant-profile="payment"]');
       await expect(payment).toContainText("•••• 7777");
       await expect(payment).toContainText("•••• 2222");
