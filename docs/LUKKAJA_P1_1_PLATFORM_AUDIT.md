@@ -1,0 +1,41 @@
+# P1.1 — Super Admin Platform JSX port audit (opened 09/11/2026)
+
+**Status:** `inventory_started`, **not yet implemented, not signed off, no Firebase deploy**.
+
+| Artifact | LUKKAJA source | PENGUIN destination |
+| --- | --- | --- |
+| GitHub branch | `cosmatch/lukkhaja@feature/react-golang-vite-tailwind-axios` | `Natchanon45/food-order-app@feature/react-firebase-port` |
+| Pin | `e84c899028eb16c67401dcc05c5faed84bf48f63` | baseline `d87fc3752efff126dc9846d7cbe844aa982840a2` |
+| JSX | `resources/js/react-port/pages/PlatformPage.jsx` | `react-app/src/pages/PlatformPage.jsx` |
+| Snapshot file size | 828 source lines | 841 destination lines |
+| Action status | **Pending per-control inventory** | **Pending Firebase interaction verification** |
+
+## Important differences checked in pinned files
+
+1. The source Platform JSX uses LUKKAJA auth/context and data interfaces: `LaravelAuthProvider`, `laravelPlatformBrandingService`, `laravelPlatformSettingsService`, `LaravelPlatformBrandingRuntime`. PENGUIN already uses `AuthProvider`, `platformBrandingService`, `platformSettingsService`, `PlatformBrandingRuntime`; **do not import Go/SQL service files into PENGUIN React**.
+2. The source includes explicit `brandingStorageReady`, `googleStorageReady`, `slipStorageReady`, `lalamoveStorageReady` guards on submit/test actions. The destination currently has some controls disabled only by `*Busy`. Before adopting source JSX, implement equivalent readiness/permission guards using an authoritative Firebase contract, not a hard-coded `true`. Source UX must preserve disabled/error/loading semantics.
+3. Destination already implements an additional Super Admin tenant-notification badge on the tenant navigation card. This is a PENGUIN feature not present as the same JSX expression in the pinned LUKKAJA page; review whether this is a user-approved destination-specific feature **before** copying source markup. Never silently discard accepted functionality to improve superficial similarity.
+4. Shared visual hierarchy to inspect at desktop/tablet/mobile: navigation cards, branding/logo/favicons, Google API settings, provider slip settings/beneficiary, Lalamove settings, read/write/test buttons, global notification and readiness overlays.
+5. Source uses super_admin gating before settings writes and displays a platform-auth error state. Destination must keep an equally strict server-enforced role/tenant boundary, not only hide buttons.
+6. Source may expose Go-only configuration or M7 financial actions. P1.1 is UI/adapter work only: do **not** deploy provider credentials, open money settlement, activate invoices/holds, or modify production Firebase documents.
+
+## P1.1 implementation contracts to inventory and satisfy
+
+| Source interaction / block | PENGUIN adapter boundary | Acceptance |
+| --- | --- | --- |
+| Platform shell and cards | Existing Firebase auth/route/tenant/profile services | Verify exact source markup and approved destination-specific exceptions |
+| Platform branding upload/clear | `platformBrandingService` + Storage + scoped Functions/Rules | Blob type/size, loading, failure, invalid upload and icon preview |
+| Global Google settings | `platformSettingsService` + Firebase Functions | Secret permission, busy/readiness and test errors |
+| Slip2Go settings/test | `platformSettingsService` + backend-only verification | Server storage readiness, cannot leak API key or auto-approve mismatch |
+| Lalamove settings/test | `platformSettingsService` + backend-only test call | Readiness, failures, disabled controls, never charge on UI test |
+| Super Admin navigation badge | `platformAdminNotifications` | Preserve existing approved behavior unless source parity review explicitly replaces it |
+
+## Concrete next steps within P1.1
+
+1. Freeze exact JSX/CSS/component references for `PlatformPage.jsx` and capture source-vs-target screenshots at the **same demo data, role and viewport**.
+2. Inventory all visible buttons/inputs, their permission, mutations, error/retry behavior and data read status; count pseudocode/scenarios **after inspecting actual actions**.
+3. Create a Firebase read/write facade matching source action contracts while keeping JSX presentation and PENGUIN-specific branding; do not inline backend details in markup.
+4. Add source parity tests plus Firebase Emulator permission tests for write actions, then approved browser visual UAT.
+5. GitHub-first commit/Pull/Build; deploy Hosting only when the current live build is proved not to regress. Functions/Rules updates are separate, reviewed operations.
+
+**Source is read-only.** Historical candidate `feature/port-lukkaja-20261031@fe338e1d` is available for reuse but cannot be merged wholesale or treated as current accepted source.
