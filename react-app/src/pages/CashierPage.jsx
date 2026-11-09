@@ -39,7 +39,6 @@ import { deliveryDriverMapsUrl, isSelfDeliveryOrder } from "@/utils/deliveryDriv
 import { validDeliveryLocation } from "@/utils/deliveryLocationPolicy";
 import { openReceiptPrintLoading, updateReceiptPrintLoading } from "@/utils/receiptPrintWindow";
 
-const approveDeliveryPaymentReview = httpsCallable(functions, "approveDeliveryPaymentReview");
 const LALAMOVE_STATUS_COOLDOWN_MS = 10000;
 const FINISHED_LALAMOVE = new Set(["COMPLETED", "CANCELED", "CANCELLED", "REJECTED", "EXPIRED"]);
 
@@ -277,7 +276,16 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       <button className="btn btn-warning cashier-view-bill-action" type="button" aria-label={t("cashier.bill_preview.view")} onClick={() => actions.viewBill(order, slipUrl)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
-      {order.paymentStatus !== "paid" && !isLalamoveCod(order) && order.slipCheckStatus !== "matched" ? <button className="btn btn-primary cashier-payment-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{order.paymentMethod === "promptpay" && order.orderType === "delivery" ? t("cashier.payment.slip_manual_release") : t("cashier.payment.receive")}</span></button> : null}
+      {order.paymentStatus !== "paid" && order.paymentMethod === "promptpay"
+        ? <span className="badge warning" role="status" data-delivery-superadmin-review={order.id}>
+            {t("cashier.payment.slip_manual_superadmin")}
+          </span>
+        : order.paymentStatus !== "paid" && !isLalamoveCod(order) && order.slipCheckStatus !== "matched"
+          ? <button className="btn btn-primary cashier-payment-action" type="button"
+              disabled={busy} onClick={() => actions.pay(order)}>
+              <i className="bi bi-cash-coin app-icon" aria-hidden="true"></i>
+              <span>{t("cashier.payment.receive")}</span>
+            </button> : null}
       {lalamoveCodAwaitingSettlement(order) ? <button className="btn btn-primary cashier-payment-action cashier-cod-settlement-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.lalamove.cod_receive")}</span></button> : null}
       {lalamoveDeliveryCompleted(order) ? null : dispatchedLocked
         ? <button className="btn btn-primary" type="button" disabled title={t("cashier.lalamove.local_cancel_locked")}><i className="bi bi-truck app-icon"></i><span>{t("cashier.lalamove.dispatched")}</span></button>
@@ -853,6 +861,12 @@ export function CashierPage() {
       } finally { setBusyKey(""); }
       return;
     }
+    // Merchant cashiers must not mark an unverified PromptPay bank transfer
+    // as paid. Only Super Admin may inspect the technical Slip2Go failure.
+    if (order.orderType === "delivery" && order.paymentMethod === "promptpay") {
+      showToast(t("cashier.payment.slip_manual_superadmin"), "error");
+      return;
+    }
     const codSettlement = isLalamoveCod(order);
     if (codSettlement && !lalamoveDeliveryCompleted(order)) {
       showToast(t("cashier.lalamove.cod_before_delivery"), "error");
@@ -870,14 +884,6 @@ export function CashierPage() {
     const printWindow = openReceiptPrintWindow();
     setBusyKey(`pay:${order.id}`);
     try {
-      const manualDeliveryReview = order.orderType === "delivery"
-        && order.paymentMethod === "promptpay";
-      if (manualDeliveryReview) {
-        await approveDeliveryPaymentReview({ tenantId: tenant.id, orderId: order.id });
-        showToast(t("cashier.payment.slip_manual_approved"));
-        printOrder(printWindow, order.id);
-        return;
-      }
       const now = new Date().toISOString();
       const patch = { paymentStatus: "paid", paidAt: now };
       if (codSettlement) {
