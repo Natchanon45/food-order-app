@@ -289,7 +289,7 @@ function FinanceDetails({ ledger, locale, onReload }) {
 }
 
 export function TenantControlPanel({
-  tenant, locale = THAI_DATE, children, onReload,
+  tenant, locale = THAI_DATE, children, onReload, notifications = {},
   onEdit, onShare, onWallet, onReview,
   onLalamoveApproval, lalamoveApprovalBusy = false, onDelete, t,
   onTestAccessOverride, testOverrideBusy = false,
@@ -369,6 +369,24 @@ export function TenantControlPanel({
         </button>
       </div>
     </header>
+    {(Number(notifications.revenueShare || 0) + Number(notifications.wallet || 0)) > 0 ? (
+      <div className="tenant-card-notifications" data-tenant-notifications={tenant.id}>
+        {Number(notifications.revenueShare || 0) > 0 ? (
+          <button type="button" className="tenant-notification-chip revenue"
+            data-tenant-revenue-notification={tenant.id} onClick={() => onReview?.(tenant)}>
+            <i className="bi bi-receipt-cutoff" aria-hidden="true"></i>
+            <span>รอตรวจส่วนแบ่ง Delivery</span><b>{notifications.revenueShare}</b>
+          </button>
+        ) : null}
+        {Number(notifications.wallet || 0) > 0 ? (
+          <button type="button" className="tenant-notification-chip wallet"
+            data-tenant-wallet-notification={tenant.id} onClick={() => onWallet?.(tenant)}>
+            <i className="bi bi-wallet2" aria-hidden="true"></i>
+            <span>รอตรวจ Lalamove Wallet</span><b>{notifications.wallet}</b>
+          </button>
+        ) : null}
+      </div>
+    ) : null}
     <div className="tenant-control-top-metadata">
       <span><i className="bi bi-person" aria-hidden="true"></i>{owner}</span>
       <span><i className="bi bi-telephone" aria-hidden="true"></i>{tenant.shopPhone || "ไม่มีเบอร์โทร"}</span>
