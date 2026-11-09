@@ -1408,8 +1408,8 @@ assert(
   "Admin Tenants must expose actionable aggregate and per-tenant notification badges"
 );
 assert(
-  adminTenantsPage.includes('tenant.lalamove?.accountMode === "fod_central"')
-  &&adminTenantsPage.includes('data-lalamove-approval={tenant.id}')
+  tenantControlPanel.includes('tenant.lalamove?.accountMode === "fod_central"')
+  &&tenantControlPanel.includes('data-lalamove-approval={tenant.id}')
   &&adminTenantsPage.includes('setLalamoveApprovalBusy(tenant.id)')
   &&adminTenantsPage.includes('const result = await updateTenantLalamoveApproval({ tenantId: tenant.id, approved: nextApproved })')
   &&adminTenantsPage.includes('setTenants(current => current.map(item => item.id === tenant.id ? {')
