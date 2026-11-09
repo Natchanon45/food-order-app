@@ -16,7 +16,9 @@ const dateLabel = value => {
 const labels = {
   monthly: "สมาชิกรายเดือน",
   yearly: "สมาชิกรายปี",
-  delivery_daily: "ส่วนแบ่ง Delivery",
+  fixed_monthly: "ค่าสมาชิกรายเดือนเมื่อไม่เกินเพดาน",
+  delivery_threshold: "ส่วนแบ่ง Delivery วันที่ยอดเกินเพดาน",
+  delivery_daily: "ส่วนแบ่ง Delivery รายวัน",
 };
 const statusLabels = {
   issued: "ทะเบียนบันทึก: ออกแล้ว (ยังไม่ยืนยันธนาคาร)",
