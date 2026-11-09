@@ -274,9 +274,12 @@ requireAll("Waiting Queue seating transaction", waitingCore, [
 ]);
 
 requireAll("Admin tenant create/edit/share actions", tenants, [
-  "if (editing) await updateTenant(payload)",
-  "const result = await createTenant(payload)",
-  "result.tenant?.onboardingRequired !== true",
+  "await updateTenant(payload)",
+  "const created = await createActiveTenantWithOwner(payload)",
+  "created?.tenantActivated !== true",
+  "const canonical = await listTenants()",
+  "tenantNewPlanCode",
+  "tenantOwnerPasswordConfirm",
   'data-tenant-owner-pending={tenant.id}',
   "loadAdminSubscriptionPricing",
   "await reconcileRevenueShare(tenantId ? { tenantId } : {})",
