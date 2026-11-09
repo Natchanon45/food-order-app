@@ -137,6 +137,8 @@ export function DeliveryPage() {
   const [customerUser, setCustomerUser] = useState(null);
   const [profile, setProfile] = useState({ displayName: "", phone: "", addresses: [] });
   const [profileLoading, setProfileLoading] = useState(true);
+  // Keep the Delivery DOM mounted when a Google identity changes on mobile.
+  const [customerProfileInitialized, setCustomerProfileInitialized] = useState(false);
   const [customerBusy, setCustomerBusy] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [addressEditor, setAddressEditor] = useState(null);
@@ -149,7 +151,8 @@ export function DeliveryPage() {
   const [deliveryLocation, setDeliveryLocation] = useState(null);
   const locationSourceRef = useRef("");
   const [initialGps, setInitialGps] = useState({ status: "pending", point: null, accuracy: null });
-  const initialGpsRequestedForTenantRef = useRef("");
+  const [addressAuthRevision, setAddressAuthRevision] = useState(0);
+  const gpsRequestedForAddressContextRef = useRef("");
   const [routeState, setRouteState] = useState({ pending: false, route: null, quote: null, error: "" });
   const [manualZoneId, setManualZoneId] = useState("");
   const [freeGiftIds, setFreeGiftIds] = useState(new Set());
@@ -230,39 +233,60 @@ export function DeliveryPage() {
   useEffect(() => {
     if (!tenant) return undefined;
     let alive = true;
+    let authSequence = 0;
+    setCustomerProfileInitialized(false);
     const stop = watchDeliveryCustomerAuth(async user => {
       if (!alive) return;
+      const sequence = ++authSequence;
+      // Change only checkout/address context, never menu/cart DOM or scroll.
+      locationSourceRef.current = "";
+      setSelectedAddressId("");
+      setDeliveryAddress("");
+      setDeliveryLocation(null);
+      setRecipientName("");
+      setRecipientPhone("");
+      setAddressEditor(null);
+      setInitialGps({ status: "pending", point: null, accuracy: null });
       setCustomerUser(user);
       setProfileLoading(true);
       try {
+        // Firebase favorites deliberately merges guest + cloud favorites and
+        // may persist that merge. Preserve it while synchronizing a new
+        // account's saved addresses (do not transplant the Go profile API).
         const [nextProfile, favorites] = await Promise.all([
           getDeliveryCustomerProfile(tenant, user),
           getDeliveryCustomerFavorites(tenant, user),
         ]);
-        if (!alive) return;
+        if (!alive || sequence !== authSequence) return;
         const resolvedProfile = nextProfile || { displayName: "", phone: "", addresses: [] };
-        const addresses = Array.isArray(resolvedProfile.addresses) ? resolvedProfile.addresses : [];
         setProfile(resolvedProfile);
         setFavoriteIds(new Set(favorites || []));
-        // Wait for GPS after the address book loads; only a saved pin within
-        // 100 metres may be auto-selected, regardless of legacy isDefault.
-        if (resolvedProfile.displayName) setRecipientName(current => current || resolvedProfile.displayName);
-        if (resolvedProfile.phone) setRecipientPhone(current => current || resolvedProfile.phone);
+        setRecipientName(resolvedProfile.displayName || "");
+        setRecipientPhone(resolvedProfile.phone || "");
+        setAddressAuthRevision(current => current + 1);
       } catch (error) {
+        if (!alive || sequence !== authSequence) return;
         console.error("DELIVERY_CUSTOMER_PROFILE_LOAD_FAILED", error);
+        setProfile({ displayName: "", phone: "", addresses: [] });
+        setFavoriteIds(new Set());
+        setInitialGps({ status: "unavailable", point: null, accuracy: null });
       } finally {
-        if (alive) setProfileLoading(false);
+        if (alive && sequence === authSequence) {
+          setProfileLoading(false);
+          setCustomerProfileInitialized(true);
+        }
       }
     });
-    return () => { alive = false; stop?.(); };
+    return () => { alive = false; ++authSequence; stop?.(); };
   }, [tenant?.id]);
 
-  // Resolve the customer address book first, then obtain device GPS. Compare
-  // against that same loaded set of saved pins before selecting the nearest.
-  // This is independent from Google Maps script/map readiness on PC/mobile.
+  // Refresh GPS only after the confirmed identity's address book has loaded.
+  // Do not force an unmount or override an explicit manual pin selection.
   useEffect(() => {
-    if (!tenant?.id || profileLoading || initialGpsRequestedForTenantRef.current === tenant.id) return undefined;
-    initialGpsRequestedForTenantRef.current = tenant.id;
+    if (!tenant?.id || profileLoading || !addressAuthRevision) return undefined;
+    const contextKey = tenant.id + ":" + addressAuthRevision;
+    if (gpsRequestedForAddressContextRef.current === contextKey) return undefined;
+    gpsRequestedForAddressContextRef.current = contextKey;
     let active = true;
     if (!window.isSecureContext || !navigator.geolocation?.getCurrentPosition) {
       setInitialGps({ status: "unavailable", point: null, accuracy: null });
@@ -278,19 +302,16 @@ export function DeliveryPage() {
       setInitialGps({ status: "unavailable", point: null, accuracy: null });
     }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
     return () => { active = false; };
-  }, [tenant?.id, profileLoading]);
+  }, [tenant?.id, profileLoading, addressAuthRevision]);
 
   useEffect(() => {
     if (profileLoading || initialGps.status === "pending" || locationSourceRef.current) return;
     const addresses = Array.isArray(profile.addresses) ? profile.addresses : [];
-    // Even a single default Saved Address must never be selected when the
-    // customer's GPS is farther than 100m away, missing or inaccurate.
-    // Only a verified nearby saved pin may be selected automatically.
+    // Only a pin verified within 100 m; never a stale/default other account.
     const nearest = initialGps.point
       ? matchGpsSavedAddress(addresses, initialGps.point, "current-location")
       : null;
     if (nearest) selectAddress(nearest.address);
-    // Otherwise leave checkout unselected and require explicit choice or save.
   }, [profileLoading, profile.addresses, initialGps]);
 
   useEffect(() => () => { if (slipPreview) URL.revokeObjectURL(slipPreview); }, [slipPreview]);
@@ -867,7 +888,7 @@ export function DeliveryPage() {
     });
   };
 
-  if (!stylesReady || loading || (tenant && profileLoading && !loadError)
+  if (!stylesReady || loading || (tenant && !customerProfileInitialized && !loadError)
     || (tenant && !settingsLiveReady && !loadError)) return <PageReadyOverlay />;
   const shopName = String(settings.orderDeliveryShopName || settings.shopName || tenant?.name || t("shared.store.fallback_name") || "PENGUIN").trim();
   const locked = paymentMethod === "promptpay" && paymentLocked;

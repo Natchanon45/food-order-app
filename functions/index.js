@@ -275,6 +275,11 @@ exports.moveTableSession = operationalOrders.moveTableSession;
 exports.settleTableSession = operationalOrders.settleTableSession;
 exports.closeWalkInTable = operationalOrders.closeWalkInTable;
 exports.releaseQuickOrderHeldBill = operationalOrders.releaseQuickOrderHeldBill;
+exports.appendUnpaidWalkInItems = operationalOrders.appendUnpaidWalkInItems;
+exports.settleDeferredWalkIn = operationalOrders.settleDeferredWalkIn;
+exports.cancelDeferredWalkIn = operationalOrders.cancelDeferredWalkIn;
+exports.updateDeferredKitchen = operationalOrders.updateDeferredKitchen;
+exports.cancelReviewedPaidWalkIn = operationalOrders.cancelReviewedPaidWalkIn;
 
 const lalamoveWebhook = require("./lalamove-webhook");
 exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook;

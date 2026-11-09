@@ -1,0 +1,59 @@
+/* PENGUIN 2026-10-31: Revenue Share LUKKAJA M2.157 CSS only. */
+/* M2.157 — Keep the latest Wallet credit ledger within its own scrollable
+   region instead of growing the two-column audit panel to all 12 entries.
+   Only the transaction list scrolls; its heading and the Lalamove problems
+   panel retain their SOURCE markup and independent heights. */
+body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+.report-wallet-details #walletTransactionList {
+  height: 340px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  padding: 2px 6px 4px 2px;
+  align-content: start;
+  grid-auto-rows: max-content;
+}
+body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+.report-wallet-details #walletTransactionList::-webkit-scrollbar {
+  width: 8px;
+}
+body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+.report-wallet-details #walletTransactionList::-webkit-scrollbar-thumb {
+  background: #c2d8c9;
+  border-radius: 8px;
+}
+body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+.report-wallet-details #walletTransactionList::-webkit-scrollbar-track {
+  background: #f4f8f5;
+  border-radius: 8px;
+}
+
+/* Give the slip-history card breathing room inside the expandable outline;
+   the original nested card was flush with the disclosure frame. */
+body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+.report-history-disclosure[open] > .report-history-card {
+  margin: 7px 14px 14px;
+  padding: 17px 18px 19px;
+  border: 1px solid #dfeae3;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(17, 76, 44, .035);
+}
+body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+.report-history-disclosure[open] > .report-history-card .report-section-heading {
+  margin-bottom: 12px;
+}
+@media (max-width: 700px) {
+  body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+  .report-wallet-details #walletTransactionList {
+    height: 286px;
+  }
+  body.order-delivery-workspace.revenue-share-report-page .revenue-share-dashboard
+  .report-history-disclosure[open] > .report-history-card {
+    margin: 6px 10px 11px;
+    padding: 15px 13px 16px;
+    border-radius: 12px;
+  }
+}

@@ -7,10 +7,19 @@ function validDateKey(value) {
   return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === value;
 }
 
+const THAI_MONTH_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+// Pure display conversion only; never reinterpret this date as a collection deadline.
+export function formatBillingThaiShortDate(key) {
+  if (!validDateKey(key)) return "";
+  const yearBE = (Number(key.slice(0, 4)) + 543) % 100;
+  return Number(key.slice(8, 10)) + " " + THAI_MONTH_SHORT[Number(key.slice(5, 7)) - 1]
+    + " " + String(yearBE).padStart(2, "0");
+}
+
 export function formatBillingCycleRange(startDate, endDate) {
   if (!validDateKey(startDate) || !validDateKey(endDate) || endDate < startDate) return "";
-  const display = key => key.slice(8, 10) + "/" + key.slice(5, 7) + "/" + key.slice(0, 4);
-  return display(startDate) + " - " + display(endDate);
+  return formatBillingThaiShortDate(startDate) + " - " + formatBillingThaiShortDate(endDate);
 }
 
 function asDate(value) {
@@ -49,7 +58,7 @@ export function firstTenantRegistrationDate(tenant) {
     && /^\d{4}-\d{2}-\d{2}$/.test(tenant.createdAt)
     && !validDateKey(tenant.createdAt)) return "";
   const key = bangkokDateKey(tenant?.createdAt);
-  return key ? key.slice(8, 10) + "/" + key.slice(5, 7) + "/" + key.slice(0, 4) : "";
+  return key ? formatBillingThaiShortDate(key) : "";
 }
 
 function tenantAnchorDate(tenant) {

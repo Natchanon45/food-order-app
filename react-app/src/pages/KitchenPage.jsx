@@ -9,6 +9,9 @@ import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm } from "@/components/sweetDialog";
 import {
   cancelOperationalOrder,
+  cancelUnpaidWalkIn,
+  cancelReviewedWalkIn,
+  updateDeferredWalkInKitchen,
   loadKitchenMenus,
   refreshLalamoveDispatch,
   settleTableSession,
@@ -20,9 +23,15 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useLalamoveAutoRefresh } from "@/hooks/useLalamoveAutoRefresh";
 import { useTenant } from "@/tenant/TenantProvider";
 import { deliveryKitchenAdmitted } from "@/data/deliveryKitchenGate";
+import { walkInKitchenPending, walkInKitchenStatus } from "@/data/walkInLifecycle.mjs";
 import { isKitchenLocked, isLalamoveDelivery, lalamoveDispatchActive, lalamoveStatus } from "@/utils/kitchenOrderLock";
 
 const ACTIVE_STATUSES = new Set(["pending", "accepted", "cooking", "ready", "served"]);
+function kitchenWorkLocked(order) {
+  return isKitchenLocked(order) && !(
+    String(order?.status || "").toLowerCase() === "paid" && walkInKitchenPending(order)
+  );
+}
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -101,7 +110,7 @@ function recalculateOrder(order, items) {
 }
 
 function nextActions(order, t) {
-  const status = order?.status;
+  const status = walkInKitchenStatus(order);
   if (status === "pending") return [["accepted", t("kitchen.actions.accept"), "btn-primary", "check", "kitchen-accept-action"]];
   if (status === "accepted") return [["cooking", t("kitchen.actions.start"), "btn-warning", "hourglass-split", "kitchen-start-action"]];
   if (status === "cooking") return [["ready", isDelivery(order) ? t("kitchen.actions.ready_delivery") : t("kitchen.actions.ready_serve"), "btn-primary", "check-circle", "kitchen-ready-action"]];
@@ -160,11 +169,11 @@ function LalamoveNotice({ order, t }) {
 function KitchenOrderCard({
   order, nested = false, t, formatTime, money, onEditItem, onCancelItem, onServeItem, onCancelOrder, onStatus,
 }) {
-  const locked = isKitchenLocked(order);
+  const locked = kitchenWorkLocked(order);
   const overdue = ["pending", "accepted", "cooking"].includes(order?.status) && ageMinutes(order) >= 15;
   const statusText = isTakeaway(order) && order.status === "ready"
     ? t("kitchen.states.ready_to_serve")
-    : t(`shared.status.${order.status || "pending"}`);
+    : t(`shared.status.${walkInKitchenStatus(order) || "pending"}`);
   const heading = nested ? (
     <div><h3 style={{ margin: 0 }}>{t("kitchen.order.round_title", { round: order.roundNumber || 1 })}</h3><small>{formatTime(displayTimeValue(order))}</small></div>
   ) : (
@@ -187,14 +196,18 @@ function KitchenOrderCard({
       {(order.items || []).map((item, index) => (
         <li key={`${order.id}-${index}`} style={item.cancelled ? { opacity: .48, textDecoration: "line-through" } : undefined}>
           <strong>{Number(item.qty || 0)} × {String(item.name || "")}{item.isGift === true ? ` ${t("kitchen.order.gift_suffix")}` : ""}</strong>
+          {item.kitchenAddOperationId ? <span className="badge warning" style={{ marginLeft: 6 }}>{t("quick_order.deferred.new_items")}</span> : null}
           {item.note ? <><br /><small>{t("kitchen.order.item_note")} {item.note}</small></> : null}
           {item.cancelled ? <><br /><small>{t("kitchen.states.cancelled")}</small></>
+            : item.kitchenPreviouslyServed ? <div className="kitchen-item-actions"><span className="badge">{t("quick_order.deferred.already_served")}</span></div>
             : supportsItemServe(order) && item.served === true
               ? <div className="kitchen-item-actions"><span className="badge">{t("kitchen.actions.served")}</span></div>
               : locked ? <div className="kitchen-item-actions"><span className="badge">{lockedItemLabel(order, t)}</span></div>
                 : <div className="kitchen-item-actions">
-                    <button className="btn btn-sm" type="button" data-edit-item={order.id} data-item-index={index} onClick={() => onEditItem(order, index)}><i className="bi bi-pencil" aria-hidden="true"></i><span>{t("kitchen.actions.edit")}</span></button>
-                    <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button>
+                    {!(order.orderType === "walkin")
+                      ? <button className="btn btn-sm" type="button" data-edit-item={order.id} data-item-index={index} onClick={() => onEditItem(order, index)}><i className="bi bi-pencil" aria-hidden="true"></i><span>{t("kitchen.actions.edit")}</span></button>
+                      : null}
+                    {!(order.orderType === "walkin" && order.paymentStatus === "paid") ? <button className="btn btn-danger btn-sm" type="button" data-cancel-item={order.id} data-item-index={index} onClick={() => onCancelItem(order, index)}><i className="bi bi-x-circle app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.cancel")}</span></button> : null}
                     {canServeItem(order, item) ? <button className="btn btn-dark btn-sm kitchen-serve-item-action" type="button" data-serve-item={order.id} data-item-index={index} onClick={() => onServeItem(order, index)}><i className="bi bi-send-check app-icon" aria-hidden="true"></i><span>{t("kitchen.actions.serve_item")}</span></button> : null}
                   </div>}
         </li>
@@ -391,7 +404,9 @@ export function KitchenPage() {
   }, [tenant?.id, allowedRole, orders]);
 
   const cards = useMemo(() => {
-    const active = orders.filter(order => ACTIVE_STATUSES.has(order.status) && !lalamoveDeliveryCompleted(order) && deliveryKitchenAdmitted(order));
+    const active = orders.filter(order =>
+      (ACTIVE_STATUSES.has(order.status) || walkInKitchenPending(order)) &&
+      !lalamoveDeliveryCompleted(order) && deliveryKitchenAdmitted(order));
     const tableGroups = new Map();
     active.filter(isTableOrder).forEach(order => {
       const key = tableGroupKey(order);
@@ -428,7 +443,10 @@ export function KitchenPage() {
   };
 
   const cancelItem = async (order, itemIndex) => {
-    if (!order || isKitchenLocked(order)) return;
+    if (!order || kitchenWorkLocked(order)) return;
+    if (order.orderType === "walkin" && order.paymentStatus === "paid") {
+      showToast(t("quick_order.deferred.not_available"), "error"); return;
+    }
     const selectedItem = order.items?.[itemIndex];
     if (!selectedItem || selectedItem.cancelled) return;
     const ok = await sweetConfirm(
@@ -448,7 +466,10 @@ export function KitchenPage() {
       const totals = recalculateOrder(order, items);
       const patch = { items, ...totals };
       if (totals.subtotalAmount <= 0) patch.status = "cancelled";
-      await updateOrder(order.id, patch);
+      if (order.orderType === "walkin" && order.paymentTiming === "after") {
+        const updated = await updateDeferredWalkInKitchen(tenant.id, order.id, "cancel_item", { index: itemIndex });
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else await updateOrder(order.id, patch);
       showToast(t(totals.subtotalAmount <= 0
         ? "kitchen.toast.order_cancelled_no_items"
         : "kitchen.toast.item_cancelled"));
@@ -459,7 +480,7 @@ export function KitchenPage() {
   };
 
   const cancelOrder = async order => {
-    if (!order || isKitchenLocked(order)) return;
+    if (!order || kitchenWorkLocked(order)) return;
     const ok = await sweetConfirm(
       t("kitchen.confirm.cancel_order_message"),
       {
@@ -471,7 +492,15 @@ export function KitchenPage() {
     );
     if (!ok) return;
     try {
-      if (isTakeaway(order)) {
+      if (order.orderType === "walkin" && order.paymentStatus === "paid") {
+        const updated = await cancelReviewedWalkIn(tenant.id, order.id, "kitchen");
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+        showToast(t("cashier.cancel_order.review_recorded"));
+        return;
+      } else if (order.orderType === "walkin" && order.paymentTiming === "after") {
+        const updated = await cancelUnpaidWalkIn(tenant.id, order.id, "kitchen");
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else if (isTakeaway(order)) {
         await updateOrder(order.id, {
           status: "cancelled",
           subtotalAmount: 0,
@@ -512,7 +541,10 @@ export function KitchenPage() {
       if (paid) patch.completedAt = now;
     }
     try {
-      await updateOrder(order.id, patch);
+      if (order.orderType === "walkin") {
+        const updated = await updateDeferredWalkInKitchen(tenant.id, order.id, "serve_item", { index: itemIndex });
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else await updateOrder(order.id, patch);
       if (complete && isTableOrder(order)) {
         await settleTableSession(tenant.id, order.id);
       }
@@ -524,7 +556,7 @@ export function KitchenPage() {
   };
 
   const changeStatus = async (order, status) => {
-    if (!order?.id || isKitchenLocked(order)) return;
+    if (!order?.id || kitchenWorkLocked(order)) return;
     const now = new Date().toISOString();
     const patch = { status };
     if (status === "served") {
@@ -545,7 +577,10 @@ export function KitchenPage() {
       patch.completedAt = now;
     }
     try {
-      await updateOrder(order.id, patch);
+      if (order.orderType === "walkin") {
+        const updated = await updateDeferredWalkInKitchen(tenant.id, order.id, "status", { status });
+        if (updated?.item) setOrders(current => current.map(row => row.id === order.id ? updated.item : row));
+      } else await updateOrder(order.id, patch);
       if (status === "served" && isTableOrder(order)) {
         await settleTableSession(tenant.id, order.id);
       }
@@ -566,7 +601,7 @@ export function KitchenPage() {
   };
 
   const saveEditor = async ({ order, index, item, menuId, qty, note, activeMenus, maxQty }) => {
-    if (!order || isKitchenLocked(order) || editorBusy) return;
+    if (!order || kitchenWorkLocked(order) || editorBusy) return;
     const selectedMenu = activeMenus.find(menu => menu.id === menuId);
     const nextQty = Number(qty);
     const nextNote = String(note || "").trim();
@@ -621,7 +656,7 @@ export function KitchenPage() {
     t,
     formatTime,
     money,
-    onEditItem: (order, index) => { if (!isKitchenLocked(order) && order?.items?.[index]?.served !== true) setEditor({ order, index }); },
+    onEditItem: (order, index) => { if (!kitchenWorkLocked(order) && order?.items?.[index]?.served !== true) setEditor({ order, index }); },
     onCancelItem: cancelItem,
     onServeItem: serveItem,
     onCancelOrder: cancelOrder,

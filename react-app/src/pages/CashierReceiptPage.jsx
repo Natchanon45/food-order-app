@@ -58,7 +58,7 @@ export function CashierReceiptPage() {
   const stylesReady = useParityPage({
     title: t("cashier_documents.receipt.meta_title"),
     bodyClass: "order-delivery-workspace od-receipt-page",
-    styles: ["app.css", "receipt-layout.css", "order-delivery-workspace-theme.css"],
+    styles: ["app.css", "receipt-layout.css", "order-delivery-workspace-theme.css", "cashier-receipt-cancelled-port.css"],
     attributes: { "data-roles": "owner,admin,manager,cashier" },
   });
 
@@ -106,6 +106,12 @@ export function CashierReceiptPage() {
   const combined = ids.length > 1;
   const first = orders[0] || null;
   const total = orders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
+  const cancelledReceipt = orders.length > 0 && orders.every(order => String(order.status || "").toLowerCase() === "cancelled");
+  const cancellationSources = new Set(orders.map(order => String(order.cancellationSource || "unknown")));
+  const cancellationActor = cancellationSources.size === 1 ? [...cancellationSources][0] : "mixed";
+  const displayedNet = cancelledReceipt
+    ? orders.reduce((sum, order) => sum + Number(order.totalAmount || order.originalPaidTotal || order.originalUnpaidTotal || 0), 0)
+    : total;
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const displayDate = value => {
     const date = toDate(value);
@@ -227,7 +233,9 @@ export function CashierReceiptPage() {
 
   const cashReceived = Number(first?.cashReceived);
   const changeAmount = Number(first?.changeAmount);
-  const showCash = isWalkIn && first?.paymentMethod === "cash" && Number.isFinite(cashReceived) && Number.isFinite(changeAmount);
+  const showCash = isWalkIn && first?.paymentStatus === "paid" && first?.paymentMethod === "cash" &&
+    first?.cashReceived !== null && first?.cashReceived !== undefined &&
+    Number.isFinite(cashReceived) && Number.isFinite(changeAmount);
 
   return (
     <>
@@ -254,7 +262,10 @@ export function CashierReceiptPage() {
           <button className="btn btn-primary" id="printButton" type="button" onClick={() => window.print()}><i className="bi bi-check-lg app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.print")}</span></button>
         </div>
 
-        <section className={receiptClass} id="receipt">
+        <section className={receiptClass + (cancelledReceipt ? " receipt-is-cancelled" : "")} id="receipt">
+          {cancelledReceipt ? <div className="receipt-cancelled-watermark" aria-label={t("sales_report.cancel.cancelled")}>
+            {t("sales_report.cancel.source_" + (["cashier", "kitchen", "mixed"].includes(cancellationActor) ? cancellationActor : "unknown"))}
+          </div> : null}
           {missingMessage ? <div className="empty">{missingMessage}</div> : first ? (
             <>
               <div className="receipt-header">
@@ -268,7 +279,7 @@ export function CashierReceiptPage() {
                 <span id="receiptTypeLabel">{combined ? t("cashier_documents.receipt.table") : (isDelivery || isTakeaway || isWalkIn ? t("cashier_documents.receipt.type") : t("cashier_documents.receipt.table"))}</span>
                 <strong id="receiptTable">{typeValue}</strong>
               </div>
-              <div className="receipt-row"><span>{t("cashier_documents.receipt.bill_number")}</span><span id="receiptNumber">{receiptNumber}</span></div>
+              <div className="receipt-row"><span>{t("cashier_documents.receipt.bill_number")}</span><span id="receiptNumber" className={cancelledReceipt ? "receipt-cancelled-code" : ""}>{receiptNumber}</span></div>
               <div className="receipt-row"><span>{t("cashier_documents.receipt.date")}</span><span id="receiptDate">{displayDate(first.createdAt)}</span></div>
               <div className="receipt-row">
                 <span>{t("cashier_documents.receipt.payment")}</span>
@@ -321,7 +332,7 @@ export function CashierReceiptPage() {
                   <div className="receipt-row"><span>{t("cashier_documents.receipt.delivery_fee")}</span><span><span id="receiptDeliveryFee">{money(first.deliveryFee || 0)}</span> {t("cashier.common.baht")}</span></div>
                 </div>
               ) : null}
-              <div className="receipt-row receipt-total"><span>{t("cashier_documents.receipt.net_total")}</span><span><span id="receiptTotal">{money(combined ? total : first.totalAmount)}</span> {t("cashier.common.baht")}</span></div>
+              <div className="receipt-row receipt-total"><span>{t("cashier_documents.receipt.net_total")}</span><span><span id="receiptTotal">{money(cancelledReceipt ? displayedNet : (combined ? total : first.totalAmount))}</span> {t("cashier.common.baht")}</span></div>
 
               {showCash ? (
                 <div id="receiptCashSummary">
