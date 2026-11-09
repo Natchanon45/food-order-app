@@ -5,6 +5,7 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { getMessaging } = require("firebase-admin/messaging");
 const { inspectSlip } = require("./slip-verification");
+const { allowManualReview } = require("./finance-manual-review-policy");
 const { tenantAnchorDate, bangkokDateKey, cycleForDate } = require("./billing-anniversary");
 const { verifiedCycleGoods, fingerprintOrder, reserveMerchantBillCheck,
   completeMerchantBillCheck } = require("./merchant-slip-quota");
@@ -30,6 +31,35 @@ async function cashierProfile(auth, tenantId) {
   }
   return { uid: auth.uid, email: clean(auth.token?.email || profile.email, 180), role: String(profile.role || "") };
 }
+async function superAdminReviewer(auth) {
+  if (!auth?.uid) throw new HttpsError("unauthenticated", "AUTH_REQUIRED");
+  const snapshot = await getFirestore().collection("users").doc(auth.uid).get();
+  const profile = snapshot.data() || {};
+  if (!snapshot.exists || profile.role !== "super_admin" || profile.active !== true) {
+    throw new HttpsError("permission-denied", "SUPERADMIN_SLIP_REVIEW_ONLY");
+  }
+  return { uid: auth.uid, email: clean(profile.email || auth.token?.email, 180) };
+}
+
+// Technical fallback needs evidence returned by a REAL Slip2Go call, not just
+// an uploaded image, a UI review flag, a configuration error or a Vision result.
+function technicalDeliveryEvidence(result) {
+  const primary = result?.provider === "slip2go_fallback_vision"
+    ? result.primary : result;
+  const evidence = {
+    provider: clean(primary?.provider),
+    status: clean(primary?.status),
+    reason: clean(primary?.reason),
+    code: clean(primary?.code, 30),
+    fallbackAllowed: primary?.fallbackAllowed === true,
+    amountMatched: primary?.amountMatched ?? null,
+    receiverValidated: primary?.receiverValidated ?? null,
+  };
+  return allowManualReview({
+    provider: "slip2go", status: "manual_review", proof: evidence,
+  }) ? evidence : null;
+}
+
 
 exports.verifyDeliveryPaymentSlip = onCall(
   { region: REGION, timeoutSeconds: 65, memory: "512MiB", invoker: "public" },
@@ -87,14 +117,10 @@ exports.verifyDeliveryPaymentSlip = onCall(
       proofId: orderId, paymentVerified: false,
     });
     const manualProof = async reason => {
-      console.info("DELIVERY_SLIP_REVIEW_REASON", { reason });
-      await proofRef.set({
-        tenantId, orderId, slipPath, amountCents: amountCents(amount),
-        foodCents, feeCents, itemsSignature,
-        status: "manual_review", provider: "slip2go", reason,
-        checkedAt: FieldValue.serverTimestamp(), transRef: "",
-      });
-      return { status: "manual_review", reason, verification: "cashier", proofId: orderId };
+      // No real provider call: do NOT persist an approvable bank proof.
+      console.info("DELIVERY_SLIP_NOT_CHECKED", { reason });
+      return { status: "manual_review", reason, verification: "unverified",
+        manualReviewEligible: false, paymentVerified: false, proofId: orderId };
     };
 
     // An accepted proof belongs to one immutable order amount, fee and cart.
@@ -281,6 +307,8 @@ exports.verifyDeliveryPaymentSlip = onCall(
     }
     const transRef = clean(result.transRef || result.referenceId, 200);
     const finalStatus = status === MATCHED ? MATCHED : "manual_review";
+    const manualReviewEvidence = finalStatus === "manual_review"
+      ? technicalDeliveryEvidence(result) : null;
     const proofData = {
       tenantId, orderId, slipPath, amountCents: amountCents(amount),
       foodCents, feeCents, itemsSignature,
@@ -289,6 +317,9 @@ exports.verifyDeliveryPaymentSlip = onCall(
       primaryReason: clean(result.primaryReason || ""),
       providerCode: clean(result.primaryCode || result.code || ""),
       checkedAt: FieldValue.serverTimestamp(), transRef,
+      providerAttempted: true,
+      manualReviewEligible: Boolean(manualReviewEvidence),
+      manualReviewEvidence,
     };
     if (finalStatus === MATCHED) {
       const referenceKey = createHash("sha256").update(transRef).digest("hex");
@@ -306,7 +337,10 @@ exports.verifyDeliveryPaymentSlip = onCall(
     } else {
       await proofRef.set(proofData);
     }
-    return { status: finalStatus, reason: reviewReason, verification: finalStatus === MATCHED ? "slip2go" : "cashier", proofId: orderId };
+    return { status: finalStatus, reason: reviewReason,
+      verification: finalStatus === MATCHED ? "slip2go" : "unverified",
+      manualReviewEligible: Boolean(manualReviewEvidence),
+      paymentVerified: finalStatus === MATCHED, proofId: orderId };
   },
 );
 
@@ -359,50 +393,110 @@ exports.approveDeliveryPaymentReview = onCall(
   async request => {
     const tenantId = clean(request.data?.tenantId);
     const orderId = clean(request.data?.orderId);
-    if (!/^[A-Za-z0-9_-]{8,128}$/.test(tenantId) || !/^[A-Za-z0-9_-]{8,128}$/.test(orderId)) {
+    if (!/^[A-Za-z0-9_-]{8,128}$/.test(tenantId)
+      || !/^[A-Za-z0-9_-]{8,128}$/.test(orderId)) {
       throw new HttpsError("invalid-argument", "DELIVERY_ORDER_REQUIRED");
     }
-    const actor = await cashierProfile(request.auth, tenantId);
+    const actor = await superAdminReviewer(request.auth);
     const db = getFirestore();
     const orderRef = db.collection("tenants").doc(tenantId).collection("orders").doc(orderId);
     const proofRef = db.collection("tenants").doc(tenantId).collection("deliverySlipChecks").doc(orderId);
+    const auditRef = db.collection("tenants").doc(tenantId).collection("deliverySlipManualReviewAudit").doc(orderId);
     let result = { alreadyPaid: false };
     await db.runTransaction(async tx => {
-      const [orderSnap, proofSnap] = await Promise.all([tx.get(orderRef), tx.get(proofRef)]);
-      if (!orderSnap.exists) throw new HttpsError("not-found", "DELIVERY_ORDER_NOT_FOUND");
+      const [orderSnap, proofSnap, auditSnap] = await Promise.all([
+        tx.get(orderRef), tx.get(proofRef), tx.get(auditRef),
+      ]);
+      if (!orderSnap.exists)
+        throw new HttpsError("not-found", "DELIVERY_ORDER_NOT_FOUND");
       const order = orderSnap.data() || {};
       if (order.paymentStatus === "paid") {
         result = { alreadyPaid: true };
         return;
       }
       const proof = proofSnap.data() || {};
-      const created = order.createdAt?.toMillis?.() || Date.parse(String(order.createdAtText || "")) || 0;
-      const legacySlip = !proofSnap.exists && created > 0
-        && created < Date.parse("2026-10-08T00:00:00+07:00")
-        && Boolean(clean(order.paymentSlipPath || order.paymentSlipUrl, 500))
-        && Number(order.totalAmount) > 0;
-      if (order.orderType !== "delivery" || order.paymentMethod !== "promptpay"
+      const technicalProof = proof.manualReviewEvidence;
+      if (auditSnap.exists || !proofSnap.exists
+        || order.orderType !== "delivery" || order.paymentMethod !== "promptpay"
         || order.paymentStatus !== "pending_verification"
-        || !(legacySlip || (order.paymentReviewRequired === true
-          && proof.status === "manual_review" && proofBoundToOrder(order, proof)))) {
-        throw new HttpsError("failed-precondition", "DELIVERY_MANUAL_REVIEW_NOT_ALLOWED");
+        || order.paymentReviewRequired !== true
+        || proof.status !== "manual_review" || proof.providerAttempted !== true
+        || proof.manualReviewEligible !== true
+        || !proofBoundToOrder(order, proof)
+        || !allowManualReview({
+          provider: "slip2go", status: "manual_review", proof: technicalProof,
+        })) {
+        throw new HttpsError("failed-precondition",
+          "DELIVERY_MANUAL_REVIEW_NOT_ELIGIBLE");
       }
+      tx.create(auditRef, {
+        tenantId, orderId, kind: "slip2go_technical_fallback",
+        reviewedBy: actor.uid, reviewerRole: "super_admin",
+        reason: clean(technicalProof.reason), providerCode: clean(technicalProof.code, 30),
+        amountCents: amountCents(order.totalAmount), reviewedAt: FieldValue.serverTimestamp(),
+      });
       tx.update(orderRef, {
-        paymentStatus: "paid",
-        paidAt: FieldValue.serverTimestamp(),
-        slipCheckStatus: "cashier_approved",
-        slipVerificationProvider: "cashier_manual",
-        slipVerificationStatus: legacySlip ? "legacy_cashier_approved" : "cashier_approved",
+        paymentStatus: "paid", paidAt: FieldValue.serverTimestamp(),
+        slipCheckStatus: "superadmin_approved",
+        slipVerificationProvider: "superadmin_manual",
+        slipVerificationStatus: "superadmin_technical_fallback",
         paymentReviewRequired: false,
-        paymentReviewedByUid: actor.uid,
-        paymentReviewedByEmail: actor.email,
-        paymentReviewedByRole: actor.role,
+        paymentReviewedByUid: actor.uid, paymentReviewedByEmail: actor.email,
+        paymentReviewedByRole: "super_admin",
         paymentReviewedAt: FieldValue.serverTimestamp(),
         kitchenReleasedAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
     });
     return { ok: true, tenantId, orderId, ...result };
+  },
+);
+
+exports.listPlatformDeliveryManualReviews = onCall(
+  { region: REGION, timeoutSeconds: 30 },
+  async request => {
+    const tenantId = clean(request.data?.tenantId);
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(tenantId))
+      throw new HttpsError("invalid-argument", "TENANT_ID_REQUIRED");
+    await superAdminReviewer(request.auth);
+    const tenantRef = getFirestore().collection("tenants").doc(tenantId);
+    const tenant = await tenantRef.get();
+    if (!tenant.exists) throw new HttpsError("not-found", "TENANT_NOT_FOUND");
+    const pending = await tenantRef.collection("orders")
+      .where("paymentReviewRequired", "==", true).limit(51).get();
+    const rows = pending.docs.slice(0, 50);
+    const result = await Promise.all(rows.map(async doc => {
+      const order = doc.data() || {};
+      const check = await tenantRef.collection("deliverySlipChecks").doc(doc.id).get();
+      const proof = check.data() || {};
+      const eligible = order.paymentStatus === "pending_verification"
+        && order.orderType === "delivery" && order.paymentMethod === "promptpay"
+        && proof.manualReviewEligible === true && proof.providerAttempted === true
+        && proof.status === "manual_review"
+        && proofBoundToOrder(order, proof)
+        && allowManualReview({
+          provider: "slip2go", status: "manual_review",
+          proof: proof.manualReviewEvidence,
+        });
+      const path = String(proof.slipPath || "");
+      return {
+        id: doc.id,
+        status: String(order.paymentStatus || "unknown").slice(0, 60),
+        amountCents: Number.isSafeInteger(amountCents(order.totalAmount))
+          && amountCents(order.totalAmount) >= 0
+          ? amountCents(order.totalAmount) : null,
+        eligible, reason: clean(eligible ? proof.manualReviewEvidence.reason
+          : proof.reason || "technical_slip_proof_unverified"),
+        providerCode: clean(eligible ? proof.manualReviewEvidence.code
+          : proof.providerCode, 30),
+        slipPath: eligible && path.startsWith(`tenants/${tenantId}/payment-slips/${doc.id}/`)
+          ? path : "",
+      };
+    }));
+    return { ok: true, tenantId,
+      source: "server_delivery_slip_proof_and_order",
+      requiresSuperAdmin: true, paymentAuthority: false,
+      truncated: pending.size > rows.length, items: result };
   },
 );
 
