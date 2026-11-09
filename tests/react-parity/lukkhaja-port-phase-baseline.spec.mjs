@@ -29,8 +29,8 @@ test("all 65 distinct source JSX pages are assigned exactly once", () => {
     assert.ok(page.destinationPath.startsWith("react-app/src/pages/"), page.filename);
     assert.ok(page.sourcePath.endsWith(page.filename), page.filename);
     assert.ok(page.destinationPath.endsWith(page.filename), page.filename);
-    assert.equal(page.release, "not_started", page.filename);
-    assert.ok(["pending", "inventory_started", "source_form_markup_compared__firebase_read_guard_adapted__visual_pending"].includes(page.jsxReview), page.filename);
+    assert.ok(["not_started", "hosting_0_4_305__signed_in_superadmin_uat_pending"].includes(page.release), page.filename);
+    assert.ok(["pending", "inventory_started", "source_form_markup_compared__firebase_read_guard_adapted__visual_pending", "source_delta_2341_vs_1578_reviewed__port_pending"].includes(page.jsxReview), page.filename);
     assert.ok(["pending", "read_failure_guards_contract_pass__emulator_write_pending"].includes(page.firebaseContract), page.filename);
   }
 });
@@ -66,7 +66,7 @@ test("P1.1 audit is visible without falsely marking Platform parity delivered", 
   const platform = matrix.pages.find(page => page.phase === "P1" && page.filename === "PlatformPage.jsx");
   assert.equal(platform.jsxReview, "source_form_markup_compared__firebase_read_guard_adapted__visual_pending");
   assert.equal(platform.firebaseContract, "read_failure_guards_contract_pass__emulator_write_pending");
-  assert.equal(platform.release, "not_started");
+  assert.equal(platform.release, "hosting_0_4_305__signed_in_superadmin_uat_pending");
   assert.equal(platform.auditEvidence, "docs/LUKKAJA_P1_1_PLATFORM_AUDIT.md");
   assert.equal(platform.actionInventoryEvidence, "docs/LUKKAJA_P1_1_PLATFORM_ACTIONS.md");
   const actions = readFileSync(platform.actionInventoryEvidence, "utf8");
@@ -77,4 +77,26 @@ test("P1.1 audit is visible without falsely marking Platform parity delivered", 
   assert.match(audit, /not fully visually or runtime verified/);
   assert.match(audit, /LaravelAuthProvider/);
   assert.match(audit, /platformSettingsService/);
+});
+
+test("P1.1 live Hosting evidence and P1.2 source audit do not claim completed UAT or finance", () => {
+  const platform = matrix.pages.find(page => page.filename === "PlatformPage.jsx");
+  const tenants = matrix.pages.find(page => page.filename === "AdminTenantsPage.jsx");
+  assert.equal(platform.releaseCommit, "fb3d249f1a15cce1f24499dd2f5026f00f0abb97");
+  assert.equal(platform.releaseAsset, "react/assets/index-CoVwNJEQ.js");
+  assert.match(platform.browserVisual, /signed_in_visual_pending/);
+  assert.match(platform.firebaseEmulator, /platform_settings_write_emulator_pending/);
+  assert.equal(matrix.latestVerifiedHosting.version, "0.4.305");
+  assert.equal(matrix.latestVerifiedHosting.backendDeploy, "none_this_release");
+  assert.equal(matrix.latestVerifiedHosting.sha256, "62f45d8b784efd1e364862a7891abf5b29b85a555cca26ad3ef9b067f1b7d7c9");
+  assert.equal(tenants.jsxReview, "source_delta_2341_vs_1578_reviewed__port_pending");
+  assert.equal(tenants.release, "not_started");
+  assert.equal(tenants.auditEvidence, "docs/LUKKAJA_P1_2_SUPERADMIN_TENANTS_AUDIT.md");
+  const audit = readFileSync(tenants.auditEvidence, "utf8");
+  assert.match(audit, /createActiveTenantWithOwner/);
+  assert.match(audit, /one-step flow/);
+  assert.match(audit, /no new JSX, Firebase Callables or Rules changes/);
+  const verification = readFileSync("docs/LUKKAJA_LIVE_BASELINE_RECONCILIATION.md", "utf8");
+  assert.match(verification, /Hosting-only release verified/);
+  assert.match(verification, /17\/17 PASS/);
 });
