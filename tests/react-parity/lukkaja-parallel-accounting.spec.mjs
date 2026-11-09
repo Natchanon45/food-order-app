@@ -59,6 +59,9 @@ test("server owns all walkin writes, role audit, funds and releases",()=>{
  assert.match(functionsCode,/manualRefundNotRecorded: true/);
  assert.match(functionsCode,/if \(paymentMethod === "promptpay"/);
  assert.match(rules,/request\.resource\.data\.get\('orderType', ''\) != 'walkin'/);
- assert.match(rules,/resource\.data\.get\('paymentTiming', ''\) != 'after'/);
- assert.match(rules,/resource\.data\.get\('paymentStatus', ''\) == 'paid'/);
+ // All direct browser writes to Walk-in orders are denied, which is stronger
+ // than the old payment-timing predicate: only server Callables may mutate.
+ assert.match(rules,/allow create: if request\.resource\.data\.get\('orderType', ''\) != 'walkin'/);
+ assert.match(rules,/allow update: if resource\.data\.get\('orderType', ''\) != 'walkin'/);
+ assert.match(rules,/allow delete: if resource\.data\.get\('orderType', ''\) != 'walkin'/);
 });
