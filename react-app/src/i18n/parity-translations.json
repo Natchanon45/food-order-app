@@ -1766,7 +1766,10 @@
           "slip_manual_fallback": "บริการ Slip2Go ตรวจสอบไม่ได้ ระบบใช้ Google Vision ช่วยอ่านภาพ แต่ต้องให้แคชเชียร์ยืนยันการชำระเงิน",
           "slip_manual_unverified": "Slip2Go พบข้อมูลสลิป แต่ยังไม่ได้ยืนยันยอดเงิน ผู้รับ วันที่ และการใช้ซ้ำครบทุกเงื่อนไข ต้องให้แคชเชียร์ตรวจสอบ",
           "slip_manual_condition_request": "คำขอตรวจสอบเงื่อนไข Slip2Go ไม่ถูกต้อง กรุณาให้แคชเชียร์ตรวจสอบก่อนส่งเข้าครัว",
-          "slip_service_error": "ไม่สามารถตรวจสลิปได้ กรุณาลองใหม่หรือเลือกเก็บเงินปลายทาง"
+          "slip_service_error": "ไม่สามารถตรวจสลิปได้ กรุณาลองใหม่หรือเลือกเก็บเงินปลายทาง",
+          "slip_merchant_quota_exhausted": "ร้านค้าใช้สิทธิ์ตรวจสลิปอัตโนมัติครบในรอบบิลนี้แล้ว ระบบยังไม่ยืนยันการรับเงิน กรุณาติดต่อร้านก่อนดำเนินการต่อ หากโอนเงินแล้วอย่าโอนซ้ำ",
+          "slip_provider_outcome_uncertain": "ระบบได้รับคำขอตรวจสลิปแล้ว แต่ผลตรวจยังไม่แน่นอน กรุณาติดต่อร้านก่อนดำเนินการต่อ อย่าโอนเงินหรือส่งตรวจซ้ำ",
+          "slip_provider_unavailable_no_approval": "ระบบยังตรวจสลิปหรือข้อมูลค่าบริการให้ปลอดภัยไม่ได้ ไม่ใช่หลักฐานรับเงิน กรุณาติดต่อร้าน หากโอนแล้วอย่าโอนซ้ำ"
         },
         "validation": {
           "delivery_details_required": "กรุณากรอกชื่อผู้รับ ที่อยู่ และเบอร์โทรศัพท์",
@@ -8413,7 +8416,10 @@
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
           "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
-          "slip_service_error": "Unable to verify the slip. Please retry or select cash on delivery."
+          "slip_service_error": "Unable to verify the slip. Please retry or select cash on delivery.",
+          "slip_merchant_quota_exhausted": "This store has reached its automatic slip-check allowance for this billing cycle. Payment is not verified. Contact the store before proceeding; do not transfer again if you already paid.",
+          "slip_provider_outcome_uncertain": "The slip-check request may have reached the provider but its outcome is unconfirmed. Contact the store. Do not send another transfer or retry verification.",
+          "slip_provider_unavailable_no_approval": "The system cannot safely verify this slip or store entitlement. Payment is not confirmed. Contact the store; do not transfer again if already paid."
         },
         "validation": {
           "delivery_details_required": "Enter the recipient name, delivery address, and phone number.",
@@ -14785,7 +14791,10 @@
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
           "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
-          "slip_service_error": "စလစ်စစ်ဆေး၍ မရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် COD ရွေးပါ။"
+          "slip_service_error": "စလစ်စစ်ဆေး၍ မရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် COD ရွေးပါ။",
+          "slip_merchant_quota_exhausted": "This store has reached its automatic slip-check allowance for this billing cycle. Payment is not verified. Contact the store before proceeding; do not transfer again if you already paid.",
+          "slip_provider_outcome_uncertain": "The slip-check request may have reached the provider but its outcome is unconfirmed. Contact the store. Do not send another transfer or retry verification.",
+          "slip_provider_unavailable_no_approval": "The system cannot safely verify this slip or store entitlement. Payment is not confirmed. Contact the store; do not transfer again if already paid."
         },
         "validation": {
           "delivery_details_required": "လက်ခံသူအမည်၊ ပေးပို့လိပ်စာနှင့် ဖုန်းနံပါတ်တို့ကို ထည့်သွင်းပါ။",
@@ -21157,7 +21166,10 @@
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
           "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
-          "slip_service_error": "ກວດສະລິບບໍ່ໄດ້ ກະລຸນາລອງໃໝ່ ຫຼື ເລືອກ COD."
+          "slip_service_error": "ກວດສະລິບບໍ່ໄດ້ ກະລຸນາລອງໃໝ່ ຫຼື ເລືອກ COD.",
+          "slip_merchant_quota_exhausted": "This store has reached its automatic slip-check allowance for this billing cycle. Payment is not verified. Contact the store before proceeding; do not transfer again if you already paid.",
+          "slip_provider_outcome_uncertain": "The slip-check request may have reached the provider but its outcome is unconfirmed. Contact the store. Do not send another transfer or retry verification.",
+          "slip_provider_unavailable_no_approval": "The system cannot safely verify this slip or store entitlement. Payment is not confirmed. Contact the store; do not transfer again if already paid."
         },
         "validation": {
           "delivery_details_required": "ໃສ່ຊື່ຜູ້ຮັບ, ທີ່ຢູ່ສົ່ງ ແລະເບີໂທລະສັບ.",
@@ -27529,7 +27541,10 @@
           "slip_manual_fallback": "Slip2Go could not verify. Google Vision assisted reading the image, but cashier approval is required.",
           "slip_manual_unverified": "Slip2Go found a transfer but did not confirm all amount, receiver, date and duplicate checks. Cashier review is required.",
           "slip_manual_condition_request": "Slip2Go rejected the verification conditions. Cashier review is required.",
-          "slip_service_error": "មិនអាចពិនិត្យស្លិបបានទេ។ សូមព្យាយាមម្តងទៀត ឬជ្រើស COD។"
+          "slip_service_error": "មិនអាចពិនិត្យស្លិបបានទេ។ សូមព្យាយាមម្តងទៀត ឬជ្រើស COD។",
+          "slip_merchant_quota_exhausted": "This store has reached its automatic slip-check allowance for this billing cycle. Payment is not verified. Contact the store before proceeding; do not transfer again if you already paid.",
+          "slip_provider_outcome_uncertain": "The slip-check request may have reached the provider but its outcome is unconfirmed. Contact the store. Do not send another transfer or retry verification.",
+          "slip_provider_unavailable_no_approval": "The system cannot safely verify this slip or store entitlement. Payment is not confirmed. Contact the store; do not transfer again if already paid."
         },
         "validation": {
           "delivery_details_required": "បញ្ចូលឈ្មោះអ្នកទទួល អាសយដ្ឋានដឹកជញ្ជូន និងលេខទូរស័ព្ទ។",
