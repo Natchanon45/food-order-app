@@ -71,3 +71,31 @@ The user explicitly requested deployment before the entire Phase 1 was accepted.
 - **Tests completed:** one-call Auth/Firestore Emulator **5/5**, new source Tenant Control/finance safety contracts **4/4**, source/onboarding preexisting Firebase Emulator **1/1** (included in the five), full React Parity PASS on the preceding UI commit, Vite Build + generated contract PASS, anonymous Vite/browser protected-route check **17/17**. All Emulator tests used `demo-penguin-hybrid`, never real shop data.
 - **Still required before declaring the complete Phase:** backend-certified source M7 invoice/COD/credit/outage review equivalence; Telegram event delivery beyond settings/test; Slip2Go quota enforcement; signed-in browser layout/action comparison with source on desktop/mobile; complete UI and authorization tests for seven routes, including SaaS Setup.
 - The current user-facing Firebase Hosting is **still** the earlier Build `index-BaKCYABy.js` from `e42bc439`. This source checkpoint is on `feature/react-firebase-port` only.
+
+## Phase 1 integrated safety and browser checkpoint — 09/11/2026
+
+**Checkpoint only; the seven-page Phase 1 is still an undelivered single acceptance unit.** Changes committed only to `Natchanon45/food-order-app` branch `feature/react-firebase-port`; the pinned `cosmatch/lukkhaja` source branch and `main` are untouched. Firebase Production remains at the earlier release Build `index-BaKCYABy.js` (`e42bc439`); the new Callable, trigger and source Tenant UI **are not deployed**.
+
+### Source JSX/UI
+- Source `TenantControlPanel.jsx` and its CSS now own one visible tenant identity/summary/module/registration/finance evidence layout. The former nested duplicate PENGUIN `TenantCard` was removed; only remaining Firebase-specific Owner onboarding, Revenue Share release and subscription maintenance actions are retained in the source advanced-tools slot.
+- First-activation date appears on the header of every source tenant card, using `firstActivatedAt` normalized in Bangkok; absent values are not fabricated. Store payment account identifiers are masked in a Superadmin-only callable response. The existing public store settings Firestore Rules have **not** been changed; the masking protects this new Superadmin UI response, not all existing public checkout/store-settings reads.
+- Three-step source-style create-store form supports one-call Firebase Auth/Firestore Owner+store provisioning, validates central pricing, reserves slug and idempotency key, and performs conditional rollback on failure.
+
+### Finance safety
+- New `finance-manual-review-policy.js` enforces Superadmin manual approvals **server-side** only for explicitly supported Slip2Go technical failures, with provider/status/code/reason/fallback validation. Unknown, duplicate, mismatched, rejected, date-mismatched, unverified and Vision-only receipts may not be approved using the fallback.
+- Wallet approval checks eligibility **inside the credit transaction**. Revenue Share approval checks eligibility before amount reconciliation and again inside its transaction, preventing stale state approval. Rejection remains possible without crediting the wallet.
+- Auth+Firestore Emulator confirmed that mismatched Wallet and Revenue Share receipts cannot be approved; no wallet-credit mutation takes place on rejection; a legitimate technical failure permits one Wallet credit, never replayed.
+
+### Telegram finance notices
+- Source-derived global Superadmin Telegram channel semantics were added to a pending Firestore outbox for **committed** Lalamove Wallet and existing Revenue Share payment records: verified, rejected, technical-review, unverified-pending and reviewed outcomes.
+- Outbox entries use a deterministic per-tenant/receipt/outcome event ID; a channel enabled check; an at-most-once automatic dispatch attempt; and a terminal `unconfirmed` state when provider delivery was ambiguous. Failed notification attempts cannot alter payments or holds. Text contains only tenant reference, document reference, amount and status; no bank accounts, receipts, payer identities or bot token.
+- This covers these two **existing Firebase channels only**. LUKKAJA's certified M7 monthly/yearly/daily invoice notifications **have not been ported**. The live Telegram Bot send, owner-configured credentials and Eventarc production triggers remain unverified and **not deployed**.
+
+### Verification
+- Combined Auth+Firestore Demo Emulator suite: **12/12 passed** including provisioning, scope, masked bank read, slip guard and outbox; no production database mutation.
+- React contract tests: **17/17 passed**, P0 action and React foundation contracts PASS; the complete `npm run test:react-parity` passed after updating only the test harness references moved to the source component and adding the new pure finance helper.
+- `npm run build:react` and generated bundle contract PASS, output `/react/assets/index-D6fXI3zZ.js` in the working tree; this file is **not a Firebase production release**.
+- Browser UAT: **2/2 passed** on local Chromium Desktop 1440×900 and Mobile 390×844, with **real Firebase Auth+Firestore Demo Emulator sign-in** and specifically mocked read-only Functions endpoints. Checks: source tenant card, Bangkok activation date, expanded registration/account section, masked bank/PromptPay, and all three steps of the Owner creation dialog. This is **not** proof of live authenticated backend networking or a pixel-perfect side-by-side screenshot comparison with source LUKKAJA.
+
+### Remaining full-Phase blockers
+Certified M7 financial ledger, invoice receipts, credit policy, COD reconciliation and test-mode access controls need verified Firebase data models; actual Telegram provider delivery and subscription/Slip2Go quota enforcement need production-safe test acceptance; all other Phase 1 routes require authenticated operation/error-path and direct source UI comparisons; pre-existing Finance Hybrid Emulator red test and Firebase public store-settings read permissions need separate risk assessment before declaring Phase 1 ready. Do not treat a partial UI, provider mock, or uncategorized financial data as acceptance.
