@@ -5,6 +5,9 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { getMessaging } = require("firebase-admin/messaging");
 const { inspectSlip } = require("./slip-verification");
+const { tenantAnchorDate, bangkokDateKey, cycleForDate } = require("./billing-anniversary");
+const { verifiedCycleGoods, fingerprintOrder, reserveMerchantBillCheck,
+  completeMerchantBillCheck } = require("./merchant-slip-quota");
 const {
   slipDecision, normalizedItems, proofBoundToOrder, proofValidForOrder, kitchenAdmitted,
 } = require("./delivery-slip-policy");
@@ -182,16 +185,88 @@ exports.verifyDeliveryPaymentSlip = onCall(
       return true;
     });
     if (!rateAllowed) return manualProof("slip2go_request_rate_limit");
+    // The subscribed merchant quota covers unique REAL provider-checked
+    // Delivery bills. Never charge an upload, an invalid platform key or
+    // a repeated HTTP call on the same order.
     const [buffer] = await bucketFile.download();
+    if (!Buffer.isBuffer(buffer) || buffer.length !== size) {
+      throw new HttpsError("failed-precondition", "SLIP_IMAGE_BYTES_MISMATCH");
+    }
+    const orderBinding = fingerprintOrder({
+      orderId, amountCents: actualTotalCents, foodCents, feeCents,
+      itemsSignature, receiverAccount: account,
+    });
+    const anchor = tenantAnchorDate(tenant);
+    if (!anchor) return manualProof("merchant_quota_activation_missing");
+    const cycle = cycleForDate(anchor, bangkokDateKey(new Date()));
+    if (!cycle) return manualProof("merchant_quota_activation_missing");
+    const [priceSnap, verifierSnap, observed] = await Promise.all([
+      db.collection("platformSettings").doc("subscriptionPricing").get(),
+      db.collection("platformPrivateSettings").doc("slipVerification").get(),
+      verifiedCycleGoods({ tenantRef, start: cycle.start, end: cycle.end }),
+    ]);
+    const price = priceSnap.data() || {};
+    const providerSettings = verifierSnap.data() || {};
+    const freeBills = Number(price.monthlySlipQuota);
+    const thresholdCents = Math.round(Number(price.deliveryThreshold) * 100);
+    if (!priceSnap.exists || !Number.isSafeInteger(freeBills)
+      || freeBills < 0 || freeBills > 1000000
+      || !Number.isSafeInteger(thresholdCents) || thresholdCents <= 0) {
+      return manualProof("merchant_quota_pricing_unavailable");
+    }
+    if (!providerSettings.slip2GoApiUrl || !providerSettings.slip2GoSecret) {
+      // No external verification was made: this is not a quota event.
+      return manualProof("slip2go_config_required");
+    }
+    const slipSha256 = createHash("sha256").update(buffer).digest("hex");
+    let reservation;
+    try {
+      reservation = await reserveMerchantBillCheck({
+        db, tenantRef, tenant, orderId, slipSha256,
+        orderFingerprint: orderBinding, goodsCents: observed.goodsCents,
+        freeBills, thresholdCents,
+      });
+    } catch (error) {
+      console.warn("MERCHANT_SLIP_QUOTA_RESERVATION_FAILED", error?.message || "unavailable");
+      return { status: "manual_review", reason: "merchant_slip_quota_evidence_unavailable",
+        verification: "cashier", proofId: orderId };
+    }
+    if (reservation.quotaExhausted) {
+      // Do NOT persist a manual-approval proof: quota exhaustion is NOT
+      // a technical Slip2Go outage after an actual provider call.
+      return { status: "manual_review", reason: "merchant_slip_quota_exhausted",
+        verification: "cashier", proofId: orderId };
+    }
+    if (!reservation.submitted) {
+      // A previous provider check may already have spent credits. Never
+      // initiate another call, including a retry during an in-flight result.
+      const prior = reservation.prior || {};
+      return { status: prior.status || "manual_review",
+        reason: prior.reason || "prior_provider_check_unresolved",
+        verification: "cashier", proofId: orderId };
+    }
     const receiverOverride = { accountType: receiverType, accountNumber: account };
     const result = await inspectSlip(buffer, mime, slipPath.split("/").pop(), amount, {
       providerOverride: "slip2go", allowConfiguredFallback: true, receiverOverride,
     });
     const status = slipDecision(result);
-    // An API-level success without a validated amount or a bank transaction
-    // reference is NOT a verified payment. Preserve the exact reason.
     const reviewReason = status === "manual_review" && result.status === MATCHED
       ? "slip2go_verified_payload_incomplete" : clean(result.reason);
+    try {
+      await completeMerchantBillCheck({
+        db, billRef: reservation.billRef, cycleRef: reservation.cycleRef,
+        slipSha256, result, publicResult: {
+          status, reason: reviewReason,
+        },
+      });
+    } catch {
+      // The result and quota may have committed on the server despite an
+      // uncertain connection. Never duplicate the bank verification.
+      return { status: "manual_review", reason: "merchant_quota_outcome_uncertain",
+        verification: "cashier", proofId: orderId };
+    }
+    // An API-level success without a validated amount or a bank transaction
+    // reference is NOT a verified payment. Preserve the exact reason.
     console.info("DELIVERY_SLIP_CHECK_RESULT", {
       status, reason: reviewReason, provider: clean(result.provider),
       code: clean(result.primaryCode || result.code),
