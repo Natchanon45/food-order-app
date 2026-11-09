@@ -1332,7 +1332,7 @@ export function AdminTenantsPage() {
                 <span className="tenant-dialog-eyebrow" id="tenantDialogEyebrow">{t(editing ? "admin_tenants.tenant.edit_eyebrow" : "admin_tenants.tenant.new_eyebrow")}</span>
                 <h2 id="tenantDialogTitle">{t(editing ? "admin_tenants.tenant.edit_title" : "admin_tenants.tenant.create_title")}</h2>
                 <p id="tenantDialogDescription">{editing ? (editing.name || editing.slug || editing.id)
-                  : "สร้างข้อมูลร้านแบบยังไม่เปิดรับออร์เดอร์ จากนั้นตั้งค่า Owner และแพ็กเกจที่หน้าเจ้าของร้านก่อนเริ่มทดลองใช้ฟรี"}</p>
+                  : "สร้างร้านและ Owner พร้อมเปิดใช้งาน เริ่มทดลองใช้ฟรี 1 เดือนจากวันเปิดใช้งานจริง"}</p>
               </div>
             </div>
             <button type="button" className="tenant-dialog-close" aria-label={t("admin_tenants.common.close")} onClick={() => dialogRef.current?.close?.()}>
@@ -1340,6 +1340,7 @@ export function AdminTenantsPage() {
             </button>
           </div>
           <div className="tenant-dialog-body">
+            {!editing ? <div className="tenant-new-step-title"><span>01</span><strong>ข้อมูลร้านค้า</strong><small>ข้อมูลสำหรับเปิดใช้งานร้านใหม่</small></div> : null}
             <div className="grid grid-2">
               <div className="field">
                 <label htmlFor="tenantName">{t("admin_tenants.tenant.fields.name")}</label>
@@ -1376,14 +1377,68 @@ export function AdminTenantsPage() {
                 <small>{t("admin_tenants.signup_billing.title")} · {t("admin_tenants.signup_billing.business")}: {t(`admin_tenants.signup_billing.businesses.${editing.signupBilling?.businessType || editing.businessType || "both"}`)}</small>
               </div>
             ) : null}
+            {!editing ? (
+              <>
+                <div className="tenant-new-step-title"><span>02</span><strong>บัญชีเจ้าของร้าน (Owner)</strong><small>ใช้เข้าสู่ระบบจัดการร้านค้า</small></div>
+                <div className="grid grid-2" data-new-store-owner-fields>
+                  <div className="field">
+                    <label htmlFor="tenantOwnerName">ชื่อ Owner</label>
+                    <input id="tenantOwnerName" className="input" required maxLength={120}
+                      autoComplete="off" placeholder="ชื่อผู้ดูแลร้าน" value={form.ownerName}
+                      onChange={e => setForm(current => ({ ...current, ownerName: e.target.value }))} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="tenantOwnerEmail">อีเมลสำหรับเข้าสู่ระบบ</label>
+                    <input id="tenantOwnerEmail" className="input" required type="email" maxLength={160}
+                      autoComplete="off" placeholder="owner@example.com" value={form.ownerEmail}
+                      onChange={e => setForm(current => ({ ...current, ownerEmail: e.target.value }))} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="tenantOwnerPassword">รหัสผ่านเริ่มต้น</label>
+                    <input id="tenantOwnerPassword" className="input" type="password" required
+                      minLength={8} maxLength={72} autoComplete="new-password"
+                      placeholder="อย่างน้อย 8 ตัวอักษร" value={form.ownerPassword}
+                      onChange={e => setForm(current => ({ ...current, ownerPassword: e.target.value }))} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="tenantOwnerPasswordConfirm">ยืนยันรหัสผ่าน</label>
+                    <input id="tenantOwnerPasswordConfirm" className="input" type="password" required
+                      minLength={8} maxLength={72} autoComplete="new-password"
+                      placeholder="กรอกรหัสผ่านอีกครั้ง" value={form.confirmPassword}
+                      onChange={e => setForm(current => ({ ...current, confirmPassword: e.target.value }))} />
+                  </div>
+                </div>
+                <div className="tenant-new-step-title"><span>03</span><strong>แพ็กเกจและวันเริ่มใช้งาน</strong><small>ยึดเงื่อนไข Billing ส่วนกลาง</small></div>
+                <div className="tenant-new-billing" data-new-store-plan>
+                  <div className="field">
+                    <label htmlFor="tenantNewPlanCode">เลือกรอบสมาชิก</label>
+                    <select id="tenantNewPlanCode" className="input" required value={form.planCode}
+                      onChange={e => setForm(current => ({ ...current, planCode: e.target.value }))}>
+                      <option value="monthly">รายเดือน</option><option value="yearly">รายปี</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="tenantNewBusinessType">ประเภทธุรกิจ</label>
+                    <select id="tenantNewBusinessType" className="input" required value={form.businessType}
+                      onChange={e => setForm(current => ({ ...current, businessType: e.target.value }))}>
+                      {["restaurant_cafe", "retail", "both"].map(type =>
+                        <option value={type} key={type}>{t(`admin_tenants.signup_billing.businesses.${type}`)}</option>)}
+                    </select>
+                  </div>
+                  <p role="note"><i className="bi bi-check-circle" aria-hidden="true"></i>
+                    สร้างร้านและ Owner พร้อมเปิดใช้งาน โดยเริ่มทดลองใช้ฟรีหนึ่งเดือนจากวันเปิดใช้งานจริง
+                  </p>
+                </div>
+              </>
+            ) : null}
             {status ? <div className="upload-error" id="tenantError">{status}</div> : <div className="upload-error" id="tenantError" hidden></div>}
           </div>
           <div className="tenant-dialog-actions">
             <button type="button" className="btn" onClick={() => dialogRef.current?.close?.()}>
               <i className="bi bi-x-circle" aria-hidden="true"></i><span>{t("admin_tenants.common.cancel")}</span>
             </button>
-            <button className="btn btn-primary" id="createTenantButton" type="submit" disabled={saving}>
-              <i className="bi bi-floppy" aria-hidden="true"></i><span>{saving ? t("admin_tenants.tenant.saving") : t(editing ? "admin_tenants.tenant.save_edit" : "admin_tenants.tenant.create")}</span>
+            <button className="btn btn-primary" id="createTenantButton" type="submit" disabled={saving || Boolean(uncertainTenantWrites[editing ? String(editing.id) : "__create__"])}>
+              <i className="bi bi-floppy" aria-hidden="true"></i><span>{saving ? t("admin_tenants.tenant.saving") : editing ? t("admin_tenants.tenant.save_edit") : "สร้างร้านและเปิดใช้งาน"}</span>
             </button>
           </div>
         </form>
