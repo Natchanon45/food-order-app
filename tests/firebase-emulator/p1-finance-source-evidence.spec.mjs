@@ -118,3 +118,23 @@ test("signature drift, missing index, unindexed extra invoice and fake paid stat
   assert.equal(verifyOnePeriod(period, [{ id, data: forged }], [{ id }])
     .invoices[0].bankVerified, false);
 });
+
+test("verified Hybrid threshold-crossing and fixed monthly invoice kinds remain visible", () => {
+  for (const invoice of [
+    { ...draft, id: cycleStartDate + ":delivery:trigger",
+      kind: "delivery_threshold", amount: 175, calculationBase: 3500,
+      date: "2026-11-05", dueDate: "2026-11-05", suspendFrom: "2026-11-06" },
+    { ...draft, id: cycleStartDate + ":monthly:fixed",
+      kind: "fixed_monthly", amount: 590, calculationBase: 590,
+      date: "2026-11-17", dueDate: "2026-11-17", suspendFrom: "2026-11-18" },
+  ]) {
+    const indexed = { ...period, invoiceIds: [invoice.id] };
+    const signedInvoice = { ...invoice, signature: invoiceSignature(invoice, indexed) };
+    const actual = verifyOnePeriod(indexed,
+      [{ id: invoice.id, data: signedInvoice }], [{ id: invoice.id }]);
+    assert.equal(actual.invoiceCount, 1);
+    assert.equal(actual.invoices[0].kind, invoice.kind);
+    assert.equal(actual.invoices[0].amountCents, Math.round(invoice.amount * 100));
+    assert.equal(actual.invoices[0].bankVerified, false);
+  }
+});
