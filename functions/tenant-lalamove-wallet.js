@@ -1,4 +1,5 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { walletTopupManualReviewAllowed } = require("./finance-manual-review-policy");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { createHash, createHmac, randomUUID } = require("crypto");
@@ -531,6 +532,9 @@ exports.reviewTenantLalamoveWalletTopup = onCall({ region: REGION }, async reque
 
     let walletTransactionId = "";
     if (action === "approve") {
+      if (!walletTopupManualReviewAllowed({ ...topup, status: "pending" })) {
+        throw new HttpsError("failed-precondition", "SLIP_MANUAL_REVIEW_NOT_ELIGIBLE");
+      }
       const amount = money(topup.amount);
       if (!(amount > 0)) throw new HttpsError("failed-precondition", "FOD_WALLET_AMOUNT_INVALID");
       const walletSnapshot = await transaction.get(walletRef);
