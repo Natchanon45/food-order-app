@@ -81,15 +81,16 @@ exports.createTenant = onCall(
 
     const db = getFirestore();
     const slugRef = db.collection("tenantSlugs").doc(slug);
-    const slugSnapshot = await slugRef.get();
-    if (slugSnapshot.exists) throw new HttpsError("already-exists", "This slug is already in use");
-
     const tenantId = randomUUID();
     const tenantRef = db.collection("tenants").doc(tenantId);
     const settingsRef = tenantRef.collection("settings").doc("store");
-    const batch = db.batch();
+    // Enforce the same atomic slug uniqueness as the new one-call provision.
+    // A legacy create must not overwrite an in-flight reserved slug.
+    await db.runTransaction(async batch => {
+      const existing = await batch.get(slugRef);
+      if (existing.exists) throw new HttpsError("already-exists", "This slug is already in use");
 
-    batch.set(tenantRef, {
+    batch.create(tenantRef, {
       id: tenantId,
       slug,
       name,
@@ -101,7 +102,7 @@ exports.createTenant = onCall(
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp()
     });
-    batch.set(slugRef, {
+    batch.create(slugRef, {
       tenantId,
       slug,
       name,
@@ -109,7 +110,7 @@ exports.createTenant = onCall(
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp()
     });
-    batch.set(settingsRef, {
+    batch.create(settingsRef, {
       tenantId,
       shopName: name,
       shopPhone: phone,
@@ -121,7 +122,7 @@ exports.createTenant = onCall(
       updatedAt: FieldValue.serverTimestamp()
     });
 
-    await batch.commit();
+    });
     return { ok: true, tenant: { id: tenantId, slug, name, active: false, onboardingRequired: true } };
   }
 );
