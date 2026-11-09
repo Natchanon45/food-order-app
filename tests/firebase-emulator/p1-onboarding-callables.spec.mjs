@@ -80,3 +80,36 @@ test("Superadmin-only tenant and owner provisioning is inaccessible until the Ow
   const authOwner = await adminAuth.getUser(owner.owner.uid);
   assert.equal(authOwner.disabled, false);
 });
+
+test("only Super Admin can retrieve masked payment account fields, never raw identifiers", async () => {
+  const tenant = (await db.collection("tenants")
+    .where("slug", "==", "p1-test-tenant").limit(1).get()).docs[0];
+  assert.ok(tenant, "test tenant must exist");
+  const accountNumber = "1234567890";
+  const promptPay = "0899991234";
+  await tenant.ref.collection("settings").doc("store").set({
+    bankName: "Emulator Bank",
+    bankAccountName: "Emulator Owner",
+    bankAccountNumber: accountNumber,
+    promptPayId: promptPay,
+    promptPayName: "Emulator Owner",
+    deliveryPromptPayEnabled: true,
+  }, { merge: true });
+  await assert.rejects(
+    tenantCalls.getPlatformTenantSavedPaymentAccount.run({
+      auth: { uid: "p1-not-superadmin" }, data: { tenantId: tenant.id },
+    }),
+    error => error.code === "permission-denied",
+  );
+  const response = await tenantCalls.getPlatformTenantSavedPaymentAccount.run({
+    ...admin, data: { tenantId: tenant.id },
+  });
+  assert.equal(response.ok, true);
+  assert.equal(response.readOnly, true);
+  assert.equal(response.source, "firebase_saved_store_settings");
+  assert.equal(response.account.bankAccountMasked, "•••• 7890");
+  assert.equal(response.account.promptPayMasked, "•••• 1234");
+  assert.equal(response.account.ownershipVerified, false);
+  assert.equal(JSON.stringify(response).includes(accountNumber), false);
+  assert.equal(JSON.stringify(response).includes(promptPay), false);
+});
