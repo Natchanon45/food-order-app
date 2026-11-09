@@ -20,11 +20,13 @@ const cases = [
 
 test("source-equivalent platform readiness tracks successful authenticated Firebase reads, not Go storageReady", () => {
   for (const spec of cases) {
-    assert.match(page, new RegExp(`const \\[\\[${spec.flag}, set${spec.flag[0].toUpperCase() + spec.flag.slice(1)}\\]\\] = useState\\(false\\)`));
-    assert.match(page, new RegExp(`set${spec.flag[0].toUpperCase() + spec.flag.slice(1)}\\(false\\);\\s+${spec.load}\\(`));
-    assert.match(page, new RegExp(`set${spec.flag[0].toUpperCase() + spec.flag.slice(1)}\\(true\\)`));
-    assert.match(page, new RegExp(`set${spec.error[0].toUpperCase() + spec.error.slice(1)}\\(true\\)`));
-    assert.match(page, new RegExp(`\\|| !${spec.flag}`));
+    const setter = "set" + spec.flag[0].toUpperCase() + spec.flag.slice(1);
+    const errorSetter = "set" + spec.error[0].toUpperCase() + spec.error.slice(1);
+    assert.ok(page.includes(`const [${spec.flag}, ${setter}] = useState(false);`), spec.name);
+    assert.ok(page.includes(`${setter}(false);\n    ${spec.load}()`), spec.name + " load");
+    assert.ok(page.includes(`${setter}(true);`), spec.name + " ready");
+    assert.ok(page.includes(`${errorSetter}(true);`), spec.name + " error");
+    assert.ok(page.includes(`!${spec.flag}`), spec.name + " guard");
   }
   assert.doesNotMatch(page, /storageReady/);
   assert.match(page, /PLATFORM_GOOGLE_READ_INVALID/);
