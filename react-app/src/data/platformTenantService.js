@@ -86,6 +86,7 @@ export async function listTenants() {
   return Promise.all(tenants.map(hydrateTenantLalamoveState));
 }
 export const createTenant = payload => call("createTenant", payload);
+export const createActiveTenantWithOwner = payload => call("createActiveTenantWithOwner", payload);
 export const updateTenant = payload => call("updateTenant", payload);
 export const deleteTenant = payload => call("deleteTenant", payload);
 export const getPlatformRevenueShareSummary = payload => call("getPlatformRevenueShareSummary", payload);
