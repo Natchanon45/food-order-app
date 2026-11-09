@@ -289,6 +289,10 @@ const platformTelegram = require("./platform-telegram");
 exports.getPlatformTelegramSettings = platformTelegram.getPlatformTelegramSettings;
 exports.savePlatformTelegramSettings = platformTelegram.savePlatformTelegramSettings;
 exports.testPlatformTelegramSettings = platformTelegram.testPlatformTelegramSettings;
+const telegramFinanceEvents = require("./platform-telegram-finance-events");
+exports.notifyPlatformWalletTopupOutcome = telegramFinanceEvents.notifyPlatformWalletTopupOutcome;
+exports.notifyPlatformRevenueShareOutcome = telegramFinanceEvents.notifyPlatformRevenueShareOutcome;
+exports.deliverPlatformTelegramFinanceEvent = telegramFinanceEvents.deliverPlatformTelegramFinanceEvent;
 
 const lalamoveWebhook = require("./lalamove-webhook");
 exports.lalamoveWebhook = lalamoveWebhook.lalamoveWebhook;
