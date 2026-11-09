@@ -87,3 +87,34 @@ test("duplicate slug, changed operation fingerprint and invalid fields fail clos
       operationId: "5f9194a6-7f5b-47a3-81f0-5fa6e11c4819", planCode: "unknown" },
   }), error => error.code === "invalid-argument");
 });
+
+test("duplicate Auth email releases only its own uncommitted store slug for a new operation ID", async () => {
+  const existingEmail = "p1-existing-email@example.com";
+  const existing = await getAuth().createUser({
+    email: existingEmail, password: "emulator-test-only-123",
+  });
+  const slug = "p1-released-slug";
+  const initial = { ...payload,
+    slug, ownerEmail: existingEmail,
+    operationId: "7f9194a6-7f5b-47a3-81f0-5fa6e11c4817",
+  };
+  await assert.rejects(provision.createActiveTenantWithOwner.run({
+    auth: request.auth, data: initial,
+  }), error => error.code === "already-exists");
+  const first = (await db.collection("platformTenantProvisions")
+    .doc(initial.operationId).get()).data();
+  assert.equal(first.status, "failed_released");
+  assert.equal((await db.collection("tenantSlugs").doc(slug).get()).exists, false);
+  assert.equal((await db.collection("tenants").doc(first.tenantId).get()).exists, false);
+  assert.equal((await getAuth().getUser(existing.uid)).email, existingEmail);
+
+  const corrected = { ...initial, ownerEmail: "p1-retried-owner@example.com",
+    operationId: "7f9194a6-7f5b-47a3-81f0-5fa6e11c4818" };
+  const result = await provision.createActiveTenantWithOwner.run({
+    auth: request.auth, data: corrected,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.tenant.active, true);
+  assert.equal((await db.collection("tenants").doc(result.tenant.id).get()).data().ownerUid,
+    result.owner.uid);
+});
