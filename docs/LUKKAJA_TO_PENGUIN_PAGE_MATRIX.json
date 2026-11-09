@@ -34,7 +34,7 @@
       "sourceOnlyCount": 0,
       "scope": "Platform cards, tenants, owners, accounts, pricing, role guards, notification and admin UIs",
       "releaseGate": "Verified super_admin-only access and Firestore write scoping; finance actions remain disabled unless separately accepted",
-      "status": "in_progress_P1_1"
+      "status": "in_progress_P1_1_readiness_adapted__visual_and_emulator_pending"
     },
     {
       "id": "P2",
@@ -95,15 +95,16 @@
       "sourcePath": "resources/js/react-port/pages/PlatformPage.jsx",
       "destinationPath": "react-app/src/pages/PlatformPage.jsx",
       "destinationPresence": "filename_exists__ui_not_verified",
-      "jsxReview": "inventory_started",
+      "jsxReview": "source_form_markup_compared__firebase_read_guard_adapted__visual_pending",
       "cssAssetsReview": "pending",
-      "firebaseContract": "pending",
+      "firebaseContract": "read_failure_guards_contract_pass__emulator_write_pending",
       "rolesAndTenantScope": "pending",
-      "actionScenarioInventory": "pending",
+      "actionScenarioInventory": "22_grouped_actions_4_pseudocode_families_18_scenarios__runtime_pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
       "release": "not_started",
-      "auditEvidence": "docs/LUKKAJA_P1_1_PLATFORM_AUDIT.md"
+      "auditEvidence": "docs/LUKKAJA_P1_1_PLATFORM_AUDIT.md",
+      "actionInventoryEvidence": "docs/LUKKAJA_P1_1_PLATFORM_ACTIONS.md"
     },
     {
       "id": "P1-02",
