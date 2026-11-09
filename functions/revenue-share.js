@@ -1,4 +1,5 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { revenueShareManualReviewAllowed } = require("./finance-manual-review-policy");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
@@ -1009,6 +1010,9 @@ exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => 
     const pending = await paymentRef.get();
     if (!pending.exists) throw new HttpsError("not-found", "Payment not found");
     const row = pending.data() || {};
+    if (!revenueShareManualReviewAllowed(row)) {
+      throw new HttpsError("failed-precondition", "SLIP_MANUAL_REVIEW_NOT_ELIGIBLE");
+    }
     if (!setting.enabled || !setting.billingAnchorDate
       || !/^\d{4}-\d{2}-\d{2}$/.test(String(row.periodStart || ""))
       || !/^\d{4}-\d{2}-\d{2}$/.test(String(row.periodEnd || ""))) {
@@ -1030,6 +1034,9 @@ exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => 
     const paymentSnapshot = await transaction.get(paymentRef);
     if (!paymentSnapshot.exists) throw new HttpsError("not-found", "Payment not found");
     if (paymentSnapshot.data().status !== "pending") throw new HttpsError("already-exists", "Payment already reviewed or deleted");
+    if (status === "approved" && !revenueShareManualReviewAllowed(paymentSnapshot.data())) {
+      throw new HttpsError("failed-precondition", "SLIP_MANUAL_REVIEW_NOT_ELIGIBLE");
+    }
     payment = { ...paymentSnapshot.data(), status, reviewNote: note };
     transaction.set(paymentRef, { status, reviewNote: note, reviewedBy: reviewer.uid, reviewedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   });
