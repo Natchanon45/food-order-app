@@ -1,3 +1,4 @@
+import { printFaviconLink } from "./printFavicon.js";
 // A receipt tab must be opened synchronously during the Cashier click to avoid
 // popup blockers. Paint its waiting state immediately, before awaiting Firebase.
 const LOADING_DOCUMENT = `<!doctype html>
@@ -63,7 +64,7 @@ export function openReceiptPrintLoading({ title, message, language } = {}, hostW
   try {
     const doc = printWindow.document;
     doc.open();
-    doc.write(LOADING_DOCUMENT);
+    doc.write(LOADING_DOCUMENT.replace("</head>", printFaviconLink(hostWindow.document) + "</head>"));
     doc.close();
     updateReceiptPrintLoading(printWindow, { title, message, language });
   } catch (error) {

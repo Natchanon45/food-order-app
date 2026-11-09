@@ -11,6 +11,7 @@ import { waitingQueueTranslator } from "@/i18n/waitingQueueI18n";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
+import { printFaviconLink } from "@/utils/printFavicon";
 import {
   WAITING_QUEUE_ACTIVE_STATUSES,
   WAITING_QUEUE_STATUS,
@@ -508,7 +509,7 @@ export function WaitingQueuePage() {
     const popup = window.open("", "_blank", "width=480,height=760");
     if (!popup) { toast(wq("runtime.operation_failed"), "error"); return; }
     const estimate = estimateWaitRange(ticket, queues, tables);
-    popup.document.write(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${wq("ticket.title")} ${ticket.queueNumber}</title>
+    popup.document.write(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${wq("ticket.title")} ${ticket.queueNumber}</title>${printFaviconLink()}
       <style>body{font-family:system-ui,sans-serif;text-align:center;padding:28px}h1{font-size:52px;margin:12px}.qr{margin:18px auto;width:220px;height:220px}.meta{font-size:18px;line-height:1.8}</style></head><body>
       <h2>${wq("ticket.brand")}</h2><div>${wq("ticket.number")}</div><h1>${ticket.queueNumber}</h1>
       ${ticketQr ? `<img class="qr" src="${ticketQr}" alt="QR">` : ""}
