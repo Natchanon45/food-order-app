@@ -313,4 +313,5 @@ const deliverySlip = require("./delivery-slip");
 exports.verifyDeliveryPaymentSlip = deliverySlip.verifyDeliveryPaymentSlip;
 exports.finalizeDeliveryPaymentSlip = deliverySlip.finalizeDeliveryPaymentSlip;
 exports.approveDeliveryPaymentReview = deliverySlip.approveDeliveryPaymentReview;
+exports.listPlatformDeliveryManualReviews = deliverySlip.listPlatformDeliveryManualReviews;
 exports.notifyKitchenDeliveryAdmitted = deliverySlip.notifyKitchenDeliveryAdmitted;
