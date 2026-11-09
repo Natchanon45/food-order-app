@@ -372,7 +372,10 @@ exports.finalizeDeliveryPaymentSlip = onDocumentCreated(
         return;
       }
       if (current.paymentStatus === "pending_verification"
-        && proof.status === "manual_review" && proofBoundToOrder(current, proof)) {
+        && proof.status === "manual_review" && proof.providerAttempted === true
+        && proof.manualReviewEligible === true && proofBoundToOrder(current, proof)
+        && allowManualReview({ provider: "slip2go", status: "manual_review",
+          proof: proof.manualReviewEvidence })) {
         tx.update(orderRef, {
           slipCheckStatus: "manual_review",
           slipVerificationProvider: clean(proof.provider || "slip2go"),
@@ -479,13 +482,15 @@ exports.listPlatformDeliveryManualReviews = onCall(
           proof: proof.manualReviewEvidence,
         });
       const path = String(proof.slipPath || "");
+      const scopedPath = path.startsWith(`tenants/${tenantId}/payment-slips/${doc.id}/`);
       return {
         id: doc.id,
         status: String(order.paymentStatus || "unknown").slice(0, 60),
         amountCents: Number.isSafeInteger(amountCents(order.totalAmount))
           && amountCents(order.totalAmount) >= 0
           ? amountCents(order.totalAmount) : null,
-        eligible, reason: clean(eligible ? proof.manualReviewEvidence.reason
+        eligible: eligible && scopedPath,
+        reason: clean(eligible ? proof.manualReviewEvidence.reason
           : proof.reason || "technical_slip_proof_unverified"),
         providerCode: clean(eligible ? proof.manualReviewEvidence.code
           : proof.providerCode, 30),
