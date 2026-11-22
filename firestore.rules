@@ -310,6 +310,17 @@ service cloud.firestore {
     match /financeSlipClaims/{claimId} {
       allow read, write: if false;
     }
+    // Global M7 UAT-only financial shadow reference claims are private.
+    // Not a bank verification, operational payment or credit claim.
+    match /m7UatFinancialTenantLocks/{tenantId} {
+      allow read, write: if false;
+    }
+    match /m7UatFinancialBankClaims/{digest} {
+      allow read, write: if false;
+    }
+    match /m7UatFinancialInvoiceClaims/{digest} {
+      allow read, write: if false;
+    }
     match /m7StripeTestIntentClaims/{intentId} {
       allow read, write: if false;
     }
@@ -454,6 +465,9 @@ service cloud.firestore {
       // M7 MariaDB export preflight: ONLY a server-owned, untrusted-source
       // diagnostic digest; no client may forge a migration/paid approval.
       match /m7SourceMigrationPreflightRuns/{manifestDigest} {
+        allow read, write: if false;
+      }
+      match /m7UatFinancialShadowRuns/{manifestDigest} {
         allow read, write: if false;
       }
       // Private financial compensation: a Server Admin transaction is the

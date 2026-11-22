@@ -2,6 +2,7 @@ import {useEffect,useState} from "react";
 import {httpsCallable} from "firebase/functions";
 import {functions} from "@/firebase/client";
 import {sweetConfirm} from "@/components/sweetDialog";
+import {M7UatFinancialShadow} from "@/components/M7UatFinancialShadow";
 import "@/ui/m7-stripe-test-reservation.css";
 
 const MAX_BYTES=512000;
@@ -70,10 +71,11 @@ export function M7SourceMigrationPreflight({tenantId="",refreshVersion=0}){
  const [history,setHistory]=useState([]);
  const [phase,setPhase]=useState("idle");
  const [message,setMessage]=useState("");
+ const [preflightStaged,setPreflightStaged]=useState(false);
  const [revision,setRevision]=useState(0);
  useEffect(()=>{
   setFile(null);setManifest(null);setReport(null);setHistory([]);
-  setMessage("");setPhase("idle");
+  setMessage("");setPhase("idle");setPreflightStaged(false);
  },[tenantId]);
  useEffect(()=>{
   let alive=true;
@@ -94,7 +96,8 @@ export function M7SourceMigrationPreflight({tenantId="",refreshVersion=0}){
   return()=>{alive=false;};
  },[open,tenantId,refreshVersion,revision]);
  const choose=async chosen=>{
-  setFile(null);setManifest(null);setReport(null);setMessage("");
+  setFile(null);setManifest(null);setReport(null);
+  setPreflightStaged(false);setMessage("");
   if(!chosen)return;
   if(!chosen.name.toLowerCase().endsWith(".json")||
       chosen.size<=0||chosen.size>MAX_BYTES){
@@ -113,7 +116,8 @@ export function M7SourceMigrationPreflight({tenantId="",refreshVersion=0}){
  };
  const preview=async()=>{
   if(!manifest||phase==="loading")return;
-  setReport(null);setMessage("");setPhase("loading");
+  setReport(null);setPreflightStaged(false);
+  setMessage("");setPhase("loading");
   try{
    const {data}=await httpsCallable(functions,"previewPlatformM7SourceMigrationPreflight")({manifest});
    if(!validReport(data,tenantId)||data.authenticated!==true||
@@ -145,7 +149,8 @@ export function M7SourceMigrationPreflight({tenantId="",refreshVersion=0}){
     throw Error("M7_SOURCE_STAGE_UNCONFIRMED");
    setMessage(data.reused?"พบ Audit Digest นี้แล้ว ไม่มีการบันทึกซ้ำ":
     "บันทึก Audit ตรวจโครงสร้างแล้ว (UAT) ยังไม่มีการย้ายหรือรับรองยอดเงินจริง");
-   setPhase("previewed");setRevision(n=>n+1);
+   setPhase("previewed");setPreflightStaged(true);
+   setRevision(n=>n+1);
   }catch{
    setMessage("ไม่สามารถบันทึก UAT Preflight Audit ได้ กรุณาตรวจสอบสิทธิ์และ Manifest อีกครั้ง");
    setPhase("previewed");
@@ -205,6 +210,10 @@ export function M7SourceMigrationPreflight({tenantId="",refreshVersion=0}){
     <strong>หลักฐานที่ยังต้องตรวจ</strong>
     <ul>{report.issueCodes.map(code=><li key={code}>{ISSUES[code]}</li>)}</ul>
    </section>}
+   {report&&manifest&&
+    <M7UatFinancialShadow tenantId={tenantId} manifest={manifest}
+     sourceManifestDigest={report.manifestDigest}
+     preflightStaged={preflightStaged}/>}
    {history.length>0&&<section className="m7-source-migration-history"
       aria-label="ประวัติ UAT Preflight">
     <h4>Preflight Audit ที่บันทึกไว้</h4>

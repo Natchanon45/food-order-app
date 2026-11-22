@@ -443,3 +443,11 @@ exports.stagePlatformM7SourceMigrationPreflight =
   m7SourceMigrationPreflight.stagePlatformM7SourceMigrationPreflight;
 exports.getPlatformM7SourceMigrationPreflightHistory =
   m7SourceMigrationPreflight.getPlatformM7SourceMigrationPreflightHistory;
+
+const m7UatOperationalLedger = require("./m7-uat-operational-ledger");
+exports.previewPlatformM7UatFinancialShadow =
+  m7UatOperationalLedger.previewPlatformM7UatFinancialShadow;
+exports.stagePlatformM7UatFinancialShadow =
+  m7UatOperationalLedger.stagePlatformM7UatFinancialShadow;
+exports.getPlatformM7UatFinancialShadowHistory =
+  m7UatOperationalLedger.getPlatformM7UatFinancialShadowHistory;

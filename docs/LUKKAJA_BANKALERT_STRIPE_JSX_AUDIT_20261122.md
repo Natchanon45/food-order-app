@@ -374,3 +374,25 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
   accounts/events, operational Invoice Paid, tenant hold/release,
   Stripe TEST conversion and Production deployment.** All
   those remain next-module blockers and flags remain false.
+
+### P1 continuation — M7 UAT Operational Financial Shadow Ledger module
+
+- See `docs/LUKKAJA_P1_M7_UAT_OPERATIONAL_LEDGER_MODULE_20261122.md`.
+- Added full M7 Source-export UAT **shadow accounting engine**:
+  pure source-invoice Gross/Credit/Bank/Residual satang reconciliation,
+  balanced synthetic double-entry journal with per-invoice SHA hash
+  chain and summary digest, and Bangkok day-based Hold review policy
+  (no automatic cutoff/hold release without Source signed proof).
+- Added Firestore Transaction staging (exact preflight-audit match,
+  one immutable UAT shadow per tenant and globally unique hashed
+  Source invoice + bank reference claims), idempotent concurrent
+  submission and sanitized private history.
+- Integrated an explicit second-stage UAT ledger preview/confirmation
+  with the existing Superadmin Source Migration Preflight file.
+- Separate test-only gate `PENGUIN_M7_UAT_FINANCIAL_LEDGER_*`, default
+  OFF and rejects Production/emulators. No bank Source trust,
+  actual Source migration, Invoice Paid, operational Service Credit,
+  tenant status/hold modification or deployment.
+- **Next module requires independent signed Source/real bank
+  certification for an operational money writer.** Current UAT
+  shadow events and Source-export money are NOT operational cash.

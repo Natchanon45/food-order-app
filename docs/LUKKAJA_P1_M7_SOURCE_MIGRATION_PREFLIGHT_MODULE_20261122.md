@@ -270,6 +270,14 @@ Neither is accepted as an operational migration/settlement witness.
 All UAT and Browser tests use *fictional synthetic data*.
 No actual MariaDB migration or live payment provider was accessed.
 
+## Continuation: UAT accounting-shadow module
+
+> A separate, isolated M7 **UAT Financial Shadow Ledger** module now
+> exists in `LUKKAJA_P1_M7_UAT_OPERATIONAL_LEDGER_MODULE_20261122.md`.
+> It adds balanced shadow journal, global UAT claims, replay protection,
+> hold review and Superadmin UI; it **still cannot authenticate bank
+> money or create Production invoice/credit/hold postings**.
+
 ## Next MODULE: operational M7 posting — **NOT DONE**
 
 The next module must not start from this UAT digest as a trusted
