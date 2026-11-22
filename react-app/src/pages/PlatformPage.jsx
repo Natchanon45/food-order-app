@@ -1,3 +1,4 @@
+import { BankalertStripePlatformSettings } from "@/components/BankalertStripePlatformSettings";
 import { useEffect, useRef, useState } from "react";
 import { PlatformCardAccordionHeader } from "@/components/PlatformCardAccordionHeader";
 import { Link, Navigate } from "react-router-dom";
@@ -653,6 +654,8 @@ export function PlatformPage() {
           <Link className="card nav-card" to="/platform/pricing"><i className="bi bi-tags app-icon" aria-hidden="true"></i><strong>{t("platform.cards.pricing.title")}</strong><small>{t("platform.cards.pricing.description")}</small></Link>
           {/* Hybrid invoice review route and its existing data are retained; the Platform launch card is temporarily hidden. */}
         </section>
+
+        <BankalertStripePlatformSettings />
 
         <ControlCard titleId="platformBrandingTitle" icon="bi bi-palette" title={t("platform.branding.title")} description={t("platform.branding.description")} badge={t("shared.user_menu.roles.super_admin")} className="platform-branding-card">
           <form id="platformBrandingForm" className="platform-google-api-form" noValidate onSubmit={saveBranding}>

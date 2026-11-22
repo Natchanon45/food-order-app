@@ -995,6 +995,46 @@ exports.listPlatformRevenueSharePayments = onCall({ region: REGION }, async requ
   return { status, counts, items: items.slice(0, 200) };
 });
 
+// Read-only projection of existing Firebase Revenue Share payment records.
+// No record is reclassified as a Stripe settlement or issued M7 invoice.
+exports.getPlatformRevenueSharePaymentHistory = onCall({ region: REGION }, async request => {
+  await assertSuperAdmin(request.auth);
+  const db = getFirestore();
+  const filter = request.data?.status ?? "all";
+  const tenantId = request.data?.tenantId ?? "";
+  if (!["all", "pending", "approved", "rejected"].includes(filter)
+    || typeof tenantId !== "string"
+    || (tenantId && !/^[A-Za-z0-9_-]{1,128}$/.test(tenantId)))
+    throw new HttpsError("invalid-argument", "Invalid payment history filter");
+  const snapshot = tenantId ? await db.collection("tenants").doc(tenantId).get() : await db.collection("tenants").get();
+  const tenants = tenantId ? (snapshot.exists ? [snapshot] : []) : snapshot.docs;
+  const items = [];
+  let hasMore = false;
+  for (const tenant of tenants) {
+    let query = tenant.ref.collection("revenueSharePayments");
+    if (filter !== "all") query = query.where("status", "==", filter);
+    const records = await query.orderBy("createdAt", "desc").limit(201).get();
+    if (records.docs.length > 200) hasMore = true;
+    for (const doc of records.docs.slice(0, 200)) {
+      const row = doc.data();
+      const submittedAt = asDate(row.createdAt)?.toISOString() || "";
+      const rawAmount = row.platformAmountDue ?? row.revenueShareAmount;
+      const recordedAmount = typeof rawAmount === "number" ? rawAmount : NaN;
+      const amountCents = Math.round(recordedAmount * 100);
+      const status = ["pending", "approved", "rejected"].includes(row.status) ? row.status : "unknown";
+      const provider = String(row.slipVerificationProvider || "");
+      items.push({
+        paymentId: doc.id, tenantId: tenant.id, tenantName: String(tenant.data()?.name || tenant.id),
+        submittedAt, periodStart: String(row.periodStart || ""), periodEnd: String(row.periodEnd || ""),
+        amountCents: Number.isFinite(recordedAmount) && Number.isSafeInteger(amountCents) && amountCents >= 0 && Math.abs(recordedAmount*100-amountCents)<0.00001 ? amountCents : null,
+        status, provider: ["slip2go", "manual", "google_vision", "slip2go_fallback_vision"].includes(provider) ? provider : "unknown",
+      });
+    }
+  }
+  items.sort((a,b) => b.submittedAt.localeCompare(a.submittedAt) || (a.tenantId + "/" + a.paymentId).localeCompare(b.tenantId + "/" + b.paymentId));
+  return {source:"firebase_revenue_share_payment_records", currency:"THB", items:items.slice(0,200), hasMore:hasMore || items.length>200};
+});
+
 exports.reviewRevenueSharePayment = onCall({ region: REGION }, async request => {
   const reviewer = await assertSuperAdmin(request.auth);
   const tenantId = String(request.data?.tenantId || "").trim(), paymentId = String(request.data?.paymentId || "").trim();

@@ -1,3 +1,4 @@
+import { PlatformPaymentHistory } from "@/components/PlatformPaymentHistory";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { getDownloadURL, ref as storageRef } from "firebase/storage";
@@ -380,6 +381,7 @@ export function AdminTenantsPage() {
   const [reviewStatus, setReviewStatus] = useState("pending");
   const [reviewCounts, setReviewCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [reviewItems, setReviewItems] = useState([]);
+  const [paymentHistoryRevision, setPaymentHistoryRevision] = useState(0);
   const [shareTenant, setShareTenant] = useState(null);
   const [centralDeliveryPricing, setCentralDeliveryPricing] = useState(null);
   const [centralPricingLoading, setCentralPricingLoading] = useState(false);
@@ -446,6 +448,7 @@ export function AdminTenantsPage() {
       });
       setReviewCounts(data.counts || { pending: 0, approved: 0, rejected: 0 });
       setReviewItems(data.items || []);
+      setPaymentHistoryRevision(v => v + 1);
     } catch (error) {
       console.error("REVENUE_SHARE_REVIEW_LOAD_FAILED", error);
       setReviewItems([]);
@@ -1144,6 +1147,8 @@ export function AdminTenantsPage() {
               : <div className="tenant-review-empty"><i className="bi bi-inbox" aria-hidden="true"></i><strong>{t("admin_tenants.review.empty_title")}</strong><span>{t("admin_tenants.review.empty_help")}</span></div>}
           </div>
         </section>
+
+        <PlatformPaymentHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
 
         <section className="card tenant-list-card">
           <div className="section-title tenant-list-heading">

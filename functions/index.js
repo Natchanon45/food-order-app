@@ -241,6 +241,7 @@ exports.submitTenantRevenueSharePayment = revenueShare.submitTenantRevenueShareP
 exports.deleteTenantRevenueSharePayment = revenueShare.deleteTenantRevenueSharePayment;
 exports.getPlatformRevenueShareSummary = revenueShare.getPlatformRevenueShareSummary;
 exports.listPlatformRevenueSharePayments = revenueShare.listPlatformRevenueSharePayments;
+exports.getPlatformRevenueSharePaymentHistory = revenueShare.getPlatformRevenueSharePaymentHistory;
 exports.reviewRevenueSharePayment = revenueShare.reviewRevenueSharePayment;
 exports.updateTenantRevenueShare = revenueShare.updateTenantRevenueShare;
 exports.unlockTenantRevenueShare = revenueShare.unlockTenantRevenueShare;
@@ -289,6 +290,8 @@ exports.cancelReviewedPaidWalkIn = operationalOrders.cancelReviewedPaidWalkIn;
 
 // Superadmin-only encrypted Telegram bot settings and explicit test delivery.
 const platformTelegram = require("./platform-telegram");
+const stripeWalletSandbox = require("./stripe-wallet-sandbox");
+exports.getPlatformStripeWalletSandboxStatus = stripeWalletSandbox.getPlatformStripeWalletSandboxStatus;
 exports.getPlatformTelegramSettings = platformTelegram.getPlatformTelegramSettings;
 exports.savePlatformTelegramSettings = platformTelegram.savePlatformTelegramSettings;
 exports.testPlatformTelegramSettings = platformTelegram.testPlatformTelegramSettings;

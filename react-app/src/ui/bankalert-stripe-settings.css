@@ -1,0 +1,211 @@
+/* Isolated Stripe Sandbox controls: match the shared Superadmin accordion UI. */
+.platform-shell .bankalert-stripe-settings {
+  --platform-section-accent: #0c8b54;
+  --platform-section-soft: #eaf8f0;
+  border-top: 3px solid #159755;
+}
+.platform-shell .bankalert-stripe-settings .platform-card-accordion-panel {
+  display: grid;
+  gap: 16px;
+}
+.platform-shell .bankalert-stripe-settings .platform-card-accordion-panel[hidden] {
+  display: none !important;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-notice,
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-notice {
+  background: #eff8f3;
+  color: #21583b;
+  border: 1px solid #d7e9dd;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-alert-error {
+  background: #fff4f3;
+  color: #a83232;
+  border: 1px solid #f2d0cd;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-alert-warning {
+  background: #fff9ec;
+  color: #936218;
+  border: 1px solid #f1dfb6;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-alert-success {
+  background: #eef9f1;
+  color: #176b37;
+  border: 1px solid #c5e8ce;
+}
+.platform-shell .bankalert-stripe-settings :is(.bankalert-stripe-notice,.bankalert-stripe-alert) > i {
+  flex: 0 0 auto;
+  font-size: 17px;
+  margin-top: 1px;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.platform-shell .bankalert-stripe-settings .platform-google-api-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 7px;
+  margin: 0;
+}
+.platform-shell .bankalert-stripe-settings .platform-google-api-field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #284735;
+}
+.platform-shell .bankalert-stripe-settings .platform-google-api-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  border-radius: 10px;
+}
+.platform-shell .bankalert-stripe-settings .platform-google-api-field small {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7f72;
+  overflow-wrap: anywhere;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-endpoint {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 13px 15px;
+  background: #f7faf8;
+  border: 1px solid #e0eae3;
+  border-radius: 12px;
+  min-width: 0;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-endpoint > span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #294533;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-endpoint code {
+  display: block;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #eaf2ed;
+  color: #246047;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-endpoint small {
+  color: #647769;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #e6eee8;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  .platform-shell .bankalert-stripe-settings .bankalert-stripe-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .platform-shell .bankalert-stripe-settings .bankalert-stripe-actions > .btn {
+    flex: 1 1 130px;
+  }
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-checklist {
+  display: grid;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #dcebe1;
+  background: #fff;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-checklist > div {
+  display: grid;
+  grid-template-columns: 20px minmax(0,1fr) auto;
+  gap: 11px;
+  align-items: center;
+  padding: 11px 14px;
+  border-bottom: 1px solid #edf2ee;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-checklist > div > i {color: #26824c; font-size: 16px;}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-checklist > div > i.bi-exclamation-circle {color: #b98122;}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-checklist strong {font-weight: 700; color: #315943; text-align: right;}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-refresh {justify-self: end; margin: 11px 13px; display: inline-flex; gap: 8px; align-items: center;}
+@media (max-width: 600px) {
+  .platform-shell .bankalert-stripe-settings .bankalert-stripe-checklist > div {grid-template-columns: 18px minmax(0,1fr);}
+  .platform-shell .bankalert-stripe-settings .bankalert-stripe-checklist strong {grid-column: 2; text-align: left;}
+}
+
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-cli-webhook {display:grid;gap:9px;min-width:0}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-cli-webhook > label {font-size:13px;font-weight:700;color:#284735}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-cli-webhook-input {display:flex;flex-wrap:wrap;gap:10px;min-width:0}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-cli-webhook-input .input {flex:1 1 250px;min-width:0;min-height:42px;border-radius:10px}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-cli-webhook-input .btn {flex:0 1 auto;min-height:42px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.platform-shell .bankalert-stripe-settings .bankalert-stripe-cli-webhook > small {font-size:12px;line-height:1.6;color:#637668}
+@media(max-width:600px){.platform-shell .bankalert-stripe-settings .bankalert-stripe-cli-webhook-input .btn{flex:1 1 100%}}
+
+/* Android advisory match list: full-width layout, always non-settling. */
+.payment-companion-match-panel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.payment-companion-match-panel .payment-companion-match-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+.payment-companion-match-panel .payment-companion-history-state {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .payment-companion-match-panel .payment-companion-match-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.payment-companion-match-panel .payment-companion-inspect-btn {
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:36px;max-width:100%;white-space:normal;border-radius:9px;
+ margin-top:7px;font-size:12px;font-weight:500;
+}
+.payment-companion-match-panel .payment-companion-inspect-result {
+ display:flex;flex-direction:column;gap:4px;margin-top:7px;max-width:100%;
+ overflow-wrap:anywhere;font-size:12px;font-weight:400;
+}
+.payment-companion-match-panel .payment-companion-inspect-result small {
+ color:var(--text-muted,#667b70);font-size:11px;font-weight:400;
+}
+@media(max-width:700px){
+ .payment-companion-match-panel .payment-companion-inspect-btn{width:100%}
+}

@@ -1,0 +1,345 @@
+.m7-platform-payment-history{display:grid;gap:11px;min-width:0}
+.m7-platform-payment-history-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.m7-platform-payment-history-head h2{margin:0;color:#19462f;font-size:1.02rem;font-weight:800}
+.m7-platform-payment-history-head h2 i{margin-right:8px}
+.m7-platform-payment-history-head p{margin:4px 0 0;color:#718278;font-size:.79rem}
+.m7-platform-payment-history-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:9px;background:#f5faf7;border:1px solid #e0ede5;border-radius:11px;padding:9px}
+.m7-platform-payment-history-filters{display:flex;gap:5px;flex-wrap:wrap}
+.m7-platform-payment-history-filters button{border:0;border-radius:8px;background:transparent;color:#5e7465;font-weight:650;font-size:.75rem;padding:8px 10px;cursor:pointer}
+.m7-platform-payment-history-filters button.active{background:#15884c;color:white}
+.m7-platform-payment-history-filters b{margin-left:6px;border-radius:30px;background:#e7eee9;padding:2px 6px;color:#536e5c;font-size:.7rem}
+.m7-platform-payment-history-toolbar label{font-size:.73rem;color:#647a69;font-weight:700;display:flex;gap:7px;align-items:center}
+.m7-platform-payment-history-toolbar select{padding:7px;border:1px solid #d8e8dc;border-radius:8px;background:white;color:#25553b}
+.m7-platform-payment-history-table-wrap{overflow:auto;max-width:100%}
+.m7-platform-payment-history table{width:100%;border-collapse:separate;border-spacing:0;font-size:.79rem;min-width:720px}
+.m7-platform-payment-history th{text-align:left;padding:11px;background:#eff6f0;color:#5d7763;font-weight:750}
+.m7-platform-payment-history td{padding:11px 9px;border-bottom:1px solid #e5eee8;vertical-align:middle}
+.m7-platform-payment-history td small{display:block;margin-top:4px;color:#7b8b80;font-size:.7rem}
+.m7-platform-payment-history td code{font-size:.74rem;color:#325a42}
+.m7-history-verified-amount{color:#177442;font-weight:750}
+.m7-history-status{border-radius:20px;background:#eaf0ed;color:#64756b;padding:5px 9px;white-space:nowrap;font-size:.7rem;font-weight:750}
+.m7-history-status.is-verified{background:#dcf5e6;color:#137442}
+.m7-history-status.is-checkout_ready,.m7-history-status.is-reserved{background:#fff2d9;color:#926211}
+.m7-history-status.is-canceled,.m7-history-status.is-failed,.m7-history-status.is-needs_review{background:#ffebeb;color:#a43535}
+.m7-platform-payment-history-note{padding:9px;border-radius:8px;color:#805f25;background:#fff7e8;margin:0;font-size:.75rem}
+.m7-platform-payment-history-empty{display:flex;gap:8px;align-items:center;justify-content:center;min-height:110px;padding:14px;color:#718478;border:1px dashed #d4e3d9;border-radius:10px;margin:0;text-align:center}
+@media(max-width:640px){.m7-platform-payment-history{padding:12px}.m7-platform-payment-history-head{align-items:flex-start}.m7-platform-payment-history-toolbar{align-items:flex-start}}
+
+/* One horizontal toolbar: a single outer capsule encloses all six status
+   buttons on the left, while the fee-type selector is on the right. */
+.m7-platform-payment-history{min-width:0;max-width:100%;}
+.m7-platform-payment-history .m7-platform-payment-history-toolbar{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) max-content;
+ align-items:center;
+ gap:12px;
+ min-width:0;
+ width:100%;
+ padding:8px 10px;
+ box-sizing:border-box;
+}
+.m7-platform-payment-history .m7-platform-payment-history-filter-shell{
+ display:block;
+ min-width:0;
+ max-width:100%;
+ overflow:hidden;
+ border:1px solid #d9e7de;
+ border-radius:999px;
+ background:#ffffff;
+ box-shadow:inset 0 1px 2px rgba(20,70,40,.04);
+ padding:3px;
+}
+.m7-platform-payment-history .m7-platform-payment-history-filters{
+ display:flex;
+ flex-wrap:nowrap;
+ justify-content:flex-start;
+ width:100%;
+ min-width:0;
+ max-width:100%;
+ gap:2px;
+ margin:0;
+ padding:0 0 2px;
+ overflow-x:auto;
+ overflow-y:hidden;
+ touch-action:pan-x;
+ overscroll-behavior-x:contain;
+ -webkit-overflow-scrolling:touch;
+ scrollbar-width:thin;
+ scrollbar-color:#95b8a3 transparent;
+}
+.m7-platform-payment-history .m7-platform-payment-history-filters button{
+ flex:0 0 auto;
+ min-width:max-content;
+ padding:8px 12px;
+ border-radius:999px;
+ border:0;
+ color:#617668;
+ background:transparent;
+ font-weight:700;
+ white-space:nowrap;
+}
+.m7-platform-payment-history .m7-platform-payment-history-filters button.active{
+ background:#15884c;color:#ffffff;
+ box-shadow:0 1px 3px rgba(14,102,52,.2);
+}
+.m7-platform-payment-history .m7-platform-payment-history-filter-shell ::-webkit-scrollbar{
+ height:5px;
+}
+.m7-platform-payment-history .m7-platform-payment-history-filter-shell ::-webkit-scrollbar-thumb{
+ background:#95b8a3;border-radius:999px;
+}
+.m7-platform-payment-history .m7-platform-payment-history-toolbar > label{
+ display:inline-flex;
+ flex-wrap:nowrap;
+ align-items:center;
+ justify-content:flex-end;
+ gap:7px;
+ min-width:0;
+ white-space:nowrap;
+ font-size:.74rem;
+}
+.m7-platform-payment-history .m7-platform-payment-history-toolbar > label select{
+ flex:0 0 auto;
+ width:115px;
+ min-width:100px;
+ max-width:115px;
+ box-sizing:border-box;
+}
+/* The table's own viewport must be scrollable, not the entire Superadmin
+   page. The label below also indicates the off-screen columns on phones. */
+.m7-platform-payment-history .m7-platform-payment-history-table-shell{
+ min-width:0;
+ max-width:100%;
+ width:100%;
+ overflow:hidden;
+}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap{
+ display:block;
+ position:relative;
+ width:100%;
+ min-width:0;
+ max-width:100%;
+ box-sizing:border-box;
+ overflow-x:scroll;
+ overflow-y:hidden;
+ touch-action:pan-x;
+ overscroll-behavior-x:contain;
+ -webkit-overflow-scrolling:touch;
+ scrollbar-gutter:stable;
+ scrollbar-width:thin;
+ scrollbar-color:#7eae90 #edf4ee;
+ border:1px solid #e4eee7;
+ border-radius:10px;
+}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap::-webkit-scrollbar{height:10px;}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap::-webkit-scrollbar-track{background:#edf4ee;border-radius:999px;}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap::-webkit-scrollbar-thumb{background:#7eae90;border-radius:999px;}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap > table{
+ display:table;
+ table-layout:auto;
+ min-width:980px;
+ width:max-content;
+ border-collapse:separate;
+ border-spacing:0;
+}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap th,
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap td{
+ white-space:nowrap;
+}
+.m7-platform-payment-history .m7-platform-payment-history-scroll-hint{
+ display:none;
+ align-items:center;
+ justify-content:center;
+ gap:6px;
+ margin-top:7px;
+ font-size:.7rem;
+ color:#718a79;
+}
+.m7-platform-payment-history .m7-platform-payment-history-filters:focus-visible,
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap:focus-visible{
+ outline:2px solid #15884c;
+ outline-offset:-2px;
+}
+@media(max-width:700px){
+ .m7-platform-payment-history{
+  min-width:0;
+  max-width:100%;
+  padding:12px;
+ }
+ .m7-platform-payment-history .m7-platform-payment-history-toolbar{
+  grid-template-columns:minmax(0,1fr) max-content;
+  gap:7px;
+  padding:7px;
+ }
+ .m7-platform-payment-history .m7-platform-payment-history-filters button{
+  padding:8px 11px;
+ }
+ .m7-platform-payment-history .m7-platform-payment-history-toolbar > label{
+  font-size:.65rem;
+  gap:4px;
+ }
+ .m7-platform-payment-history .m7-platform-payment-history-toolbar > label select{
+  min-width:79px;
+  width:84px;
+  max-width:84px;
+  padding:7px 4px;
+  font-size:.68rem;
+ }
+ .m7-platform-payment-history .m7-platform-payment-history-scroll-hint{display:flex;}
+}
+
+/* Free, continuous native touch scrolling with mouse drag support. */
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap{
+ touch-action:auto;
+ -webkit-overflow-scrolling:touch;
+ overscroll-behavior-x:contain;
+ cursor:grab;
+}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap:active{cursor:grabbing;}
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap table{
+ user-select:none;
+ -webkit-user-select:none;
+}
+.m7-platform-payment-history .m7-platform-payment-history-swipe-hint{
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:6px;
+ padding:9px;
+ color:#658371;
+ font-size:.72rem;
+}
+/* Fill available card width on desktop; keep 980px minimum so the same
+   six columns remain horizontally scrollable on narrow viewports. */
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap > table{
+ width:100%;
+ min-width:980px;
+}
+
+/* Avoid reserving a visible dead gutter on wide desktop cards. */
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap{
+ scrollbar-gutter:auto;
+ overflow-x:auto;
+}
+
+/* The horizontal gesture is handled on this viewport, while vertical page
+   swipes remain native. Avoid auto gesture arbitration swallowing table drags. */
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap{
+ touch-action:pan-y pinch-zoom;
+}
+
+/* Natural six-column width on narrow screens: a fixed 980px floor left a
+   huge blank tail after the Stripe-status column. Desktop still fills 100%. */
+.m7-platform-payment-history .m7-platform-payment-history-table-wrap > table{
+ width:max-content;
+ min-width:100%;
+}
+
+
+/* Dynamic fee-type filter: the only select in payment-history toolbar.
+   Keep the complete green label/icon inside the select above its value. */
+.m7-platform-payment-history .m7-platform-payment-history-toolbar {
+ grid-template-columns:minmax(0,1fr) minmax(175px,220px);
+ align-items:center;
+}
+.m7-platform-payment-history .m7-platform-payment-history-toolbar > .m7-platform-payment-history-kind {
+ box-sizing:border-box;
+ width:100%;
+ min-width:0;
+ max-width:220px;
+ justify-self:end;
+}
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-control {
+ min-height:52px;
+}
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-control > select {
+ box-sizing:border-box;
+ width:100%;
+ min-width:0;
+ max-width:100%;
+ height:52px;
+ min-height:52px;
+ padding:20px 31px 5px 12px;
+ border:1px solid #d5e5da;
+ border-radius:10px;
+ background:#fff;
+ color:#19412a;
+ font-size:.83rem;
+ font-weight:650;
+}
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-caption {
+ max-width:calc(100% - 24px);
+}
+@media(max-width:700px) {
+ .m7-platform-payment-history .m7-platform-payment-history-toolbar {
+  grid-template-columns:minmax(0,1fr);
+  gap:8px;
+ }
+ .m7-platform-payment-history .m7-platform-payment-history-toolbar > .m7-platform-payment-history-kind {
+  grid-column:1;
+  width:min(100%,220px);
+  justify-self:end;
+ }
+}
+
+
+/* Payment-history toolbar: ONE row at every breakpoint, including phones.
+   Status options remain horizontally scrollable inside their own capsule. */
+.m7-platform-payment-history .m7-platform-payment-history-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(115px, 172px);
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.m7-platform-payment-history .m7-platform-payment-history-filter-shell {
+  min-width: 0;
+  width: 100%;
+}
+.m7-platform-payment-history .m7-platform-payment-history-toolbar > .m7-platform-payment-history-kind {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: 172px;
+  --lk-field-height: 40px;
+}
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-control,
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-control > select {
+  min-height: 40px;
+  height: 40px;
+}
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-control > select {
+  padding: 15px 22px 3px 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-caption,
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-control.is-filled > .lk-dynamic-caption {
+  font-size: 0.62rem;
+  font-weight: 400;
+}
+.m7-platform-payment-history .m7-platform-payment-history-kind .lk-dynamic-control.is-filled > .lk-dynamic-caption {
+  top: 3px;
+  left: 10px;
+}
+@media (max-width: 700px) {
+  .m7-platform-payment-history .m7-platform-payment-history-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(112px, 126px);
+    gap: 6px;
+    align-items: center;
+  }
+  .m7-platform-payment-history .m7-platform-payment-history-toolbar > .m7-platform-payment-history-kind {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    justify-self: stretch;
+  }
+  .m7-platform-payment-history .m7-platform-payment-history-filter-shell {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .m7-platform-payment-history .m7-platform-payment-history-filters button {
+    padding: 7px 9px;
+  }
+}
