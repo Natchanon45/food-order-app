@@ -685,6 +685,7 @@ export function AdminTenantsPage() {
         confirmText: t("admin_tenants.tenant.delete_confirm_button"),
         cancelText: t("admin_tenants.common.cancel"),
         type: "warning",
+        danger: true,
       },
     );
     if (!confirmed) return;

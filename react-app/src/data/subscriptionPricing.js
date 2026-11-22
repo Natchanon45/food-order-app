@@ -130,3 +130,13 @@ export function subscriptionVatLabel(config, t, formatNumber) {
     ? t("platform.pricing.vat_included_label", { rate: formatNumber(config.vatRate) })
     : t("platform.pricing.vat_excluded_label", { rate: formatNumber(config.vatRate) });
 }
+
+export async function loadDeliveryThresholdVersions() {
+  const response = await httpsCallable(functions, "getDeliveryThresholdVersions")({});
+  if (response?.data?.ok !== true || !Array.isArray(response.data.versions)) throw Error("DELIVERY_THRESHOLD_HISTORY_UNAVAILABLE");
+  return response.data;
+}
+export async function appendDeliveryThresholdVersion(input) {
+  const response = await httpsCallable(functions, "appendDeliveryThresholdVersion")(input);
+  return response?.data;
+}

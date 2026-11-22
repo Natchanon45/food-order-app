@@ -1,3 +1,4 @@
+const { thresholdForCycle } = require("./delivery-threshold-schedule");
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { revenueShareManualReviewAllowed } = require("./finance-manual-review-policy");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
@@ -134,6 +135,7 @@ function revenueSetting(tenant = {}, premiumPricing = null) {
     rate: centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0,
     deliveryShareRate: centralDeliveryShare ? Number(premiumPricing.deliveryShareRate) : 0,
     deliveryThreshold: premiumPricing != null ? Number(premiumPricing.deliveryThreshold) : 10000,
+    deliveryThresholdVersions: premiumPricing?.deliveryThresholdVersions || [],
     billingCycle: "daily",
     billingAnchorDate: tenantAnchorDate(tenant),
     recipientName: String(tenant.revenueShareRecipientName || "").trim(),
@@ -212,7 +214,7 @@ async function summaryForTenant(tenantId, period, setting) {
   const eligibleDeliveryDays = anniversary
     ? eligibleDeliveryShareDays(
       [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
-      setting.deliveryThreshold, anniversary,
+      setting.deliveryThreshold, anniversary, setting.deliveryThresholdVersions,
     )
     : new Set(); // Missing activation date must never create an invoice.
   // The existing day-set is a threshold indicator, NOT a fee base.
@@ -220,7 +222,7 @@ async function summaryForTenant(tenantId, period, setting) {
   const shareableDeliveryByDay = anniversary
     ? eligibleDeliveryShareCentsByDay(
       [...paidDeliveryDaily].map(([date, cents]) => ({ date, cents })),
-      setting.deliveryThreshold, anniversary,
+      setting.deliveryThreshold, anniversary, setting.deliveryThresholdVersions,
     )
     : new Map();
 
@@ -324,7 +326,7 @@ async function summaryForTenant(tenantId, period, setting) {
     deliveryShareAmount,
     legacyShareAmount,
     revenueShareRate: setting.rate,
-    revenueShareDeliveryThreshold: setting.deliveryThreshold,
+    revenueShareDeliveryThreshold: thresholdForCycle(setting.deliveryThreshold, cycleStart, setting.deliveryThresholdVersions),
     revenueShareBase,
     revenueShareBillingCycle: setting.billingCycle,
     revenueShareBusinessType: setting.businessType,
@@ -724,8 +726,11 @@ exports.getTenantRevenueShareAccess = onCall({ region: REGION }, async request =
   const { tenant } = await assertTenantAdmin(request.auth);
   const pricing = await loadPricing(getFirestore());
   const membership = calculatePricing(pricing);
+  const setting = revenueSetting(tenant, pricing);
+  const currentCycle = setting.billingAnchorDate && cycleForDate(setting.billingAnchorDate, dateKey(new Date()));
   return {
-    ...revenueSetting(tenant, pricing),
+    ...setting,
+    deliveryThreshold: currentCycle ? thresholdForCycle(setting.deliveryThreshold, currentCycle.startDate, setting.deliveryThresholdVersions) : setting.deliveryThreshold,
     // Membership charges are separate from revenue-share settlements.
     premiumMonthlyPrice: membership.monthly.payable,
     premiumAnnualPrice: membership.annual.payable,

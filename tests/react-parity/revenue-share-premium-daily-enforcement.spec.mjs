@@ -40,7 +40,7 @@ function fixture(now = "2026-10-11", options = {}) {
         limit: () => ({ get: async () => ({ docs: payments.map((record, index) =>
           ({ id: record.id || String(index), data: () => record })) }) }),
       }),
-      doc: id => ({ kind: name, id }),
+      doc: id => ({ kind: name, id, get: async () => { const payment = payments.find(p => p.id === id); return { exists: Boolean(payment), data: () => payment }; } }),
     }),
   };
   const fields = {
@@ -100,6 +100,7 @@ function fixture(now = "2026-10-11", options = {}) {
     "firebase-admin/firestore": { getFirestore: () => db, FieldValue: fields },
     "firebase-admin/storage": { getStorage: () => ({}) },
     "node:crypto": require("node:crypto"),
+    "./finance-manual-review-policy": require("../../functions/finance-manual-review-policy.js"),
     "./finance-slip-claims": require("../../functions/finance-slip-claims.js"),
     "./slip-verification": { inspectSlip: async (...args) => {
       slipArgs.push(args); return { provider: "slip2go", status: "manual_review" };
@@ -108,6 +109,7 @@ function fixture(now = "2026-10-11", options = {}) {
       loadPricing: async () => PRICE, calculatePricing: () => ({ monthly: {payable: 590}, annual: {payable: 5900} }),
     },
     "./revenue-share-policy": require("../../functions/revenue-share-policy.js"),
+    "./delivery-threshold-schedule": require("../../functions/delivery-threshold-schedule.js"),
     "./billing-anniversary": require("../../functions/billing-anniversary.js"),
   };
   const moduleObject = { exports: {} };
@@ -166,7 +168,9 @@ test("Super Admin approval of reviewed pending slip removes only the matching bi
   const env = fixture("2026-10-11", { payments: [{
     id: "payment-test", periodType: "daily",
     periodStart: "2026-10-10", periodEnd: "2026-10-10",
-    status: "pending", createdAt: "2026-10-11T08:00:00+07:00",
+    status: "pending", createdAt: "2026-10-11T08:00:00+07:00", platformAmountDue: 75,
+    slipVerificationProvider: "slip2go", slipVerificationStatus: "manual_review",
+    ocr: {provider:"slip2go",status:"manual_review",fallbackAllowed:true,reason:"slip2go_unavailable"},
   }] });
   // A prior suspension can be entered before a user uploads an overdue slip.
   env.tenant.active = false;

@@ -1,4 +1,5 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { readThresholdHistory, appendThresholdVersion, validCents } = require("./delivery-threshold-schedule");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const {
   PRICING_DOC,
@@ -6,6 +7,7 @@ const {
   normalizePricing,
   calculatePricing,
   loadPricing,
+  pricingSnapshot,
 } = require("./subscription-pricing-core");
 
 async function assertSuperAdmin(auth) {
@@ -56,7 +58,7 @@ function validate(raw = {}) {
 }
 
 exports.getPublicSubscriptionPricing = onCall({ region: "asia-southeast1" }, async () => {
-  const config = await loadPricing(getFirestore());
+  const config = normalizePricing(pricingSnapshot(await loadPricing(getFirestore())));
   return { ok: true, config, pricing: calculatePricing(config) };
 });
 
@@ -86,11 +88,17 @@ exports.updateSubscriptionPricing = onCall({ region: "asia-southeast1" }, async 
       vatRate: config.vatRate,
     });
     const db = getFirestore();
-    await db.collection(PRICING_DOC.collection).doc(PRICING_DOC.id).set({
-      ...config,
-      updatedBy: request.auth.uid,
-      updatedAt: FieldValue.serverTimestamp(),
-    }, { merge: true });
+    const ref = db.collection(PRICING_DOC.collection).doc(PRICING_DOC.id);
+    await db.runTransaction(async tx => {
+      const [profile, snapshot] = await Promise.all([tx.get(db.collection("users").doc(request.auth.uid)), tx.get(ref)]);
+      if (profile.data()?.active === false || profile.data()?.role !== "super_admin") throw new HttpsError("permission-denied", "Super admin permission required");
+      if (snapshot.exists) {
+        const raw = snapshot.data();
+        readThresholdHistory(raw);
+        if (config.deliveryThreshold !== normalizePricing(raw).deliveryThreshold) throw new HttpsError("failed-precondition", "DELIVERY_THRESHOLD_BASELINE_LOCKED");
+      }
+      tx.set(ref, { ...config, updatedBy: request.auth.uid, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    });
     console.info("SUBSCRIPTION_PRICING_UPDATE_SUCCESS", {
       uid: request.auth.uid,
       document: `${PRICING_DOC.collection}/${PRICING_DOC.id}`,
@@ -104,4 +112,36 @@ exports.updateSubscriptionPricing = onCall({ region: "asia-southeast1" }, async 
     });
     throw error;
   }
+});
+
+// Same pricing document is the serialization point for ordinary edits and
+// append-only threshold revisions. An unset master never fabricates a baseline.
+exports.getDeliveryThresholdVersions = onCall({ region: "asia-southeast1" }, async request => {
+  await assertSuperAdmin(request.auth);
+  const snap = await getFirestore().collection(PRICING_DOC.collection).doc(PRICING_DOC.id).get();
+  const raw = snap.data() || {};
+  const baselineThresholdCents = Math.round(Number(raw.deliveryThreshold)*100);
+  if (!snap.exists || !validCents(baselineThresholdCents)) throw new HttpsError("failed-precondition", "DELIVERY_THRESHOLD_MASTER_UNAVAILABLE");
+  return {ok:true, baselineThresholdCents, versions:readThresholdHistory(raw), writeEnabled:true};
+});
+exports.appendDeliveryThresholdVersion = onCall({ region: "asia-southeast1" }, async request => {
+  await assertSuperAdmin(request.auth);
+  const db = getFirestore(), ref = db.collection(PRICING_DOC.collection).doc(PRICING_DOC.id);
+  const version = await db.runTransaction(async tx => {
+    const [profile,snap] = await Promise.all([tx.get(db.collection("users").doc(request.auth.uid)),tx.get(ref)]);
+    if (profile.data()?.active === false || profile.data()?.role !== "super_admin") throw new HttpsError("permission-denied", "Super admin permission required");
+    if (!snap.exists) throw new HttpsError("failed-precondition", "DELIVERY_THRESHOLD_MASTER_UNAVAILABLE");
+    const raw = snap.data();
+    let history;
+    try {history = appendThresholdVersion(raw,request.data);} catch(error) {
+      const code = String(error.message || "");
+      if (code === "DELIVERY_THRESHOLD_HISTORY_INVALID") throw new HttpsError("failed-precondition",code);
+      throw new HttpsError("invalid-argument",code);
+    }
+    tx.update(ref,{deliveryThresholdVersions:history,thresholdUpdatedBy:request.auth.uid,thresholdUpdatedAt:FieldValue.serverTimestamp()});
+    return history.at(-1);
+  });
+  const confirmed = readThresholdHistory((await ref.get()).data() || {}).find(row=>row.effectiveOn===version.effectiveOn);
+  if (!confirmed || confirmed.thresholdCents!==version.thresholdCents || confirmed.baselineThresholdCents!==version.baselineThresholdCents) throw new HttpsError("internal","DELIVERY_THRESHOLD_SCHEDULE_COMMIT_UNCONFIRMED");
+  return {ok:true,...confirmed};
 });

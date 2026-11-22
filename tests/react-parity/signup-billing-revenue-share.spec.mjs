@@ -273,6 +273,7 @@ test("Only central Delivery excess is charged regardless of stale tenant legacy 
     "./revenue-share-policy": policy,
     // The revenue-share calculator now uses Bangkok anniversary periods.
     // Supply the real pure helper in this isolated Cloud Functions harness.
+    "./delivery-threshold-schedule": require("../../functions/delivery-threshold-schedule.js"),
     "./billing-anniversary": require("../../functions/billing-anniversary.js"),
     "./finance-manual-review-policy": require("../../functions/finance-manual-review-policy.js"),
   };

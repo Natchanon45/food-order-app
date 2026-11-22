@@ -193,3 +193,10 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - New contact regression contract 2/2 PASS; existing platform Firebase readiness contract 4/4 PASS; full `npm run test:react-parity` PASS; `npm run build:react` and generated build contract PASS. These are static/unit/build checks, not signed-in browser/provider UAT.
 - Other six P1 pages and newly added DynamicField/payment components still require source comparison and Firebase adapter work. No full phase acceptance, no Cloud Functions/Rules changes, no deployment.
 - Existing live Hosting JS `/react/assets/index-BaKCYABy.js` differs from candidate `/react/assets/index-DDUK5rrM.js`; preserve live release until approved parity and authenticated UAT.
+
+### P1 continuation — shared controls and effective-dated delivery threshold
+
+- Ported shared DynamicField and PlatformCardAccordionHeader, platform settings accordion, owner and user modal fields, Telegram token/chat fields, and destructive tenant confirmation styling; retained Firebase handlers and guards.
+- Ported PlatformPricing threshold history/schedule UI and Firebase callables. Immutable original baseline, validated append-only effective dates, transaction serialization and readback. Existing store cycles retain their original threshold until the next applicable cycle; historical excess is calculated using the cycle-start threshold, including quota selection.
+- Verification: focused P1 initial contracts 16/16; isolated Chromium component fixture at 320/390/768/1440; billing regression 59/59 and new threshold tests 2/2; npm run test:react-parity exit 0; React build exit 0. The component fixture is not authenticated live-page UAT. No real Firebase emulator transaction/provider UAT completed in this continuation.
+- Source remains read-only. SaasSetup existing Firebase migration behavior retained. Remaining P1 scope: source Stripe/BankAlert wallet/settings/history and M7 payment history alignment; authenticated and emulator UAT; release gate. No production deployment. Generated candidate bundles were removed after verification so the existing Hosting release remains untouched.

@@ -1,3 +1,5 @@
+import { DynamicField } from "@/components/DynamicField";
+import "@/ui/AdminUsersPage-dynamic.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
@@ -314,10 +316,11 @@ export function AdminUsersPage() {
                     <div className="staff-user-card-head">
                       <span className="staff-user-avatar" aria-hidden="true"><i className="bi bi-person"></i></span>
                       <div className="staff-user-identity">
-                        <label className="staff-user-field staff-user-name-field">
-                          <span>{t("admin_users.list.columns.name")}</span>
-                          <input className="input" data-mobile-name-uid={user.uid} maxLength="100" value={draft.displayName ?? ""} onChange={e => patchDraft(user.uid, { displayName: e.target.value })} />
-                        </label>
+                        <DynamicField id={"staffMobileName-"+user.uid} label={t("admin_users.list.columns.name")}
+                          value={draft.displayName ?? ""} className="staff-user-field staff-user-name-field staff-user-dynamic-field">
+                          <input className="input" id={"staffMobileName-"+user.uid} data-mobile-name-uid={user.uid}
+                            maxLength="100" value={draft.displayName ?? ""} onChange={e => patchDraft(user.uid, { displayName: e.target.value })} />
+                        </DynamicField>
                         <div className="staff-user-email"><i className="bi bi-envelope" aria-hidden="true"></i><span>{user.email || "-"}</span></div>
                       </div>
                     </div>
@@ -328,14 +331,16 @@ export function AdminUsersPage() {
                       </span>
                     </div>
                     <div className="staff-user-card-fields">
-                      <label className="staff-user-field">
-                        <span>{t("admin_users.list.columns.role")}</span>
-                        <select className="input" data-mobile-role-uid={user.uid} value={draft.role || "admin"} onChange={e => patchDraft(user.uid, { role: e.target.value })}><option value="admin">{t("admin_users.roles.admin")}</option><option value="cashier">{t("admin_users.roles.cashier")}</option><option value="kitchen">{t("admin_users.roles.kitchen")}</option><option value="manager">Manager</option><option value="stock">Stock</option></select>
-                      </label>
-                      <label className="staff-user-field">
-                        <span>{t("admin_users.list.columns.scope")}</span>
-                        <select className="input" data-mobile-scope-uid={user.uid} value={draft.businessScope || "order_delivery"} onChange={e => patchDraft(user.uid, { businessScope: e.target.value })}><option value="order_delivery">{t("admin_users.scopes.order_delivery")}</option><option value="retail_pos">{t("admin_users.scopes.retail_pos")}</option><option value="both">{t("admin_users.scopes.both")}</option></select>
-                      </label>
+                      <DynamicField id={"staffMobileRole-"+user.uid} label={t("admin_users.list.columns.role")}
+                        value={draft.role || "admin"} kind="select" className="staff-user-field staff-user-dynamic-field">
+                        <select className="input" id={"staffMobileRole-"+user.uid} data-mobile-role-uid={user.uid}
+                          value={draft.role || "admin"} onChange={e => patchDraft(user.uid, { role: e.target.value })}><option value="admin">{t("admin_users.roles.admin")}</option><option value="cashier">{t("admin_users.roles.cashier")}</option><option value="kitchen">{t("admin_users.roles.kitchen")}</option><option value="manager">Manager</option><option value="stock">Stock</option></select>
+                      </DynamicField>
+                      <DynamicField id={"staffMobileScope-"+user.uid} label={t("admin_users.list.columns.scope")}
+                        value={draft.businessScope || "order_delivery"} kind="select" className="staff-user-field staff-user-dynamic-field">
+                        <select className="input" id={"staffMobileScope-"+user.uid} data-mobile-scope-uid={user.uid}
+                          value={draft.businessScope || "order_delivery"} onChange={e => patchDraft(user.uid, { businessScope: e.target.value })}><option value="order_delivery">{t("admin_users.scopes.order_delivery")}</option><option value="retail_pos">{t("admin_users.scopes.retail_pos")}</option><option value="both">{t("admin_users.scopes.both")}</option></select>
+                      </DynamicField>
                     </div>
 
                     <div className="staff-user-card-footer">
@@ -404,16 +409,16 @@ export function AdminUsersPage() {
           </header>
           <div className="staff-dialog-body">
             <div className="grid grid-2">
-              <div className="field"><label htmlFor="displayName">{t("admin_users.dialog.display_name")}</label><input className="input" id="displayName" required maxLength="100" value={form.displayName} onChange={e => setForm(current => ({ ...current, displayName: e.target.value }))} placeholder={t("admin_users.dialog.display_name_placeholder")} /></div>
-              <div className="field"><label htmlFor="email">{t("admin_users.dialog.email")}</label><input className="input" id="email" type="email" autoComplete="off" required value={form.email} onChange={e => setForm(current => ({ ...current, email: e.target.value }))} placeholder="name@example.com" /></div>
+              <div className="field staff-create-dynamic-wrap"><DynamicField id="displayName" label={t("admin_users.dialog.display_name")} value={form.displayName} className="staff-create-dynamic-field"><input className="input" id="displayName" required maxLength="100" value={form.displayName} onChange={e => setForm(current => ({ ...current, displayName: e.target.value }))} /></DynamicField></div>
+              <div className="field staff-create-dynamic-wrap"><DynamicField id="email" label={t("admin_users.dialog.email")} value={form.email} className="staff-create-dynamic-field"><input className="input" id="email" type="email" autoComplete="off" required value={form.email} onChange={e => setForm(current => ({ ...current, email: e.target.value }))} /></DynamicField></div>
             </div>
             <div className="grid grid-2">
-              <div className="field"><label htmlFor="password">{t("admin_users.dialog.password")}</label><input className="input" id="password" type="password" autoComplete="new-password" minLength="8" required value={form.password} onChange={e => setForm(current => ({ ...current, password: e.target.value }))} placeholder={t("admin_users.dialog.password_placeholder")} /></div>
-              <div className="field"><label htmlFor="confirmPassword">{t("admin_users.dialog.confirm_password")}</label><input className="input" id="confirmPassword" type="password" autoComplete="new-password" minLength="8" required value={form.confirmPassword} onChange={e => setForm(current => ({ ...current, confirmPassword: e.target.value }))} placeholder={t("admin_users.dialog.confirm_password_placeholder")} /></div>
+              <div className="field staff-create-dynamic-wrap"><DynamicField id="password" label={t("admin_users.dialog.password")} value={form.password} className="staff-create-dynamic-field" description={t("admin_users.dialog.password_placeholder")}><input className="input" id="password" type="password" autoComplete="new-password" minLength="8" required value={form.password} onChange={e => setForm(current => ({ ...current, password: e.target.value }))} /></DynamicField></div>
+              <div className="field staff-create-dynamic-wrap"><DynamicField id="confirmPassword" label={t("admin_users.dialog.confirm_password")} value={form.confirmPassword} className="staff-create-dynamic-field"><input className="input" id="confirmPassword" type="password" autoComplete="new-password" minLength="8" required value={form.confirmPassword} onChange={e => setForm(current => ({ ...current, confirmPassword: e.target.value }))} /></DynamicField></div>
             </div>
             <div className="grid grid-2">
-              <div className="field"><label htmlFor="role">{t("admin_users.dialog.role")}</label><select className="input" id="role" required value={form.role} onChange={e => setForm(current => ({ ...current, role: e.target.value }))}><option value="admin">{t("admin_users.role_options.admin")}</option><option value="cashier">{t("admin_users.role_options.cashier")}</option><option value="kitchen">{t("admin_users.role_options.kitchen")}</option><option value="manager">Manager</option><option value="stock">Stock</option></select></div>
-              <div className="field"><label htmlFor="businessScope">{t("admin_users.dialog.scope")}</label><select className="input" id="businessScope" required value={form.businessScope} onChange={e => setForm(current => ({ ...current, businessScope: e.target.value }))}><option value="order_delivery">{t("admin_users.scope_options.order_delivery")}</option><option value="retail_pos">{t("admin_users.scope_options.retail_pos")}</option><option value="both">{t("admin_users.scope_options.both")}</option></select></div>
+              <div className="field staff-create-dynamic-wrap"><DynamicField id="role" label={t("admin_users.dialog.role")} value={form.role} kind="select" className="staff-create-dynamic-field"><select className="input" id="role" required value={form.role} onChange={e => setForm(current => ({ ...current, role: e.target.value }))}><option value="admin">{t("admin_users.role_options.admin")}</option><option value="cashier">{t("admin_users.role_options.cashier")}</option><option value="kitchen">{t("admin_users.role_options.kitchen")}</option><option value="manager">Manager</option><option value="stock">Stock</option></select></DynamicField></div>
+              <div className="field staff-create-dynamic-wrap"><DynamicField id="businessScope" label={t("admin_users.dialog.scope")} value={form.businessScope} kind="select" className="staff-create-dynamic-field"><select className="input" id="businessScope" required value={form.businessScope} onChange={e => setForm(current => ({ ...current, businessScope: e.target.value }))}><option value="order_delivery">{t("admin_users.scope_options.order_delivery")}</option><option value="retail_pos">{t("admin_users.scope_options.retail_pos")}</option><option value="both">{t("admin_users.scope_options.both")}</option></select></DynamicField></div>
             </div>
             <label className="staff-active-option"><span><strong>{t("admin_users.dialog.active_title")}</strong><small>{t("admin_users.dialog.active_help")}</small></span><input type="checkbox" id="active" checked={form.active} onChange={e => setForm(current => ({ ...current, active: e.target.checked }))} /></label>
             {formError ? <div className="upload-error" id="userError">{formError}</div> : <div className="upload-error" id="userError" hidden></div>}

@@ -1,3 +1,4 @@
+const { thresholdForCycle, readThresholdHistory } = require("./delivery-threshold-schedule");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { createHash } = require("node:crypto");
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
@@ -238,7 +239,9 @@ exports.verifyDeliveryPaymentSlip = onCall(
     const price = priceSnap.data() || {};
     const providerSettings = verifierSnap.data() || {};
     const freeBills = Number(price.monthlySlipQuota);
-    const thresholdCents = Math.round(Number(price.deliveryThreshold) * 100);
+    let thresholdCents;
+    try { thresholdCents = Math.round(thresholdForCycle(Number(price.deliveryThreshold), cycle.startDate, readThresholdHistory(price)) * 100); }
+    catch { return blockedWithoutProvider("merchant_quota_pricing_unavailable"); }
     if (!priceSnap.exists || !Number.isSafeInteger(freeBills)
       || freeBills < 0 || freeBills > 1000000
       || !Number.isSafeInteger(thresholdCents) || thresholdCents <= 0) {

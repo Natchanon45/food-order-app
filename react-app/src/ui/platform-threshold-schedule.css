@@ -1,0 +1,317 @@
+/* M7 effective-date controls. Deliberately scoped to avoid generic .section-title
+   and form rules inherited from other Platform pages. */
+body.platform-pricing-page main.platform-pricing-shell > section.platform-threshold-schedule {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 24px 0 0;
+  padding: clamp(18px, 2.3vw, 26px);
+  border: 1px solid #dbe9df;
+  border-radius: 20px;
+  background: #fff;
+  color: #173324;
+  box-shadow: 0 10px 28px rgba(18, 72, 40, .06);
+}
+body.platform-pricing-page .platform-threshold-schedule-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 0;
+  text-align: left;
+}
+body.platform-pricing-page .platform-threshold-schedule-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #eef8f1;
+  color: #0f8541;
+  font-size: 20px;
+}
+body.platform-pricing-page .platform-threshold-schedule-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+body.platform-pricing-page .platform-threshold-schedule-heading h2 {
+  margin: 0 0 5px;
+  color: #183d28;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-align: left;
+}
+body.platform-pricing-page .platform-threshold-schedule-heading p {
+  margin: 0;
+  max-width: 750px;
+  color: #60776b;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: left;
+}
+body.platform-pricing-page .platform-threshold-baseline {
+  display: block;
+  margin: 0 0 18px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  background: #f1f8f3;
+  color: #42624e;
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: left;
+}
+body.platform-pricing-page .platform-threshold-baseline strong {color: #0c6030; margin: 0 4px}
+body.platform-pricing-page .platform-threshold-schedule-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+body.platform-pricing-page .platform-threshold-schedule-form > label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  color: #315642;
+  font-size: 13px;
+  font-weight: 650;
+  text-align: left;
+}
+/* Reserve the existing central FormValidationUi feedback row in every field,
+   even if that control is valid or untouched. This preserves input alignment. */
+body.platform-pricing-page .platform-threshold-schedule-form > label > .bootstrap-invalid-feedback {
+  display: block;
+  visibility: hidden;
+  flex: 0 0 16px;
+  width: 100%;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.platform-pricing-page .platform-threshold-schedule-form > label > .bootstrap-invalid-feedback.show {
+  visibility: visible;
+}
+body.platform-pricing-page .platform-threshold-schedule-form > label > input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 44px;
+  padding: 10px 12px;
+  margin: 0;
+  box-sizing: border-box;
+  border: 1px solid #d3e5d9;
+  border-radius: 11px;
+  background: white;
+  color: #173324;
+  font-size: 14px;
+  box-shadow: none;
+}
+body.platform-pricing-page .platform-threshold-schedule-form > label > input:focus {
+  border-color: #109447;
+  outline: 2px solid rgba(16, 148, 71, .13);
+  outline-offset: 0;
+}
+body.platform-pricing-page .platform-threshold-schedule-form > label > input:disabled {
+  background: #f4f7f4;
+  color: #66766b;
+}
+body.platform-pricing-page .platform-threshold-schedule-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 2px;
+}
+body.platform-pricing-page .platform-threshold-schedule-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  width: auto;
+  min-width: 160px;
+  padding: 0 18px;
+  border-radius: 11px;
+  white-space: nowrap;
+}
+body.platform-pricing-page .platform-threshold-schedule-error {color: #a62132;margin-top: 12px}
+body.platform-pricing-page .platform-threshold-schedule-note {color: #8b671e;margin-top: 12px}
+body.platform-pricing-page .platform-threshold-schedule-history {
+  margin-top: 21px;
+  padding-top: 17px;
+  border-top: 1px solid #e0ebe4;
+  font-size: 13px;
+  text-align: left;
+}
+body.platform-pricing-page .platform-threshold-schedule-history > strong {display: block;margin-bottom: 12px}
+body.platform-pricing-page .platform-threshold-schedule-history > p {margin: 0;color:#627468;line-height:1.6}
+body.platform-pricing-page .platform-threshold-schedule-history table {width: 100%;border-collapse: collapse}
+body.platform-pricing-page .platform-threshold-schedule-history th,
+body.platform-pricing-page .platform-threshold-schedule-history td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e3eee7;
+  text-align: left;
+}
+@media (max-width: 900px) {
+  body.platform-pricing-page .platform-threshold-schedule-form {grid-template-columns: repeat(2, minmax(0,1fr))}
+}
+@media (max-width: 620px) {
+  body.platform-pricing-page .platform-threshold-schedule-form {grid-template-columns: minmax(0,1fr)}
+  body.platform-pricing-page .platform-threshold-schedule-actions {justify-content: stretch}
+  body.platform-pricing-page .platform-threshold-schedule-actions .btn {width:100%}
+  body.platform-pricing-page .platform-threshold-schedule-header {gap:11px}
+}
+
+/* Immutable Delivery baseline, append-only calendar and history */
+body.platform-pricing-page .platform-pricing-locked-note{
+  display:flex;align-items:center;gap:7px;max-width:100%;
+  margin-top:7px;color:#627b6b;font-size:11.5px;line-height:1.5;
+}
+body.platform-pricing-page .platform-pricing-locked-note i{color:#31835a;flex:0 0 auto}
+body.platform-pricing-page #pricingDeliveryThreshold[readonly]{
+  background:#f3f7f4;color:#41644d;cursor:not-allowed;
+  border-color:#dce9df;
+}
+body.platform-pricing-page .platform-threshold-baseline{
+  display:flex;align-items:center;gap:13px;
+  margin-bottom:18px;padding:14px 16px;
+  border:1px solid #dceee2;
+  border-radius:13px;background:#f4fbf6;
+}
+body.platform-pricing-page .platform-threshold-baseline-icon{
+  display:flex;align-items:center;justify-content:center;flex:0 0 42px;
+  width:42px;height:42px;border-radius:12px;
+  color:#16834c;background:#e2f3e8;font-size:20px;
+}
+body.platform-pricing-page .platform-threshold-baseline>span:last-child{
+  display:flex;flex-direction:column;gap:3px;min-width:0;
+}
+body.platform-pricing-page .platform-threshold-baseline strong{
+  margin:0;color:#17472a;font-size:14px;font-weight:800;
+}
+body.platform-pricing-page .platform-threshold-baseline small{
+  font-size:11.5px;line-height:1.55;color:#668371;
+}
+body.platform-pricing-page .platform-threshold-field-title{
+  display:inline-flex;align-items:center;gap:7px;line-height:1.45;
+}
+body.platform-pricing-page .platform-threshold-field-title>i{
+  color:#138548;font-size:15px;flex-shrink:0;
+}
+body.platform-pricing-page .platform-threshold-schedule-form>label>input[readonly]{
+  background:#f5f8f6;border-color:#dce8df;
+  color:#4b6d57;cursor:default;
+}
+body.platform-pricing-page .platform-threshold-schedule-form>label>input[readonly]:focus{
+  outline:0;border-color:#dce8df;
+}
+body.platform-pricing-page .platform-threshold-field-caption{
+  font-size:11px;line-height:1.55;color:#758b7b;font-weight:400;
+}
+body.platform-pricing-page .platform-threshold-schedule-actions .btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-width:178px;border-radius:11px;
+}
+body.platform-pricing-page .platform-threshold-schedule-actions .btn>i{
+  font-size:15px;flex-shrink:0;
+}
+body.platform-pricing-page .platform-threshold-schedule-actions .btn:disabled{
+  opacity:.62;cursor:not-allowed;
+}
+body.platform-pricing-page .platform-threshold-schedule-error{
+  display:flex;align-items:center;gap:9px;
+  padding:11px 13px;border:1px solid #f0ccd0;border-radius:10px;
+  background:#fff5f5;color:#9b2e39;font-size:12px;line-height:1.5;
+}
+body.platform-pricing-page .platform-threshold-schedule-error>i{font-size:17px}
+body.platform-pricing-page .platform-threshold-schedule-history{
+  margin-top:23px;padding-top:19px;
+}
+body.platform-pricing-page .platform-threshold-history-heading{
+  display:flex;align-items:center;gap:12px;min-width:0;
+  margin-bottom:13px;
+}
+body.platform-pricing-page .platform-threshold-history-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 38px;width:38px;height:38px;
+  background:#e9f5ed;color:#147b43;border-radius:11px;font-size:18px;
+}
+body.platform-pricing-page .platform-threshold-history-heading>div{
+  min-width:0;flex:1;
+}
+body.platform-pricing-page .platform-threshold-history-heading h3{
+  font-size:14px;font-weight:800;color:#1a4229;
+  line-height:1.45;margin:0 0 3px;
+}
+body.platform-pricing-page .platform-threshold-history-heading p{
+  margin:0;color:#7b8c80;font-size:11.5px;line-height:1.55;
+}
+body.platform-pricing-page .platform-threshold-history-count{
+  padding:6px 10px;flex-shrink:0;white-space:nowrap;
+  border-radius:999px;background:#eaf6ee;color:#257248;font-size:11px;font-weight:750;
+}
+body.platform-pricing-page .platform-threshold-history-empty{
+  display:flex;align-items:center;gap:13px;
+  border:1px dashed #d7e7db;background:#f9fcfa;border-radius:13px;
+  padding:17px;color:#5d7868;min-width:0;
+}
+body.platform-pricing-page .platform-threshold-history-empty>span{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#edf6ef;color:#368658;width:39px;height:39px;
+  border-radius:12px;font-size:19px;flex-shrink:0;
+}
+body.platform-pricing-page .platform-threshold-history-empty>div{min-width:0}
+body.platform-pricing-page .platform-threshold-history-empty strong{
+  color:#2c5840;font-size:13px;font-weight:800;
+}
+body.platform-pricing-page .platform-threshold-history-empty p{
+  margin:4px 0 0;color:#718879;font-size:12px;line-height:1.6;
+}
+body.platform-pricing-page .platform-threshold-history-table-wrap{
+  border:1px solid #e0eae3;border-radius:12px;overflow-x:auto;
+}
+body.platform-pricing-page .platform-threshold-history-table-wrap table{
+  width:100%;border-collapse:collapse;min-width:390px;
+}
+body.platform-pricing-page .platform-threshold-history-table-wrap th{
+  background:#f5faf6;color:#4c795a;font-size:11.5px;font-weight:750;
+}
+body.platform-pricing-page .platform-threshold-history-table-wrap th,
+body.platform-pricing-page .platform-threshold-history-table-wrap td{
+  padding:13px 15px;border-bottom:1px solid #e7efe9;
+}
+body.platform-pricing-page .platform-threshold-history-table-wrap tr:last-child td{border-bottom:0}
+body.platform-pricing-page .platform-threshold-history-table-wrap td strong{
+  color:#174b2d;font-weight:800;
+}
+body.platform-pricing-page .platform-threshold-history-lock{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#edf6ef;color:#447b59;border-radius:999px;
+  padding:5px 9px;font-size:11px;white-space:nowrap;
+}
+@media(max-width:620px){
+ body.platform-pricing-page .platform-threshold-baseline{padding:12px;gap:10px}
+ body.platform-pricing-page .platform-threshold-baseline-icon{width:36px;height:36px;flex-basis:36px}
+ body.platform-pricing-page .platform-threshold-history-heading{flex-wrap:wrap;gap:9px}
+ body.platform-pricing-page .platform-threshold-history-heading>div{flex:1 1 calc(100% - 50px)}
+ body.platform-pricing-page .platform-threshold-history-count{margin-left:47px}
+ body.platform-pricing-page .platform-threshold-history-empty{padding:13px;align-items:flex-start}
+}

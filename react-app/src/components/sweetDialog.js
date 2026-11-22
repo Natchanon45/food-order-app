@@ -72,6 +72,7 @@ function mountDialogRoot(root, portalTarget) {
 
 function configure(message, options = {}, prompt = false) {
   const root = ensureDialog();
+  root.classList.toggle("sweet-dialog-destructive", options.danger === true);
   mountDialogRoot(root, options.portalTarget);
   const title = root.querySelector("#sweetDialogTitle");
   const msg = root.querySelector("#sweetDialogMessage");
@@ -113,6 +114,7 @@ export function sweetPrompt(message, defaultValue = "", options = {}) {
 
 export function sweetAlert(message, options = {}) {
   const root = ensureDialog();
+  root.classList.toggle("sweet-dialog-destructive", options.danger === true);
   mountDialogRoot(root, options.portalTarget);
   const title = root.querySelector("#sweetDialogTitle");
   const msg = root.querySelector("#sweetDialogMessage");

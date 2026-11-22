@@ -264,6 +264,8 @@ const subscriptionPricing = require("./subscription-pricing");
 exports.getPublicSubscriptionPricing = subscriptionPricing.getPublicSubscriptionPricing;
 exports.getSubscriptionPricing = subscriptionPricing.getSubscriptionPricing;
 exports.updateSubscriptionPricing = subscriptionPricing.updateSubscriptionPricing;
+exports.getDeliveryThresholdVersions = subscriptionPricing.getDeliveryThresholdVersions;
+exports.appendDeliveryThresholdVersion = subscriptionPricing.appendDeliveryThresholdVersion;
 
 const googleDelivery = require("./google-delivery");
 exports.getDeliveryGoogleMapsConfig = googleDelivery.getDeliveryGoogleMapsConfig;

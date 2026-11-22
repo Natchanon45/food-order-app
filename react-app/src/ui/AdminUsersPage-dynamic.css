@@ -1,0 +1,47 @@
+/* Phase 6 · Admin team /users — native-height dynamic labels, local-first.
+   Preserve modal buttons, staff search and desktop table, and switches. */
+body.admin-users-page .staff-create-dynamic-wrap,
+body.admin-users-page .staff-user-dynamic-field {
+  min-width:0;
+}
+body.admin-users-page .staff-create-dynamic-field {
+  --lk-field-height:48px;
+}
+body.admin-users-page .staff-create-dynamic-field .lk-dynamic-control > :is(input, select) {
+  min-height:48px;
+  height:48px;
+  background:#f8fafc;
+}
+body.admin-users-page .staff-create-dynamic-field .lk-dynamic-caption,
+body.admin-users-page .staff-user-dynamic-field .lk-dynamic-caption {
+  font-weight:400;
+  max-width:calc(100% - 28px);
+}
+body.admin-users-page .staff-create-dynamic-field .lk-dynamic-help {
+  margin:5px 0 0;
+  font-size:11px;
+  line-height:1.5;
+  color:#64748b;
+}
+body.admin-users-page .staff-user-dynamic-field {
+  --lk-field-height:40px;
+}
+body.admin-users-page .staff-user-dynamic-field .lk-dynamic-control > :is(input, select) {
+  height:40px;
+  min-height:40px;
+  padding-top:16px;
+  padding-bottom:3px;
+  background:#f8fafc;
+}
+body.admin-users-page .staff-user-name-field.staff-user-dynamic-field .lk-dynamic-control > input {
+  background:#fff;
+  font-size:13px;
+  font-weight:800;
+}
+body.admin-users-page .staff-user-dynamic-field .lk-dynamic-control > .lk-dynamic-caption {
+  font-size:0.80rem;
+}
+body.admin-users-page .staff-user-dynamic-field .lk-dynamic-control:focus-within > .lk-dynamic-caption,
+body.admin-users-page .staff-user-dynamic-field .lk-dynamic-control.is-filled > .lk-dynamic-caption {
+  font-size:0.62rem;
+}

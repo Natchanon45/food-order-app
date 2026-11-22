@@ -1,3 +1,5 @@
+import { DynamicField } from "@/components/DynamicField";
+import "@/ui/telegram-dynamic.css";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { httpsCallable } from "firebase/functions";
@@ -86,28 +88,28 @@ function TelegramChannel({ definition, channel, onChange, onSave, onTest, saving
           <span>เปิดรับการแจ้งเตือนช่องทางนี้</span>
         </label>
         <div className="lukkaja-telegram-input-grid">
-          <label htmlFor={id+"-token"}>
-            <strong>Telegram Bot Token</strong>
+          <DynamicField id={id+"-token"} label="Telegram Bot Token" value={channel.botToken}
+            className="lukkaja-telegram-dynamic-field"
+            description={channel.tokenConfigured
+              ? "ตั้งค่า Token แล้ว • ว่างไว้เพื่อใช้ค่าเดิม (Token เก็บแบบเข้ารหัสและไม่ส่งค่ากลับ Browser)"
+              : "กรอก Token จาก @BotFather • ค่าจะถูกเข้ารหัสและไม่ส่งกลับมาที่ Browser"}>
             <input id={id+"-token"} type="password" autoComplete="new-password" spellCheck="false"
-              placeholder={channel.tokenConfigured ? "ตั้งค่าแล้ว " + channel.tokenMasked + " • ว่างไว้เพื่อใช้ค่าเดิม" : "กรอก Bot Token จาก @BotFather"}
               value={channel.botToken}
               onChange={event => onChange({ botToken: event.target.value, clearToken: false })}
               maxLength={160} required={needToken}
               pattern="[0-9]{7,20}:(?:[a-zA-Z0-9_]|-){30,120}"
               title="Bot Token ต้องเป็นรหัสตัวเลข ตามด้วย : และรหัสที่ได้รับจาก @BotFather" />
-            <small>{channel.tokenConfigured ? "Token ถูกเข้ารหัสแล้ว ไม่สามารถแสดงค่าเดิมได้" : "Token จะถูกเข้ารหัสในฐานข้อมูลและไม่ส่งกลับมาที่ Browser"}</small>
-          </label>
-          <label htmlFor={id+"-chat"}>
-            <strong>Chat ID</strong>
+          </DynamicField>
+          <DynamicField id={id+"-chat"} label="Chat ID" value={channel.chatId}
+            className="lukkaja-telegram-dynamic-field"
+            description="ระบุ Chat ID เช่น -100xxxxxxxxxx หรือเลขแชทส่วนตัว • Bot ต้องอยู่ในแชทและมีสิทธิ์ส่งข้อความ">
             <input id={id+"-chat"} type="text" inputMode="text"
-              placeholder="-100xxxxxxxxxx หรือเลขแชทส่วนตัว"
               value={channel.chatId}
               onChange={event => onChange({ chatId: event.target.value })}
               maxLength={80} required={channel.enabled}
               pattern="-?[0-9]{5,20}"
               title="Chat ID ต้องเป็นตัวเลข 5–20 หลัก และอาจขึ้นต้นด้วยเครื่องหมายลบ" />
-            <small>Bot ต้องอยู่ในแชทหรือกลุ่มที่ระบุ และมีสิทธิ์ส่งข้อความ</small>
-          </label>
+          </DynamicField>
         </div>
         {channel.tokenConfigured ? (
           <label className="lukkaja-telegram-clear">

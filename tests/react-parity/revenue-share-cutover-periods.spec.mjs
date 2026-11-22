@@ -52,6 +52,7 @@ function serverAt(day, orders = []) {
       loadPricing: async () => pricing, calculatePricing: () => ({ monthly: {}, annual: {} }),
     },
     "./revenue-share-policy": policy,
+    "./delivery-threshold-schedule": require("../../functions/delivery-threshold-schedule.js"),
     "./billing-anniversary": anniversaries,
   };
   const m = { exports: {} };

@@ -1,3 +1,4 @@
+const { thresholdForCycle, readThresholdHistory } = require("./delivery-threshold-schedule");
 const { cycleForDate } = require("./billing-anniversary");
 const BILLING_MODES = new Set(["subscription", "revenue_share", "hybrid"]);
 const BUSINESS_TYPES = new Set(["restaurant_cafe", "retail", "both"]);
@@ -85,13 +86,13 @@ function revenueShareChannels(tenant = {}) {
 
 // Paid Delivery goods count toward each store's activation-anniversary threshold.
 // The threshold day and later days qualify; earlier days are not retro-billed.
-function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, anchorDate = null) {
+function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, anchorDate = null, versions = []) {
   const money = Number(threshold);
   if (!Number.isFinite(money) || money < 0 || money > 1000000000
     || Math.abs(money * 100 - Math.round(money * 100)) > 0.00001) {
     throw new RangeError("Invalid Delivery share threshold");
   }
-  const thresholdCents = Math.round(money * 100);
+  readThresholdHistory({deliveryThreshold:money,deliveryThresholdVersions:versions});
   const byDay = new Map();
   for (const item of dailyDeliverySales) {
     const date = String(item?.date || "");
@@ -109,6 +110,7 @@ function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, a
     const cycleId = cycle ? cycle.startDate : date.slice(0, 7);
     const total = (monthlyTotals.get(cycleId) || 0) + cents;
     monthlyTotals.set(cycleId, total);
+    const thresholdCents = Math.round(thresholdForCycle(money, cycle?.startDate || date.slice(0,7)+"-01",versions)*100);
     if (cents > 0 && total >= thresholdCents) days.add(date);
   }
   return days;
@@ -117,13 +119,13 @@ function eligibleDeliveryShareDays(dailyDeliverySales = [], threshold = 10000, a
 // The share base is only the marginal part of PAID Delivery above the
 // store's anniversary-cycle threshold. Returning charged cents by Bangkok
 // day prevents the trigger day from billing the full threshold/day.
-function eligibleDeliveryShareCentsByDay(dailyDeliverySales = [], threshold = 10000, anchorDate = null) {
+function eligibleDeliveryShareCentsByDay(dailyDeliverySales = [], threshold = 10000, anchorDate = null, versions = []) {
   const money = Number(threshold);
   if (!Number.isFinite(money) || money < 0 || money > 1000000000
     || Math.abs(money * 100 - Math.round(money * 100)) > 0.00001) {
     throw new RangeError("Invalid Delivery share threshold");
   }
-  const ceiling = Math.round(money * 100);
+  readThresholdHistory({deliveryThreshold:money,deliveryThresholdVersions:versions});
   const byDay = new Map();
   for (const item of dailyDeliverySales) {
     const date = String(item?.date || "");
@@ -143,6 +145,7 @@ function eligibleDeliveryShareCentsByDay(dailyDeliverySales = [], threshold = 10
     const next = previous + cents;
     if (!Number.isSafeInteger(next)) throw new RangeError("Delivery share total overflow");
     totals.set(scope, next);
+    const ceiling = Math.round(thresholdForCycle(money, cycle?.startDate || date.slice(0,7)+"-01",versions)*100);
     const charge = Math.max(0, next - ceiling) - Math.max(0, previous - ceiling);
     if (charge > 0) eligible.set(date, charge);
   }

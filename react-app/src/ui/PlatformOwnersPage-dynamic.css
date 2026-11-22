@@ -1,0 +1,26 @@
+/* Phase 7 · Superadmin owner editor: compact in-control labels while keeping
+   native credentials and plan selects. The search/funnel toolbar is excluded. */
+.owner-modal .platform-owner-dynamic-field {
+  --lk-field-height:46px;
+  width:100%;
+  min-width:0;
+}
+.owner-modal .platform-owner-dynamic-field .lk-dynamic-control > :is(input,select) {
+  box-sizing:border-box;
+  min-height:46px;
+  height:46px;
+  padding:18px 14px 3px;
+}
+.owner-modal .platform-owner-dynamic-field .lk-dynamic-caption {
+  max-width:calc(100% - 28px);
+  font-weight:400;
+}
+.owner-modal .platform-owner-dynamic-field .lk-dynamic-help {
+  margin:5px 0 0;
+  font-size:11px;
+  line-height:1.5;
+  color:#66776e;
+}
+.owner-modal .platform-owner-dynamic-field .lk-dynamic-control > :is(input,select):disabled {
+  background:#f3f8f5;
+}

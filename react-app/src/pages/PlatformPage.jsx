@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { PlatformCardAccordionHeader } from "@/components/PlatformCardAccordionHeader";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
@@ -100,16 +101,20 @@ function showToast(message, type = "success") {
 }
 
 function ControlCard({ titleId, icon, title, description, badge = "", badgeId, badgeClass = "", children, className = "" }) {
+  const [expanded, setExpanded] = useState(false);
+  const panelId = `${titleId}Panel`;
   return (
-    <section className={`card platform-google-api-card ${className}`} aria-labelledby={titleId}>
-      <div className="section-title platform-google-api-title">
-        <div>
-          <h2 id={titleId}><i className={icon} aria-hidden="true"></i> {title}</h2>
-          <p>{description}</p>
-        </div>
-        <span className={`badge${badgeClass ? ` ${badgeClass}` : ""}`} id={badgeId}>{badge}</span>
+    <section className={`card platform-google-api-card platform-card-collapsible ${className}`}
+      data-expanded={expanded} aria-labelledby={titleId}>
+      <PlatformCardAccordionHeader
+        titleId={titleId} panelId={panelId} icon={icon} title={title}
+        description={description} badge={badge} badgeId={badgeId}
+        badgeClass={badgeClass} expanded={expanded}
+        onToggle={() => setExpanded(value => !value)}
+      />
+      <div id={panelId} className="platform-card-accordion-panel" hidden={!expanded}>
+        {children}
       </div>
-      {children}
     </section>
   );
 }
@@ -870,10 +875,10 @@ export function PlatformPage() {
           </form>
         </ControlCard>
 
-        <section className="card platform-scope-card">
-          <div className="section-title"><h2>{t("platform.scope.title")}</h2></div>
+        <ControlCard titleId="platformScopeTitle" icon="bi bi-info-circle"
+          title={t("platform.scope.title")} className="platform-scope-card">
           <p className="menu-category platform-scope-description">{t("platform.scope.description")}</p>
-        </section>
+        </ControlCard>
       </main>
 
       <ParityFooter />

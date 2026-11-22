@@ -1,3 +1,5 @@
+const { readThresholdHistory, thresholdForCycle } = require("./delivery-threshold-schedule");
+const { bangkokDateKey } = require("./billing-anniversary");
 const PRICING_DOC = Object.freeze({ collection: "platformSettings", id: "subscriptionPricing" });
 const DEFAULT_PRICING = Object.freeze({
   planId: "premium",
@@ -81,11 +83,16 @@ function calculatePricing(input = {}) {
 
 async function loadPricing(db) {
   const snapshot = await db.collection(PRICING_DOC.collection).doc(PRICING_DOC.id).get();
-  return normalizePricing(snapshot.exists ? snapshot.data() : DEFAULT_PRICING);
+  const raw = snapshot.exists ? snapshot.data() : DEFAULT_PRICING;
+  const config = normalizePricing(raw);
+  const versions = readThresholdHistory(raw);
+  return versions.length ? { ...config, deliveryThresholdVersions: versions } : config;
 }
 
 function pricingSnapshot(config = DEFAULT_PRICING) {
-  const calculated = calculatePricing(config);
+  const effective = config.deliveryThresholdVersions?.length
+    ? { ...config, deliveryThreshold: thresholdForCycle(config.deliveryThreshold, bangkokDateKey(new Date()), config.deliveryThresholdVersions) } : config;
+  const calculated = calculatePricing(effective);
   return { ...calculated.config, monthly: calculated.monthly, annual: calculated.annual };
 }
 

@@ -1,0 +1,228 @@
+/* Unified Superadmin collapsible setting cards.
+   Status stays visible while the complete original form remains mounted. */
+.platform-shell .platform-card-collapsible {
+  border-radius: 19px;
+  border-color: #deebe2;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(16, 47, 30, .055);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.platform-shell .platform-card-collapsible:hover {
+  border-color: #bfdaca;
+}
+.platform-shell .platform-card-collapsible[data-expanded="true"] {
+  box-shadow: 0 12px 34px rgba(16, 47, 30, .08);
+}
+.platform-shell .platform-card-accordion-head.platform-google-api-title {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.platform-shell .platform-card-accordion-heading {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  line-height: 1.35;
+}
+.platform-shell .platform-card-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  padding: 2px 0;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: #163b29;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.platform-shell .platform-card-accordion-trigger:focus-visible {
+  outline: 3px solid #16a05a;
+  outline-offset: 4px;
+}
+.platform-shell .platform-card-accordion-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+.platform-shell .platform-card-accordion-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #163b29;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+.platform-shell .platform-card-accordion-title > i {
+  width: 39px;
+  height: 39px;
+  flex: 0 0 39px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--platform-section-soft, #eef8f2);
+  color: var(--platform-section-accent, #148547);
+  font-size: 19px;
+}
+.platform-shell .platform-card-accordion-description {
+  padding-left: 51px;
+  color: #687d70;
+  font-size: 12.5px;
+  line-height: 1.65;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.platform-shell .platform-card-accordion-trailing {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+.platform-shell .platform-card-accordion-trailing > .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 220px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.4;
+  color: var(--platform-section-accent, #167c44);
+  border: 1px solid color-mix(in srgb, var(--platform-section-accent, #167c44) 20%, transparent);
+  background: var(--platform-section-soft, #eff9f2);
+  white-space: normal;
+  text-align: center;
+}
+.platform-shell .platform-card-accordion-trailing > .badge.is-error {
+  color: #a6531f;
+  background: #fff6ec;
+  border-color: #f8dbbd;
+}
+.platform-shell .platform-card-accordion-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: #275d3d;
+  background: #f1f8f4;
+  border: 1px solid #dbeee1;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.platform-shell .platform-card-accordion-action > i {
+  width: auto;
+  height: auto;
+  display: inline;
+  background: transparent;
+  border-radius: 0;
+  color: inherit;
+  font-size: 13px;
+  transition: transform .18s ease;
+}
+.platform-shell .platform-card-accordion-trigger[aria-expanded="true"] .platform-card-accordion-action {
+  background: #e8f6ed;
+  border-color: #b9dfc5;
+}
+.platform-shell .platform-card-accordion-trigger[aria-expanded="true"] .platform-card-accordion-action > i {
+  transform: rotate(180deg);
+}
+.platform-shell .platform-card-accordion-trigger:hover .platform-card-accordion-action {
+  background: #e3f3e9;
+  border-color: #b6dcc4;
+}
+.platform-shell .platform-card-accordion-panel {
+  margin-top: 18px;
+  padding-top: 20px;
+  border-top: 1px solid #e4eee7;
+  min-width: 0;
+}
+.platform-shell .platform-card-accordion-panel[hidden] {
+  display: none !important;
+}
+.platform-shell .stripe-platform-config-card {
+  --platform-section-accent: #118749;
+  --platform-section-soft: #ebf8f0;
+}
+.platform-shell [data-stripe-connect-settings] {
+  --platform-section-accent: #0d8072;
+  --platform-section-soft: #eaf7f4;
+}
+.platform-shell .platform-scope-card.platform-card-collapsible {
+  --platform-section-accent: #60758c;
+  --platform-section-soft: #f1f5f9;
+}
+
+@media (max-width: 760px) {
+  .platform-shell .platform-card-accordion-trigger {
+    position: relative;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .platform-shell .platform-card-accordion-copy {
+    flex: 1 1 100%;
+    padding-right: 44px;
+  }
+  .platform-shell .platform-card-accordion-trailing {
+    width: 100%;
+    justify-content: flex-start;
+    padding-left: 51px;
+    padding-right: 44px;
+    gap: 8px;
+  }
+  .platform-shell .platform-card-accordion-trailing > .badge {
+    max-width: 100%;
+  }
+  .platform-shell .platform-card-accordion-action {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+  }
+}
+@media (max-width: 460px) {
+  .platform-shell .platform-card-accordion-title {
+    font-size: 15px;
+    gap: 10px;
+  }
+  .platform-shell .platform-card-accordion-title > i {
+    width: 35px;
+    height: 35px;
+    flex-basis: 35px;
+    font-size: 17px;
+  }
+  .platform-shell .platform-card-accordion-description,
+  .platform-shell .platform-card-accordion-trailing {
+    padding-left: 45px;
+  }
+  .platform-shell .platform-card-accordion-panel {
+    margin-top: 15px;
+    padding-top: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .platform-shell .platform-card-collapsible,
+  .platform-shell .platform-card-accordion-action > i {
+    transition: none;
+  }
+}

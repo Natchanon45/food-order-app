@@ -1,3 +1,5 @@
+import { DynamicField } from "@/components/DynamicField";
+import "@/ui/PlatformOwnersPage-dynamic.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
@@ -343,32 +345,41 @@ export function PlatformOwnersPage() {
           </div>
           <form id="ownerForm" className="owner-modal-form" onSubmit={submit}>
             <div className="field">
-              <label htmlFor="ownerDisplayName">{t("platform_owners.modal.display_name")}</label>
-              <input ref={displayNameRef} className="input" id="ownerDisplayName" maxLength="120" autoComplete="name" required value={displayName} onChange={e => setDisplayName(e.target.value)} />
+              <DynamicField id="ownerDisplayName" label={t("platform_owners.modal.display_name")}
+                value={displayName} className="platform-owner-dynamic-field">
+                <input ref={displayNameRef} className="input" id="ownerDisplayName" placeholder=" " maxLength="120" autoComplete="name" required value={displayName} onChange={e => setDisplayName(e.target.value)} />
+              </DynamicField>
             </div>
             <div className="field">
-              <label htmlFor="ownerEmail">{t("platform_owners.modal.email")}</label>
-              <input className="input" id="ownerEmail" type="email" maxLength="160" autoComplete="username" required disabled={mode === "edit"} value={email} onChange={e => setEmail(e.target.value)} />
+              <DynamicField id="ownerEmail" label={t("platform_owners.modal.email")}
+                value={email} className="platform-owner-dynamic-field">
+                <input className="input" id="ownerEmail" placeholder=" " type="email" maxLength="160" autoComplete="username" required disabled={mode === "edit"} value={email} onChange={e => setEmail(e.target.value)} />
+              </DynamicField>
             </div>
             {mode === "create" && selected?.onboardingRequired === true ? (
               <div className="field" data-new-store-billing-cycle>
-                <label htmlFor="ownerBillingPlan">แพ็กเกจสำหรับร้านใหม่ (เริ่มทดลองใช้ฟรีหนึ่งเดือนเมื่อบันทึก Owner)</label>
-                <select id="ownerBillingPlan" className="input" required value={planCode} onChange={e => setPlanCode(e.target.value)}>
-                  <option value="monthly">รายเดือน</option>
-                  <option value="yearly">รายปี (หลังทดลองใช้ฟรี 12 เดือน)</option>
-                </select>
+                <DynamicField id="ownerBillingPlan" label="แพ็กเกจสำหรับร้านใหม่"
+                  value={planCode} kind="select" className="platform-owner-dynamic-field"
+                  description="เริ่มทดลองใช้ฟรีหนึ่งเดือนเมื่อบันทึก Owner">
+                  <select id="ownerBillingPlan" className="input" required value={planCode} onChange={e => setPlanCode(e.target.value)}>
+                    <option value="monthly">รายเดือน</option>
+                    <option value="yearly">รายปี (หลังทดลองใช้ฟรี 12 เดือน)</option>
+                  </select>
+                </DynamicField>
               </div>
             ) : null}
             {mode !== "edit" ? <div id="ownerPasswordFields" className="grid grid-2 owner-password-grid">
               <div className="field">
-                <label htmlFor="ownerPassword">{t("platform_owners.modal.password")}</label>
-                <input className="input" id="ownerPassword" type="password" minLength="8" autoComplete="new-password" required value={secret} onChange={e => setSecret(e.target.value)} />
-                <small>{t("platform_owners.modal.password_help")}</small>
+                <DynamicField id="ownerPassword" label={t("platform_owners.modal.password")}
+                  value={secret} className="platform-owner-dynamic-field" description={t("platform_owners.modal.password_help")}>
+                  <input className="input" id="ownerPassword" type="password" minLength="8" placeholder=" " autoComplete="new-password" required value={secret} onChange={e => setSecret(e.target.value)} />
+                </DynamicField>
               </div>
               <div className="field">
-                <label htmlFor="ownerPasswordConfirm">{t("platform_owners.modal.password_confirm")}</label>
-                <input ref={confirmSecretRef} className="input" id="ownerPasswordConfirm" type="password" minLength="8" autoComplete="new-password" required value={confirmSecret} onChange={e => setConfirmSecret(e.target.value)} />
-                <small>{t("platform_owners.modal.password_confirm_help")}</small>
+                <DynamicField id="ownerPasswordConfirm" label={t("platform_owners.modal.password_confirm")}
+                  value={confirmSecret} className="platform-owner-dynamic-field" description={t("platform_owners.modal.password_confirm_help")}>
+                  <input ref={confirmSecretRef} className="input" id="ownerPasswordConfirm" type="password" minLength="8" placeholder=" " autoComplete="new-password" required value={confirmSecret} onChange={e => setConfirmSecret(e.target.value)} />
+                </DynamicField>
               </div>
             </div> : null}
             {formError ? <div className="upload-error owner-form-error" id="ownerFormError">{formError}</div> : <div className="upload-error owner-form-error" id="ownerFormError" hidden></div>}
