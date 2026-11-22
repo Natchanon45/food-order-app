@@ -48,7 +48,13 @@ service cloud.firestore {
           'slipVerificationStatus', 'slipCheckStatus', 'paymentReviewRequired',
           'paymentReviewedAt', 'paymentReviewedByUid', 'paymentReviewedByEmail',
           'paymentReviewedByRole', 'kitchenReleasedAt', 'paymentMethod',
-          'paymentSlipPath', 'totalAmount', 'subtotalAmount', 'deliveryFee', 'items'
+          'paymentSlipPath', 'totalAmount', 'subtotalAmount', 'deliveryFee', 'items',
+          'paymentQrMode', 'paymentQrStartedAtUTC', 'paymentQrExpiresAtUTC',
+          'paymentQrReceiverRevision', 'promptPayQRRecipientId',
+          'promptPayQRRecipientName', 'paymentQrCapabilityDigest',
+          'paymentQrSlipFallbackStatus', 'companionKitchenRelease',
+          'companionKitchenAdmittedAt',
+          'paymentQrRecipientChanged', 'bankSlipRecheck'
         ]);
     }
     function validTakeawayOrder() { return validOrderBase() && request.resource.data.orderType == 'takeaway' && request.resource.data.queueNo is string && request.resource.data.pickupStatus == 'waiting' && request.resource.data.paymentStatus in ['unpaid', 'pending_verification'] && ((request.resource.data.customerName is string && request.resource.data.customerName.size() > 0) || (request.resource.data.customerPhone is string && request.resource.data.customerPhone.size() > 0)); }
@@ -320,6 +326,7 @@ service cloud.firestore {
     match /stripeWalletSandboxControl/{path=**} { allow read, write: if false; }
     match /paymentCompanionTenants/{path=**} { allow read, write: if false; }
     match /paymentCompanionDeviceKeys/{path=**} { allow read, write: if false; }
+    match /paymentCompanionSlipHashes/{path=**} { allow read, write: if false; }
 
     match /tenants/{tenantId} {
       allow read: if true; allow create, update, delete: if superAdminRole();
@@ -391,6 +398,7 @@ service cloud.firestore {
       // Hybrid invoice ledger is server-authoritative: browser users can
       // inspect only their own tenant's billing records, never create/alter
       // invoice amounts, payment status, period seals or immutable snapshots.
+      match /paymentCompanionLateSlipAudit/{orderId} { allow read, write: if false; }
       match /hybridBillingPeriods/{cycleId} {
         allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
         allow create, update, delete: if false;

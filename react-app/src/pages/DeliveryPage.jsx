@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import "@/ui/companion-qr.css";
 import { createPortal } from "react-dom";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParams } from "react-router-dom";
@@ -31,6 +32,7 @@ import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
+const publicCompanionQrAvailability = httpsCallable(functions, "getPublicCompanionQrAvailability");
 const verifyDeliveryPaymentSlip = httpsCallable(functions, "verifyDeliveryPaymentSlip", { timeout: 70000 });
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
@@ -161,6 +163,7 @@ export function DeliveryPage() {
   const [slipFile, setSlipFile] = useState(null);
   const [slipPreview, setSlipPreview] = useState("");
   const [paymentLocked, setPaymentLocked] = useState(false);
+  const [companionQrEnabled,setCompanionQrEnabled]=useState(false);
   const [lockedTotal, setLockedTotal] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [promptPayPng, setPromptPayPng] = useState({ source: "", url: "" });
@@ -205,6 +208,18 @@ export function DeliveryPage() {
     })();
     return () => { alive = false; };
   }, [slug]);
+
+  // The original pay-first flow remains the default; no client flag may
+  // unlock scan-after-confirm until the active receiver is server-verified.
+  useEffect(()=>{
+    let alive=true;setCompanionQrEnabled(false);
+    if(!tenant?.id)return()=>{alive=false};
+    publicCompanionQrAvailability({tenantId:tenant.id}).then(({data})=>{
+      if(alive)setCompanionQrEnabled(data?.enabled===true&&
+        data?.mode==="confirmed_order_5m"&&data.provider==="lalamove"&&data.paymentMethod==="promptpay");
+    }).catch(()=>{if(alive)setCompanionQrEnabled(false)});
+    return()=>{alive=false};
+  },[tenant?.id]);
 
   // Live settings update the storefront immediately after an emergency
   // close/reopen. Time-based transitions also tick without a page reload.
@@ -680,6 +695,10 @@ export function DeliveryPage() {
     return true;
   };
 
+  const confirmedQrFlow=companionQrEnabled&&usesLalamove&&paymentMethod==="promptpay"&&
+    !paymentLocked&&
+    !freeShippingApplied&&freeGiftIds.size===0&&
+    Math.abs(Number(baseDeliveryFee||0)-Number(deliveryFee||0))<0.009;
   const submit = async () => {
     if (!tenant || submitting) return;
     if (!validateBase()) return;
@@ -689,13 +708,19 @@ export function DeliveryPage() {
       showStorefrontToast(t("delivery.opening_hours.order_unavailable"), "error");
       return;
     }
-    if (paymentMethod === "promptpay" && !paymentLocked) {
+    if (confirmedQrFlow) {
+      const confirmed=await sweetConfirm(
+        "ยืนยันคำสั่งซื้อตามยอดที่แสดงหรือไม่? ระบบจะสร้างออเดอร์ก่อน แล้วแสดง QR PromptPay อายุ 5 นาที ไม่ตัดยอดหรือแจ้งครัวจนกว่ามีหลักฐานที่ตรวจผ่าน",
+        {title:"ยืนยันคำสั่งซื้อ",confirmText:"สร้างออเดอร์และแสดง QR",cancelText:"กลับ",type:"warning"});
+      if(!confirmed)return;
+    }
+    if (paymentMethod === "promptpay" && !confirmedQrFlow && !paymentLocked) {
       setLockedTotal({ subtotal, deliveryFee, total });
       setPaymentLocked(true);
       showStorefrontToast(t("delivery.checkout.payment_lock.locked_done", { total: money(total) }));
       return;
     }
-    if (paymentMethod === "promptpay" && !slipFile) {
+    if (paymentMethod === "promptpay" && !confirmedQrFlow && !slipFile) {
       showStorefrontToast(t("delivery.checkout.payment.slip_required_toast"), "error"); return;
     }
     const orderId = preparePublicOrderId(tenant, "delivery");
@@ -727,9 +752,9 @@ export function DeliveryPage() {
           console.info("DELIVERY_LALAMOVE_QUOTE_REFRESH_RESULT", latest.reason);
         }
       }
-      const slip = paymentMethod === "promptpay" ? await uploadPublicPaymentSlip(tenant, slipFile, orderId) : { path: "" };
+      const slip = paymentMethod === "promptpay" && !confirmedQrFlow ? await uploadPublicPaymentSlip(tenant, slipFile, orderId) : { path: "" };
       let slipCheckStatus = "";
-      if (paymentMethod === "promptpay") {
+      if (paymentMethod === "promptpay" && !confirmedQrFlow) {
         const response = await verifyDeliveryPaymentSlip({
           tenantId: tenant.id, orderId, slipPath: slip.path, amount: total,
           deliveryFee, items: cart.map(item => ({ id: item.id, qty: item.qty })),
@@ -822,6 +847,7 @@ export function DeliveryPage() {
         subtotalAmount: subtotal, totalAmount: total,
         paymentMethod, paymentStatus: paymentMethod === "promptpay" ? "pending_verification" : "unpaid",
         paymentSlipUrl: "", paymentSlipPath: slip.path || "",
+        ...(confirmedQrFlow?{paymentQrMode:"confirmed_order_5m"}:{}),
         ...(paymentMethod === "promptpay" ? { slipCheckStatus, paymentReviewRequired: slipCheckStatus === "manual_review" } : {}),
         status: "pending", note: orderNote.trim(), items: [...paidItems, ...giftItems],
         deliveryLatitude: deliveryLocation.latitude, deliveryLongitude: deliveryLocation.longitude,
@@ -863,7 +889,15 @@ export function DeliveryPage() {
       }
 
       submittingToBackend = true;
-      await createPublicDeliveryOrder(tenant, payload, { menus, settings });
+      const created=await createPublicDeliveryOrder(tenant, payload, { menus, settings });
+      if(confirmedQrFlow){
+        if(created?.paymentQrMode!=="confirmed_order_5m"||
+          !/^[a-f0-9]{64}$/.test(created?.paymentCorrectionCapability||""))
+          throw new Error("DELIVERY_QR_CAPABILITY_UNCONFIRMED");
+        try{
+          sessionStorage.setItem("penguin:companion-qr-cap:"+tenant.id+":"+orderId,created.paymentCorrectionCapability);
+        }catch{showStorefrontToast("ไม่สามารถบันทึกสิทธิ์แนบสลิปสำรองในเบราว์เซอร์นี้ได้ กรุณาเก็บเลขออเดอร์และติดต่อร้านหาก QR หมดอายุ","warning");}
+      }
 
       // Do not rewrite saved-address coordinates as a side effect of checkout.
       // Customer address-book pins change only through explicit Save Address.
@@ -916,7 +950,7 @@ export function DeliveryPage() {
   if (!stylesReady || loading || (tenant && !customerProfileInitialized && !loadError)
     || (tenant && !settingsLiveReady && !loadError)) return <PageReadyOverlay />;
   const shopName = String(settings.orderDeliveryShopName || settings.shopName || tenant?.name || t("shared.store.fallback_name") || "PENGUIN").trim();
-  const locked = paymentMethod === "promptpay" && paymentLocked;
+  const locked = paymentMethod === "promptpay" && paymentLocked && !confirmedQrFlow;
 
   return <>
     <PublicStorefrontHeader title={t("delivery.checkout.header.title")} badge={t("delivery.checkout.header.badge")} />
@@ -1187,11 +1221,12 @@ export function DeliveryPage() {
 
               {paymentMethod === "promptpay" ? <div id="promptPaySection" className="card" style={{ marginTop: 12, textAlign: "center" }}>
                 <h3 style={{ marginTop: 0 }}><i className="bi bi-qr-code app-icon"></i><span>{t("delivery.checkout.payment.promptpay_title")}</span></h3>
-                {!paymentLocked && !promptPayQr.src ? <div id="promptPayPlaceholder" className="empty" style={{ padding: "24px 12px" }}>{promptPayQr.error || t("delivery.checkout.payment.add_items_for_qr")}</div> : null}
-                {paymentLocked && promptPayQr.src ? <img id="promptPayQr" src={promptPayQr.src} width="220" height="220" alt={t("delivery.checkout.payment.qr_alt")} /> : null}
-                {paymentLocked && promptPayQr.error ? <div className="empty">{promptPayQr.error}</div> : null}
+                {!paymentLocked && !promptPayQr.src && !confirmedQrFlow ? <div id="promptPayPlaceholder" className="empty" style={{ padding: "24px 12px" }}>{promptPayQr.error || t("delivery.checkout.payment.add_items_for_qr")}</div> : null}
+                {paymentLocked && !confirmedQrFlow && promptPayQr.src ? <img id="promptPayQr" src={promptPayQr.src} width="220" height="220" alt={t("delivery.checkout.payment.qr_alt")} /> : null}
+                {paymentLocked && !confirmedQrFlow && promptPayQr.error ? <div className="empty">{promptPayQr.error}</div> : null}
                 {paymentLocked ? <><div><strong id="promptPayAmount">{money(total)} {t("delivery.checkout.units.baht")}</strong></div><div id="promptPayName" className="menu-category">{settings.promptPayName || settings.promptPayAccountName || settings.shopName || ""}</div></> : null}
-                <div id="paymentLockPanel" className="payment-lock-panel">
+                {confirmedQrFlow?<div className="companion-qr-preview-note" role="status"><i className="bi bi-shield-check" aria-hidden="true"/><div><strong>ยืนยันออเดอร์ก่อน แล้วค่อยสแกน QR</strong><small>QR จะสร้างจากข้อมูลรับเงินที่ร้านยืนยัน เริ่มนับ 5 นาทีหลังบันทึกออเดอร์ ไม่ต้องแนบสลิปก่อนยืนยันคำสั่งซื้อ หากตรวจแจ้งเงินเข้าไม่ได้ สามารถแนบสลิปต้นฉบับหลัง QR หมดอายุ</small></div></div>:null}
+                {!confirmedQrFlow?<><div id="paymentLockPanel" className="payment-lock-panel">
                   {!paymentLocked ? <div className="payment-lock-state" id="paymentLockState"><strong>{t("delivery.checkout.payment_lock.unlocked_title")}</strong><span>{t("delivery.checkout.payment_lock.unlocked_help")}</span></div> : <div className="payment-lock-summary" id="paymentLockSummary">
                     <div><span>{t("delivery.checkout.summary.food_subtotal")}</span><strong id="lockedSubtotal">{money(lockedTotal?.subtotal ?? subtotal)}</strong></div>
                     <div><span>{t("delivery.checkout.summary.delivery_fee")}</span><strong id="lockedDeliveryFee">{money(lockedTotal?.deliveryFee ?? deliveryFee)}</strong></div>
@@ -1214,7 +1249,7 @@ export function DeliveryPage() {
                     <div className="payment-slip-error" id="paymentSlipError" hidden></div>
                     {slipFile ? <button type="button" className="btn btn-sm payment-slip-remove-icon" id="removePaymentSlip" aria-label={t("delivery.checkout.payment.remove_slip")} title={t("delivery.checkout.payment.remove_slip")} onClick={clearSlip}><i className="bi bi-x-lg app-icon" aria-hidden="true"></i></button> : null}
                   </div>
-                  <small className="menu-category delivery-payment-slip-review-note" id="paymentSlipReviewNote">{t("delivery.checkout.payment.review_note")}</small></> : null}
+                  <small className="menu-category delivery-payment-slip-review-note" id="paymentSlipReviewNote">{t("delivery.checkout.payment.review_note")}</small></> : null}</>:null}
               </div> : null}
             </section>
           </div>
@@ -1226,7 +1261,7 @@ export function DeliveryPage() {
       <div><small>{t("delivery.checkout.summary.total_with_delivery")}</small><div style={{ fontSize: 20, fontWeight: 800 }}><span id="cartTotal">{money(total)}</span> {t("delivery.checkout.units.baht")}</div></div>
       <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting || !storeAcceptingOrders || !selectedAddressId || !deliveryLocation || Boolean(addressEditor)} onClick={submit}>
         <i className={"bi bi-" + (submitting ? "hourglass-split" : paymentMethod === "promptpay" && !paymentLocked ? "credit-card" : "check-lg") + " app-icon"}></i>
-        <span>{submitting ? t("delivery.checkout.submit.sending") : paymentMethod === "promptpay" && !paymentLocked ? t("delivery.checkout.summary.review_and_pay") : t("delivery.checkout.summary.submit_order")}</span>
+        <span>{submitting ? t("delivery.checkout.submit.sending") : confirmedQrFlow ? "ยืนยันคำสั่งซื้อและสร้าง QR 5 นาที" : paymentMethod === "promptpay" && !paymentLocked ? t("delivery.checkout.summary.review_and_pay") : t("delivery.checkout.summary.submit_order")}</span>
       </button>
     </div>
     <PublicStorefrontFooter />

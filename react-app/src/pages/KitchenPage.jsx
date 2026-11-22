@@ -213,6 +213,11 @@ function KitchenOrderCard({
         </li>
       ))}
     </ul>
+    {order.companionKitchenRelease?.status==="admitted_unverified"&&order.paymentStatus!=="paid"&&
+      <div className="card" role="status" style={{marginTop:10,padding:"10px 12px",background:"#fff8e9",border:"1px solid #efd9a8",boxShadow:"none"}}>
+        <strong>BankAlert ทดสอบ · รับออเดอร์เข้าครัวเบื้องต้น</strong>
+        <div className="menu-category">ยังไม่ยืนยันรับเงิน และยังไม่อนุญาตเรียกผู้จัดส่ง Lalamove กรุณาประสานแคชเชียร์ตรวจรับเงินจริง</div>
+      </div>}
     <DeliverySummary order={order} t={t} money={money} />
     <LalamoveNotice order={order} t={t} />
     {order.note ? <p><strong>{t("kitchen.order.order_note")}</strong> {order.note}</p> : null}

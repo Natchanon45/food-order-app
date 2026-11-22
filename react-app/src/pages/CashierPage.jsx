@@ -274,6 +274,11 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
     </div>
     <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.delivery.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
     {order.paymentStatus === "pending_verification" && order.paymentMethod === "promptpay" && <CompanionCashierReview key={order.id} orderId={order.id} notify={showToast} />}
+    {order.companionKitchenRelease?.status==="admitted_unverified"&&order.paymentStatus!=="paid"&&
+      <div className="card" role="status" style={{marginTop:10,padding:"10px 12px",background:"#fff8e9",border:"1px solid #efd9a8",boxShadow:"none"}}>
+        <strong>BankAlert UAT · ส่งเข้าครัวแล้ว (ยังไม่ยืนยันชำระ)</strong>
+        <div className="menu-category">ตรวจการรับเงินจริงแยกต่างหาก Lalamove ยังไม่สามารถเรียกจัดส่งได้</div>
+      </div>}
     <LalamoveDispatch order={order} t={t} money={money} busy={busy} onQuote={actions.quote} onPlace={actions.place} onRefresh={actions.refresh} onCancel={actions.cancelLalamove} />
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>

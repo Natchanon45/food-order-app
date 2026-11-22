@@ -4,6 +4,7 @@ const {getFirestore}=require("firebase-admin/firestore");
 const {randomBytes,randomUUID}=require("node:crypto");
 const policy=require("./payment-companion-policy");
 const binding=require("./payment-companion-receiver");
+const kitchenPolicy=require("./payment-companion-kitchen-policy");
 const options={region:"asia-southeast1",timeoutSeconds:30};
 const flags={bankConfirmed:false,paymentVerified:false,canSettleInvoice:false,canReleaseKitchen:false};
 function pilotTenant(){
@@ -63,14 +64,15 @@ exports.changePaymentCompanionDevice=onCall(options,async request=>{
  });
 });
 exports.setPaymentCompanionReceiver=onCall(options,async request=>{
- const db=getFirestore(),{enabled,bankCode,accountLast4}=request.data||{};
+ const db=getFirestore(),{enabled,bankCode,accountLast4,settingsRevision}=request.data||{};
  if(typeof enabled!=="boolean"||enabled&&(typeof bankCode!=="string"||!/^\d{4}$/.test(accountLast4||"")))throw error("invalid-argument","COMPANION_RECEIVER_INVALID");
  return db.runTransaction(async tx=>{
   const tenantId=await owner(db,request.auth,tx),root=scope(db,tenantId),storeRef=db.collection("tenants").doc(tenantId).collection("settings").doc("store");
   const [store,meta]=await Promise.all([tx.get(storeRef),tx.get(root)]);
   if(enabled)requirePilot(tenantId);
   const recipient=policy.receiver(store.data()),revision=binding.receiverRevision(store);
-  if(enabled&&(!revision||recipient.bankCode!==bankCode||recipient.accountLast4!==accountLast4))throw error("failed-precondition","COMPANION_RECEIVER_MUST_MATCH_STORE_SETTINGS");
+  if(enabled&&(!revision||!policy.HEX.test(settingsRevision||"")||settingsRevision!==revision||
+    recipient.bankCode!==bankCode||recipient.accountLast4!==accountLast4))throw error("failed-precondition","COMPANION_RECEIVER_MUST_MATCH_STORE_SETTINGS");
   const prior=meta.data()?.receiver;
   const linked=enabled?{enabled:true,revision,bankCode,accountLast4,confirmedAtMs:prior?.enabled===true&&prior.revision===revision?prior.confirmedAtMs:Date.now(),confirmedByUid:request.auth.uid}:{enabled:false,disabledAtMs:Date.now(),confirmedByUid:request.auth.uid};
   tx.set(root,{receiver:linked},{mergeFields:["receiver"]});
@@ -92,7 +94,11 @@ async function candidateSnapshot(db,tenantId,tx){
  const eligible=orders.docs.flatMap(d=>{
   const o=d.data(),createdMs=o.createdAt?.toMillis?.(),amountSatang=Math.round(o.totalAmount*100);
   if(o.orderType!=="delivery"||o.paymentMethod!=="promptpay"||o.paymentStatus!=="pending_verification"||o.status!=="pending"||!Number.isFinite(createdMs)||createdMs>now+120000||!Number.isFinite(o.totalAmount)||!Number.isSafeInteger(amountSatang)||amountSatang<=0||Math.abs(o.totalAmount*100-amountSatang)>0.00001)return [];
-  return [{id:d.id,amountSatang,createdMs,hasSlip:typeof o.paymentSlipPath==="string"&&o.paymentSlipPath.startsWith("tenants/"+tenantId+"/payment-slips/"+d.id+"/")}];
+  return [{id:d.id,amountSatang,createdMs,
+    paymentQrMode:o.paymentQrMode==="confirmed_order_5m"?"confirmed_order_5m":"legacy",
+    qrStartedMs:Date.parse(o.paymentQrStartedAtUTC||""),
+    qrExpiryMs:Date.parse(o.paymentQrExpiresAtUTC||""),
+    hasSlip:typeof o.paymentSlipPath==="string"&&o.paymentSlipPath.startsWith("tenants/"+tenantId+"/payment-slips/"+d.id+"/")}];
  });
  const truncated=orders.size>200||notices.size>200||devices.size>3||eligible.length>100;
  // A notice cannot be considered after revocation, reconfiguration, or
@@ -103,8 +109,21 @@ async function candidateSnapshot(db,tenantId,tx){
  for(const {m,claim} of claimed)if(claim&&claim.orderId!==m.orderId){
   m.status="ambiguous";delete m.notificationId;delete m.source;delete m.timeDifferenceSeconds;
  }
- return {root,tenant,recipient,link,rows,validRows,eligible,matches,matchStatus:!recipient.enabled?"receiver_unconfirmed":truncated?"bounded_unavailable":"advisory"};
+ return {root,tenant,store,meta:meta.data()||{},recipient,link,rows,validRows,eligible,matches,matchStatus:!recipient.enabled?"receiver_unconfirmed":truncated?"bounded_unavailable":"advisory"};
 }
+exports.setCompanionAutoKitchenConsent=onCall(options,async request=>{
+ const db=getFirestore(),enabled=request.data?.enabled;
+ if(typeof enabled!=="boolean")throw error("invalid-argument","COMPANION_AUTO_KITCHEN_INVALID");
+ return db.runTransaction(async tx=>{
+  const tenantId=await owner(db,request.auth,tx),root=scope(db,tenantId),storeRef=db.collection("tenants").doc(tenantId).collection("settings").doc("store");
+  const [meta,store]=await Promise.all([tx.get(root),tx.get(storeRef)]);
+  const link=meta.data()?.receiver,recipient=binding.receiverState(store,link,tenantId===pilotTenant());
+  if(enabled&&(kitchenPolicy.configuredUatTenant()!==tenantId||recipient.enabled!==true))throw error("failed-precondition","COMPANION_AUTO_KITCHEN_UAT_ONLY");
+  const status=enabled?{enabled:true,revision:link.revision,confirmedByUid:request.auth.uid,confirmedAtMs:Date.now()}:{enabled:false,disabledByUid:request.auth.uid,disabledAtMs:Date.now()};
+  tx.set(root,{autoKitchenConsent:status},{mergeFields:["autoKitchenConsent"]});
+  return {saved:true,enabled:enabled&&kitchenPolicy.consentState(link,status,recipient,kitchenPolicy.configuredUatTenant()===tenantId),paymentVerified:false,bankConfirmed:false,canSettleInvoice:false};
+ });
+});
 exports.getPaymentCompanionCashierReview=onCall(options,async request=>{
  const db=getFirestore(),tenantId=await staff(db,request.auth,null,["owner","admin","cashier"]);
  const orderId=request.data?.orderId;
@@ -112,7 +131,10 @@ exports.getPaymentCompanionCashierReview=onCall(options,async request=>{
  if(pilotTenant()!==tenantId)return {enabled:false,item:null,...flags};
  const context=await candidateSnapshot(db,tenantId),match=context.matches.find(m=>m.orderId===orderId),audit=(await context.root.collection("reviews").doc(orderId).get()).data();
  const notice=context.validRows.find(n=>n.id===match?.notificationId),eligible=context.eligible.find(o=>o.id===orderId);
- const canRecord=context.matchStatus==="advisory"&&match?.status==="candidate"&&match.hasSlip===true&&!!notice&&!!eligible&&notice.receivedMs<eligible.createdMs&&!audit;
+ const arrivedInWindow=eligible?.paymentQrMode==="confirmed_order_5m"?
+   notice?.receivedMs>=eligible.createdMs&&notice.receivedMs<=eligible.qrExpiryMs+60000:
+   notice?.receivedMs<eligible?.createdMs;
+ const canRecord=context.matchStatus==="advisory"&&match?.status==="candidate"&&match.hasSlip===true&&!!notice&&!!eligible&&arrivedInWindow&&!audit;
  return {enabled:true,item:match||null,canRecord,matchStatus:context.matchStatus,review:audit?{status:audit.status,recordedAtMs:audit.recordedAtMs,amountSatang:audit.amountSatang,notificationId:audit.notificationId}:null,...flags};
 });
 exports.recordPaymentCompanionCashierReview=onCall(options,async request=>{
@@ -128,8 +150,11 @@ exports.recordPaymentCompanionCashierReview=onCall(options,async request=>{
    if(previous.notificationId!==notificationId||claim.data()?.orderId!==orderId)throw error("failed-precondition","COMPANION_REVIEW_CONFLICT");
    return {recorded:true,alreadyRecorded:true,...flags};
   }
-  const matched=context.matches.find(m=>m.orderId===orderId),notice=context.validRows.find(n=>n.id===notificationId),o=order.data();
-  if(context.matchStatus!=="advisory"||matched?.status!=="candidate"||matched.notificationId!==notificationId||!notice||notice.receivedMs>=o?.createdAt?.toMillis?.()||claim.exists||!matched.hasSlip||o?.paymentStatus!=="pending_verification"||o.status!=="pending"||matched.amountSatang!==Math.round(o.totalAmount*100)||o.createdAt?.toMillis?.()<context.link.confirmedAtMs)throw error("failed-precondition","COMPANION_REVIEW_UNCONFIRMED");
+  const matched=context.matches.find(m=>m.orderId===orderId),notice=context.validRows.find(n=>n.id===notificationId),o=order.data(),eligible=context.eligible.find(o=>o.id===orderId);
+  const arrivedInWindow=eligible?.paymentQrMode==="confirmed_order_5m"?
+    notice?.receivedMs>=eligible.createdMs&&notice.receivedMs<=eligible.qrExpiryMs+60000:
+    notice?.receivedMs<eligible?.createdMs;
+  if(context.matchStatus!=="advisory"||matched?.status!=="candidate"||matched.notificationId!==notificationId||!notice||!arrivedInWindow||claim.exists||!matched.hasSlip||o?.paymentStatus!=="pending_verification"||o.status!=="pending"||matched.amountSatang!==Math.round(o.totalAmount*100)||o.createdAt?.toMillis?.()<context.link.confirmedAtMs)throw error("failed-precondition","COMPANION_REVIEW_UNCONFIRMED");
   const record={status:"cashier_observation_reviewed_unverified",tenantId,orderId,notificationId,amountSatang:matched.amountSatang,receiverRevision:context.link.revision,recordedByUid:request.auth.uid,recordedAtMs:Date.now(),...flags};
   tx.create(reviewRef,record);tx.create(claimRef,{orderId,notificationId,recordedAtMs:record.recordedAtMs});
   return {recorded:true,alreadyRecorded:false,...flags};
@@ -140,16 +165,18 @@ exports.getPaymentCompanionDashboard=onCall(options,async request=>{
  const root=scope(db,tenantId),tenant=db.collection("tenants").doc(tenantId);
  const [devices,notices,store,meta]=await Promise.all([root.collection("devices").orderBy("createdMs","desc").limit(100).get(),root.collection("notices").orderBy("receivedMs","desc").limit(201).get(),tenant.collection("settings").doc("store").get(),root.get()]);
  const enabled=pilotTenant()===tenantId;
- let recipient=binding.receiverState(store,meta.data()?.receiver,enabled);
+ let recipient={...binding.receiverState(store,meta.data()?.receiver,enabled),settingsRevision:binding.receiverRevision(store)};
+ const autoAvailable=kitchenPolicy.configuredUatTenant()===tenantId;
+ const autoKitchenEnabled=kitchenPolicy.consentState(meta.data()?.receiver,meta.data()?.autoKitchenConsent,recipient,autoAvailable);
  const rows=notices.docs.map(d=>d.data());
  const items=rows.slice(0,50).map(row=>({id:row.id,deviceId:row.deviceId,deviceLabel:row.deviceLabel,amountSatang:row.amountSatang,source:row.source,receiverSuffix:row.receiverSuffix,bankTimeUTC:new Date(row.bankMs).toISOString(),receivedUTC:new Date(row.receivedMs).toISOString(),cashierPaymentConfirmed:false,...flags}));
  let matches=[],matchStatus="disabled";
  if(enabled){
   const context=await candidateSnapshot(db,tenantId);
-  matches=context.matches;matchStatus=context.matchStatus;recipient=context.recipient;
+  matches=context.matches;matchStatus=context.matchStatus;recipient={...context.recipient,settingsRevision:binding.receiverRevision(context.store)};
  }
 
- return {enabled,devices:devices.docs.map(d=>d.data()).filter(d=>!d.archivedMs).map(devicePublic),items,matches,matchStatus,receiver:recipient,apkDownloadAvailable:false,...flags};
+ return {enabled,autoKitchenAvailable:autoAvailable,autoKitchenEnabled,devices:devices.docs.map(d=>d.data()).filter(d=>!d.archivedMs).map(devicePublic),items,matches,matchStatus,receiver:recipient,apkDownloadAvailable:false,...flags};
 });
 function bearer(req){
  const value=req.get("authorization")||"";
@@ -205,3 +232,5 @@ exports.paymentCompanionNoticeIngest=onRequest(options,async(req,res)=>{
   return res.status(status).json({error:status===503?"COMPANION_NOTICE_STORE_UNCONFIRMED":status===422&&code!=="COMPANION_RAW_NOT_SUPPORTED"?"COMPANION_NOTICE_INVALID":code});
  }
 });
+
+exports.__kitchenInternal={candidateSnapshot,scope,pilotTenant};

@@ -14,7 +14,7 @@ const tenant=db.collection("tenants").doc(tenantId),root=db.collection("paymentC
 const auth={uid},exports={};
 class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
 const env={PENGUIN_PAYMENT_COMPANION_PILOT_ENABLED:"1",PENGUIN_PAYMENT_COMPANION_PILOT_TENANT_ID:tenantId};
-new Function("exports","require","process","Buffer",readFileSync("functions/payment-companion.js","utf8"))(exports,name=>({"firebase-functions/v2/https":{onCall:(_,fn)=>fn,onRequest:(_,fn)=>fn,HttpsError},"firebase-admin/firestore":{getFirestore:()=>db},"node:crypto":require("node:crypto"),"./payment-companion-policy":policy,"./payment-companion-receiver":require("./payment-companion-receiver")}[name]),{env},Buffer);
+new Function("exports","require","process","Buffer",readFileSync("functions/payment-companion.js","utf8"))(exports,name=>({"firebase-functions/v2/https":{onCall:(_,fn)=>fn,onRequest:(_,fn)=>fn,HttpsError},"firebase-admin/firestore":{getFirestore:()=>db},"node:crypto":require("node:crypto"),"./payment-companion-policy":policy,"./payment-companion-receiver":require("./payment-companion-receiver"),"./payment-companion-kitchen-policy":require("./payment-companion-kitchen-policy")}[name]),{env},Buffer);
 const call=(name,data={},actor=auth)=>exports[name]({auth:actor,data});
 const http=async(name,token,body,method="POST")=>{
  const response={set:()=>response,status:n=>{response.code=n;return response},json:value=>{response.data=value;return response}};
@@ -32,10 +32,11 @@ test("actual Firestore: owner pairing, three-device concurrency cap, replay prot
  const first=paired[0],token=first.pairingToken,key=policy.digest(token);
  assert.equal(first.showOnce,true);assert.equal((await db.collection("paymentCompanionDeviceKeys").doc(key).get()).exists,true);
  assert.equal((await http("paymentCompanionDeviceStatus",token,null,"GET")).code,200);
- const before=await call("getPaymentCompanionDashboard");assert.equal(before.receiver.enabled,false);
- await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"0000"}),{code:"failed-precondition"});
- await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890"},{uid:admin}),{code:"permission-denied"});
- const confirmed=await call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890"});assert.equal(confirmed.receiver.enabled,true);
+ const before=await call("getPaymentCompanionDashboard");assert.equal(before.receiver.enabled,false);const originalRevision=before.receiver.settingsRevision;assert.match(originalRevision,/^[a-f0-9]{64}$/);
+ await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"0000",settingsRevision:originalRevision}),{code:"failed-precondition"});
+ await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890",settingsRevision:originalRevision},{uid:admin}),{code:"permission-denied"});
+ await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890"}),{code:"failed-precondition"});
+ const confirmed=await call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890",settingsRevision:originalRevision});assert.equal(confirmed.receiver.enabled,true);
  const now=Date.now(),bank=new Date(now).toISOString();
  const notice={eventId:"a".repeat(64),source:"line_scb_connect",amount:"300.00",receiverSuffix:"X-7890",bankDisplayTime:bank,deviceObservedAt:new Date(now).toISOString()};
  const replies=await Promise.all([http("paymentCompanionNoticeIngest",token,notice),http("paymentCompanionNoticeIngest",token,notice)]);
@@ -80,7 +81,8 @@ test("actual Firestore: owner pairing, three-device concurrency cap, replay prot
  assert.equal(changed.matchStatus,"receiver_unconfirmed");
  await store.update({bankAccountNumber:"1234567890"});
  changed=await call("getPaymentCompanionDashboard");assert.equal(changed.receiver.requiresReconfirmation,true);
- await call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890"});
+ await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890",settingsRevision:originalRevision}),{code:"failed-precondition"});
+ await call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890",settingsRevision:changed.receiver.settingsRevision});
  changed=await call("getPaymentCompanionDashboard");assert.equal(changed.receiver.enabled,true);assert.ok(changed.matches.every(m=>m.status==="no_match"));
  await call("setPaymentCompanionReceiver",{enabled:false});
  assert.equal((await call("getPaymentCompanionDashboard")).receiver.enabled,false);

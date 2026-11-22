@@ -40,15 +40,40 @@ function receiver(store={}){
 function rank(orders,notices,recipient,{truncated=false}={}){
  const eligible=notices.filter(n=>recipient.storePaymentReady&&n.receiverSuffix==="X-"+recipient.accountLast4&&sources[n.source]===recipient.bankCode);
  const matches=orders.map(order=>{
-  const candidates=eligible.filter(n=>n.amountSatang===order.amountSatang&&n.bankMs<order.createdMs&&order.createdMs-n.bankMs<=900000);
-  const result={orderId:order.id,amountSatang:order.amountSatang,orderTimeUTC:new Date(order.createdMs).toISOString(),hasSlip:order.hasSlip,paymentVerified:false,status:!recipient.storePaymentReady||truncated?"unavailable":candidates.length>1?"ambiguous":candidates.length===1?"candidate":"no_match"};
-  if(result.status==="candidate")Object.assign(result,{notificationId:candidates[0].id,source:candidates[0].source,timeDifferenceSeconds:Math.floor((order.createdMs-candidates[0].bankMs)/1000)});
+  const confirmed=order.paymentQrMode==="confirmed_order_5m"&&
+    Number.isFinite(order.qrStartedMs)&&Number.isFinite(order.qrExpiryMs)&&
+    order.qrExpiryMs-order.qrStartedMs===300000&&
+    order.qrStartedMs>=order.createdMs-120000&&order.qrStartedMs<=order.createdMs+60000;
+  const candidates=eligible.filter(n=>{
+    if(n.amountSatang!==order.amountSatang)return false;
+    if(!confirmed)return order.paymentQrMode!=="confirmed_order_5m"&&n.bankMs<order.createdMs&&order.createdMs-n.bankMs<=900000;
+    const normal=n.bankMs>=order.createdMs&&n.bankMs<=order.qrExpiryMs&&
+      n.receivedMs>=order.createdMs&&n.receivedMs<=order.qrExpiryMs+60000&&n.receivedMs>=n.bankMs;
+    // SCB Connect may display only whole minutes. Flag for manual inspection:
+    // it is NEVER a bank-authorized kitchen/settlement decision.
+    const sameMinute=n.source==="line_scb_connect"&&n.bankMs===Math.floor(order.createdMs/60000)*60000&&
+      n.bankMs<order.createdMs&&n.observedMs>=order.createdMs&&
+      n.observedMs<=Math.min(order.qrExpiryMs,n.bankMs+120000)&&
+      n.receivedMs>=n.observedMs&&n.receivedMs<=order.qrExpiryMs;
+    return normal||sameMinute;
+  });
+  const minutePrecision=confirmed&&candidates.length===1&&candidates[0].bankMs<order.createdMs;
+  const result={orderId:order.id,amountSatang:order.amountSatang,orderTimeUTC:new Date(order.createdMs).toISOString(),hasSlip:order.hasSlip,paymentVerified:false,status:!recipient.storePaymentReady||truncated?"unavailable":candidates.length>1?"ambiguous":candidates.length===1?minutePrecision?"time_precision_review":"candidate":"no_match"};
+  if(["candidate","time_precision_review"].includes(result.status))Object.assign(result,{notificationId:candidates[0].id,source:candidates[0].source,timeDifferenceSeconds:Math.floor((order.createdMs-candidates[0].bankMs)/1000)});
   return result;
  });
  // Even when one order has multiple possibilities, any shared notice makes
  // another otherwise-single candidate ambiguous.
  for(const result of matches){
-  if(result.notificationId&&orders.filter(o=>eligible.some(n=>n.id===result.notificationId&&n.amountSatang===o.amountSatang&&n.bankMs<o.createdMs&&o.createdMs-n.bankMs<=900000)).length>1){
+  if(result.notificationId&&orders.filter(o=>eligible.some(n=>n.id===result.notificationId&&n.amountSatang===o.amountSatang&&(
+    (o.paymentQrMode==="confirmed_order_5m"&&(
+      (n.bankMs>=o.createdMs&&n.bankMs<=o.qrExpiryMs&&n.receivedMs>=o.createdMs&&n.receivedMs<=o.qrExpiryMs+60000&&n.receivedMs>=n.bankMs)
+      ||(n.source==="line_scb_connect"&&n.bankMs===Math.floor(o.createdMs/60000)*60000&&n.bankMs<o.createdMs&&
+        n.observedMs>=o.createdMs&&n.observedMs<=Math.min(o.qrExpiryMs,n.bankMs+120000)&&
+        n.receivedMs>=n.observedMs&&n.receivedMs<=o.qrExpiryMs)
+    ))
+    ||(o.paymentQrMode!=="confirmed_order_5m"&&n.bankMs<o.createdMs&&o.createdMs-n.bankMs<=900000)
+   ))).length>1){
    result.status="ambiguous";delete result.notificationId;delete result.source;delete result.timeDifferenceSeconds;
   }
  }

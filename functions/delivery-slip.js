@@ -525,10 +525,15 @@ exports.notifyKitchenDeliveryAdmitted = onDocumentWritten(
     await getMessaging().sendEachForMulticast({
       tokens,
       notification: {
-        title: "มีออเดอร์ Delivery เข้าครัว",
-        body: clean(after.recipientName || "ลูกค้า") + " • " + Number(after.totalAmount || 0).toFixed(2) + " บาท",
+        title: after.companionKitchenRelease?.status === "admitted_unverified"
+          ? "มีออเดอร์ Delivery เข้าครัว (BankAlert ทดสอบ)" : "มีออเดอร์ Delivery เข้าครัว",
+        body: clean(after.recipientName || "ลูกค้า") + " • " +
+          Number(after.totalAmount || 0).toFixed(2) + " บาท" +
+          (after.companionKitchenRelease?.status === "admitted_unverified"
+            ? " • ยังไม่ยืนยันรับเงิน" : ""),
       },
-      data: { type: "delivery_kitchen_admitted", tenantId, orderId },
+      data: { type: after.companionKitchenRelease?.status==="admitted_unverified"
+          ? "delivery_bankalert_kitchen_admitted_unverified" : "delivery_kitchen_admitted", tenantId, orderId },
       webpush: {
         fcmOptions: { link: "/kitchen/?order=" + encodeURIComponent(orderId) },
         notification: { icon: "/assets/images/icon-192.png", badge: "/assets/images/icon-192.png", tag: "kitchen-delivery-" + orderId, renotify: true },

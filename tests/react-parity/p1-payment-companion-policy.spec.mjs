@@ -22,3 +22,24 @@ test("only matching bank, masked recipient, exact satang and preceding 15-minute
  const groups=groupCompanionObservations([{id:"a",deviceId:"d",amountSatang:10025,receiverSuffix:"X-1234",bankTimeUTC:sample.bankDisplayTime},{id:"b",deviceId:"d",amountSatang:10025,receiverSuffix:"X-1234",bankTimeUTC:sample.bankDisplayTime}]);
  assert.equal(groups[0].possibleDuplicate,true);assert.equal(groups[0].notificationCount,2);
 });
+
+test("source QR after-confirm candidates are advisory; bank timestamp within original five-minute window only",()=>{
+ const recipient=p.receiver({bankName:"SCB",bankAccountNumber:"0000001234",bankAccountName:"Synthetic",promptPayId:"0912345678"});
+ const created=Date.parse("2026-11-22T10:25:25Z");
+ const order={id:"qr-order",amountSatang:20000,createdMs:created,paymentQrMode:"confirmed_order_5m",
+   qrStartedMs:created,qrExpiryMs:created+300000,hasSlip:false};
+ const notice={id:"qr-notice",source:"line_scb_connect",receiverSuffix:"X-1234",amountSatang:20000,
+   bankMs:created+25000,observedMs:created+26000,receivedMs:created+27000};
+ assert.equal(p.rank([order],[notice],recipient)[0].status,"candidate");
+ assert.equal(p.rank([order],[{...notice,bankMs:created-90000}],recipient)[0].status,"no_match");
+ assert.equal(p.rank([order],[{...notice,bankMs:created+300001}],recipient)[0].status,"no_match");
+ assert.equal(p.rank([order],[{...notice,receivedMs:created+361000}],recipient)[0].status,"no_match");
+ assert.equal(p.rank([order],[{...notice,bankMs:created+30000,receivedMs:created+20000}],recipient)[0].status,"no_match");
+ assert.equal(p.rank([{...order,qrExpiryMs:created+600000}],[notice],recipient)[0].status,"no_match");
+ const minute={...notice,bankMs:Math.floor(created/60000)*60000,observedMs:created+20000,receivedMs:created+25000};
+ assert.equal(p.rank([order],[minute],recipient)[0].status,"time_precision_review");
+ assert.equal(p.rank([order],[{...minute,observedMs:created-1}],recipient)[0].status,"no_match");
+ assert.equal(p.rank([order, {...order,id:"same-amount-order"}],[notice],recipient)[0].status,"ambiguous");
+ assert.equal(p.rank([order],[notice,{...notice,id:"another"}],recipient)[0].status,"ambiguous");
+ assert.ok(p.rank([order],[notice],recipient).every(m=>m.paymentVerified===false));
+});

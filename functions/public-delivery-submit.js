@@ -2,6 +2,8 @@
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { randomBytes, createHash } = require("node:crypto");
+const qr = require("./payment-companion-qr-policy");
 const { getDeliveryOpeningStatus } = require("./delivery-opening-hours");
 
 const REGION = "asia-southeast1";
@@ -14,7 +16,7 @@ const ALLOWED_FIELDS = new Set([
   "deliveryFeeMode", "freeGiftMenuIds", "freeGiftApplied", "freeGiftItems",
   "freeGiftMaxSelectableItems", "freeGiftValidFrom", "freeGiftValidUntil",
   "subtotalAmount", "totalAmount", "paymentMethod", "paymentSlipUrl",
-  "paymentSlipPath", "slipCheckStatus", "paymentReviewRequired", "note",
+  "paymentSlipPath", "slipCheckStatus", "paymentReviewRequired", "paymentQrMode", "note",
   "items", "deliveryLatitude", "deliveryLongitude", "deliveryDistanceKm",
   "deliveryDistanceMeters", "deliveryDurationSeconds", "deliveryRouteProvider",
   "lalamoveQuotationId", "lalamoveQuotationExpiresAt", "lalamoveCurrency",
@@ -54,12 +56,17 @@ function validateSubmission(data) {
     || !Number.isFinite(order.deliveryLatitude) || Math.abs(order.deliveryLatitude) > 90
     || !Number.isFinite(order.deliveryLongitude) || Math.abs(order.deliveryLongitude) > 180
     || (order.deliveryLatitude === 0 && order.deliveryLongitude === 0)
-    || (order.paymentMethod === "promptpay" && (
+    || (order.paymentMethod === "promptpay" && order.paymentQrMode !== "confirmed_order_5m" && (
       !["matched", "manual_review"].includes(order.slipCheckStatus)
       || !order.paymentSlipPath || typeof order.paymentSlipPath !== "string"
       || !order.paymentSlipPath.startsWith("tenants/" + tenantId + "/payment-slips/" + id + "/")
     ))) {
     throw new HttpsError("invalid-argument", "DELIVERY_ORDER_INVALID");
+  }
+  if(order.paymentQrMode != null && (order.paymentQrMode !== "confirmed_order_5m"
+    || order.paymentMethod !== "promptpay" || order.deliveryProvider !== "lalamove"
+    || order.paymentSlipPath || order.slipCheckStatus || order.paymentReviewRequired === true)) {
+    throw new HttpsError("invalid-argument", "DELIVERY_QR_ORDER_INVALID");
   }
   return { tenantId, id, order };
 }
@@ -68,11 +75,25 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
   const tenantRef = db.collection("tenants").doc(tenantId);
   const settingsRef = tenantRef.collection("settings").doc("store");
   const orderRef = tenantRef.collection("orders").doc(id);
+  const wantsQr=order.paymentQrMode==="confirmed_order_5m";
+  if(wantsQr&&(!qr.ID.test(String(order.lalamoveQuotationId||""))||
+    !Array.isArray(order.items)||order.items.length>60||
+    order.items.some(item=>!qr.ID.test(String(item.menuId||""))))){
+    throw new HttpsError("invalid-argument","DELIVERY_QR_QUOTE_OR_CART_INVALID");
+  }
+  // Creation token never gets persisted; clients only ever see its digest.
+  const capability=wantsQr?randomBytes(32).toString("hex"):"";
+  const capabilityHash=wantsQr?createHash("sha256").update(capability).digest("hex"):"";
   return db.runTransaction(async transaction => {
     // Every transaction attempt re-reads store hours; a concurrent admin close
     // causes Firestore to retry and refuse the pending create.
-    const [tenantSnap, settingsSnap, existingOrder] = await Promise.all([
-      transaction.get(tenantRef), transaction.get(settingsRef), transaction.get(orderRef),
+    const extra=wantsQr?[
+      transaction.get(tenantRef.collection("deliveryCheckoutQuotes").doc(String(order.lalamoveQuotationId||""))),
+      transaction.get(getFirestore().collection("paymentCompanionTenants").doc(tenantId)),
+      ...order.items.filter(item=>!item.isGift).map(item=>transaction.get(tenantRef.collection("menus").doc(String(item.menuId||"")))),
+    ]:[];
+    const [tenantSnap, settingsSnap, existingOrder,...details] = await Promise.all([
+      transaction.get(tenantRef), transaction.get(settingsRef), transaction.get(orderRef),...extra,
     ]);
     if (!tenantSnap.exists || !settingsSnap.exists) {
       throw new HttpsError("not-found", "DELIVERY_STORE_STATUS_UNAVAILABLE");
@@ -95,10 +116,32 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     if (existingOrder.exists) {
       throw new HttpsError("already-exists", "DELIVERY_ORDER_ALREADY_EXISTS");
     }
+    let authoritativeQr=null;
+    if(wantsQr){
+      if(qr.configuredTenant()!==tenantId||tenantSnap.data()?.active!==true)
+        throw new HttpsError("failed-precondition","DELIVERY_QR_PILOT_DISABLED");
+      const [quote,link,...menuDocs]=details;
+      const now=Date.now();
+      try{
+        const binding=qr.receiverReady(settingsSnap,link.data()?.receiver,tenantId,now);
+        const food=qr.verifyCatalog(order.items,menuDocs,order);
+        qr.verifyQuotation({...order,tenantId},quote,food,now);
+        authoritativeQr={
+          paymentQrMode:"confirmed_order_5m",paymentQrStartedAtUTC:new Date(now).toISOString(),
+          paymentQrExpiresAtUTC:new Date(now+qr.QR_DURATION_MS).toISOString(),
+          paymentQrReceiverRevision:binding.revision,
+          promptPayQRRecipientId:binding.payee,
+          promptPayQRRecipientName:String(settingsSnap.data()?.promptPayName||settingsSnap.data()?.shopName||"").trim().slice(0,100),
+          paymentQrCapabilityDigest:capabilityHash,
+          paymentQrSlipFallbackStatus:"not_required",
+        };
+      }catch(err){throw new HttpsError("failed-precondition",String(err.message||"DELIVERY_QR_UNCONFIRMED"));}
+    }
     const safeOrder = Object.fromEntries(
       Object.entries(order).filter(([key]) => ALLOWED_FIELDS.has(key))
     );
     // No privileged payment statuses or audit fields can be supplied by public clients.
+    delete safeOrder.paymentQrMode;
     delete safeOrder.slipVerificationStatus;
     delete safeOrder.paymentStatus;
     delete safeOrder.status;
@@ -107,10 +150,12 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
       id, tenantId, shopId: tenantId, orderType: "delivery",
       tableCode: "DELIVERY", tableToken: "", tableName: "",
       status: "pending",
+      ...(authoritativeQr||{}),
+      ...(authoritativeQr?{slipCheckStatus:"",paymentReviewRequired:false,paymentSlipPath:""}:{}),
       paymentStatus: order.paymentMethod === "promptpay" ? "pending_verification" : "unpaid",
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     });
-    return { id };
+    return { id, ...(authoritativeQr?{paymentQrMode:"confirmed_order_5m",paymentCorrectionCapability:capability}:{} ) };
   });
 }
 

@@ -340,3 +340,12 @@ exports.paymentCompanionNoticeIngest = paymentCompanion.paymentCompanionNoticeIn
 exports.setPaymentCompanionReceiver = paymentCompanion.setPaymentCompanionReceiver;
 exports.getPaymentCompanionCashierReview = paymentCompanion.getPaymentCompanionCashierReview;
 exports.recordPaymentCompanionCashierReview = paymentCompanion.recordPaymentCompanionCashierReview;
+exports.setCompanionAutoKitchenConsent = paymentCompanion.setCompanionAutoKitchenConsent;
+
+const companionQR = require("./payment-companion-qr");
+exports.getPublicCompanionQrAvailability = companionQR.getPublicCompanionQrAvailability;
+exports.getPublicCompanionQrState = companionQR.getPublicCompanionQrState;
+exports.submitPublicCompanionLateSlip = companionQR.submitPublicCompanionLateSlip;
+
+const companionKitchen = require("./payment-companion-kitchen");
+exports.onPaymentCompanionNoticeForKitchen = companionKitchen.onPaymentCompanionNoticeForKitchen;

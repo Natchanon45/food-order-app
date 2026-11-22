@@ -318,8 +318,15 @@ export async function createPublicDeliveryOrder(tenant, order = {}, catalog = nu
     order: { ...normalized, id },
   });
   if (result?.data?.id !== id) throw new Error("DELIVERY_ORDER_CREATE_NOT_CONFIRMED");
+  if(order.paymentQrMode==="confirmed_order_5m" &&
+    (result?.data?.paymentQrMode!=="confirmed_order_5m"||
+     !/^[a-f0-9]{64}$/.test(result?.data?.paymentCorrectionCapability||"")))
+    throw new Error("DELIVERY_QR_CAPABILITY_UNCONFIRMED");
   clearPublicOrderId(tenant, "delivery");
-  return { id };
+  return { id, ...(order.paymentQrMode==="confirmed_order_5m"?{
+    paymentQrMode:"confirmed_order_5m",
+    paymentCorrectionCapability:result.data.paymentCorrectionCapability,
+  }:{}) };
 }
 
 export async function getPublicOrder(tenant, id) {

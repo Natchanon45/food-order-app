@@ -40,7 +40,16 @@ function proofValidForOrder(order = {}, proof = {}, now = Date.now()) {
 
 function kitchenAdmitted(order = {}) {
   return order.orderType === "delivery"
-    && (order.paymentMethod === "cod" || order.paymentStatus === "paid")
+    && (order.paymentMethod === "cod" || order.paymentStatus === "paid" ||
+      (order.paymentMethod==="promptpay"&&
+       order.paymentStatus==="pending_verification"&&
+       order.paymentQrMode==="confirmed_order_5m"&&
+       order.deliveryProvider==="lalamove"&&
+       order.companionKitchenRelease?.status==="admitted_unverified"&&
+       order.companionKitchenRelease?.bankConfirmed===false&&
+       order.companionKitchenRelease?.paymentVerified===false&&
+       order.companionKitchenRelease?.canDispatchRider===false&&
+       order.paymentQrSlipFallbackStatus==="not_required"&&!order.paymentSlipPath))
     && !["cancelled", "canceled"].includes(String(order.status || "").toLowerCase());
 }
 module.exports = { cents, normalizedItems, slipDecision, proofBoundToOrder, proofValidForOrder, kitchenAdmitted };

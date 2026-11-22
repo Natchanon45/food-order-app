@@ -48,10 +48,22 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
   if(busy||enabled&&(!data?.enabled||!data.receiver?.storePaymentReady))return;
   if(!await sweetConfirm(enabled?"ยืนยันว่าบัญชีธนาคารที่บันทึกไว้เป็นบัญชีรับเงินจริงของ PromptPay ร้านนี้หรือไม่? ใช้เพื่อประกอบการตรวจสอบเท่านั้น ไม่อนุมัติชำระหรือปล่อยครัว":"ปิดการจับคู่กับบัญชีรับเงินนี้หรือไม่?",{title:enabled?"ยืนยันบัญชีรับเงิน":"ปิดการผูกบัญชี",confirmText:enabled?"ยืนยันบัญชี":"ปิดใช้งาน",cancelText:"กลับ",type:"warning"}))return;
   await run(async()=>{
-   const {bankCode,accountLast4}=data.receiver;
-   const {data:r}=await httpsCallable(functions,"setPaymentCompanionReceiver")({enabled,bankCode,accountLast4});
+   const {bankCode,accountLast4,settingsRevision}=data.receiver;
+   const {data:r}=await httpsCallable(functions,"setPaymentCompanionReceiver")({enabled,bankCode,accountLast4,settingsRevision});
    if(r?.saved!==true||r.receiver?.enabled!==enabled||r.paymentVerified!==false)throw Error("RECEIVER_UNCONFIRMED");
    notify(enabled?"ยืนยันบัญชีรับเงินแล้ว":"ปิดการผูกบัญชีแล้ว");
+  });
+ };
+ const toggleAutoKitchen=async enabled=>{
+  if(busy||!data?.autoKitchenAvailable||!recipient.enabled)return;
+  const message=enabled?
+    "คุณยืนยันว่าจะรับความเสี่ยงของร้านในการส่งคำสั่งซื้อเข้าครัวจากข้อมูลแจ้งเตือน Android/LINE ที่ยังไม่ได้รับรองจากธนาคารหรือไม่? ระบบจะจับคู่ยอด บัญชี และเวลาอย่างเข้มงวด คำสั่งซื้อยังไม่เป็น Paid และไม่เรียก Lalamove ก่อนตรวจรับเงินจริง การใช้งานนี้จำกัดเฉพาะ UAT":
+    "ปิดการส่งคำสั่งซื้อเข้าครัวจาก BankAlert UAT หรือไม่?";
+  if(!await sweetConfirm(message,{title:enabled?"ยินยอม BankAlert เข้าครัวเฉพาะ UAT":"ปิด BankAlert UAT",confirmText:enabled?"ยืนยันความเสี่ยงและเปิดทดสอบ":"ปิดใช้งาน",cancelText:"กลับ",type:"warning"}))return;
+  await run(async()=>{
+   const {data:r}=await httpsCallable(functions,"setCompanionAutoKitchenConsent")({enabled});
+   if(r?.saved!==true||r?.enabled!==enabled||r.paymentVerified!==false||r.canSettleInvoice!==false)throw Error("AUTO_KITCHEN_UNCONFIRMED");
+   notify(enabled?"เปิด BankAlert เข้าครัวเฉพาะ UAT แล้ว":"ปิด BankAlert เข้าครัวแล้ว");
   });
  };
  const groups=useMemo(()=>groupCompanionObservations(data?.items),[data]);
@@ -85,6 +97,16 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
       {recipient.linked&&<button type="button" className="btn btn-sm" disabled={busy} onClick={()=>confirmReceiver(false)}><i className="bi bi-pause-circle" aria-hidden="true"/> ปิดการผูกบัญชี</button>}
      </div>
     </div>
+    {data.autoKitchenAvailable&&recipient.enabled&&<div className="payment-companion-receiver-confirmation">
+      <strong>การส่งเข้าครัวจาก BankAlert · UAT เท่านั้น</strong>
+      <small>ข้อมูลแจ้งเงินเข้าไม่ได้รับรองโดยธนาคาร อาจมีความผิดพลาด ร้านต้องยอมรับความเสี่ยงอย่างชัดเจน ออเดอร์ยังไม่ใช่ Paid และไม่เรียก Lalamove จนกว่าจะตรวจรับเงินจริง</small>
+      <div className="payment-companion-receiver-buttons">
+        <button type="button" className={"btn btn-sm "+(data.autoKitchenEnabled?"btn-warning":"btn-primary")} disabled={busy} onClick={()=>toggleAutoKitchen(!data.autoKitchenEnabled)}>
+          <i className={"bi bi-"+(data.autoKitchenEnabled?"pause-circle":"shield-exclamation")} aria-hidden="true"/>
+          {data.autoKitchenEnabled?"ปิดการส่งเข้าครัว UAT":"ยอมรับความเสี่ยงและเปิดเฉพาะ UAT"}
+        </button>
+      </div>
+    </div>}
     {data.matchStatus!=="advisory"||!recipient.storePaymentReady?<div className="payment-companion-empty">ยังยืนยันข้อมูลสำหรับเสนอการจับคู่ไม่ได้</div>:data.matches.length?<ul className="payment-companion-notice-list">{data.matches.map(m=><li key={m.orderId} className="payment-companion-notice"><div className="payment-companion-notice-info"><strong>{money(m.amountSatang)} บาท</strong><small>ออเดอร์ {m.orderId}</small><small>{date(m.orderTimeUTC)} · {m.hasSlip?"มีสลิป":"ยังไม่มีสลิป"}</small></div><span className="payment-companion-unverified">{states[m.status]||"ยังไม่ยืนยัน"}</span></li>)}</ul>:<div className="payment-companion-empty">ไม่พบออเดอร์ PromptPay ที่รอตรวจสอบในช่วงล่าสุด</div>}
     <p className="payment-companion-footnote">แคชเชียร์บันทึกการตรวจเบื้องต้นได้ แต่การอนุมัติชำระยังใช้ขั้นตอน Superadmin เดิม ระบบยังไม่อนุมัติการชำระหรือปล่อยครัวจากข้อมูลนี้</p>
    </section>

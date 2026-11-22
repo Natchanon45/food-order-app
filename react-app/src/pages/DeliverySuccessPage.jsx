@@ -1,3 +1,4 @@
+import { CompanionConfirmedQr } from "@/components/CompanionConfirmedQr";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { Link, useParams } from "react-router-dom";
@@ -234,7 +235,8 @@ export function DeliverySuccessPage() {
     />
 
     <main className="receipt-page">
-      <section className="delivery-tracking-card" id="deliveryTrackingCard">
+      {order?.paymentQrMode==="confirmed_order_5m"&&<CompanionConfirmedQr tenant={tenant} order={order} orderId={orderId} onToast={showStorefrontToast}/>}
+      {!(order?.paymentQrMode==="confirmed_order_5m"&&order?.paymentStatus==="pending_verification"&&order?.companionKitchenRelease?.status!=="admitted_unverified")&&<section className="delivery-tracking-card" id="deliveryTrackingCard">
         <div className="delivery-tracking-head">
           <div>
             <h2>{t("delivery.success.tracking.title")}</h2>
@@ -274,10 +276,10 @@ export function DeliverySuccessPage() {
             <i className="bi bi-truck app-icon" aria-hidden="true"></i><span>{t("delivery.success.tracking.track_driver")}</span>
           </a>
         </div>
-      </section>
+      </section>}
 
       <div className="receipt-toolbar">
-        <button className="btn btn-primary" id="saveImageButton" type="button" disabled={!order || downloading} onClick={download}>
+        <button className="btn btn-primary" id="saveImageButton" type="button" disabled={!order || downloading || (order.paymentQrMode==="confirmed_order_5m"&&order.paymentStatus==="pending_verification")} onClick={download}>
           <i className="bi bi-download app-icon" aria-hidden="true"></i><span>{t(downloading ? "delivery.success.actions.creating_image" : "delivery.success.actions.download")}</span>
         </button>
         <a className="btn" id="verifyLatestLink" href={verifyUrl || "#"} target="_blank" rel="noopener">
@@ -288,7 +290,7 @@ export function DeliverySuccessPage() {
       {loading ? <section className="card empty">{t("delivery.success.tracking.loading")}</section> : null}
       {errorText ? <section className="card empty">{errorText}</section> : null}
 
-      {order ? <section className="receipt" id="customerReceipt" ref={receiptRef}>
+      {order && !(order.paymentQrMode==="confirmed_order_5m"&&order.paymentStatus==="pending_verification") ? <section className="receipt" id="customerReceipt" ref={receiptRef}>
         <div className="receipt-header">
           <h1 id="shopName">{shopName}</h1>
           <div id="shopAddress">{settings.shopAddress || ""}</div>
