@@ -14,7 +14,7 @@ const tenant=db.collection("tenants").doc(tenantId),root=db.collection("paymentC
 const auth={uid},exports={};
 class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
 const env={PENGUIN_PAYMENT_COMPANION_PILOT_ENABLED:"1",PENGUIN_PAYMENT_COMPANION_PILOT_TENANT_ID:tenantId};
-new Function("exports","require","process","Buffer",readFileSync("functions/payment-companion.js","utf8"))(exports,name=>({"firebase-functions/v2/https":{onCall:(_,fn)=>fn,onRequest:(_,fn)=>fn,HttpsError},"firebase-admin/firestore":{getFirestore:()=>db},"node:crypto":require("node:crypto"),"./payment-companion-policy":policy}[name]),{env},Buffer);
+new Function("exports","require","process","Buffer",readFileSync("functions/payment-companion.js","utf8"))(exports,name=>({"firebase-functions/v2/https":{onCall:(_,fn)=>fn,onRequest:(_,fn)=>fn,HttpsError},"firebase-admin/firestore":{getFirestore:()=>db},"node:crypto":require("node:crypto"),"./payment-companion-policy":policy,"./payment-companion-receiver":require("./payment-companion-receiver")}[name]),{env},Buffer);
 const call=(name,data={},actor=auth)=>exports[name]({auth:actor,data});
 const http=async(name,token,body,method="POST")=>{
  const response={set:()=>response,status:n=>{response.code=n;return response},json:value=>{response.data=value;return response}};
@@ -32,17 +32,34 @@ test("actual Firestore: owner pairing, three-device concurrency cap, replay prot
  const first=paired[0],token=first.pairingToken,key=policy.digest(token);
  assert.equal(first.showOnce,true);assert.equal((await db.collection("paymentCompanionDeviceKeys").doc(key).get()).exists,true);
  assert.equal((await http("paymentCompanionDeviceStatus",token,null,"GET")).code,200);
- const now=Date.now(),bank=new Date(now-120000).toISOString();
- const notice={eventId:"a".repeat(64),source:"line_scb_connect",amount:"300.00",receiverSuffix:"X-7890",bankDisplayTime:bank,deviceObservedAt:new Date(now-60000).toISOString()};
+ const before=await call("getPaymentCompanionDashboard");assert.equal(before.receiver.enabled,false);
+ await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"0000"}),{code:"failed-precondition"});
+ await assert.rejects(call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890"},{uid:admin}),{code:"permission-denied"});
+ const confirmed=await call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890"});assert.equal(confirmed.receiver.enabled,true);
+ const now=Date.now(),bank=new Date(now).toISOString();
+ const notice={eventId:"a".repeat(64),source:"line_scb_connect",amount:"300.00",receiverSuffix:"X-7890",bankDisplayTime:bank,deviceObservedAt:new Date(now).toISOString()};
  const replies=await Promise.all([http("paymentCompanionNoticeIngest",token,notice),http("paymentCompanionNoticeIngest",token,notice)]);
  assert.equal(replies.filter(r=>r.data.stored===true).length,1);assert.equal(replies.filter(r=>r.data.duplicate===true).length,1);
  assert.equal((await http("paymentCompanionNoticeIngest",token,{...notice,amount:"301.00"})).code,409);
  assert.equal((await http("paymentCompanionNoticeIngest",token,{...notice,paymentVerified:true})).code,422);
  assert.equal((await http("paymentCompanionNoticeIngest",token,{kind:"raw_notification",notificationText:"OTP synthetic private text"})).code,422);
  const order=tenant.collection("orders").doc("order1");
- await order.set({orderType:"delivery",paymentMethod:"promptpay",paymentStatus:"pending_verification",status:"pending",totalAmount:300,createdAt:new Date(now-30000),paymentSlipPath:"tenants/"+tenantId+"/payment-slips/order1/demo.png"});
+ await order.set({orderType:"delivery",paymentMethod:"promptpay",paymentStatus:"pending_verification",status:"pending",totalAmount:300,createdAt:new Date(Date.now()+1000),paymentSlipPath:"tenants/"+tenantId+"/payment-slips/order1/demo.png"});
  let dashboard=await call("getPaymentCompanionDashboard");assert.equal(dashboard.matches[0].status,"candidate");assert.equal(dashboard.matches[0].paymentVerified,false);
  assert.equal(dashboard.receiver.accountLast4,"7890");assert.equal(dashboard.receiver.promptPayLast4,"2223");
+ const cashier="cashier-"+randomUUID(),kitchen="kitchen-"+randomUUID();
+ await Promise.all([db.collection("users").doc(cashier).set({active:true,role:"cashier",tenantId}),db.collection("users").doc(kitchen).set({active:true,role:"kitchen",tenantId})]);
+ const review=await call("getPaymentCompanionCashierReview",{orderId:"order1"},{uid:cashier});assert.equal(review.canRecord,true);
+ const request={orderId:"order1",notificationId:review.item.notificationId,acknowledged:true};
+ await assert.rejects(call("recordPaymentCompanionCashierReview",request,{uid:kitchen}),{code:"permission-denied"});
+ await assert.rejects(call("recordPaymentCompanionCashierReview",{...request,acknowledged:false},{uid:cashier}),{code:"invalid-argument"});
+ const reviews=await Promise.all([call("recordPaymentCompanionCashierReview",request,{uid:cashier}),call("recordPaymentCompanionCashierReview",request,{uid:cashier})]);
+ assert.equal(reviews.filter(r=>r.alreadyRecorded===false).length,1);
+ assert.equal((await root.collection("reviews").get()).size,1);
+ assert.equal((await root.collection("reviewClaims").get()).size,1);
+ assert.equal((await order.get()).data().paymentStatus,"pending_verification");
+ assert.equal((await order.get()).data().kitchenReleasedAt,undefined);
+ assert.equal((await call("getPaymentCompanionCashierReview",{orderId:"order1"},{uid:cashier})).review.status,"cashier_observation_reviewed_unverified");
  assert.ok(!JSON.stringify(dashboard).includes(token));assert.ok(!JSON.stringify(dashboard).includes(key));assert.ok(!JSON.stringify(dashboard).includes("1234567890"));
  await tenant.collection("orders").doc("order2").set({...((await order.get()).data()),paymentSlipPath:"tenants/"+tenantId+"/payment-slips/order2/demo.png"});
  dashboard=await call("getPaymentCompanionDashboard");assert.equal(dashboard.matches.length,2);assert.ok(dashboard.matches.every(m=>m.status==="ambiguous"));
@@ -57,6 +74,17 @@ test("actual Firestore: owner pairing, three-device concurrency cap, replay prot
  const archived=await call("changePaymentCompanionDevice",{deviceId:first.deviceId,action:"archive"});assert.equal(archived.keyDeleted,true);
  assert.equal((await root.collection("notices").get()).size,2);
  assert.equal((await call("getPaymentCompanionDashboard")).devices.length,2);
+ const store=tenant.collection("settings").doc("store");
+ await store.update({bankAccountNumber:"9999997890"});
+ let changed=await call("getPaymentCompanionDashboard");assert.equal(changed.receiver.requiresReconfirmation,true);assert.equal(changed.receiver.enabled,false);
+ assert.equal(changed.matchStatus,"receiver_unconfirmed");
+ await store.update({bankAccountNumber:"1234567890"});
+ changed=await call("getPaymentCompanionDashboard");assert.equal(changed.receiver.requiresReconfirmation,true);
+ await call("setPaymentCompanionReceiver",{enabled:true,bankCode:"scb",accountLast4:"7890"});
+ changed=await call("getPaymentCompanionDashboard");assert.equal(changed.receiver.enabled,true);assert.ok(changed.matches.every(m=>m.status==="no_match"));
+ await call("setPaymentCompanionReceiver",{enabled:false});
+ assert.equal((await call("getPaymentCompanionDashboard")).receiver.enabled,false);
+
 });
 test("production handler refuses pairing and ingress in emulator",async()=>{
  const actual=require("./payment-companion");

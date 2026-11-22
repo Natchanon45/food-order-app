@@ -3,6 +3,7 @@ const {onCall,onRequest,HttpsError}=require("firebase-functions/v2/https");
 const {getFirestore}=require("firebase-admin/firestore");
 const {randomBytes,randomUUID}=require("node:crypto");
 const policy=require("./payment-companion-policy");
+const binding=require("./payment-companion-receiver");
 const options={region:"asia-southeast1",timeoutSeconds:30};
 const flags={bankConfirmed:false,paymentVerified:false,canSettleInvoice:false,canReleaseKitchen:false};
 function pilotTenant(){
@@ -13,15 +14,16 @@ function pilotTenant(){
 const scope=(db,id)=>db.collection("paymentCompanionTenants").doc(id);
 const keyRef=(db,hash)=>db.collection("paymentCompanionDeviceKeys").doc(hash);
 function error(code,message){return new HttpsError(code,message);}
-async function owner(db,auth,tx){
+async function staff(db,auth,tx,roles=["owner"]){
  if(!auth?.uid)throw error("unauthenticated","Sign-in required");
  const read=ref=>tx?tx.get(ref):ref.get();
  const u=(await read(db.collection("users").doc(auth.uid))).data();
- if(u?.active!==true||u.role!=="owner"||typeof u.tenantId!=="string"||!policy.ID.test(u.tenantId))throw error("permission-denied","Owner only");
+ if(u?.active!==true||!roles.includes(u.role)||typeof u.tenantId!=="string"||!policy.ID.test(u.tenantId))throw error("permission-denied","Authorized merchant staff only");
  const tenant=(await read(db.collection("tenants").doc(u.tenantId))).data();
  if(tenant?.active!==true)throw error("permission-denied","Active tenant only");
  return u.tenantId;
 }
+const owner=(db,auth,tx)=>staff(db,auth,tx);
 function requirePilot(id){if(!pilotTenant()||id!==pilotTenant())throw error("failed-precondition","COMPANION_PILOT_DISABLED");}
 function devicePublic(row){return {id:row.id,label:row.label,enabled:row.enabled===true,createdUTC:new Date(row.createdMs).toISOString(),lastSeenUTC:row.lastSeenMs?new Date(row.lastSeenMs).toISOString():null};}
 exports.pairPaymentCompanionDevice=onCall(options,async request=>{
@@ -60,27 +62,93 @@ exports.changePaymentCompanionDevice=onCall(options,async request=>{
   return {revoked:true};
  });
 });
+exports.setPaymentCompanionReceiver=onCall(options,async request=>{
+ const db=getFirestore(),{enabled,bankCode,accountLast4}=request.data||{};
+ if(typeof enabled!=="boolean"||enabled&&(typeof bankCode!=="string"||!/^\d{4}$/.test(accountLast4||"")))throw error("invalid-argument","COMPANION_RECEIVER_INVALID");
+ return db.runTransaction(async tx=>{
+  const tenantId=await owner(db,request.auth,tx),root=scope(db,tenantId),storeRef=db.collection("tenants").doc(tenantId).collection("settings").doc("store");
+  const [store,meta]=await Promise.all([tx.get(storeRef),tx.get(root)]);
+  if(enabled)requirePilot(tenantId);
+  const recipient=policy.receiver(store.data()),revision=binding.receiverRevision(store);
+  if(enabled&&(!revision||recipient.bankCode!==bankCode||recipient.accountLast4!==accountLast4))throw error("failed-precondition","COMPANION_RECEIVER_MUST_MATCH_STORE_SETTINGS");
+  const prior=meta.data()?.receiver;
+  const linked=enabled?{enabled:true,revision,bankCode,accountLast4,confirmedAtMs:prior?.enabled===true&&prior.revision===revision?prior.confirmedAtMs:Date.now(),confirmedByUid:request.auth.uid}:{enabled:false,disabledAtMs:Date.now(),confirmedByUid:request.auth.uid};
+  tx.set(root,{receiver:linked},{mergeFields:["receiver"]});
+  return {saved:true,receiver:binding.receiverState(store,linked,pilotTenant()===tenantId),...flags};
+ });
+});
+async function candidateSnapshot(db,tenantId,tx){
+ const root=scope(db,tenantId),tenant=db.collection("tenants").doc(tenantId),read=ref=>tx?tx.get(ref):ref.get();
+ const now=Date.now();
+ const [meta,store,devices,notices,orders]=await Promise.all([
+  read(root),read(tenant.collection("settings").doc("store")),
+  read(root.collection("devices").where("enabled","==",true).limit(4)),
+  read(root.collection("notices").where("receivedMs",">=",now-2*86400000).orderBy("receivedMs","desc").limit(201)),
+  read(tenant.collection("orders").where("createdAt",">=",new Date(now-2*86400000)).orderBy("createdAt","desc").limit(201))
+ ]);
+ const link=meta.data()?.receiver,recipient=binding.receiverState(store,link,pilotTenant()===tenantId);
+ const active=new Map(devices.docs.map(d=>[d.id,d.data()]));
+ const rows=notices.docs.map(d=>d.data());
+ const eligible=orders.docs.flatMap(d=>{
+  const o=d.data(),createdMs=o.createdAt?.toMillis?.(),amountSatang=Math.round(o.totalAmount*100);
+  if(o.orderType!=="delivery"||o.paymentMethod!=="promptpay"||o.paymentStatus!=="pending_verification"||o.status!=="pending"||!Number.isFinite(createdMs)||createdMs>now+120000||!Number.isFinite(o.totalAmount)||!Number.isSafeInteger(amountSatang)||amountSatang<=0||Math.abs(o.totalAmount*100-amountSatang)>0.00001)return [];
+  return [{id:d.id,amountSatang,createdMs,hasSlip:typeof o.paymentSlipPath==="string"&&o.paymentSlipPath.startsWith("tenants/"+tenantId+"/payment-slips/"+d.id+"/")}];
+ });
+ const truncated=orders.size>200||notices.size>200||devices.size>3||eligible.length>100;
+ // A notice cannot be considered after revocation, reconfiguration, or
+ // receiver opt-in. Already consumed review claims remain visible as history.
+ const validRows=rows.filter(n=>recipient.enabled&&binding.allowedNotice(n,link,active.get(n.deviceId)));
+ const matches=policy.rank(eligible.slice(0,100),validRows,recipient,{truncated:truncated||!recipient.enabled});
+ const claimed=await Promise.all(matches.filter(m=>m.notificationId).map(async m=>({m,claim:(await read(root.collection("reviewClaims").doc(m.notificationId))).data()})));
+ for(const {m,claim} of claimed)if(claim&&claim.orderId!==m.orderId){
+  m.status="ambiguous";delete m.notificationId;delete m.source;delete m.timeDifferenceSeconds;
+ }
+ return {root,tenant,recipient,link,rows,validRows,eligible,matches,matchStatus:!recipient.enabled?"receiver_unconfirmed":truncated?"bounded_unavailable":"advisory"};
+}
+exports.getPaymentCompanionCashierReview=onCall(options,async request=>{
+ const db=getFirestore(),tenantId=await staff(db,request.auth,null,["owner","admin","cashier"]);
+ const orderId=request.data?.orderId;
+ if(typeof orderId!=="string"||!policy.ID.test(orderId))throw error("invalid-argument","COMPANION_ORDER_INVALID");
+ if(pilotTenant()!==tenantId)return {enabled:false,item:null,...flags};
+ const context=await candidateSnapshot(db,tenantId),match=context.matches.find(m=>m.orderId===orderId),audit=(await context.root.collection("reviews").doc(orderId).get()).data();
+ const notice=context.validRows.find(n=>n.id===match?.notificationId),eligible=context.eligible.find(o=>o.id===orderId);
+ const canRecord=context.matchStatus==="advisory"&&match?.status==="candidate"&&match.hasSlip===true&&!!notice&&!!eligible&&notice.receivedMs<eligible.createdMs&&!audit;
+ return {enabled:true,item:match||null,canRecord,matchStatus:context.matchStatus,review:audit?{status:audit.status,recordedAtMs:audit.recordedAtMs,amountSatang:audit.amountSatang,notificationId:audit.notificationId}:null,...flags};
+});
+exports.recordPaymentCompanionCashierReview=onCall(options,async request=>{
+ const db=getFirestore(),{orderId,notificationId,acknowledged}=request.data||{};
+ if(typeof orderId!=="string"||!policy.ID.test(orderId)||typeof notificationId!=="string"||!policy.HEX.test(notificationId)||acknowledged!==true)throw error("invalid-argument","COMPANION_REVIEW_INVALID");
+ return db.runTransaction(async tx=>{
+  const tenantId=await staff(db,request.auth,tx,["owner","admin","cashier"]);requirePilot(tenantId);
+  const context=await candidateSnapshot(db,tenantId,tx);
+  const reviewRef=context.root.collection("reviews").doc(orderId),claimRef=context.root.collection("reviewClaims").doc(notificationId);
+  const [audit,claim,order]=await Promise.all([tx.get(reviewRef),tx.get(claimRef),tx.get(context.tenant.collection("orders").doc(orderId))]);
+  const previous=audit.data();
+  if(previous){
+   if(previous.notificationId!==notificationId||claim.data()?.orderId!==orderId)throw error("failed-precondition","COMPANION_REVIEW_CONFLICT");
+   return {recorded:true,alreadyRecorded:true,...flags};
+  }
+  const matched=context.matches.find(m=>m.orderId===orderId),notice=context.validRows.find(n=>n.id===notificationId),o=order.data();
+  if(context.matchStatus!=="advisory"||matched?.status!=="candidate"||matched.notificationId!==notificationId||!notice||notice.receivedMs>=o?.createdAt?.toMillis?.()||claim.exists||!matched.hasSlip||o?.paymentStatus!=="pending_verification"||o.status!=="pending"||matched.amountSatang!==Math.round(o.totalAmount*100)||o.createdAt?.toMillis?.()<context.link.confirmedAtMs)throw error("failed-precondition","COMPANION_REVIEW_UNCONFIRMED");
+  const record={status:"cashier_observation_reviewed_unverified",tenantId,orderId,notificationId,amountSatang:matched.amountSatang,receiverRevision:context.link.revision,recordedByUid:request.auth.uid,recordedAtMs:Date.now(),...flags};
+  tx.create(reviewRef,record);tx.create(claimRef,{orderId,notificationId,recordedAtMs:record.recordedAtMs});
+  return {recorded:true,alreadyRecorded:false,...flags};
+ });
+});
 exports.getPaymentCompanionDashboard=onCall(options,async request=>{
  const db=getFirestore(),tenantId=await owner(db,request.auth);
  const root=scope(db,tenantId),tenant=db.collection("tenants").doc(tenantId);
- const [devices,notices,store]=await Promise.all([root.collection("devices").orderBy("createdMs","desc").limit(100).get(),root.collection("notices").orderBy("receivedMs","desc").limit(201).get(),tenant.collection("settings").doc("store").get()]);
- const recipient=policy.receiver(store.data()),enabled=pilotTenant()===tenantId;
+ const [devices,notices,store,meta]=await Promise.all([root.collection("devices").orderBy("createdMs","desc").limit(100).get(),root.collection("notices").orderBy("receivedMs","desc").limit(201).get(),tenant.collection("settings").doc("store").get(),root.get()]);
+ const enabled=pilotTenant()===tenantId;
+ let recipient=binding.receiverState(store,meta.data()?.receiver,enabled);
  const rows=notices.docs.map(d=>d.data());
  const items=rows.slice(0,50).map(row=>({id:row.id,deviceId:row.deviceId,deviceLabel:row.deviceLabel,amountSatang:row.amountSatang,source:row.source,receiverSuffix:row.receiverSuffix,bankTimeUTC:new Date(row.bankMs).toISOString(),receivedUTC:new Date(row.receivedMs).toISOString(),cashierPaymentConfirmed:false,...flags}));
  let matches=[],matchStatus="disabled";
  if(enabled){
-  // Read bounded recent orders; only advisory. In a busy store, refuse to
-  // claim a unique match if the bounded data cannot prove uniqueness.
-  const now=Date.now(),snapshot=await tenant.collection("orders").where("createdAt",">=",new Date(now-2*86400000)).orderBy("createdAt","desc").limit(201).get();
-  const eligible=snapshot.docs.flatMap(d=>{
-   const o=d.data(),createdMs=o.createdAt?.toMillis?.(),amountSatang=Math.round(o.totalAmount*100);
-   if(o.orderType!=="delivery"||o.paymentMethod!=="promptpay"||o.paymentStatus!=="pending_verification"||["cancelled","canceled","completed"].includes(o.status)||!Number.isFinite(createdMs)||!Number.isFinite(o.totalAmount)||!Number.isSafeInteger(amountSatang)||amountSatang<=0||Math.abs(o.totalAmount*100-amountSatang)>0.00001)return [];
-   return [{id:d.id,amountSatang,createdMs,hasSlip:typeof o.paymentSlipPath==="string"&&o.paymentSlipPath.startsWith("tenants/"+tenantId+"/payment-slips/"+d.id+"/")}];
-  });
-  const truncated=snapshot.size>200||notices.size>200;
-  matches=policy.rank(eligible.slice(0,100),rows.filter(n=>n.receivedMs>=now-2*86400000),recipient,{truncated:truncated||eligible.length>100});
-  matchStatus=truncated||eligible.length>100?"bounded_unavailable":"advisory";
+  const context=await candidateSnapshot(db,tenantId);
+  matches=context.matches;matchStatus=context.matchStatus;recipient=context.recipient;
  }
+
  return {enabled,devices:devices.docs.map(d=>d.data()).filter(d=>!d.archivedMs).map(devicePublic),items,matches,matchStatus,receiver:recipient,apkDownloadAvailable:false,...flags};
 });
 function bearer(req){
@@ -120,13 +188,14 @@ exports.paymentCompanionNoticeIngest=onRequest(options,async(req,res)=>{
    // Idempotency is per device + event. Do not merge independent equal-value
    // transfers or different devices just because account/time/amount agree.
    const id=policy.digest(key.deviceId+":"+item.eventId),noticeRef=root.collection("notices").doc(id);
-   const prior=await tx.get(noticeRef);
+   const [prior,meta,store]=await Promise.all([tx.get(noticeRef),tx.get(root),tx.get(db.collection("tenants").doc(key.tenantId).collection("settings").doc("store"))]);
+   const link=meta.data()?.receiver,recipient=binding.receiverState(store,link,true);
    if(prior.exists){
     const old=prior.data();
     if(["eventId","amountSatang","source","receiverSuffix","bankMs","observedMs"].some(k=>old[k]!==item[k]))throw Error("COMPANION_EVENT_CONFLICT");
     return {stored:false,duplicate:true,notificationVerified:false,...flags};
    }
-   tx.create(noticeRef,{...item,id,deviceId:key.deviceId,deviceLabel:row.label,receivedMs:now,verificationStatus:"unverified"});
+   tx.create(noticeRef,{...item,id,deviceId:key.deviceId,deviceLabel:row.label,receivedMs:now,receiverRevision:recipient.enabled?link.revision:null,verificationStatus:"unverified"});
    tx.update(ref,{lastSeenMs:now});
    return {stored:true,duplicate:false,notificationVerified:false,...flags};
   });return res.status(200).json(result);

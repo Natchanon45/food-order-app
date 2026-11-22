@@ -1,3 +1,4 @@
+import { CompanionCashierReview } from "@/components/CompanionCashierReview";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getDownloadURL, ref as storageRef } from "firebase/storage";
@@ -272,6 +273,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
       <div className="receipt-row"><span>{t("cashier.bill_preview.delivery_fee")}</span><strong>{money(order.deliveryFee || 0)} {t("cashier.common.baht")}</strong></div>
     </div>
     <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.delivery.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
+    {order.paymentStatus === "pending_verification" && order.paymentMethod === "promptpay" && <CompanionCashierReview key={order.id} orderId={order.id} notify={showToast} />}
     <LalamoveDispatch order={order} t={t} money={money} busy={busy} onQuote={actions.quote} onPlace={actions.place} onRefresh={actions.refresh} onCancel={actions.cancelLalamove} />
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>

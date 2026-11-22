@@ -1,0 +1,4 @@
+.companion-cashier-review{display:grid;gap:8px;margin-top:10px;min-width:0}
+.companion-cashier-review > button{justify-self:start}
+.companion-cashier-review-body{display:grid;gap:6px;border:1px solid #e4d7b1;background:#fffaf0;border-radius:10px;padding:10px 12px;min-width:0;overflow-wrap:anywhere;color:#695629}
+.companion-cashier-review-body button{justify-self:start;max-width:100%;white-space:normal}

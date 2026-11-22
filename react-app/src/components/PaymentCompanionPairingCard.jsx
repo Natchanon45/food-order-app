@@ -44,6 +44,16 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
    notify(action==="revoke"?"ยกเลิกสิทธิ์แล้ว":"ลบคีย์แล้ว");
   });
  };
+ const confirmReceiver=async enabled=>{
+  if(busy||enabled&&(!data?.enabled||!data.receiver?.storePaymentReady))return;
+  if(!await sweetConfirm(enabled?"ยืนยันว่าบัญชีธนาคารที่บันทึกไว้เป็นบัญชีรับเงินจริงของ PromptPay ร้านนี้หรือไม่? ใช้เพื่อประกอบการตรวจสอบเท่านั้น ไม่อนุมัติชำระหรือปล่อยครัว":"ปิดการจับคู่กับบัญชีรับเงินนี้หรือไม่?",{title:enabled?"ยืนยันบัญชีรับเงิน":"ปิดการผูกบัญชี",confirmText:enabled?"ยืนยันบัญชี":"ปิดใช้งาน",cancelText:"กลับ",type:"warning"}))return;
+  await run(async()=>{
+   const {bankCode,accountLast4}=data.receiver;
+   const {data:r}=await httpsCallable(functions,"setPaymentCompanionReceiver")({enabled,bankCode,accountLast4});
+   if(r?.saved!==true||r.receiver?.enabled!==enabled||r.paymentVerified!==false)throw Error("RECEIVER_UNCONFIRMED");
+   notify(enabled?"ยืนยันบัญชีรับเงินแล้ว":"ปิดการผูกบัญชีแล้ว");
+  });
+ };
  const groups=useMemo(()=>groupCompanionObservations(data?.items),[data]);
  if(!isOwner||!SettingsGroup)return null;
  const active=data?.devices.filter(d=>d.enabled).length??0,recipient=data?.receiver||{};
@@ -67,8 +77,16 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
     {groups.length?<ul className="payment-companion-notice-list">{groups.map(g=><li key={g.id} className={"payment-companion-notice"+(g.possibleDuplicate?" is-duplicate":"")}><div className="payment-companion-history-amount"><span className="payment-companion-notice-icon"><i className="bi bi-arrow-down-left" aria-hidden="true"/></span><div className="payment-companion-notice-info"><strong>+{money(g.amountSatang)} บาท</strong><small>{date(g.receivedUTC)}</small></div></div><div className="payment-companion-history-data"><small>เวลาแจ้งเงินเข้า</small><strong>{date(g.bankTimeUTC)}</strong></div><div className="payment-companion-history-data"><strong>{g.deviceLabel}</strong><small>{g.receiverSuffix}</small></div><div className="payment-companion-history-state"><span className="payment-companion-unverified">{g.possibleDuplicate?"อาจเป็นรายการซ้ำ":"รอตรวจสอบ"}</span>{g.possibleDuplicate&&<small>{g.notificationCount} ข้อความ</small>}</div></li>)}</ul>:<div className="payment-companion-empty">ยังไม่มีรายการแจ้งเงินเข้า</div>}
    </section>
    <section className="payment-companion-panel"><div className="payment-companion-section-title"><i className="bi bi-intersect" aria-hidden="true"/><div><strong>รายการที่อาจตรงกับคำสั่งซื้อ</strong><small>ยอดตรง บัญชีเลขท้ายตรง และโอนก่อนสร้างออเดอร์ภายใน 15 นาที</small></div></div><p className="payment-companion-footnote">บัญชีที่ร้านบันทึกไว้: {recipient.bankName||"ยังไม่ตั้งค่า"} {recipient.accountLast4?"•••• "+recipient.accountLast4:""} · PromptPay {recipient.promptPayLast4?"•••• "+recipient.promptPayLast4:"ยังไม่ตั้งค่า"} · เลขท้ายสองบัญชีไม่จำเป็นต้องตรงกัน</p>
+    <div className="payment-companion-receiver-confirmation">
+     <strong>{recipient.requiresReconfirmation?"ข้อมูลการตั้งค่าร้านเปลี่ยนแล้ว ต้องยืนยันใหม่":recipient.enabled?"ยืนยันบัญชีรับเงินแล้ว":"ยังไม่ยืนยันบัญชีรับเงิน"}</strong>
+     <small>ใช้ข้อมูลจากการตั้งค่าร้าน ไม่ต้องกรอกบัญชีซ้ำ เมื่อมีการบันทึกข้อมูลร้านใหม่ ต้องยืนยันอีกครั้งเพื่อไม่ให้ใช้ข้อมูลเก่า</small>
+     <div className="payment-companion-receiver-buttons">
+      {!recipient.enabled&&<button type="button" className="btn btn-primary btn-sm" disabled={busy||!data.enabled||!recipient.storePaymentReady} onClick={()=>confirmReceiver(true)}><i className="bi bi-shield-check" aria-hidden="true"/> ยืนยันบัญชีรับเงิน</button>}
+      {recipient.linked&&<button type="button" className="btn btn-sm" disabled={busy} onClick={()=>confirmReceiver(false)}><i className="bi bi-pause-circle" aria-hidden="true"/> ปิดการผูกบัญชี</button>}
+     </div>
+    </div>
     {data.matchStatus!=="advisory"||!recipient.storePaymentReady?<div className="payment-companion-empty">ยังยืนยันข้อมูลสำหรับเสนอการจับคู่ไม่ได้</div>:data.matches.length?<ul className="payment-companion-notice-list">{data.matches.map(m=><li key={m.orderId} className="payment-companion-notice"><div className="payment-companion-notice-info"><strong>{money(m.amountSatang)} บาท</strong><small>ออเดอร์ {m.orderId}</small><small>{date(m.orderTimeUTC)} · {m.hasSlip?"มีสลิป":"ยังไม่มีสลิป"}</small></div><span className="payment-companion-unverified">{states[m.status]||"ยังไม่ยืนยัน"}</span></li>)}</ul>:<div className="payment-companion-empty">ไม่พบออเดอร์ PromptPay ที่รอตรวจสอบในช่วงล่าสุด</div>}
-    <p className="payment-companion-footnote">ตรวจหลักฐานและใช้ขั้นตอนยืนยันของแคชเชียร์เดิมทุกกรณี ระบบยังไม่อนุมัติการชำระหรือปล่อยครัวจากข้อมูลนี้</p>
+    <p className="payment-companion-footnote">แคชเชียร์บันทึกการตรวจเบื้องต้นได้ แต่การอนุมัติชำระยังใช้ขั้นตอน Superadmin เดิม ระบบยังไม่อนุมัติการชำระหรือปล่อยครัวจากข้อมูลนี้</p>
    </section>
    </>}
   </div>

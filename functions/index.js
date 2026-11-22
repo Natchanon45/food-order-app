@@ -336,3 +336,7 @@ exports.changePaymentCompanionDevice = paymentCompanion.changePaymentCompanionDe
 exports.getPaymentCompanionDashboard = paymentCompanion.getPaymentCompanionDashboard;
 exports.paymentCompanionDeviceStatus = paymentCompanion.paymentCompanionDeviceStatus;
 exports.paymentCompanionNoticeIngest = paymentCompanion.paymentCompanionNoticeIngest;
+
+exports.setPaymentCompanionReceiver = paymentCompanion.setPaymentCompanionReceiver;
+exports.getPaymentCompanionCashierReview = paymentCompanion.getPaymentCompanionCashierReview;
+exports.recordPaymentCompanionCashierReview = paymentCompanion.recordPaymentCompanionCashierReview;
