@@ -1,3 +1,4 @@
+import { PaymentCompanionPairingCard } from "@/components/PaymentCompanionPairingCard";
 import { BankalertStripeWalletTopup } from "@/components/BankalertStripeWalletTopup";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
@@ -1783,6 +1784,8 @@ export function AdminPage() {
                 </section>
               </div>
             </AdminSettingsGroup>
+
+            <PaymentCompanionPairingCard key={tenant?.id} isOwner={profile?.role === "owner"} SettingsGroup={AdminSettingsGroup} notify={showToast} />
 
             <AdminSettingsGroup
               id="storeDeliveryGroup"

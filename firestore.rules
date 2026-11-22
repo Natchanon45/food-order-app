@@ -318,6 +318,8 @@ service cloud.firestore {
     match /stripeWalletSandboxTenants/{path=**} { allow read, write: if false; }
     match /stripeWalletSandboxIntentClaims/{path=**} { allow read, write: if false; }
     match /stripeWalletSandboxControl/{path=**} { allow read, write: if false; }
+    match /paymentCompanionTenants/{path=**} { allow read, write: if false; }
+    match /paymentCompanionDeviceKeys/{path=**} { allow read, write: if false; }
 
     match /tenants/{tenantId} {
       allow read: if true; allow create, update, delete: if superAdminRole();

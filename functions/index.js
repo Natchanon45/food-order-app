@@ -329,3 +329,10 @@ exports.finalizeDeliveryPaymentSlip = deliverySlip.finalizeDeliveryPaymentSlip;
 exports.approveDeliveryPaymentReview = deliverySlip.approveDeliveryPaymentReview;
 exports.listPlatformDeliveryManualReviews = deliverySlip.listPlatformDeliveryManualReviews;
 exports.notifyKitchenDeliveryAdmitted = deliverySlip.notifyKitchenDeliveryAdmitted;
+
+const paymentCompanion = require("./payment-companion");
+exports.pairPaymentCompanionDevice = paymentCompanion.pairPaymentCompanionDevice;
+exports.changePaymentCompanionDevice = paymentCompanion.changePaymentCompanionDevice;
+exports.getPaymentCompanionDashboard = paymentCompanion.getPaymentCompanionDashboard;
+exports.paymentCompanionDeviceStatus = paymentCompanion.paymentCompanionDeviceStatus;
+exports.paymentCompanionNoticeIngest = paymentCompanion.paymentCompanionNoticeIngest;

@@ -1,0 +1,273 @@
+/* Android payment companion: same collapsible settings hierarchy as Telegram.
+   Scoped to the opt-in owner panel; no adjustments to billing or store forms. */
+body.admin-vr-page .payment-companion-pilot {
+ width:100%;min-width:0;margin:10px 0;box-sizing:border-box;
+}
+body.admin-vr-page .payment-companion-pilot > .admin-settings-group {
+ width:100%;min-width:0;box-sizing:border-box;
+}
+body.admin-vr-page .payment-companion-body {
+ display:grid;gap:16px;min-width:0;padding:2px;
+}
+body.admin-vr-page .payment-companion-intro {
+ display:flex;align-items:flex-start;gap:13px;padding:15px 16px;
+ border:1px solid #d9ebe0;background:#f2faf5;border-radius:14px;color:#1e4f33;
+}
+body.admin-vr-page .payment-companion-intro-icon,
+body.admin-vr-page .payment-companion-section-title > i {
+ display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+ width:35px;height:35px;border-radius:11px;background:#e1f3e7;color:#157443;font-size:17px;
+}
+body.admin-vr-page .payment-companion-intro > div {min-width:0;flex:1}
+body.admin-vr-page .payment-companion-intro strong {font-size:14px;font-weight:750}
+body.admin-vr-page .payment-companion-intro p {margin:5px 0 0;font-size:12px;line-height:1.65;color:#5c7767}
+body.admin-vr-page .payment-companion-pilot-tag {
+ flex-shrink:0;padding:4px 9px;border-radius:999px;background:#f0e8ff;color:#7253ae;font-size:11px;font-weight:750;
+}
+body.admin-vr-page .payment-companion-panel {
+ display:grid;gap:14px;padding:18px;border:1px solid #dfe9e2;border-radius:15px;background:#fff;min-width:0;
+}
+body.admin-vr-page .payment-companion-section-heading {
+ display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;
+}
+body.admin-vr-page .payment-companion-section-title {display:flex;align-items:center;gap:11px;min-width:0}
+body.admin-vr-page .payment-companion-section-title > div {min-width:0;display:grid;gap:3px}
+body.admin-vr-page .payment-companion-section-title strong {font-size:13px;color:#183c29;font-weight:800}
+body.admin-vr-page .payment-companion-section-title small {font-size:11px;line-height:1.5;color:#78877c}
+body.admin-vr-page .payment-companion-count {
+ flex-shrink:0;padding:6px 10px;background:#ebf6ef;color:#277248;border-radius:999px;font-size:11px;font-weight:800;
+}
+body.admin-vr-page .payment-companion-form {display:grid;gap:8px;min-width:0}
+body.admin-vr-page .payment-companion-form > label {font-size:12px;color:#4a6053;font-weight:750}
+/* The field has a separate help line below its 42px input.
+   Align the action with the INPUT, not the combined field+help height. */
+body.admin-vr-page .payment-companion-form-controls {display:flex;align-items:flex-start;gap:10px;min-width:0}
+body.admin-vr-page .payment-companion-form-controls > input {
+ flex:1;min-width:0;min-height:42px;max-width:none;box-sizing:border-box;border-radius:10px;
+}
+body.admin-vr-page .payment-companion-primary-button {
+ flex:0 0 auto;align-self:flex-start;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ box-sizing:border-box;height:42px;min-height:42px;max-height:42px;
+ border-radius:10px;padding:0 15px;font-size:12px;line-height:1.25;white-space:nowrap;
+}
+body.admin-vr-page .payment-companion-hint {margin:0;font-size:11px;line-height:1.5;color:#7a887e}
+body.admin-vr-page .payment-companion-token {
+ display:grid;gap:10px;background:#fffaf0;border:1px solid #ebd6a4;border-radius:12px;padding:14px;
+}
+body.admin-vr-page .payment-companion-token-title {display:flex;align-items:center;gap:8px;color:#805b19;font-size:12px}
+body.admin-vr-page .payment-companion-token-title > span {
+ margin-left:auto;font-size:10px;background:#fbeac5;padding:4px 8px;border-radius:999px;
+}
+body.admin-vr-page .payment-companion-token > p {margin:0;font-size:11px;color:#896e3f;line-height:1.5}
+body.admin-vr-page .payment-companion-token-controls {display:flex;flex-wrap:wrap;gap:8px}
+body.admin-vr-page .payment-companion-token-controls > input {flex:1;min-width:180px;font-family:ui-monospace,monospace;font-size:11px}
+body.admin-vr-page .payment-companion-token-controls > button,
+body.admin-vr-page .payment-companion-refresh,
+body.admin-vr-page .payment-companion-revoke {display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:9px;white-space:nowrap}
+body.admin-vr-page .payment-companion-copy-status {color:#745f32;font-size:11px}
+body.admin-vr-page .payment-companion-empty {
+ display:flex;align-items:center;gap:12px;min-height:65px;padding:14px;
+ border:1px dashed #d9e5dd;border-radius:12px;background:#fafcfb;color:#688173;font-size:12px;
+}
+body.admin-vr-page .payment-companion-empty > i {
+ font-size:22px;color:#95b6a0;flex-shrink:0;
+}
+body.admin-vr-page .payment-companion-empty > div {display:grid;gap:4px}
+body.admin-vr-page .payment-companion-empty strong {font-size:12px;color:#526a59}
+body.admin-vr-page .payment-companion-empty small {font-size:11px;color:#8a998e}
+body.admin-vr-page .payment-companion-device-list,
+body.admin-vr-page .payment-companion-notice-list {list-style:none;margin:0;padding:0;display:grid;gap:8px}
+body.admin-vr-page .payment-companion-device,
+body.admin-vr-page .payment-companion-notice {
+ display:flex;align-items:center;gap:10px;min-width:0;padding:12px;border:1px solid #e7eee9;
+ border-radius:11px;background:#fdfefd;
+}
+body.admin-vr-page .payment-companion-device-icon,
+body.admin-vr-page .payment-companion-notice-icon {
+ display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+ width:36px;height:36px;border-radius:10px;background:#edf5f0;color:#1c7847;font-size:17px;
+}
+body.admin-vr-page .payment-companion-device-info,
+body.admin-vr-page .payment-companion-notice-info {min-width:0;flex:1;display:grid;gap:4px}
+body.admin-vr-page .payment-companion-device-info strong,
+body.admin-vr-page .payment-companion-notice-info strong {font-size:12px;color:#1d432d;overflow-wrap:anywhere}
+body.admin-vr-page .payment-companion-device-info small,
+body.admin-vr-page .payment-companion-notice-info small {font-size:11px;color:#748679;line-height:1.5;overflow-wrap:anywhere}
+body.admin-vr-page .payment-companion-device-state {
+ flex-shrink:0;padding:5px 9px;background:#f0f2f0;color:#79867d;border-radius:999px;font-size:10px;font-weight:750;
+}
+body.admin-vr-page .payment-companion-device-state.is-active {background:#e5f7ed;color:#117441}
+body.admin-vr-page .payment-companion-revoke {flex-shrink:0;font-size:11px}
+body.admin-vr-page .payment-companion-unverified {
+ flex-shrink:0;padding:6px 10px;background:#fff4dd;color:#94651a;font-size:10px;font-weight:750;border-radius:999px;
+}
+body.admin-vr-page .payment-companion-footnote {
+ display:flex;align-items:flex-start;gap:8px;padding:11px 12px;border-radius:10px;
+ background:#f5f8f6;color:#718478;font-size:11px;line-height:1.6;
+}
+body.admin-vr-page .payment-companion-footnote i {flex-shrink:0;margin-top:2px}
+body.admin-vr-page .payment-companion-error {
+ display:flex;align-items:center;gap:9px;padding:12px;border-radius:10px;
+ background:#fff1f1;border:1px solid #f4cccc;color:#b32b33;font-size:12px;
+}
+@media(max-width:680px){
+ body.admin-vr-page .payment-companion-body {gap:10px}
+ body.admin-vr-page .payment-companion-intro {padding:12px;gap:9px;flex-wrap:wrap}
+ body.admin-vr-page .payment-companion-intro > div {flex-basis:calc(100% - 55px)}
+ body.admin-vr-page .payment-companion-pilot-tag {margin-left:45px}
+ body.admin-vr-page .payment-companion-panel {padding:12px;gap:12px}
+ body.admin-vr-page .payment-companion-section-heading {flex-wrap:wrap}
+ body.admin-vr-page .payment-companion-form-controls {flex-direction:column}
+ body.admin-vr-page .payment-companion-primary-button {width:100%}
+ body.admin-vr-page .payment-companion-token-controls > input {flex-basis:100%;width:100%}
+ body.admin-vr-page .payment-companion-device,
+ body.admin-vr-page .payment-companion-notice {flex-wrap:wrap}
+ body.admin-vr-page .payment-companion-device-info,
+ body.admin-vr-page .payment-companion-notice-info {flex-basis:calc(100% - 50px)}
+ body.admin-vr-page .payment-companion-device-state {margin-left:44px}
+ body.admin-vr-page .payment-companion-revoke {margin-left:auto}
+ body.admin-vr-page .payment-companion-unverified {margin-left:44px}
+}
+body.admin-vr-page .payment-companion-dashboard{
+ display:grid;gap:9px;min-width:0;padding:12px;
+ border:1px solid #e7eee9;border-radius:11px;background:#fafcfb;
+}
+body.admin-vr-page .payment-companion-dashboard-title{
+ display:flex;align-items:center;gap:7px;color:#496d56;
+ font-size:12px;font-weight:800;line-height:1.5;
+}
+body.admin-vr-page .payment-companion-metrics{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+}
+body.admin-vr-page .payment-companion-metric{
+ display:grid;align-content:start;gap:5px;min-width:0;padding:10px;
+ border:1px solid #e7eee9;border-radius:10px;background:#fff;
+}
+body.admin-vr-page .payment-companion-metric span{
+ display:flex;align-items:center;gap:6px;color:#668073;
+ font-size:11px;font-weight:700;
+}
+body.admin-vr-page .payment-companion-metric strong{
+ font-size:19px;font-weight:800;line-height:1.15;color:#245b3c;
+}
+body.admin-vr-page .payment-companion-metric strong small{font-size:11px;font-weight:600}
+body.admin-vr-page .payment-companion-metric em{
+ font-size:10px;line-height:1.5;color:#718478;
+ font-style:normal;overflow-wrap:anywhere;
+}
+body.admin-vr-page .payment-companion-metric.is-amber strong{color:#94651a}
+body.admin-vr-page .payment-companion-metric.is-blue strong{color:#306a95}
+body.admin-vr-page .payment-companion-delete-key{
+ display:inline-flex;align-items:center;justify-content:center;gap:6px;
+ flex-shrink:0;border-radius:9px;color:#b22331;background:#fff4f4;
+ border:1px solid #efc7cc;font-size:11px;font-weight:750;white-space:nowrap;
+}
+body.admin-vr-page .payment-companion-delete-key:hover{background:#ffe5e7}
+@media(max-width:680px){
+ body.admin-vr-page .payment-companion-metrics{grid-template-columns:1fr 1fr}
+ body.admin-vr-page .payment-companion-delete-key{margin-left:auto}
+}
+
+
+/* COMPANION_ORIGINAL_8000_DASHBOARD_RESTORE */
+/* Extracted scoped selectors from the previously deployed port-8000 CSS.
+   Keeps the exact original dashboard typography, spacing, colors and responsive behavior. */
+body.admin-vr-page .payment-companion-panel{background:#fff;border:1px solid #dfe9e2;border-radius:15px;gap:14px;min-width:0;padding:18px;display:grid}
+body.admin-vr-page .payment-companion-device-list,body.admin-vr-page .payment-companion-notice-list{gap:8px;margin:0;padding:0;list-style:none;display:grid}
+body.admin-vr-page .payment-companion-device,body.admin-vr-page .payment-companion-notice{background:#fdfefd;border:1px solid #e7eee9;border-radius:11px;align-items:center;gap:10px;min-width:0;padding:12px;display:flex}
+body.admin-vr-page .payment-companion-device-icon,body.admin-vr-page .payment-companion-notice-icon{color:#1c7847;background:#edf5f0;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;width:36px;height:36px;font-size:17px;display:inline-flex}
+body.admin-vr-page .payment-companion-device-info,body.admin-vr-page .payment-companion-notice-info{flex:1;gap:4px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-device-info strong,body.admin-vr-page .payment-companion-notice-info strong{color:#1d432d;overflow-wrap:anywhere;font-size:12px}
+body.admin-vr-page .payment-companion-device-info small,body.admin-vr-page .payment-companion-notice-info small{color:#748679;overflow-wrap:anywhere;font-size:11px;line-height:1.5}
+body.admin-vr-page .payment-companion-unverified{color:#94651a;background:#fff4dd;border-radius:999px;flex-shrink:0;padding:6px 10px;font-size:10px;font-weight:750}
+body.admin-vr-page .payment-companion-unverified.is-possible-duplicate{color:#87551d;background:#fff0d5}
+body.admin-vr-page .payment-companion-notice-info .payment-companion-duplicate-note{color:#8c601e;font-weight:600;line-height:1.6}
+body.admin-vr-page .payment-companion-footnote{color:#718478;background:#f5f8f6;border-radius:10px;align-items:flex-start;gap:8px;padding:11px 12px;font-size:11px;line-height:1.6;display:flex}
+body.admin-vr-page .payment-companion-footnote i{flex-shrink:0;margin-top:2px}
+@media (width<=680px){
+body.admin-vr-page .payment-companion-panel{gap:12px;padding:12px}
+body.admin-vr-page .payment-companion-device,body.admin-vr-page .payment-companion-notice{flex-wrap:wrap}
+body.admin-vr-page .payment-companion-device-info,body.admin-vr-page .payment-companion-notice-info{flex-basis:calc(100% - 50px)}
+body.admin-vr-page .payment-companion-unverified{margin-left:44px}
+}
+body.admin-vr-page .payment-companion-dashboard{gap:16px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-overview{background:#fbfdfb;border:1px solid #d9e8dd;border-radius:16px;min-width:0;overflow:hidden;box-shadow:0 4px 22px #0f43240b}
+body.admin-vr-page .payment-companion-overview-hero{color:#fff;background:linear-gradient(115deg,#14382a 0%,#1f6042 66%,#2c7c50 100%);justify-content:space-between;align-items:flex-start;gap:18px;padding:23px 24px;display:flex;position:relative;overflow:hidden}
+body.admin-vr-page .payment-companion-overview-hero:after{content:"";pointer-events:none;border:1px solid #ffffff1f;border-radius:50%;width:260px;height:260px;position:absolute;bottom:-95px;right:-45px;box-shadow:0 0 0 30px #ffffff07,0 0 0 70px #ffffff05}
+body.admin-vr-page .payment-companion-overview-heading{z-index:1;align-items:flex-start;gap:14px;min-width:0;display:flex}
+body.admin-vr-page .payment-companion-overview-hero-icon{color:#e0f9e9;background:#ffffff24;border-radius:13px;flex-shrink:0;justify-content:center;align-items:center;width:45px;height:45px;font-size:22px;display:flex}
+body.admin-vr-page .payment-companion-overview-heading>div{min-width:0}
+body.admin-vr-page .payment-companion-overline{color:#b8e8ca;letter-spacing:.12em;margin-bottom:5px;font-size:10px;font-weight:800;display:block}
+body.admin-vr-page .payment-companion-overview-heading h3{color:#fff;margin:0;font-size:20px;font-weight:800;line-height:1.25}
+body.admin-vr-page .payment-companion-overview-heading p{color:#d6e9de;margin:7px 0 0;font-size:12px;line-height:1.55}
+body.admin-vr-page .payment-companion-overview-status{z-index:1;white-space:nowrap;color:#e8fff0;background:#ffffff21;border:1px solid #fff3;border-radius:999px;align-items:center;gap:7px;padding:8px 11px;font-size:11px;font-weight:750;display:inline-flex;position:relative}
+body.admin-vr-page .payment-companion-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:16px;display:grid}
+body.admin-vr-page .payment-companion-metric{background:#fff;border:1px solid #e4ece6;border-radius:13px;align-content:start;justify-items:start;gap:6px;min-width:0;min-height:137px;padding:17px 16px;display:grid;box-shadow:0 2px 6px #20412c05}
+body.admin-vr-page .payment-companion-metric-icon{color:#26824d;background:#e7f5ec;border-radius:10px;justify-content:center;align-items:center;width:35px;height:35px;font-size:16px;display:flex}
+body.admin-vr-page .payment-companion-metric.is-blue .payment-companion-metric-icon{color:#336eaa;background:#e9f2fd}
+body.admin-vr-page .payment-companion-metric.is-amber .payment-companion-metric-icon{color:#b67815;background:#fff2d9}
+body.admin-vr-page .payment-companion-metric.is-violet .payment-companion-metric-icon{color:#8062b1;background:#f1edfc}
+body.admin-vr-page .payment-companion-metric-label{color:#607467;font-size:11px;font-weight:700;line-height:1.45}
+body.admin-vr-page .payment-companion-metric-number{color:#193d2a;font-variant-numeric:tabular-nums;font-size:27px;font-weight:850;line-height:1.1}
+body.admin-vr-page .payment-companion-metric-hint{color:#89988c;font-size:10.5px;line-height:1.45}
+body.admin-vr-page .payment-companion-overview-bottom{color:#718578;background:#f7faf8;border-top:1px solid #e6eee8;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 24px;padding:12px 17px;font-size:11px;line-height:1.55;display:flex}
+body.admin-vr-page .payment-companion-overview-bottom>span{align-items:flex-start;gap:7px;display:flex}
+body.admin-vr-page .payment-companion-overview-bottom i{color:#4e9066;margin-top:1px}
+body.admin-vr-page .payment-companion-overview-bottom strong{color:#355a43;font-weight:750}
+body.admin-vr-page .payment-companion-activity-actions{flex-wrap:wrap;align-items:center;gap:10px;display:flex}
+body.admin-vr-page .payment-companion-activity-count{color:#52765e;white-space:nowrap;background:#edf4ef;border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:800}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-head{color:#87998c;grid-template-columns:minmax(190px,1.2fr) minmax(158px,1fr) minmax(155px,1fr) minmax(125px,.8fr);gap:13px;padding:10px 14px 8px;font-size:11px;font-weight:800;display:grid}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice-list{gap:9px}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice{background:#fff;border:1px solid #e2ebe4;border-radius:12px;grid-template-columns:minmax(190px,1.2fr) minmax(158px,1fr) minmax(155px,1fr) minmax(125px,.8fr);align-items:center;gap:13px;min-width:0;padding:15px 14px;display:grid}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice.is-duplicate{background:#fffdf8;border-color:#f2dfb9}
+body.admin-vr-page .payment-companion-history-amount{align-items:center;gap:11px;min-width:0;display:flex}
+body.admin-vr-page .payment-companion-history-amount .payment-companion-notice-icon{width:39px;height:39px}
+body.admin-vr-page .payment-companion-history-amount .payment-companion-notice-info strong{white-space:nowrap;color:#156d3d;font-size:15px;line-height:1.4}
+body.admin-vr-page .payment-companion-history-data{gap:4px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-history-data strong{color:#3c5746;overflow-wrap:anywhere;font-size:11.5px;font-weight:700;line-height:1.45}
+body.admin-vr-page .payment-companion-history-data small{color:#88978b;font-size:10.5px}
+body.admin-vr-page .payment-companion-history-state{justify-items:start;gap:6px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-history-state small{color:#97713b;font-size:10px;line-height:1.35}
+body.admin-vr-page .payment-companion-history-state .payment-companion-unverified{white-space:nowrap;margin:0}
+body.admin-vr-page .payment-companion-activity .payment-companion-duplicate-note{color:#926318;background:#fff6e5;border-radius:8px;grid-column:1/-1;align-items:flex-start;gap:7px;margin:0;padding:9px 11px;font-size:11px;line-height:1.55;display:flex}
+body.admin-vr-page .payment-companion-duplicate-note i{flex-shrink:0;margin-top:1px}
+body.admin-vr-page .payment-companion-mobile-label{display:none}
+body.admin-vr-page .payment-companion-list-limit{color:#8a928b;margin:0;font-size:11px;line-height:1.5}
+@media (width<=1080px){
+body.admin-vr-page .payment-companion-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.admin-vr-page .payment-companion-metric{min-height:125px}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-head{display:none}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-amount{grid-column:1/2}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-state{grid-area:1/2/auto/3;justify-self:end}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-data{border-top:1px solid #edf1ee;padding-top:10px}
+body.admin-vr-page .payment-companion-mobile-label{color:#93a294;font-size:10px;display:block}
+}
+@media (width<=580px){
+body.admin-vr-page .payment-companion-overview-hero{flex-wrap:wrap;gap:12px;padding:18px}
+body.admin-vr-page .payment-companion-overview-heading h3{font-size:17px}
+body.admin-vr-page .payment-companion-overview-heading p{font-size:11px}
+body.admin-vr-page .payment-companion-overview-status{margin-left:58px}
+body.admin-vr-page .payment-companion-metrics{gap:9px;padding:11px}
+body.admin-vr-page .payment-companion-metric{min-height:132px;padding:13px 11px}
+body.admin-vr-page .payment-companion-metric-number{font-size:24px}
+body.admin-vr-page .payment-companion-metric-label{font-size:10.5px}
+body.admin-vr-page .payment-companion-overview-bottom{padding:12px}
+body.admin-vr-page .payment-companion-activity-actions{justify-content:space-between;width:100%}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice{grid-template-columns:1fr;gap:10px}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-amount,body.admin-vr-page .payment-companion-activity .payment-companion-history-state{grid-area:auto}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-state{flex-wrap:wrap;justify-self:start;align-items:center;gap:8px;display:flex}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-data{padding-top:8px}
+body.admin-vr-page .payment-companion-history-amount .payment-companion-notice-icon{width:36px;height:36px}
+body.admin-vr-page .payment-companion-activity .payment-companion-duplicate-note{grid-column:1}
+}
+
+/* DynamicField is a wrapper rather than the previous direct input. */
+body.admin-vr-page .payment-companion-form-controls > .lk-dynamic-field {flex:1;min-width:0;width:100%}
+body.admin-vr-page .payment-companion-form-controls .lk-dynamic-control > input {min-height:42px}
+body.admin-vr-page .payment-companion-notice-info small {overflow-wrap:anywhere}
+body.admin-vr-page .payment-companion-token-controls input {min-width:0;max-width:100%}
+@media(max-width:680px){
+ body.admin-vr-page .payment-companion-form-controls > .lk-dynamic-field {flex-basis:auto}
+ body.admin-vr-page .payment-companion-token-controls button {white-space:normal}
+}

@@ -517,6 +517,20 @@
         }
       },
       {
+        "source": "/api/companion/device/status",
+        "function": {
+          "functionId": "paymentCompanionDeviceStatus",
+          "region": "asia-southeast1"
+        }
+      },
+      {
+        "source": "/api/companion/notifications",
+        "function": {
+          "functionId": "paymentCompanionNoticeIngest",
+          "region": "asia-southeast1"
+        }
+      },
+      {
         "source": "/api/lalamove/webhook",
         "function": {
           "functionId": "lalamoveWebhook",
