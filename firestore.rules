@@ -399,6 +399,8 @@ service cloud.firestore {
       // inspect only their own tenant's billing records, never create/alter
       // invoice amounts, payment status, period seals or immutable snapshots.
       match /paymentCompanionLateSlipAudit/{orderId} { allow read, write: if false; }
+      match /telegramChannels/{channelId} { allow read, write: if false; }
+      match /telegramOutbox/{eventId} { allow read, write: if false; }
       match /hybridBillingPeriods/{cycleId} {
         allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
         allow create, update, delete: if false;

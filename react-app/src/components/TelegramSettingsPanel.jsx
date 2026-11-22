@@ -47,13 +47,13 @@ const errorLabel = error => {
   return "เกิดข้อผิดพลาดในการตั้งค่า โปรดตรวจสอบการเชื่อมต่อแล้วลองใหม่อีกครั้ง";
 };
 async function request(endpoint, options) {
-  if (!endpoint.startsWith("/api/platform/telegram")) {
+  const platform=endpoint.startsWith("/api/platform/telegram");
+  if(!platform&&!endpoint.startsWith("/api/tenant/telegram"))
     throw new Error("TELEGRAM_SETTINGS_UNAVAILABLE");
-  }
   const method = String(options?.method || "GET").toUpperCase();
-  const name = method === "GET" ? "getPlatformTelegramSettings"
-    : endpoint.endsWith("/test") ? "testPlatformTelegramSettings"
-    : "savePlatformTelegramSettings";
+  const name=method==="GET"?(platform?"getPlatformTelegramSettings":"getTenantTelegramSettings")
+    :endpoint.endsWith("/test")?(platform?"testPlatformTelegramSettings":"testTenantTelegramSettings")
+    :(platform?"savePlatformTelegramSettings":"saveTenantTelegramSettings");
   const payload = options?.body ? JSON.parse(options.body) : {};
   try {
     const response = await httpsCallable(functions, name)(payload);
@@ -63,7 +63,10 @@ async function request(endpoint, options) {
   } catch (error) {
     if (error?.code === "functions/failed-precondition") {
       const typed = String(error?.details?.code || error?.message || "");
-      if (typed.includes("TELEGRAM_")) throw new Error(typed.match(/TELEGRAM_[A-Z_]+/)?.[0] || "TELEGRAM_SETTINGS_UNAVAILABLE");
+      if (typed.includes("TELEGRAM_")) {
+        const e=new Error(typed.match(/TELEGRAM_[A-Z_]+/)?.[0] || "TELEGRAM_SETTINGS_UNAVAILABLE");
+        e.code=error.code;throw e;
+      }
     }
     throw error;
   }
@@ -187,6 +190,7 @@ export function TelegramSettingsPanel({ scope = "tenant", onActiveCountChange, h
         method:"PUT", body:JSON.stringify({
           purpose, chatId:current.chatId.trim(), botToken:current.botToken.trim(),
           clearToken:current.clearToken, enabled:current.enabled,
+          ...(scope==="tenant"?{expectedRevision:current.revision||"0"}:{}),
         }),
       });
       if (!data?.item || data.item.purpose !== purpose) throw Error("TELEGRAM_SETTINGS_SAVE_UNCONFIRMED");
@@ -201,7 +205,8 @@ export function TelegramSettingsPanel({ scope = "tenant", onActiveCountChange, h
       // A definite validation rejection is safe to correct and submit again.
       // Network/server/ambiguous acknowledgement remains locked until reload,
       // preventing accidental duplicate sensitive writes.
-      const definiteRejection = error?.status === 422 || error?.status === 400;
+      const definiteRejection = error?.status === 422 || error?.status === 400 ||
+        error?.code === "functions/invalid-argument" || error?.code === "functions/failed-precondition";
       if (!definiteRejection) setWriteUncertain(true);
       showAppToast(errorLabel(error) + (definiteRejection ? "" : " • โปรดโหลดข้อมูลใหม่ก่อนบันทึกซ้ำ"), "error");
     } finally { setBusy(""); }

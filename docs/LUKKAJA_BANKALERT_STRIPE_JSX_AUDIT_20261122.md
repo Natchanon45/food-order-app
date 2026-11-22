@@ -242,3 +242,11 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - After-confirm BankAlert candidates include exact recipient and original QR interval; SCB whole-minute alerts remain manual-review-only. Owner receiver consent now requires the current update-revision as a client-visible, server-validated precondition; same-last-four/changed-back races fail.
 - Added separate project-only owner opt-in UAT kitchen admission with exact uniqueness and one-claim Firestore transaction. Explicit warning and FCM wording; Pending/Unverified remains, no payment/settlement/wallet/rider dispatch. Production, Firebase emulator and demo project flags refuse UAT activation.
 - React components: customer confirmed QR, merchant UAT owner consent, cashier and kitchen warning + existing slip review. Full Stripe M7/Telegram, signed bank statements, real Android UAT and deployment remain outstanding. Never equate green unit/emulator tests to money-provider acceptance.
+
+### P1 continuation — tenant Telegram channel settings, finance/outbox and QR notification ordering
+
+- See `docs/LUKKAJA_P1_TENANT_TELEGRAM_DELIVERY_NOTICES_20261122.md`: source-to-Firebase field map, notification matrix, security invariants and acceptance scenarios.
+- Shared source-style tenant Telegram panel is now enabled on the actual AdminPage, with owner/admin-only Firebase Callables, encrypted token (existing Secret Manager key), optimistic revision guard, all 3 channel configs and persisted-credential test send.
+- Added one-way, deterministic per-tenant outbox for new COD, original pay-first review, QR late original slip, isolated BankAlert UAT kitchen, Paid transition, wallet top-up, delivery revenue share, and hybrid platform-fee receipt/review. Disabled/unconfigured channels do nothing; ambiguous Telegram HTTP results are marked unconfirmed, never retried automatically.
+- Existing QR order creation now suppresses premature cashier FCM; review/BankAlert UAT admission can notify only with explicit unverified label. All financial and dispatch state remains server-authoritative; no Telegram message is evidence of payment.
+- No real BotFather credential, Telegram message, Firebase deployment, APK build, production tenant update, or source repository changes were made.

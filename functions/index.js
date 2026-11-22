@@ -3,6 +3,7 @@ const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
+const deliveryQrNotify=require("./delivery-qr-notify-policy");
 
 initializeApp();
 
@@ -107,11 +108,55 @@ exports.migrateCurrentUsersToSaaS = onCall(
   }
 );
 
+exports.notifyCompanionQrCashierReview = onDocumentWritten(
+  { document: "tenants/{tenantId}/orders/{orderId}", region: "asia-southeast1" },
+  async event => {
+    const before=event.data?.before?.exists?event.data.before.data():null;
+    const after=event.data?.after?.exists?event.data.after.data():null;
+    const kind=deliveryQrNotify.cashierEvent(before,after);
+    if(!kind)return;
+    const {tenantId,orderId}=event.params;
+    if(!/^[A-Za-z0-9_-]{4,128}$/.test(tenantId||"")||!/^[A-Za-z0-9_-]{8,128}$/.test(orderId||"")||
+      after.tenantId!==tenantId)return;
+    const db=getFirestore();
+    const tenant=(await db.collection("tenants").doc(tenantId).get()).data();
+    if(tenant?.active!==true)return;
+    const snaps=await db.collection("tenants").doc(tenantId).collection("notificationTokens")
+      .where("active","==",true).get();
+    const docs=snaps.docs.filter(doc=>["owner","admin","cashier"].includes(doc.data().role)&&
+      typeof doc.data().token==="string"&&doc.data().token.length>0).slice(0,500);
+    const tokens=docs.map(doc=>doc.data().token);
+    if(!tokens.length)return;
+    const reviewMessage=kind==="uat_kitchen"
+      ?"BankAlert UAT ส่งเข้าครัวเบื้องต้นแล้ว แต่ยังไม่ยืนยันรับเงิน"
+      :"ลูกค้าแนบสลิปต้นฉบับแล้ว โปรดตรวจรับเงินจริง";
+    const result=await getMessaging().sendEachForMulticast({
+      tokens,
+      notification:{title:"ตรวจสอบคำสั่งซื้อ Delivery",body:reviewMessage},
+      data:{type:"delivery_companion_"+kind,tenantId,orderId,
+        url:"/cashier/?orderId="+encodeURIComponent(orderId)},
+      webpush:{fcmOptions:{link:"/cashier/?orderId="+encodeURIComponent(orderId)},
+        notification:{icon:"/assets/images/icon-192.png",badge:"/assets/images/icon-192.png",
+          tag:"delivery-companion-"+kind+"-"+orderId,renotify:false}},
+    });
+    const failures=[];
+    for(let i=0;i<result.responses.length&&i<docs.length;i++){
+      const code=result.responses[i].error?.code;
+      if(!result.responses[i].success&&["messaging/invalid-registration-token",
+        "messaging/registration-token-not-registered"].includes(code)){
+        failures.push(docs[i].ref.set({active:false,invalidatedAt:FieldValue.serverTimestamp(),
+          errorCode:code},{merge:true}));
+      }
+    }
+    await Promise.all(failures);
+  }
+);
+
 exports.notifyDeliveryOrderCreated = onDocumentCreated(
   { document: "tenants/{tenantId}/orders/{orderId}", region: "asia-southeast1" },
   async event => {
     const order = event.data?.data();
-    if (!order || order.orderType !== "delivery") return;
+    if (!order || order.orderType !== "delivery" || deliveryQrNotify.suppressCreated(order)) return;
 
     const { tenantId, orderId } = event.params;
     const db = getFirestore();
@@ -349,3 +394,15 @@ exports.submitPublicCompanionLateSlip = companionQR.submitPublicCompanionLateSli
 
 const companionKitchen = require("./payment-companion-kitchen");
 exports.onPaymentCompanionNoticeForKitchen = companionKitchen.onPaymentCompanionNoticeForKitchen;
+
+const tenantTelegram=require("./tenant-telegram");
+exports.getTenantTelegramSettings = tenantTelegram.getTenantTelegramSettings;
+exports.saveTenantTelegramSettings = tenantTelegram.saveTenantTelegramSettings;
+exports.testTenantTelegramSettings = tenantTelegram.testTenantTelegramSettings;
+
+const tenantTelegramEvents=require("./tenant-telegram-events");
+exports.notifyTenantTelegramDelivery = tenantTelegramEvents.notifyTenantTelegramDelivery;
+exports.notifyTenantTelegramWalletTopup = tenantTelegramEvents.notifyTenantTelegramWalletTopup;
+exports.notifyTenantTelegramRevenueShare = tenantTelegramEvents.notifyTenantTelegramRevenueShare;
+exports.notifyTenantTelegramHybridPlatformFee = tenantTelegramEvents.notifyTenantTelegramHybridPlatformFee;
+exports.deliverTenantTelegramEvent = tenantTelegramEvents.deliverTenantTelegramEvent;
