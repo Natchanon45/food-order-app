@@ -431,3 +431,7 @@ exports.bindPlatformM7StripeTestRecovery = m7TestRecovery.bindPlatformM7StripeTe
 const m7TestClosure=require("./m7-stripe-test-closure");
 exports.reviewPlatformM7StripeTestClosure = m7TestClosure.reviewPlatformM7StripeTestClosure;
 exports.approvePlatformM7StripeTestClosure = m7TestClosure.approvePlatformM7StripeTestClosure;
+
+const m7OperationalFinanceReadiness=require("./m7-operational-finance-readiness");
+exports.getPlatformM7OperationalFinanceReadiness =
+  m7OperationalFinanceReadiness.getPlatformM7OperationalFinanceReadiness;

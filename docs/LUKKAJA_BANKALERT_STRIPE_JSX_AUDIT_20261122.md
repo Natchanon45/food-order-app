@@ -326,3 +326,24 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - Added platform/merchant proof-based UI status and responsive Browser/Emulator
   regression tests. No real Stripe provider charge/credit/Invoice Paid/hold
   update and **no production deploy**.
+
+### P1 continuation — M7 real-bank / Service Credit source parity (read-only foundation)
+
+- Source: `resources/js/react-port` **154 JSX / 48,500 lines**; Firebase target
+  `react-app/src` currently **101 JSX / 36,346 lines** (includes new
+  component; counts reflect different file organization, not completion).
+- See `docs/LUKKAJA_P1_M7_OPERATIONAL_CASH_CREDIT_SOURCE_PARITY_20261122.md`.
+- Ported pure source Go Service Credit calculation: monthly/yearly threshold,
+  conversion of independently verified paid monthly fees, daily/monthly
+  offsets, monthly reversal, carry-forward, gross/credit/bank residual,
+  strict integer satang and duplicate/overdraw prevention. Pure functions
+  have **no** bank or Firestore writer and cannot authorize payment.
+- Added TEST-UAT-only Superadmin `getPlatformM7OperationalFinanceReadiness`
+  and a collapsible gap card: canonical Firebase Invoice amount and verified
+  Firebase documents are distinguished from **unmigrated operational Source
+  bank-paid cash, Service Credit and signed holds**. Source amounts and
+  remaining bank cash remain `null`, not fabricated 0/Paid. All settlement,
+  credit-posting and tenant-release flags remain false. No raw bank data.
+- Tests cover Go ledger vectors, source gap invariant, real Firestore
+  access control, receipt isolation, truncated reads and responsive
+  320/390/768/1440px Superadmin view. No Production deployment.
