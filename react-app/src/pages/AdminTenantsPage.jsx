@@ -1,5 +1,6 @@
 import { M7StripeTestShadowHistory } from "@/components/M7StripeTestShadowHistory";
 import { M7OperationalFinanceReadiness } from "@/components/M7OperationalFinanceReadiness";
+import { M7SourceMigrationPreflight } from "@/components/M7SourceMigrationPreflight";
 import { M7FinanceEvidenceHistory } from "@/components/M7FinanceEvidenceHistory";
 import { PlatformStripeWalletSandboxHistory } from "@/components/BankalertStripeHistory";
 import { PlatformPaymentHistory } from "@/components/PlatformPaymentHistory";
@@ -1155,6 +1156,7 @@ export function AdminTenantsPage() {
         <PlatformPaymentHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
         <M7FinanceEvidenceHistory scope="platform" tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
         <M7OperationalFinanceReadiness tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
+        <M7SourceMigrationPreflight tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
         <M7StripeTestShadowHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
 
         <section className="card tenant-list-card">

@@ -46,3 +46,12 @@
 .m7-operational-gap-item code{overflow-wrap:anywhere;white-space:normal}
 .m7-operational-gap-item ul{margin:6px 0 0 18px;padding:0;font-size:.85rem;line-height:1.5}
 .m7-operational-gap-item li{margin-bottom:4px}
+
+.m7-source-migration-file{display:flex;flex-direction:column;gap:7px;min-width:0}
+.m7-source-migration-file input{display:block;max-width:100%;font-size:.9rem}
+.m7-source-migration-actions{display:flex;flex-wrap:wrap;gap:8px}
+.m7-source-migration-actions .btn{display:inline-flex;align-items:center;gap:7px;white-space:normal;max-width:100%}
+.m7-source-migration-report,.m7-source-migration-history{display:flex;flex-direction:column;gap:9px;min-width:0}
+.m7-source-migration-report code,.m7-source-migration-history code{overflow-wrap:anywhere;font-size:.8em}
+.m7-source-migration-report ul{margin:2px 0 0 20px;padding:0;font-size:.85rem;line-height:1.6}
+.m7-source-migration-history>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border-color,#dfe5e9);padding-bottom:7px}

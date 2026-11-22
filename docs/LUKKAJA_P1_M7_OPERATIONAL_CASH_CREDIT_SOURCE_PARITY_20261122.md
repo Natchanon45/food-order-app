@@ -1,5 +1,12 @@
 # PENGUIN Firebase — M7 operational Cash / Service Credit source parity: pure policy + Superadmin gap review
 
+> **Module continuation:** A full read-only **Source SQL migration
+> preflight module** is documented in
+> `LUKKAJA_P1_M7_SOURCE_MIGRATION_PREFLIGHT_MODULE_20261122.md`.
+> It adds a ten-table sanitized manifest, candidate comparison and
+> UAT-only immutable diagnostic audit, but does not post funds/credits.
+
+
 **Date:** 22 Nov 2026 (Thailand)
 **Source read-only:** `cosmatch/lukkhaja`, branch `feature/lukkaja_bankalert_stripe` @ `03d2aaee`
 **Target:** `Natchanon45/food-order-app`, branch `feature/react-firebase-port`

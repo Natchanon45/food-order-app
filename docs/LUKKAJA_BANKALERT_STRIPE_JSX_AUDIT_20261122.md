@@ -347,3 +347,30 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - Tests cover Go ledger vectors, source gap invariant, real Firestore
   access control, receipt isolation, truncated reads and responsive
   320/390/768/1440px Superadmin view. No Production deployment.
+
+### P1 continuation — M7 Source-to-Firebase Migration Preflight module
+
+- See `docs/LUKKAJA_P1_M7_SOURCE_MIGRATION_PREFLIGHT_MODULE_20261122.md`.
+- Completed the **preflight module** for source MariaDB M7 → Firebase:
+  pinned SQL schema SHA-256 and full Source commit, versioned sanitized
+  manifest for ten core finance/credit/hold tables, global bank-ref claims
+  (Source table has no `tenant_id` column), strict integer-satang
+  invoice/credit/payment/hold cross-reconciliation, and a deterministic
+  SHA-256 snapshot digest.
+- Added **candidate-only** matching to existing Firebase Hybrid invoices
+  (monthly/day mapping, exact gross, state and credit-drift flags);
+  an equal date/amount does NOT authorize a financial migration.
+- Added an offline non-network CLI and private UAT-only
+  `previewPlatformM7SourceMigrationPreflight`,
+  `stagePlatformM7SourceMigrationPreflight`,
+  `getPlatformM7SourceMigrationPreflightHistory` callables. Audit
+  stores only digest/counts/issue codes, with one write per digest,
+  active Superadmin scope, transactional idempotence and Firestore
+  direct-client access denied.
+- Added responsive Superadmin file-review, explicit audit-stage
+  confirmation, and sanitized history UI.
+- **Module scope excludes original SQL snapshot attestation, bank
+  statement authentication, actual migration of service-credit
+  accounts/events, operational Invoice Paid, tenant hold/release,
+  Stripe TEST conversion and Production deployment.** All
+  those remain next-module blockers and flags remain false.

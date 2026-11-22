@@ -451,6 +451,11 @@ service cloud.firestore {
       match /m7StripeTestClosureAudits/{attemptId} {
         allow read, write: if false;
       }
+      // M7 MariaDB export preflight: ONLY a server-owned, untrusted-source
+      // diagnostic digest; no client may forge a migration/paid approval.
+      match /m7SourceMigrationPreflightRuns/{manifestDigest} {
+        allow read, write: if false;
+      }
       // Private financial compensation: a Server Admin transaction is the
       // only writer. The balance cap and decision audit must not be forged.
       match /hybridBillingAdjustments/{adjustmentId} {
