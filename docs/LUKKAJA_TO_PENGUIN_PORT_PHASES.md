@@ -1,5 +1,7 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+> **2026-11-22 source refresh:** The owner now requires `feature/lukkaja_bankalert_stripe` at `03d2aaee` instead of the historical source below. See [current JSX audit and continuation](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261122.md) and its JSON ledger. Historical phase evidence is retained; revalidate against the new source before acceptance or release.
+
 **Started:** 09/11/2026 (Asia/Bangkok)  
 **Phase 0:** initial GitHub snapshot and 65-page inventory **completed**; functionality migration **not yet started / not accepted**.  
 **Source (strictly read-only):** `cosmatch/lukkhaja` · `feature/react-golang-vite-tailwind-axios` · `e84c899028eb16c67401dcc05c5faed84bf48f63`  

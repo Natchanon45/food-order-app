@@ -1,3 +1,4 @@
+import "@/ui/platform-contact-card-collapse.css";
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
@@ -72,6 +73,16 @@ function ContactChannel({ channel, icon, title, enabled, onEnabled, label, onLab
   );
 }
 
+function ContactCornerToggle({ expanded, onToggle, controls, label }) {
+  return <button type="button" className="platform-contact-corner-toggle"
+    title={expanded ? "หุบการ์ด" : "ขยายการ์ด"}
+    aria-label={expanded ? `หุบการ์ด ${label}` : `ขยายการ์ด ${label}`}
+    aria-expanded={expanded} aria-controls={controls}
+    data-platform-card-toggle onClick={onToggle}>
+    <i className="bi bi-chevron-down" aria-hidden="true" />
+  </button>;
+}
+
 function PreviewAction({ channel, icon, label, href }) {
   return (
     <a className="public-contact-action" data-channel={channel} href={href || "#"} onClick={e => e.preventDefault()}>
@@ -85,6 +96,8 @@ export function PlatformContactPage() {
   const authState = useAuth();
   const { profile } = authState;
   const { t } = useI18n();
+  const [expandedCards, setExpandedCards] = useState({ public: false, telegram: false, google: false });
+  const toggleCard = key => setExpandedCards(current => ({ ...current, [key]: !current[key] }));
   const stylesReady = useParityPage({
     title: t("platform_contact.meta.title"),
     bodyClass: "platform-contact-page",
@@ -348,18 +361,27 @@ export function PlatformContactPage() {
 
       <main className="container platform-contact-shell">
         <section className="hero platform-contact-hero">
-          <span className="platform-contact-eyebrow"><i className="bi bi-shield-check" aria-hidden="true"></i>{t("platform_contact.hero.eyebrow")}</span>
           <h1>{t("platform_contact.hero.title")}</h1>
           <p>{t("platform_contact.hero.description")}</p>
         </section>
 
         <div className="platform-contact-layout">
-          <section className="card platform-contact-form-card">
+          <section className="card platform-contact-form-card platform-contact-toggle-host"
+            data-expanded={expandedCards.public} aria-labelledby="platformContactPublicTitle">
+            <ContactCornerToggle expanded={expandedCards.public} onToggle={() => toggleCard("public")}
+              controls="platformContactPublicPanel" label="ข้อมูลที่แสดงต่อสาธารณะ" />
             <div className="section-title">
-              <div><h2>{t("platform_contact.contact.section.title")}</h2><p>{t("platform_contact.contact.section.subtitle")}</p></div>
+              <div className="platform-contact-heading-group">
+                <span className="platform-contact-heading-icon platform-contact-heading-icon-public" aria-hidden="true"><i className="bi bi-chat-heart" /></span>
+                <div className="platform-contact-heading-copy">
+                  <h2 id="platformContactPublicTitle">{t("platform_contact.contact.section.title")}</h2>
+                  <p>{t("platform_contact.contact.section.subtitle")}</p>
+                </div>
+              </div>
               <label className="platform-contact-master-toggle"><input id="contactEnabled" type="checkbox" checked={contact.enabled} onChange={e => patchContact({ enabled: e.target.checked })} /><span>{t("platform_contact.contact.section.master_toggle")}</span></label>
             </div>
 
+            <div id="platformContactPublicPanel" className="platform-contact-collapsed-body" hidden={!expandedCards.public}>
             <form id="platformContactForm" className="platform-contact-form" noValidate onSubmit={submitContact}>
               <div className="grid grid-2">
                 <div className="field">
@@ -384,10 +406,20 @@ export function PlatformContactPage() {
                 <button className="btn btn-primary" id="saveContactButton" type="submit" disabled={contactBusy || contactLoadError || contactUnconfirmed}>{contactSaving ? <><span className="platform-contact-saving" aria-hidden="true"></span><span>{t("platform_contact.contact.status.saving")}</span></> : <><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform_contact.contact.actions.save")}</span></>}</button>
               </div>
             </form>
+            </div>
           </section>
 
-          <aside className="card platform-contact-preview-card">
-            <div className="section-title"><div><h2>{t("platform_contact.contact.preview.title")}</h2><p>{t("platform_contact.contact.preview.subtitle")}</p></div></div>
+          <aside className="card platform-contact-preview-card" data-expanded={expandedCards.public}>
+            <div className="section-title">
+              <div className="platform-contact-heading-group">
+                <span className="platform-contact-heading-icon platform-contact-heading-icon-preview" aria-hidden="true"><i className="bi bi-eye" /></span>
+                <div className="platform-contact-heading-copy">
+                  <h2>{t("platform_contact.contact.preview.title")}</h2>
+                  <p>{t("platform_contact.contact.preview.subtitle")}</p>
+                </div>
+              </div>
+            </div>
+            <div className="platform-contact-preview-body" hidden={!expandedCards.public}>
             <section className="public-contact-card platform-contact-preview" id="contactPreview" hidden={contactLoadError || previewContact.enabled !== true}>
               <div className="public-contact-copy">
                 <span className="public-contact-kicker"><i className="bi bi-chat-heart" aria-hidden="true"></i><span>{t("platform_contact.contact.preview.kicker")}</span></span>
@@ -399,16 +431,19 @@ export function PlatformContactPage() {
               </nav>
             </section>
             <p className="platform-contact-preview-note">{t("platform_contact.contact.preview.note")}</p>
+            </div>
           </aside>
         </div>
 
-        <TelegramSettingsPanel scope="platform" />
         <div className="platform-google-login-layout">
-          <section className="card platform-google-login-card">
+          <section className="card platform-google-login-card platform-contact-toggle-host"
+            data-expanded={expandedCards.google} aria-labelledby="platformContactGoogleTitle">
+            <ContactCornerToggle expanded={expandedCards.google} onToggle={() => toggleCard("google")}
+              controls="platformContactGooglePanel" label="Google Login สำหรับลูกค้า Delivery" />
             <div className="section-title">
               <div className="platform-google-login-title">
                 <span className="platform-google-login-icon" aria-hidden="true"><i className="bi bi-google"></i></span>
-                <div><h2>{t("platform_contact.google.title")}</h2><p>{t("platform_contact.google.subtitle")}</p></div>
+                <div><h2 id="platformContactGoogleTitle">{t("platform_contact.google.title")}</h2><p>{t("platform_contact.google.subtitle")}</p></div>
               </div>
               <span className="platform-google-login-source" id="googleLoginSettingsSource" data-source={google.source}>
                 {googleStatus === t("platform_contact.google.status.loading")
@@ -417,6 +452,7 @@ export function PlatformContactPage() {
               </span>
             </div>
 
+            <div id="platformContactGooglePanel" className="platform-contact-collapsed-body" hidden={!expandedCards.google}>
             {!googleStorageReady ? <p role="alert" data-google-storage-unavailable>{googleLoadError ? t("platform_contact.google.status.load_failed") : "ฐานข้อมูล Google Login ยังไม่พร้อม กรุณาตรวจสอบ Migration"}</p> : null}
             <form id="googleCustomerLoginForm" className="platform-google-login-form" noValidate onSubmit={submitGoogle}>
               <label className="platform-google-login-toggle">
@@ -470,10 +506,20 @@ export function PlatformContactPage() {
                 <button className="btn btn-primary" id="saveGoogleLoginSettings" type="submit" disabled={googleBusy || googleLoadError || !googleStorageReady || googleUnconfirmed}>{googleSaving ? <><span className="platform-contact-saving" aria-hidden="true"></span><span>{t("platform_contact.google.status.saving")}</span></> : <><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform_contact.google.actions.save")}</span></>}</button>
               </div>
             </form>
+            </div>
           </section>
 
-          <aside className="card platform-google-login-preview-card">
-            <div className="section-title"><div><h2>{t("platform_contact.google.preview.title")}</h2><p>{t("platform_contact.google.preview.subtitle")}</p></div></div>
+          <aside className="card platform-google-login-preview-card" data-expanded={expandedCards.google}>
+            <div className="section-title">
+              <div className="platform-contact-heading-group">
+                <span className="platform-contact-heading-icon platform-contact-heading-icon-google-preview" aria-hidden="true"><i className="bi bi-person-check" /></span>
+                <div className="platform-contact-heading-copy">
+                  <h2>{t("platform_contact.google.preview.title")}</h2>
+                  <p>{t("platform_contact.google.preview.subtitle")}</p>
+                </div>
+              </div>
+            </div>
+            <div className="platform-contact-preview-body" hidden={!expandedCards.google}>
             <div className="platform-google-login-preview">
               <strong>{t("platform_contact.google.preview.account_title")}</strong>
               <p className="menu-category">{t("platform_contact.google.preview.guest_description")}</p>
@@ -485,6 +531,69 @@ export function PlatformContactPage() {
               </p>
             </div>
             <p className="platform-google-warning">{t("platform_contact.google.preview.warning")}</p>
+            </div>
+          </aside>
+        </div>
+
+        <div className="platform-telegram-layout">
+          <section className="card platform-telegram-settings-card platform-contact-telegram-toggle-host platform-contact-toggle-host"
+            data-expanded={expandedCards.telegram} aria-labelledby="platformTelegramHeading">
+            <ContactCornerToggle expanded={expandedCards.telegram} onToggle={() => toggleCard("telegram")}
+              controls="platformContactTelegramPanel" label="การแจ้งเตือน Telegram" />
+            <span className="platform-telegram-header-reload-slot" id="platformTelegramReloadSlot" />
+            <div className="platform-telegram-settings-heading">
+              <span className="platform-contact-heading-icon platform-contact-heading-icon-telegram" aria-hidden="true">
+                <i className="bi bi-telegram" />
+              </span>
+              <div className="platform-contact-heading-copy">
+                <h2 id="platformTelegramHeading">การแจ้งเตือนผ่าน Telegram</h2>
+                <p>แจ้งเตือนผ่าน Bot ชั่วคราว พร้อมปุ่มเปิดรายการใน PENGUIN</p>
+              </div>
+            </div>
+            <div id="platformContactTelegramPanel" className="platform-contact-collapsed-body" hidden={!expandedCards.telegram}>
+              <TelegramSettingsPanel scope="platform" hideHeading reloadPortalId="platformTelegramReloadSlot" />
+            </div>
+          </section>
+          <aside className="card platform-telegram-preview-card" aria-labelledby="platformTelegramPreviewHeading"
+            data-expanded={expandedCards.telegram}>
+            <div className="section-title">
+              <div className="platform-contact-heading-group">
+                <span className="platform-contact-heading-icon platform-contact-heading-icon-preview" aria-hidden="true">
+                  <i className="bi bi-chat-square-text" />
+                </span>
+                <div className="platform-contact-heading-copy">
+                  <h2 id="platformTelegramPreviewHeading">ตัวอย่างการแจ้งเตือน Telegram</h2>
+                  <p>ตัวอย่างข้อความที่ระบบส่งผ่าน Bot</p>
+                </div>
+              </div>
+            </div>
+            <div className="platform-contact-preview-body" hidden={!expandedCards.telegram}>
+            <div className="platform-telegram-demo" aria-label="ตัวอย่างข้อความ Telegram ไม่ใช่ข้อมูลจริง">
+              <div className="platform-telegram-demo-day">17 พฤศจิกายน</div>
+              <div className="platform-telegram-demo-message">
+                <div className="platform-telegram-demo-sender">
+                  <span>penguin_notification_bot</span>
+                  <span className="platform-telegram-demo-role">bot</span>
+                </div>
+                <div className="platform-telegram-demo-title">PENGUIN | แจ้งเตือนคำสั่งซื้อ Delivery</div>
+                <div className="platform-telegram-demo-lines">
+                  <div>ร้าน: ร้านค้าตัวอย่าง</div>
+                  <div>ชื่อร้านในระบบ: Demo Store</div>
+                  <div>รหัสร้าน: demo-store</div>
+                  <div>จำนวน: 44.50 บาท</div>
+                  <div>สถานะ: รับชำระเงินแล้ว</div>
+                  <div>เลขที่บิล: B261117-00021</div>
+                  <div>ดูรายละเอียดในระบบ PENGUIN</div>
+                </div>
+                <div className="platform-telegram-demo-time">13:30</div>
+              </div>
+              <div className="platform-telegram-demo-action" aria-hidden="true">
+                <span>เปิดดูรายการใน PENGUIN</span><i className="bi bi-box-arrow-up-right" />
+              </div>
+            </div>
+            <p className="platform-telegram-demo-note"><i className="bi bi-info-circle" aria-hidden="true" />
+              ข้อมูลและยอดเงินเป็นเพียงตัวอย่าง ไม่ใช่การแจ้งเตือนจริง</p>
+            </div>
           </aside>
         </div>
       </main>

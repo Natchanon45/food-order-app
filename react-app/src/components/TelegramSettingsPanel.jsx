@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/firebase/client";
 
@@ -128,7 +129,7 @@ function TelegramChannel({ definition, channel, onChange, onSave, onTest, saving
     </fieldset>
   );
 }
-export function TelegramSettingsPanel({ scope = "tenant", onActiveCountChange }) {
+export function TelegramSettingsPanel({ scope = "tenant", onActiveCountChange, hideHeading = false, reloadPortalId = "" }) {
   const definitions = scope === "platform" ? platformChannels : tenantChannels;
   const endpoint = scope === "platform" ? "/api/platform/telegram" : "/api/tenant/telegram";
   const [channels, setChannels] = useState(() => Object.fromEntries(
@@ -138,6 +139,11 @@ export function TelegramSettingsPanel({ scope = "tenant", onActiveCountChange })
   const [busy, setBusy] = useState("");
   const [testBusy, setTestBusy] = useState("");
   const [writeUncertain, setWriteUncertain] = useState(false);
+  const [reloadTarget, setReloadTarget] = useState(null);
+  useEffect(() => {
+    setReloadTarget(reloadPortalId ? document.getElementById(reloadPortalId) : null);
+  }, [reloadPortalId]);
+
   const load = useCallback(async () => {
     setStatus("loading");
     setLoadError("");
@@ -213,15 +219,29 @@ export function TelegramSettingsPanel({ scope = "tenant", onActiveCountChange })
   };
   return (
     <section className="lukkaja-telegram-panel" data-telegram-settings={scope}>
-      <div className="lukkaja-telegram-heading">
-        <div className="lukkaja-telegram-icon"><i className="bi bi-telegram" aria-hidden="true"></i></div>
-        <div>
-          <h2>การแจ้งเตือนผ่าน Telegram</h2>
-          <p>แจ้งเตือนผ่าน Bot ชั่วคราว พร้อมปุ่มเปิดรายการใน PENGUIN</p>
+      {(!hideHeading || !reloadPortalId) ? (
+        <div className={hideHeading ? "lukkaja-telegram-toolbar" : "lukkaja-telegram-heading"}>
+          {!hideHeading ? <>
+            <div className="lukkaja-telegram-icon"><i className="bi bi-telegram" aria-hidden="true"></i></div>
+            <div>
+              <h2>การแจ้งเตือนผ่าน Telegram</h2>
+              <p>แจ้งเตือนผ่าน Bot ชั่วคราว พร้อมปุ่มเปิดรายการใน PENGUIN</p>
+            </div>
+          </> : null}
+          <button className="btn btn-sm" type="button" onClick={() => void load()}
+            disabled={Boolean(busy) || Boolean(testBusy)}>
+            <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>โหลดใหม่
+          </button>
         </div>
-        <button className="btn btn-sm" type="button" onClick={() => void load()}
-          disabled={Boolean(busy) || Boolean(testBusy)}><i className="bi bi-arrow-clockwise" aria-hidden="true"></i>โหลดใหม่</button>
-      </div>
+      ) : null}
+      {reloadTarget ? createPortal(
+        <button className="btn btn-sm platform-telegram-header-reload" type="button"
+          aria-label="โหลดใหม่" title="โหลดใหม่" onClick={() => void load()}
+          disabled={Boolean(busy) || Boolean(testBusy)}>
+          <i className="bi bi-arrow-clockwise" aria-hidden="true"></i>
+          <span className="platform-telegram-header-reload-label">โหลดใหม่</span>
+        </button>, reloadTarget
+      ) : null}
       <div className="lukkaja-telegram-info">
         สร้าง Bot ผ่าน <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer">@BotFather</a>
         {" "}เพิ่ม Bot ลงในแชทหรือกลุ่มที่ต้องการ แล้วนำ Token และ Chat ID มากรอก

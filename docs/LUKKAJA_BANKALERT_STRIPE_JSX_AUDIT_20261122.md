@@ -1,0 +1,195 @@
+# LUKKAJA BankAlert Stripe → PENGUIN: JSX baseline (2026-11-22)
+
+Source: `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe` / `03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd` (read only).
+Target: `Natchanon45/food-order-app` / `feature/react-firebase-port` / `c42b2981b7fd8b6388faa377cc2afe5423078162` (before this port).
+Prior source `e84c899028eb16c67401dcc05c5faed84bf48f63` is an ancestor; 241 commits since baseline.
+
+Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only React port roots, excluding reference copies, pilot and test files. Same path/count is not proof of parity.
+
+| Group | Prior source files / lines | New source files / lines | Target files / lines | Matched paths | Source only | Target only | Changed source files |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| pages | 65 / 34616 | 65 / 35702 | 52 / 29601 | 52 | 13 | 0 | 26 |
+| components | 70 / 9634 | 84 / 12312 | 30 / 4213 | 28 | 56 | 2 | 29 |
+| other | 5 / 480 | 5 / 486 | 6 / 790 | 2 | 3 | 4 | 1 |
+
+## Phase order (retain existing plan; revalidate against new source)
+
+- P1: all seven Super Admin routes (existing Firebase guards; new accordion, contact, payment settings, pricing, tenant approvals).
+- P2: merchant/admin settings, dynamic fields, role and store setup.
+- P3: public checkout / delivery / takeaway, review, QR expiry, BankAlert, Stripe, COD and receipt.
+- P4: cashier, kitchen, quick order, queue, Telegram and status gates.
+- P5: POS and stock, no blind replacement of Firebase-specific masters.
+- P6: finance ledger, quota, Stripe, suspension/reconciliation, provider authorization and emulator tests.
+- P7: parity, build, Hosting validation; no deployment of unverified provider or financial logic.
+
+## Per-file line counts
+
+| Path | Prior source | New source | Target | Changed source | Exact match |
+|---|---:|---:|---:|---|---|
+| pages/AdminPage.jsx | 2239 | 2390 | 2196 | yes | no |
+| pages/AdminQrPage.jsx | 180 | 180 | 152 | no | no |
+| pages/AdminSalesReportPage.jsx | 596 | 591 | 592 | yes | no |
+| pages/AdminStoreMasterPage.jsx | 364 | 364 | — | yes | no |
+| pages/AdminTenantsPage.jsx | 2340 | 2275 | 1553 | yes | no |
+| pages/AdminUsersPage.jsx | 431 | 435 | 431 | yes | no |
+| pages/CanonicalLaravelBridgePage.jsx | 41 | 41 | — | no | no |
+| pages/CashierPage.jsx | 1358 | 1581 | 1362 | yes | no |
+| pages/CashierReceiptPage.jsx | 398 | 405 | 367 | yes | no |
+| pages/CashierTableQrPage.jsx | 624 | 624 | 544 | no | no |
+| pages/DeliveryPage.jsx | 1317 | 1614 | 1234 | yes | no |
+| pages/DeliverySuccessPage.jsx | 613 | 906 | 362 | yes | no |
+| pages/HomePage.jsx | 401 | 401 | 377 | no | no |
+| pages/HybridBillingReportPage.jsx | 335 | 335 | 335 | no | no |
+| pages/HybridBillingReviewPage.jsx | 561 | 561 | 558 | no | no |
+| pages/KitchenPage.jsx | 662 | 681 | 707 | yes | no |
+| pages/LaravelSessionPage.jsx | 72 | 72 | — | no | no |
+| pages/LegalPage.jsx | 83 | 83 | 63 | no | no |
+| pages/LoginPage.jsx | 247 | 266 | 286 | yes | no |
+| pages/PlatformContactPage.jsx | 495 | 603 | 495 | yes | no |
+| pages/PlatformOwnersPage.jsx | 361 | 371 | 386 | yes | no |
+| pages/PlatformPage.jsx | 827 | 764 | 882 | yes | no |
+| pages/PlatformPricingPage.jsx | 308 | 461 | 308 | yes | no |
+| pages/PortMissingRoute.jsx | 11 | 11 | — | no | no |
+| pages/PosBackupPage.jsx | 90 | 90 | 30 | no | no |
+| pages/PosCatalogMasterPage.jsx | 3 | 3 | — | no | no |
+| pages/PosCatalogPage.jsx | 470 | 470 | 281 | no | no |
+| pages/PosCategoriesMasterPage.jsx | 150 | 150 | — | yes | no |
+| pages/PosCustomerDisplayPage.jsx | 223 | 223 | 190 | no | no |
+| pages/PosCustomersMasterPage.jsx | 358 | 358 | — | yes | no |
+| pages/PosCustomersPage.jsx | 563 | 563 | 548 | no | no |
+| pages/PosForbiddenPage.jsx | 56 | 56 | 40 | no | no |
+| pages/PosPage.jsx | 1438 | 1445 | 1314 | yes | no |
+| pages/PosPayablesPage.jsx | 812 | 812 | 762 | no | no |
+| pages/PosProductsMasterPage.jsx | 320 | 320 | — | yes | no |
+| pages/PosProductsPage.jsx | 1290 | 1290 | 1216 | no | no |
+| pages/PosPurchasesPage.jsx | 1332 | 1357 | 1274 | yes | no |
+| pages/PosReceiptPage.jsx | 346 | 346 | 319 | no | no |
+| pages/PosReturnsPage.jsx | 894 | 894 | 849 | no | no |
+| pages/PosSalesPage.jsx | 891 | 891 | 861 | no | no |
+| pages/PosSettingsMasterPage.jsx | 179 | 179 | — | no | no |
+| pages/PosSettingsPage.jsx | 460 | 460 | 463 | no | no |
+| pages/PosShiftsPage.jsx | 728 | 728 | 684 | no | no |
+| pages/PosStockCountsMasterPage.jsx | 177 | 177 | — | no | no |
+| pages/PosStockCountsPage.jsx | 984 | 984 | 950 | no | no |
+| pages/PosStockMovementsMasterPage.jsx | 152 | 152 | — | no | no |
+| pages/PosStockMovementsPage.jsx | 914 | 914 | 897 | no | no |
+| pages/PosSuppliersMasterPage.jsx | 232 | 232 | — | yes | no |
+| pages/PosSuppliersPage.jsx | 479 | 479 | 354 | no | no |
+| pages/PosTaxInvoicePage.jsx | 189 | 189 | 164 | no | no |
+| pages/PosTaxInvoicesPage.jsx | 552 | 552 | 495 | no | no |
+| pages/PosUsersMasterPage.jsx | 221 | 221 | — | yes | no |
+| pages/PosUsersPage.jsx | 408 | 408 | 251 | no | no |
+| pages/PublicOrderPage.jsx | 247 | 247 | 243 | no | no |
+| pages/PublicRouteMissingPage.jsx | 32 | 32 | 32 | no | no |
+| pages/QuickOrderPage.jsx | 1267 | 1269 | 1105 | yes | no |
+| pages/RegisterPage.jsx | 547 | 554 | 508 | yes | no |
+| pages/RevenueShareReportPage.jsx | 1034 | 927 | 834 | yes | no |
+| pages/SaasSetupPage.jsx | 152 | 152 | 210 | no | no |
+| pages/StorefrontCompatibilityEntry.jsx | 29 | 29 | 30 | no | no |
+| pages/TakeawayPage.jsx | 231 | 231 | 220 | no | no |
+| pages/VerifyPage.jsx | 164 | 165 | 162 | yes | no |
+| pages/WaitingQueueCustomerPage.jsx | 288 | 288 | 287 | no | no |
+| pages/WaitingQueueDisplayPage.jsx | 131 | 131 | 121 | no | no |
+| pages/WaitingQueuePage.jsx | 719 | 719 | 717 | no | no |
+| components/AdminCollapsibleCard.jsx | 65 | 66 | 65 | yes | no |
+| components/AdminDeliveryFeeEditor.jsx | 78 | 78 | — | no | no |
+| components/AdminDeliveryQr.jsx | 176 | 176 | 176 | no | no |
+| components/AdminLalamoveSettingsCard.jsx | 127 | 149 | — | yes | no |
+| components/AdminLalamoveWalletPanel.jsx | 259 | 259 | — | no | no |
+| components/AdminMenusMasterCard.jsx | 200 | 200 | — | yes | no |
+| components/AdminMobileEntityList.jsx | 91 | 91 | 91 | no | yes |
+| components/AdminPromotionEditor.jsx | 53 | 92 | — | yes | no |
+| components/AdminRestaurantMenuSortingCard.jsx | 105 | 105 | — | no | no |
+| components/AdminSettingsGroup.jsx | 40 | 40 | — | no | no |
+| components/AdminStoreLocationMap.jsx | 210 | 210 | — | no | no |
+| components/AdminTablesMasterCard.jsx | 166 | 166 | — | yes | no |
+| components/AppDeveloperPanel.jsx | 86 | 83 | 86 | yes | no |
+| components/AppModal.jsx | 55 | 55 | — | no | no |
+| components/BankalertStripeHistory.jsx | — | 60 | — | yes | no |
+| components/BankalertStripePlatformSettings.jsx | — | 176 | — | yes | no |
+| components/BankalertStripeWalletTopup.jsx | — | 345 | — | yes | no |
+| components/CashierOrderNotifier.jsx | 218 | 369 | 218 | yes | no |
+| components/DeliveryCustomIcons.jsx | 43 | 43 | 43 | no | yes |
+| components/DeliveryHoursEditor.jsx | 100 | 106 | 100 | yes | no |
+| components/DeliveryLocationPicker.jsx | 213 | 213 | 213 | no | no |
+| components/DeliveryOrderHeading.jsx | — | 54 | — | yes | no |
+| components/DynamicField.jsx | — | 70 | — | yes | no |
+| components/FormDynamicEnhancer.jsx | — | 159 | — | yes | no |
+| components/FormValidationUi.jsx | 265 | 265 | 265 | no | no |
+| components/GoPlatformBrandingRuntime.jsx | 57 | 57 | — | no | no |
+| components/HybridReviewDecisionPanel.jsx | 100 | 100 | 100 | no | no |
+| components/HybridTenantProofPanel.jsx | 238 | 238 | 191 | no | no |
+| components/LalamoveCODReconciliationPanel.jsx | 44 | 44 | — | no | no |
+| components/LaravelPosNavigation.jsx | 2 | 2 | — | no | no |
+| components/LocaleSwitcher.jsx | 55 | 55 | 53 | no | no |
+| components/M7CorrectionPanel.jsx | 132 | 132 | — | no | no |
+| components/M7FinancePolicyPanel.jsx | 246 | 246 | — | no | no |
+| components/M7Gate3OperationalDetails.jsx | 301 | 301 | — | no | no |
+| components/M7HomeInvoiceNotice.jsx | 23 | 23 | — | no | no |
+| components/M7IssuedInvoiceList.jsx | 611 | 655 | — | yes | no |
+| components/M7MerchantServicePaymentHistory.jsx | — | 69 | — | yes | no |
+| components/M7OperationalOutageReviewItem.jsx | 53 | 53 | — | no | no |
+| components/M7PlatformManualReview.jsx | 109 | 109 | — | no | no |
+| components/M7PlatformPaymentHistory.jsx | — | 144 | — | yes | no |
+| components/M7PolicyAcceptancePanels.jsx | 172 | 241 | — | yes | no |
+| components/M7ReleaseGatePanel.jsx | 105 | 105 | — | no | no |
+| components/M7StripeInvoicePayment.jsx | — | 190 | — | yes | no |
+| components/M7StripeSandboxTestPanel.jsx | — | 106 | — | yes | no |
+| components/M7TenantExtendedReview.jsx | 77 | 77 | — | no | no |
+| components/M7TenantLegacyEnrollmentReview.jsx | 180 | 180 | — | no | no |
+| components/M7TenantOperationalIssuance.jsx | 127 | 127 | — | no | no |
+| components/M7TenantSourceEvidence.jsx | 245 | 245 | — | no | no |
+| components/M7TenantSuspensionGate.jsx | 254 | 254 | — | yes | no |
+| components/MerchantServiceTerms.jsx | 72 | 72 | 65 | no | no |
+| components/OrderRevisionDisplay.jsx | 53 | 53 | — | no | no |
+| components/PageReadyOverlay.jsx | 75 | 75 | 75 | no | no |
+| components/ParityFooter.jsx | 25 | 25 | 25 | no | no |
+| components/ParityLayout.jsx | 15 | 15 | 15 | no | no |
+| components/PaymentCompanionPairingCard.jsx | — | 534 | — | yes | no |
+| components/PlatformBankEvidencePanel.jsx | 100 | 100 | — | no | no |
+| components/PlatformBankVerificationRequestPanel.jsx | 104 | 104 | — | no | no |
+| components/PlatformBillingScenarioPanel.jsx | 351 | 351 | — | no | no |
+| components/PlatformBrandingRuntime.jsx | 4 | 4 | 129 | no | no |
+| components/PlatformCardAccordionHeader.jsx | — | 40 | — | yes | no |
+| components/PlatformCollapsibleCard.jsx | — | 27 | — | yes | no |
+| components/PlatformFinanceBeneficiaryDraftPanel.jsx | 154 | 154 | — | no | no |
+| components/PlatformFinanceBeneficiaryReviewPanel.jsx | 111 | 111 | — | no | no |
+| components/PlatformHybridManualSlipPanel.jsx | 150 | 150 | — | no | no |
+| components/PlatformM7OwnerPayeeCard.jsx | 150 | 150 | — | no | no |
+| components/PlatformReceiverBankSelect.jsx | 156 | 156 | 156 | no | yes |
+| components/PosNavigation.jsx | 305 | 305 | 293 | no | no |
+| components/PosUserProfile.jsx | 13 | 13 | 13 | no | yes |
+| components/PublicStorefront.jsx | 301 | 307 | 297 | yes | no |
+| components/PublicStorefrontOperationalGate.jsx | 108 | 108 | — | no | no |
+| components/ReactBootstrapReadyGate.jsx | 27 | 27 | — | no | no |
+| components/ReactPortErrorBoundary.jsx | 54 | 54 | — | no | no |
+| components/RequireRole.jsx | 4 | 4 | 4 | no | no |
+| components/SalesReportReadFailure.jsx | 14 | 14 | — | no | no |
+| components/StartupGate.jsx | 8 | 8 | 8 | no | no |
+| components/StoreBrandingEditor.jsx | 138 | 138 | 136 | no | no |
+| components/StoreHeroBranding.jsx | 30 | 30 | 24 | no | no |
+| components/StripeConnectDeliveryCard.jsx | — | 232 | — | yes | no |
+| components/SuperAdminNotificationBell.jsx | 263 | 377 | — | yes | no |
+| components/TelegramOrderFocus.jsx | 36 | 36 | — | no | no |
+| components/TelegramSettingsPanel.jsx | 224 | 246 | 243 | yes | no |
+| components/TenantControlPanel.jsx | 610 | 611 | 591 | yes | no |
+| components/TenantDeliveryManualReview.jsx | — | — | 147 | no | no |
+| components/TenantFinanceSourceEvidence.jsx | — | — | 127 | no | no |
+| components/UserMenu.jsx | 266 | 266 | 264 | no | no |
+| components/WaitingQueueNavigationBridge.jsx | 32 | 32 | — | no | no |
+| PortRoutes.jsx | 19 | 19 | — | no | no |
+| app/App.jsx | — | — | 234 | no | no |
+| auth/AuthProvider.jsx | — | — | 130 | no | no |
+| auth/LaravelAuthProvider.jsx | 121 | 121 | — | no | no |
+| hooks/useParityPage.jsx | 64 | 64 | 77 | no | no |
+| i18n/I18nProvider.jsx | 232 | 238 | 205 | yes | no |
+| main.jsx | — | — | 37 | no | no |
+| tenant/LaravelTenantProvider.jsx | 44 | 44 | — | no | no |
+| tenant/TenantProvider.jsx | — | — | 107 | no | no |
+
+## P1 continuation — first candidate (not phase acceptance)
+
+- Ported the source PlatformContactPage presentation and scoped collapse CSS, retaining PENGUIN Firebase auth, reads, saves, error guards and routing. Public contact, Google and Telegram cards collapse independently; paired previews follow the card. Telegram header reload uses a portal while retaining Firebase callables; demo text is labeled fictional.
+- New contact regression contract 2/2 PASS; existing platform Firebase readiness contract 4/4 PASS; full `npm run test:react-parity` PASS; `npm run build:react` and generated build contract PASS. These are static/unit/build checks, not signed-in browser/provider UAT.
+- Other six P1 pages and newly added DynamicField/payment components still require source comparison and Firebase adapter work. No full phase acceptance, no Cloud Functions/Rules changes, no deployment.
+- Existing live Hosting JS `/react/assets/index-BaKCYABy.js` differs from candidate `/react/assets/index-DDUK5rrM.js`; preserve live release until approved parity and authenticated UAT.

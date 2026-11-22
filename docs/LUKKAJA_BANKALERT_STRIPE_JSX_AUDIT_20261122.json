@@ -1,0 +1,1657 @@
+{
+  "capturedAt": "2026-11-22",
+  "source": {
+    "repository": "cosmatch/lukkhaja",
+    "branch": "feature/lukkaja_bankalert_stripe",
+    "commit": "03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd",
+    "root": "resources/js/react-port"
+  },
+  "target": {
+    "repository": "Natchanon45/food-order-app",
+    "branch": "feature/react-firebase-port",
+    "commit": "c42b2981b7fd8b6388faa377cc2afe5423078162",
+    "root": "react-app/src"
+  },
+  "priorSourceCommit": "e84c899028eb16c67401dcc05c5faed84bf48f63",
+  "sourceCommitsSincePrior": 241,
+  "groups": {
+    "pages": {
+      "priorSourceFiles": 65,
+      "priorSourceLines": 34616,
+      "sourceFiles": 65,
+      "sourceLines": 35702,
+      "targetFiles": 52,
+      "targetLines": 29601,
+      "matchedPaths": 52,
+      "sourceOnly": 13,
+      "targetOnly": 0,
+      "changedSincePrior": 26
+    },
+    "components": {
+      "priorSourceFiles": 70,
+      "priorSourceLines": 9634,
+      "sourceFiles": 84,
+      "sourceLines": 12312,
+      "targetFiles": 30,
+      "targetLines": 4213,
+      "matchedPaths": 28,
+      "sourceOnly": 56,
+      "targetOnly": 2,
+      "changedSincePrior": 29
+    },
+    "other": {
+      "priorSourceFiles": 5,
+      "priorSourceLines": 480,
+      "sourceFiles": 5,
+      "sourceLines": 486,
+      "targetFiles": 6,
+      "targetLines": 790,
+      "matchedPaths": 2,
+      "sourceOnly": 3,
+      "targetOnly": 4,
+      "changedSincePrior": 1
+    }
+  },
+  "files": [
+    {
+      "group": "pages",
+      "path": "pages/AdminPage.jsx",
+      "priorSourceLines": 2239,
+      "sourceLines": 2390,
+      "targetLines": 2196,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/AdminQrPage.jsx",
+      "priorSourceLines": 180,
+      "sourceLines": 180,
+      "targetLines": 152,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/AdminSalesReportPage.jsx",
+      "priorSourceLines": 596,
+      "sourceLines": 591,
+      "targetLines": 592,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/AdminStoreMasterPage.jsx",
+      "priorSourceLines": 364,
+      "sourceLines": 364,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/AdminTenantsPage.jsx",
+      "priorSourceLines": 2340,
+      "sourceLines": 2275,
+      "targetLines": 1553,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/AdminUsersPage.jsx",
+      "priorSourceLines": 431,
+      "sourceLines": 435,
+      "targetLines": 431,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/CanonicalLaravelBridgePage.jsx",
+      "priorSourceLines": 41,
+      "sourceLines": 41,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/CashierPage.jsx",
+      "priorSourceLines": 1358,
+      "sourceLines": 1581,
+      "targetLines": 1362,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/CashierReceiptPage.jsx",
+      "priorSourceLines": 398,
+      "sourceLines": 405,
+      "targetLines": 367,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/CashierTableQrPage.jsx",
+      "priorSourceLines": 624,
+      "sourceLines": 624,
+      "targetLines": 544,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/DeliveryPage.jsx",
+      "priorSourceLines": 1317,
+      "sourceLines": 1614,
+      "targetLines": 1234,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/DeliverySuccessPage.jsx",
+      "priorSourceLines": 613,
+      "sourceLines": 906,
+      "targetLines": 362,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/HomePage.jsx",
+      "priorSourceLines": 401,
+      "sourceLines": 401,
+      "targetLines": 377,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/HybridBillingReportPage.jsx",
+      "priorSourceLines": 335,
+      "sourceLines": 335,
+      "targetLines": 335,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/HybridBillingReviewPage.jsx",
+      "priorSourceLines": 561,
+      "sourceLines": 561,
+      "targetLines": 558,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/KitchenPage.jsx",
+      "priorSourceLines": 662,
+      "sourceLines": 681,
+      "targetLines": 707,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/LaravelSessionPage.jsx",
+      "priorSourceLines": 72,
+      "sourceLines": 72,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/LegalPage.jsx",
+      "priorSourceLines": 83,
+      "sourceLines": 83,
+      "targetLines": 63,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/LoginPage.jsx",
+      "priorSourceLines": 247,
+      "sourceLines": 266,
+      "targetLines": 286,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PlatformContactPage.jsx",
+      "priorSourceLines": 495,
+      "sourceLines": 603,
+      "targetLines": 495,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PlatformOwnersPage.jsx",
+      "priorSourceLines": 361,
+      "sourceLines": 371,
+      "targetLines": 386,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PlatformPage.jsx",
+      "priorSourceLines": 827,
+      "sourceLines": 764,
+      "targetLines": 882,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PlatformPricingPage.jsx",
+      "priorSourceLines": 308,
+      "sourceLines": 461,
+      "targetLines": 308,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PortMissingRoute.jsx",
+      "priorSourceLines": 11,
+      "sourceLines": 11,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosBackupPage.jsx",
+      "priorSourceLines": 90,
+      "sourceLines": 90,
+      "targetLines": 30,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosCatalogMasterPage.jsx",
+      "priorSourceLines": 3,
+      "sourceLines": 3,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosCatalogPage.jsx",
+      "priorSourceLines": 470,
+      "sourceLines": 470,
+      "targetLines": 281,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosCategoriesMasterPage.jsx",
+      "priorSourceLines": 150,
+      "sourceLines": 150,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosCustomerDisplayPage.jsx",
+      "priorSourceLines": 223,
+      "sourceLines": 223,
+      "targetLines": 190,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosCustomersMasterPage.jsx",
+      "priorSourceLines": 358,
+      "sourceLines": 358,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosCustomersPage.jsx",
+      "priorSourceLines": 563,
+      "sourceLines": 563,
+      "targetLines": 548,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosForbiddenPage.jsx",
+      "priorSourceLines": 56,
+      "sourceLines": 56,
+      "targetLines": 40,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosPage.jsx",
+      "priorSourceLines": 1438,
+      "sourceLines": 1445,
+      "targetLines": 1314,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosPayablesPage.jsx",
+      "priorSourceLines": 812,
+      "sourceLines": 812,
+      "targetLines": 762,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosProductsMasterPage.jsx",
+      "priorSourceLines": 320,
+      "sourceLines": 320,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosProductsPage.jsx",
+      "priorSourceLines": 1290,
+      "sourceLines": 1290,
+      "targetLines": 1216,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosPurchasesPage.jsx",
+      "priorSourceLines": 1332,
+      "sourceLines": 1357,
+      "targetLines": 1274,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosReceiptPage.jsx",
+      "priorSourceLines": 346,
+      "sourceLines": 346,
+      "targetLines": 319,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosReturnsPage.jsx",
+      "priorSourceLines": 894,
+      "sourceLines": 894,
+      "targetLines": 849,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosSalesPage.jsx",
+      "priorSourceLines": 891,
+      "sourceLines": 891,
+      "targetLines": 861,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosSettingsMasterPage.jsx",
+      "priorSourceLines": 179,
+      "sourceLines": 179,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosSettingsPage.jsx",
+      "priorSourceLines": 460,
+      "sourceLines": 460,
+      "targetLines": 463,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosShiftsPage.jsx",
+      "priorSourceLines": 728,
+      "sourceLines": 728,
+      "targetLines": 684,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosStockCountsMasterPage.jsx",
+      "priorSourceLines": 177,
+      "sourceLines": 177,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosStockCountsPage.jsx",
+      "priorSourceLines": 984,
+      "sourceLines": 984,
+      "targetLines": 950,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosStockMovementsMasterPage.jsx",
+      "priorSourceLines": 152,
+      "sourceLines": 152,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosStockMovementsPage.jsx",
+      "priorSourceLines": 914,
+      "sourceLines": 914,
+      "targetLines": 897,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosSuppliersMasterPage.jsx",
+      "priorSourceLines": 232,
+      "sourceLines": 232,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosSuppliersPage.jsx",
+      "priorSourceLines": 479,
+      "sourceLines": 479,
+      "targetLines": 354,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosTaxInvoicePage.jsx",
+      "priorSourceLines": 189,
+      "sourceLines": 189,
+      "targetLines": 164,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosTaxInvoicesPage.jsx",
+      "priorSourceLines": 552,
+      "sourceLines": 552,
+      "targetLines": 495,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosUsersMasterPage.jsx",
+      "priorSourceLines": 221,
+      "sourceLines": 221,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PosUsersPage.jsx",
+      "priorSourceLines": 408,
+      "sourceLines": 408,
+      "targetLines": 251,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PublicOrderPage.jsx",
+      "priorSourceLines": 247,
+      "sourceLines": 247,
+      "targetLines": 243,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/PublicRouteMissingPage.jsx",
+      "priorSourceLines": 32,
+      "sourceLines": 32,
+      "targetLines": 32,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/QuickOrderPage.jsx",
+      "priorSourceLines": 1267,
+      "sourceLines": 1269,
+      "targetLines": 1105,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/RegisterPage.jsx",
+      "priorSourceLines": 547,
+      "sourceLines": 554,
+      "targetLines": 508,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/RevenueShareReportPage.jsx",
+      "priorSourceLines": 1034,
+      "sourceLines": 927,
+      "targetLines": 834,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/SaasSetupPage.jsx",
+      "priorSourceLines": 152,
+      "sourceLines": 152,
+      "targetLines": 210,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/StorefrontCompatibilityEntry.jsx",
+      "priorSourceLines": 29,
+      "sourceLines": 29,
+      "targetLines": 30,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/TakeawayPage.jsx",
+      "priorSourceLines": 231,
+      "sourceLines": 231,
+      "targetLines": 220,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/VerifyPage.jsx",
+      "priorSourceLines": 164,
+      "sourceLines": 165,
+      "targetLines": 162,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/WaitingQueueCustomerPage.jsx",
+      "priorSourceLines": 288,
+      "sourceLines": 288,
+      "targetLines": 287,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/WaitingQueueDisplayPage.jsx",
+      "priorSourceLines": 131,
+      "sourceLines": 131,
+      "targetLines": 121,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "pages",
+      "path": "pages/WaitingQueuePage.jsx",
+      "priorSourceLines": 719,
+      "sourceLines": 719,
+      "targetLines": 717,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminCollapsibleCard.jsx",
+      "priorSourceLines": 65,
+      "sourceLines": 66,
+      "targetLines": 65,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminDeliveryFeeEditor.jsx",
+      "priorSourceLines": 78,
+      "sourceLines": 78,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminDeliveryQr.jsx",
+      "priorSourceLines": 176,
+      "sourceLines": 176,
+      "targetLines": 176,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminLalamoveSettingsCard.jsx",
+      "priorSourceLines": 127,
+      "sourceLines": 149,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminLalamoveWalletPanel.jsx",
+      "priorSourceLines": 259,
+      "sourceLines": 259,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminMenusMasterCard.jsx",
+      "priorSourceLines": 200,
+      "sourceLines": 200,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminMobileEntityList.jsx",
+      "priorSourceLines": 91,
+      "sourceLines": 91,
+      "targetLines": 91,
+      "sourceChanged": false,
+      "exactContentMatch": true,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminPromotionEditor.jsx",
+      "priorSourceLines": 53,
+      "sourceLines": 92,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminRestaurantMenuSortingCard.jsx",
+      "priorSourceLines": 105,
+      "sourceLines": 105,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminSettingsGroup.jsx",
+      "priorSourceLines": 40,
+      "sourceLines": 40,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminStoreLocationMap.jsx",
+      "priorSourceLines": 210,
+      "sourceLines": 210,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AdminTablesMasterCard.jsx",
+      "priorSourceLines": 166,
+      "sourceLines": 166,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AppDeveloperPanel.jsx",
+      "priorSourceLines": 86,
+      "sourceLines": 83,
+      "targetLines": 86,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/AppModal.jsx",
+      "priorSourceLines": 55,
+      "sourceLines": 55,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/BankalertStripeHistory.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 60,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/BankalertStripePlatformSettings.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 176,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/BankalertStripeWalletTopup.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 345,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/CashierOrderNotifier.jsx",
+      "priorSourceLines": 218,
+      "sourceLines": 369,
+      "targetLines": 218,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/DeliveryCustomIcons.jsx",
+      "priorSourceLines": 43,
+      "sourceLines": 43,
+      "targetLines": 43,
+      "sourceChanged": false,
+      "exactContentMatch": true,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/DeliveryHoursEditor.jsx",
+      "priorSourceLines": 100,
+      "sourceLines": 106,
+      "targetLines": 100,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/DeliveryLocationPicker.jsx",
+      "priorSourceLines": 213,
+      "sourceLines": 213,
+      "targetLines": 213,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/DeliveryOrderHeading.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 54,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/DynamicField.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 70,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/FormDynamicEnhancer.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 159,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/FormValidationUi.jsx",
+      "priorSourceLines": 265,
+      "sourceLines": 265,
+      "targetLines": 265,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/GoPlatformBrandingRuntime.jsx",
+      "priorSourceLines": 57,
+      "sourceLines": 57,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/HybridReviewDecisionPanel.jsx",
+      "priorSourceLines": 100,
+      "sourceLines": 100,
+      "targetLines": 100,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/HybridTenantProofPanel.jsx",
+      "priorSourceLines": 238,
+      "sourceLines": 238,
+      "targetLines": 191,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/LalamoveCODReconciliationPanel.jsx",
+      "priorSourceLines": 44,
+      "sourceLines": 44,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/LaravelPosNavigation.jsx",
+      "priorSourceLines": 2,
+      "sourceLines": 2,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/LocaleSwitcher.jsx",
+      "priorSourceLines": 55,
+      "sourceLines": 55,
+      "targetLines": 53,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7CorrectionPanel.jsx",
+      "priorSourceLines": 132,
+      "sourceLines": 132,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7FinancePolicyPanel.jsx",
+      "priorSourceLines": 246,
+      "sourceLines": 246,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7Gate3OperationalDetails.jsx",
+      "priorSourceLines": 301,
+      "sourceLines": 301,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7HomeInvoiceNotice.jsx",
+      "priorSourceLines": 23,
+      "sourceLines": 23,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7IssuedInvoiceList.jsx",
+      "priorSourceLines": 611,
+      "sourceLines": 655,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7MerchantServicePaymentHistory.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 69,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7OperationalOutageReviewItem.jsx",
+      "priorSourceLines": 53,
+      "sourceLines": 53,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7PlatformManualReview.jsx",
+      "priorSourceLines": 109,
+      "sourceLines": 109,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7PlatformPaymentHistory.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 144,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7PolicyAcceptancePanels.jsx",
+      "priorSourceLines": 172,
+      "sourceLines": 241,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7ReleaseGatePanel.jsx",
+      "priorSourceLines": 105,
+      "sourceLines": 105,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7StripeInvoicePayment.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 190,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7StripeSandboxTestPanel.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 106,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7TenantExtendedReview.jsx",
+      "priorSourceLines": 77,
+      "sourceLines": 77,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7TenantLegacyEnrollmentReview.jsx",
+      "priorSourceLines": 180,
+      "sourceLines": 180,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7TenantOperationalIssuance.jsx",
+      "priorSourceLines": 127,
+      "sourceLines": 127,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7TenantSourceEvidence.jsx",
+      "priorSourceLines": 245,
+      "sourceLines": 245,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/M7TenantSuspensionGate.jsx",
+      "priorSourceLines": 254,
+      "sourceLines": 254,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/MerchantServiceTerms.jsx",
+      "priorSourceLines": 72,
+      "sourceLines": 72,
+      "targetLines": 65,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/OrderRevisionDisplay.jsx",
+      "priorSourceLines": 53,
+      "sourceLines": 53,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PageReadyOverlay.jsx",
+      "priorSourceLines": 75,
+      "sourceLines": 75,
+      "targetLines": 75,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/ParityFooter.jsx",
+      "priorSourceLines": 25,
+      "sourceLines": 25,
+      "targetLines": 25,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/ParityLayout.jsx",
+      "priorSourceLines": 15,
+      "sourceLines": 15,
+      "targetLines": 15,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PaymentCompanionPairingCard.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 534,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformBankEvidencePanel.jsx",
+      "priorSourceLines": 100,
+      "sourceLines": 100,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformBankVerificationRequestPanel.jsx",
+      "priorSourceLines": 104,
+      "sourceLines": 104,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformBillingScenarioPanel.jsx",
+      "priorSourceLines": 351,
+      "sourceLines": 351,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformBrandingRuntime.jsx",
+      "priorSourceLines": 4,
+      "sourceLines": 4,
+      "targetLines": 129,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformCardAccordionHeader.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 40,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformCollapsibleCard.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 27,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformFinanceBeneficiaryDraftPanel.jsx",
+      "priorSourceLines": 154,
+      "sourceLines": 154,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformFinanceBeneficiaryReviewPanel.jsx",
+      "priorSourceLines": 111,
+      "sourceLines": 111,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformHybridManualSlipPanel.jsx",
+      "priorSourceLines": 150,
+      "sourceLines": 150,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformM7OwnerPayeeCard.jsx",
+      "priorSourceLines": 150,
+      "sourceLines": 150,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PlatformReceiverBankSelect.jsx",
+      "priorSourceLines": 156,
+      "sourceLines": 156,
+      "targetLines": 156,
+      "sourceChanged": false,
+      "exactContentMatch": true,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PosNavigation.jsx",
+      "priorSourceLines": 305,
+      "sourceLines": 305,
+      "targetLines": 293,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PosUserProfile.jsx",
+      "priorSourceLines": 13,
+      "sourceLines": 13,
+      "targetLines": 13,
+      "sourceChanged": false,
+      "exactContentMatch": true,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PublicStorefront.jsx",
+      "priorSourceLines": 301,
+      "sourceLines": 307,
+      "targetLines": 297,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/PublicStorefrontOperationalGate.jsx",
+      "priorSourceLines": 108,
+      "sourceLines": 108,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/ReactBootstrapReadyGate.jsx",
+      "priorSourceLines": 27,
+      "sourceLines": 27,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/ReactPortErrorBoundary.jsx",
+      "priorSourceLines": 54,
+      "sourceLines": 54,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/RequireRole.jsx",
+      "priorSourceLines": 4,
+      "sourceLines": 4,
+      "targetLines": 4,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/SalesReportReadFailure.jsx",
+      "priorSourceLines": 14,
+      "sourceLines": 14,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/StartupGate.jsx",
+      "priorSourceLines": 8,
+      "sourceLines": 8,
+      "targetLines": 8,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/StoreBrandingEditor.jsx",
+      "priorSourceLines": 138,
+      "sourceLines": 138,
+      "targetLines": 136,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/StoreHeroBranding.jsx",
+      "priorSourceLines": 30,
+      "sourceLines": 30,
+      "targetLines": 24,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/StripeConnectDeliveryCard.jsx",
+      "priorSourceLines": null,
+      "sourceLines": 232,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/SuperAdminNotificationBell.jsx",
+      "priorSourceLines": 263,
+      "sourceLines": 377,
+      "targetLines": null,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/TelegramOrderFocus.jsx",
+      "priorSourceLines": 36,
+      "sourceLines": 36,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/TelegramSettingsPanel.jsx",
+      "priorSourceLines": 224,
+      "sourceLines": 246,
+      "targetLines": 243,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/TenantControlPanel.jsx",
+      "priorSourceLines": 610,
+      "sourceLines": 611,
+      "targetLines": 591,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/TenantDeliveryManualReview.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "targetLines": 147,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "preserve_target_only"
+    },
+    {
+      "group": "components",
+      "path": "components/TenantFinanceSourceEvidence.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "targetLines": 127,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "preserve_target_only"
+    },
+    {
+      "group": "components",
+      "path": "components/UserMenu.jsx",
+      "priorSourceLines": 266,
+      "sourceLines": 266,
+      "targetLines": 264,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "components",
+      "path": "components/WaitingQueueNavigationBridge.jsx",
+      "priorSourceLines": 32,
+      "sourceLines": 32,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "other",
+      "path": "PortRoutes.jsx",
+      "priorSourceLines": 19,
+      "sourceLines": 19,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "other",
+      "path": "app/App.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "targetLines": 234,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "preserve_target_only"
+    },
+    {
+      "group": "other",
+      "path": "auth/AuthProvider.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "targetLines": 130,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "preserve_target_only"
+    },
+    {
+      "group": "other",
+      "path": "auth/LaravelAuthProvider.jsx",
+      "priorSourceLines": 121,
+      "sourceLines": 121,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "other",
+      "path": "hooks/useParityPage.jsx",
+      "priorSourceLines": 64,
+      "sourceLines": 64,
+      "targetLines": 77,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "other",
+      "path": "i18n/I18nProvider.jsx",
+      "priorSourceLines": 232,
+      "sourceLines": 238,
+      "targetLines": 205,
+      "sourceChanged": true,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "other",
+      "path": "main.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "targetLines": 37,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "preserve_target_only"
+    },
+    {
+      "group": "other",
+      "path": "tenant/LaravelTenantProvider.jsx",
+      "priorSourceLines": 44,
+      "sourceLines": 44,
+      "targetLines": null,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "review_required"
+    },
+    {
+      "group": "other",
+      "path": "tenant/TenantProvider.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "targetLines": 107,
+      "sourceChanged": false,
+      "exactContentMatch": false,
+      "status": "preserve_target_only"
+    }
+  ]
+}

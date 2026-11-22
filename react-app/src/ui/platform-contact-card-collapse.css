@@ -1,0 +1,824 @@
+/* Contact: original card hierarchy, grid, headings, previews and forms untouched.
+   Only three corner icon toggles are added. */
+.platform-contact-page .platform-contact-toggle-host { position: relative; }
+.platform-contact-page .platform-contact-corner-toggle {
+  position: absolute; top: 12px; right: 14px; z-index: 4;
+  display: inline-grid; place-items: center;
+  width: 36px; height: 36px; padding: 0; margin: 0;
+  border: 1px solid #dbeee1; border-radius: 11px;
+  color: #275d3d; background: #f1f8f4; cursor: pointer;
+}
+.platform-contact-page .platform-contact-corner-toggle i {
+  font-size: 14px; transition: transform .18s ease;
+}
+.platform-contact-page .platform-contact-corner-toggle[aria-expanded="true"] i {
+  transform: rotate(180deg);
+}
+.platform-contact-page .platform-contact-corner-toggle:hover {
+  background: #e3f3e9; border-color: #b6dcc4;
+}
+.platform-contact-page .platform-contact-corner-toggle:focus-visible {
+  outline: 3px solid #16a05a; outline-offset: 2px;
+}
+.platform-contact-page .platform-contact-toggle-host > .section-title {
+  padding-right: 48px;
+}
+.platform-contact-page .platform-contact-collapsed-body[hidden],
+.platform-contact-page .platform-contact-telegram-summary[hidden] {
+  display: none !important;
+}
+/* Original TelegramSettingsPanel renders unchanged when expanded. */
+.platform-contact-page .platform-contact-telegram-summary { margin: 0; padding-right: 54px; }
+.platform-contact-page .platform-contact-telegram-summary .lukkaja-telegram-heading { margin-bottom: 0; }
+.platform-contact-page .platform-contact-telegram-toggle-host > .platform-contact-collapsed-body { min-width: 0; }
+@media (max-width: 640px) {
+  .platform-contact-page .platform-contact-corner-toggle { top: 10px; right: 10px; }
+  .platform-contact-page .platform-contact-toggle-host > .section-title { padding-right: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .platform-contact-page .platform-contact-corner-toggle i { transition: none; }
+}
+
+/* Contain original Contact grids within narrow mobile viewports without
+   changing their desktop two-column layout or individual card styling. */
+body.platform-contact-page #root,
+body.platform-contact-page #lukkaja-auth-root {
+  box-sizing: border-box; width: 100% !important; max-width: 100% !important; min-width: 0 !important;
+}
+body.platform-contact-page .container.platform-contact-shell {
+  box-sizing: border-box; width: min(1480px, 100%) !important;
+  max-width: 100% !important; min-width: 0; margin-inline: auto;
+}
+body.platform-contact-page .platform-contact-layout,
+body.platform-contact-page .platform-google-login-layout { min-width: 0; }
+@media (max-width: 1040px) {
+  body.platform-contact-page .platform-contact-layout,
+  body.platform-contact-page .platform-google-login-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* Contact page visual polish: presentation only, preserving layout and behavior. */
+body.platform-contact-page {
+  --contact-accent: #16854a;
+  --contact-line: #dce9e0;
+  --contact-soft: #f6faf7;
+  --contact-ink: #173e2b;
+}
+body.platform-contact-page .platform-contact-layout,
+body.platform-contact-page .platform-google-login-layout {
+  gap: 18px;
+  align-items: start;
+}
+body.platform-contact-page .platform-contact-form-card,
+body.platform-contact-page .platform-contact-preview-card,
+body.platform-contact-page .platform-google-login-card,
+body.platform-contact-page .platform-google-login-preview-card,
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-panel {
+  border: 1px solid var(--contact-line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(16, 65, 37, .045);
+}
+body.platform-contact-page .platform-contact-form-card,
+body.platform-contact-page .platform-contact-preview-card,
+body.platform-contact-page .platform-google-login-card,
+body.platform-contact-page .platform-google-login-preview-card {
+  min-width: 0;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title {
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding-right: 52px;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title > div:first-child {
+  min-width: 0;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title h2,
+body.platform-contact-page .platform-contact-preview-card > .section-title h2,
+body.platform-contact-page .platform-google-login-preview-card > .section-title h2 {
+  color: var(--contact-ink);
+  line-height: 1.45;
+  letter-spacing: -.015em;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title p,
+body.platform-contact-page .platform-contact-preview-card > .section-title p,
+body.platform-contact-page .platform-google-login-preview-card > .section-title p {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+body.platform-contact-page .platform-contact-corner-toggle {
+  top: 14px; right: 14px;
+  width: 36px; height: 36px;
+  background: #eef8f2;
+  border-color: #d5e9dc;
+  box-shadow: 0 1px 3px rgba(23, 63, 41, .035);
+}
+body.platform-contact-page .platform-contact-master-toggle,
+body.platform-contact-page .platform-google-login-source {
+  flex: 0 1 auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+body.platform-contact-page .platform-contact-form,
+body.platform-contact-page .platform-google-login-form {
+  gap: 15px;
+}
+body.platform-contact-page .platform-contact-channel-grid {
+  gap: 14px;
+}
+body.platform-contact-page .platform-contact-channel {
+  min-width: 0;
+  border-color: #dbe9e0;
+  background: var(--contact-soft);
+  border-radius: 15px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+body.platform-contact-page .platform-contact-channel legend {
+  color: #174d30;
+  line-height: 1.35;
+}
+body.platform-contact-page .platform-contact-form-card .input,
+body.platform-contact-page .platform-google-login-card .input,
+body.platform-contact-page .platform-contact-telegram-toggle-host input {
+  box-sizing: border-box;
+  max-width: 100%;
+  border-radius: 11px;
+  border-color: #d6e4da;
+  background: #fff;
+}
+body.platform-contact-page .platform-contact-form-card .input:focus,
+body.platform-contact-page .platform-google-login-card .input:focus,
+body.platform-contact-page .platform-contact-telegram-toggle-host input:focus {
+  border-color: #40a16b;
+  outline: 2px solid rgba(35, 150, 84, .16);
+  outline-offset: 1px;
+}
+body.platform-contact-page .platform-contact-form-status {
+  line-height: 1.5;
+  border-radius: 11px;
+}
+body.platform-contact-page .platform-contact-actions,
+body.platform-contact-page .platform-google-login-actions {
+  gap: 10px;
+  align-items: stretch;
+}
+body.platform-contact-page .platform-contact-actions > button,
+body.platform-contact-page .platform-google-login-actions > button {
+  min-width: 0;
+  border-radius: 12px;
+}
+body.platform-contact-page .platform-contact-preview-card > .section-title,
+body.platform-contact-page .platform-google-login-preview-card > .section-title {
+  margin-bottom: 3px;
+}
+body.platform-contact-page .platform-contact-preview,
+body.platform-contact-page .platform-google-login-preview {
+  border-radius: 14px;
+  background-color: #f8fcf9;
+}
+body.platform-contact-page .platform-contact-preview-note {
+  line-height: 1.7;
+}
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-panel {
+  margin: 18px 0 0;
+}
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading {
+  padding-right: 55px;
+}
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading > div:nth-child(2) {
+  min-width: 0;
+}
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading button {
+  flex-shrink: 0;
+  margin-right: 0;
+}
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-info {
+  border-radius: 12px;
+}
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-channel {
+  border-radius: 14px;
+  background: #fbfdfb;
+}
+body.platform-contact-page .platform-google-login-privacy > div,
+body.platform-contact-page .platform-google-origin,
+body.platform-contact-page .platform-google-warning {
+  min-width: 0;
+  border-radius: 12px;
+}
+@media (max-width: 1040px) {
+  body.platform-contact-page .platform-contact-preview-card,
+  body.platform-contact-page .platform-google-login-preview-card {
+    position: static;
+  }
+}
+@media (max-width: 720px) {
+  body.platform-contact-page .platform-contact-form-card,
+  body.platform-contact-page .platform-contact-preview-card,
+  body.platform-contact-page .platform-google-login-card,
+  body.platform-contact-page .platform-google-login-preview-card {
+    border-radius: 16px;
+  }
+  body.platform-contact-page .platform-contact-channel { padding-inline: 14px; }
+  body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-panel {
+    padding: 16px;
+  }
+  body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading {
+    padding-right: 46px;
+    align-items: flex-start;
+  }
+  body.platform-contact-page .platform-contact-toggle-host > .section-title {
+    padding-right: 44px;
+    align-items: flex-start;
+  }
+  body.platform-contact-page .platform-contact-master-toggle {
+    margin-top: 8px;
+  }
+}
+
+
+/* Unified Contact heading hierarchy: leading icon, bold title, small description.
+   Keep every pre-existing card, form, preview, badge and top-right control. */
+body.platform-contact-page .platform-contact-heading-group,
+body.platform-contact-page .platform-google-login-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+body.platform-contact-page .platform-contact-heading-copy,
+body.platform-contact-page .platform-google-login-title > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+body.platform-contact-page .platform-contact-heading-icon,
+body.platform-contact-page .platform-google-login-icon,
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #168349;
+  background: #e9f6ee;
+  font-size: 19px;
+}
+body.platform-contact-page .platform-contact-heading-icon-preview {
+  background: #ecf3fa;
+  color: #3878b9;
+}
+body.platform-contact-page .platform-contact-heading-icon-google-preview {
+  background: #f0f3ff;
+  color: #4769bd;
+}
+body.platform-contact-page .platform-google-login-icon {
+  color: #2563eb;
+  background: #ecf2ff;
+}
+body.platform-contact-page .platform-contact-heading-copy h2,
+body.platform-contact-page .platform-google-login-title h2,
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800 !important;
+  line-height: 1.4;
+  letter-spacing: -.02em;
+  color: #153b29;
+  overflow-wrap: anywhere;
+}
+body.platform-contact-page .platform-contact-heading-copy p,
+body.platform-contact-page .platform-google-login-title p,
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: #6a7d70;
+  overflow-wrap: anywhere;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title,
+body.platform-contact-page .platform-contact-preview-card > .section-title,
+body.platform-contact-page .platform-google-login-preview-card > .section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title {
+  padding-right: 50px;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title .platform-contact-master-toggle,
+body.platform-contact-page .platform-contact-toggle-host > .section-title .platform-google-login-source {
+  align-self: center;
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 11px;
+  white-space: nowrap;
+}
+body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading {
+  align-items: center;
+  min-height: 42px;
+}
+body.platform-contact-page .platform-contact-telegram-summary .lukkaja-telegram-heading {
+  margin-bottom: 0;
+}
+@media (max-width: 720px) {
+  body.platform-contact-page .platform-contact-heading-group,
+  body.platform-contact-page .platform-google-login-title {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  body.platform-contact-page .platform-contact-heading-icon,
+  body.platform-contact-page .platform-google-login-icon,
+  body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-icon {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    border-radius: 11px;
+    font-size: 17px;
+  }
+  body.platform-contact-page .platform-contact-heading-copy h2,
+  body.platform-contact-page .platform-google-login-title h2,
+  body.platform-contact-page .platform-contact-telegram-toggle-host .lukkaja-telegram-heading h2 {
+    font-size: 17px;
+  }
+  body.platform-contact-page .platform-contact-toggle-host > .section-title {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 9px;
+    padding-right: 44px;
+  }
+  body.platform-contact-page .platform-contact-toggle-host > .section-title .platform-contact-master-toggle,
+  body.platform-contact-page .platform-contact-toggle-host > .section-title .platform-google-login-source {
+    margin-left: 48px;
+    max-width: calc(100% - 48px);
+    white-space: normal;
+  }
+}
+
+
+/* Telegram settings and faithful message preview, mirroring the existing two-column cards. */
+body.platform-contact-page .platform-telegram-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, .75fr);
+  align-items: start;
+  gap: 18px;
+  margin-top: 18px;
+}
+body.platform-contact-page .platform-telegram-settings-card,
+body.platform-contact-page .platform-telegram-preview-card {
+  min-width: 0;
+  border: 1px solid var(--contact-line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(16, 65, 37, .045);
+}
+body.platform-contact-page .platform-telegram-settings-card {
+  padding: 22px;
+}
+body.platform-contact-page .platform-telegram-preview-card {
+  position: relative;
+  padding: 22px;
+}
+body.platform-contact-page .platform-telegram-settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding-right: 49px;
+}
+body.platform-contact-page .platform-telegram-settings-heading .platform-contact-heading-copy {
+  min-width: 0;
+}
+body.platform-contact-page .platform-telegram-settings-heading h2 {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.4;
+  font-weight: 800 !important;
+  color: #153b29;
+}
+body.platform-contact-page .platform-telegram-settings-heading p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #6a7d70;
+}
+body.platform-contact-page .platform-telegram-settings-card > .platform-contact-collapsed-body:not([hidden]) {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e5efe8;
+}
+body.platform-contact-page .platform-telegram-settings-card .lukkaja-telegram-panel {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+body.platform-contact-page .platform-telegram-settings-card .lukkaja-telegram-heading {
+  flex-wrap: wrap;
+  padding: 0;
+  gap: 12px;
+}
+body.platform-contact-page .platform-telegram-settings-card .lukkaja-telegram-heading button {
+  margin-left: auto;
+}
+body.platform-contact-page .platform-telegram-preview-card .section-title {
+  margin-bottom: 14px;
+}
+body.platform-contact-page .platform-telegram-demo {
+  padding: 13px 10px 12px;
+  border: 1px solid #cde6d3;
+  border-radius: 14px;
+  background-color: #d7e8d5;
+  background-image:
+    radial-gradient(circle at 15% 18%, rgba(74, 136, 85, .12) 0 13px, transparent 14px),
+    radial-gradient(circle at 87% 65%, rgba(74, 136, 85, .10) 0 24px, transparent 25px),
+    radial-gradient(circle at 52% 94%, rgba(74, 136, 85, .09) 0 16px, transparent 17px);
+  color: #18211a;
+}
+body.platform-contact-page .platform-telegram-demo-day {
+  width: max-content;
+  margin: 0 auto 12px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(51, 95, 61, .38);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+body.platform-contact-page .platform-telegram-demo-message {
+  position: relative;
+  width: min(100%, 350px);
+  padding: 12px 12px 22px;
+  border-radius: 11px 11px 11px 4px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(30, 64, 37, .08);
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.48;
+}
+body.platform-contact-page .platform-telegram-demo-sender {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  color: #8b58c4;
+  font-size: 12px;
+  font-weight: 750;
+}
+body.platform-contact-page .platform-telegram-demo-role {
+  padding: 1px 7px;
+  border-radius: 7px;
+  background: #e8f8ec;
+  color: #289e53;
+  font-size: 10px;
+  font-weight: 700;
+}
+body.platform-contact-page .platform-telegram-demo-title {
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #26372c;
+}
+body.platform-contact-page .platform-telegram-demo-lines {
+  display: grid;
+  gap: 2px;
+}
+body.platform-contact-page .platform-telegram-demo-time {
+  position: absolute;
+  right: 10px;
+  bottom: 4px;
+  color: #8b968d;
+  font-size: 10px;
+}
+body.platform-contact-page .platform-telegram-demo-action {
+  width: min(100%, 350px);
+  min-height: 37px;
+  margin-top: 2px;
+  padding: 8px 12px;
+  border-radius: 0 0 9px 9px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  background: rgba(43, 109, 60, .2);
+  color: #285936;
+  font-size: 12px;
+  font-weight: 750;
+  text-align: center;
+}
+body.platform-contact-page .platform-telegram-demo-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #64796a;
+}
+@media (max-width: 1040px) {
+  body.platform-contact-page .platform-telegram-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  body.platform-contact-page .platform-telegram-settings-card,
+  body.platform-contact-page .platform-telegram-preview-card { padding: 16px; border-radius: 16px; }
+  body.platform-contact-page .platform-telegram-settings-heading { align-items: flex-start; }
+  body.platform-contact-page .platform-telegram-settings-heading h2 { font-size: 17px; }
+  body.platform-contact-page .platform-telegram-demo-message,
+  body.platform-contact-page .platform-telegram-demo-action { width: 100%; }
+}
+
+
+/* The Contact card supplies the Telegram heading once; keep only the reload
+   action from the shared Telegram settings component on this page. */
+body.platform-contact-page .platform-telegram-settings-card .lukkaja-telegram-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+body.platform-contact-page .platform-telegram-settings-card .lukkaja-telegram-toolbar > button {
+  flex: 0 0 auto;
+}
+
+
+/* Contact 2026 unified card-header layout:
+   common columns, icon/title at upper-left, collapse control at upper-right,
+   and compact status badges directly to the left of the collapse control. */
+body.platform-contact-page {
+  --contact-card-columns: minmax(0, 1.45fr) minmax(340px, .75fr);
+  --contact-card-gap: 18px;
+  --contact-corner-top: 14px;
+  --contact-corner-right: 14px;
+  --contact-control-size: 36px;
+}
+body.platform-contact-page .platform-contact-layout,
+body.platform-contact-page .platform-google-login-layout,
+body.platform-contact-page .platform-telegram-layout {
+  grid-template-columns: var(--contact-card-columns) !important;
+  gap: var(--contact-card-gap);
+  align-items: start;
+  min-width: 0;
+}
+body.platform-contact-page .platform-contact-corner-toggle {
+  top: var(--contact-corner-top) !important;
+  right: var(--contact-corner-right) !important;
+  width: var(--contact-control-size);
+  height: var(--contact-control-size);
+}
+/* Ensure all top-level card headers line up with the control's top edge. */
+body.platform-contact-page .platform-contact-form-card,
+body.platform-contact-page .platform-google-login-card,
+body.platform-contact-page .platform-telegram-settings-card,
+body.platform-contact-page .platform-contact-preview-card,
+body.platform-contact-page .platform-google-login-preview-card,
+body.platform-contact-page .platform-telegram-preview-card {
+  padding: 14px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title,
+body.platform-contact-page .platform-telegram-settings-heading,
+body.platform-contact-page .platform-contact-preview-card > .section-title,
+body.platform-contact-page .platform-google-login-preview-card > .section-title,
+body.platform-contact-page .platform-telegram-preview-card > .section-title {
+  display: flex;
+  align-items: flex-start !important;
+  gap: 10px;
+  min-height: var(--contact-control-size);
+  margin: 0;
+}
+body.platform-contact-page .platform-contact-toggle-host > .section-title,
+body.platform-contact-page .platform-telegram-settings-heading {
+  padding-right: 56px;
+}
+body.platform-contact-page .platform-contact-heading-group,
+body.platform-contact-page .platform-google-login-title {
+  align-items: flex-start !important;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 10px;
+}
+body.platform-contact-page .platform-contact-heading-icon,
+body.platform-contact-page .platform-google-login-icon {
+  margin-top: 0;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+body.platform-contact-page .platform-contact-heading-copy,
+body.platform-contact-page .platform-google-login-title > div {
+  min-width: 0;
+}
+body.platform-contact-page .platform-contact-heading-copy h2,
+body.platform-contact-page .platform-google-login-title h2 {
+  line-height: 1.35;
+  margin: 1px 0 0;
+}
+body.platform-contact-page .platform-contact-heading-copy p,
+body.platform-contact-page .platform-google-login-title p {
+  margin-top: 4px;
+}
+body.platform-contact-page .platform-contact-form-card .platform-contact-master-toggle,
+body.platform-contact-page .platform-google-login-card .platform-google-login-source {
+  position: absolute;
+  top: var(--contact-corner-top);
+  right: calc(var(--contact-corner-right) + var(--contact-control-size) + 8px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  max-width: min(48%, 210px);
+  min-width: 0;
+  min-height: 0;
+  height: var(--contact-control-size);
+  padding: 5px 11px;
+  border-radius: 999px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+body.platform-contact-page .platform-contact-form-card .platform-contact-master-toggle input {
+  margin: 0;
+  flex-shrink: 0;
+}
+body.platform-contact-page .platform-contact-form-card .platform-contact-master-toggle span,
+body.platform-contact-page .platform-google-login-card .platform-google-login-source {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.platform-contact-page .platform-contact-preview-body[hidden] {
+  display: none !important;
+}
+/* Preview stays visible as a compact header when settings are collapsed.
+   It expands together with the settings card without its own toggle. */
+body.platform-contact-page .platform-contact-preview-body:not([hidden]) {
+  margin-top: 16px;
+}
+body.platform-contact-page .platform-contact-form-card .platform-contact-collapsed-body:not([hidden]),
+body.platform-contact-page .platform-google-login-card .platform-contact-collapsed-body:not([hidden]) {
+  margin-top: 18px;
+}
+body.platform-contact-page .platform-telegram-settings-card > .platform-contact-collapsed-body:not([hidden]) {
+  margin-top: 18px;
+}
+body.platform-contact-page .platform-telegram-settings-card .platform-telegram-settings-heading .platform-contact-heading-icon {
+  flex: 0 0 36px;
+}
+body.platform-contact-page .platform-telegram-layout {
+  margin-top: 18px;
+}
+@media (max-width: 1040px) {
+  body.platform-contact-page .platform-contact-layout,
+  body.platform-contact-page .platform-google-login-layout,
+  body.platform-contact-page .platform-telegram-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+@media (max-width: 720px) {
+  body.platform-contact-page .platform-contact-toggle-host > .section-title {
+    padding-right: 48px;
+  }
+  body.platform-contact-page .platform-contact-form-card .platform-contact-master-toggle,
+  body.platform-contact-page .platform-google-login-card .platform-google-login-source {
+    position: static;
+    max-width: 100%;
+    width: max-content;
+    height: auto;
+    min-height: 32px;
+    flex: 0 1 auto;
+    margin: 10px 0 0 46px;
+    padding: 5px 10px;
+  }
+  body.platform-contact-page .platform-contact-form-card > .section-title,
+  body.platform-contact-page .platform-google-login-card > .section-title {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* Telegram top-right reload control and sticky preview.
+   The reload button retains TelegramSettingsPanel's original load callback
+   while staying next to the collapse toggle even when content is hidden. */
+body.platform-contact-page .platform-telegram-header-reload-slot {
+  position: absolute;
+  z-index: 3;
+  top: var(--contact-corner-top, 14px);
+  right: calc(var(--contact-corner-right, 14px) + var(--contact-control-size, 36px) + 8px);
+  min-height: var(--contact-control-size, 36px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+body.platform-contact-page .platform-telegram-header-reload-slot > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--contact-control-size, 36px);
+  max-height: var(--contact-control-size, 36px);
+  margin: 0;
+  white-space: nowrap;
+  border-radius: 11px;
+}
+body.platform-contact-page .platform-telegram-preview-card {
+  position: sticky;
+  top: 82px;
+  align-self: start;
+}
+@media (max-width: 1040px) {
+  body.platform-contact-page .platform-telegram-preview-card {
+    position: static;
+  }
+}
+
+
+/* Google Login explicit typography hierarchy: the labels, headings, descriptions
+   and preview sample have distinguishable roles on desktop and mobile. */
+body.platform-contact-page .platform-google-login-card .platform-google-login-title h2,
+body.platform-contact-page .platform-google-login-preview-card > .section-title h2 {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  line-height: 1.35;
+  letter-spacing: -.025em;
+  color: #173e2b;
+}
+body.platform-contact-page .platform-google-login-card .platform-google-login-title p,
+body.platform-contact-page .platform-google-login-preview-card > .section-title p {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.65;
+  color: #738379;
+  margin-top: 5px;
+}
+body.platform-contact-page .platform-google-login-card .platform-google-login-form .field > label,
+body.platform-contact-page .platform-google-login-card .platform-google-login-toggle strong,
+body.platform-contact-page .platform-google-login-card .platform-google-login-privacy strong {
+  font-size: 13px !important;
+  font-weight: 750 !important;
+  line-height: 1.45;
+  color: #244c34;
+}
+body.platform-contact-page .platform-google-login-card .platform-google-login-form .field > small,
+body.platform-contact-page .platform-google-login-card .platform-google-login-toggle small,
+body.platform-contact-page .platform-google-login-card .platform-google-login-privacy span {
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1.65;
+  color: #718279;
+}
+body.platform-contact-page .platform-google-login-preview-card .platform-google-login-preview > strong {
+  display: block;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.45;
+  color: #183f2c;
+}
+body.platform-contact-page .platform-google-login-preview-card .platform-google-login-preview > p.menu-category {
+  margin: -6px 0 0;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.65;
+  color: #718279;
+}
+body.platform-contact-page .platform-google-login-preview-card .platform-google-preview-button {
+  font-size: 13px;
+  font-weight: 750;
+}
+body.platform-contact-page .platform-google-login-preview-card .platform-google-preview-status,
+body.platform-contact-page .platform-google-login-preview-card .platform-google-warning {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.65;
+}
+@media (max-width: 720px) {
+  body.platform-contact-page .platform-google-login-card .platform-google-login-title h2,
+  body.platform-contact-page .platform-google-login-preview-card > .section-title h2 {
+    font-size: 18px !important;
+  }
+}
+
+/* Mobile Telegram reload: icon only, accessible label remains on the button. */
+@media (max-width: 720px) {
+  body.platform-contact-page .platform-telegram-header-reload-slot > .platform-telegram-header-reload {
+    width: var(--contact-control-size, 36px);
+    min-width: var(--contact-control-size, 36px);
+    max-width: var(--contact-control-size, 36px);
+    padding: 0;
+    gap: 0;
+  }
+  body.platform-contact-page .platform-telegram-header-reload-label {
+    display: none;
+  }
+}
