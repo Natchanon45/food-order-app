@@ -9,7 +9,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getHybridBillingPreview } from "@/data/hybridBillingReport";
-import { listHybridInvoices } from "@/data/hybridInvoiceReviewData";
+import { listOwnIssuedHybridInvoices } from "@/data/hybridIssuedInvoiceStatusClient";
 import { HybridTenantProofPanel } from "@/components/HybridTenantProofPanel";
 import { isEligibleHybridInvoice } from "@/data/hybridTenantPaymentDraft";
 import { mergeHybridTenantInvoicePage } from "@/data/hybridTenantInvoicePaging";
@@ -120,7 +120,7 @@ export function HybridBillingReportPage() {
     setProofInvoiceId("");
     setInvoiceBusyScope(invoiceScope);
     setInvoiceErrorState({ scope: invoiceScope, message: "" });
-    listHybridInvoices(tenant.id).then(page => {
+    listOwnIssuedHybridInvoices({expectedTenantId:tenant.id}).then(page => {
       if (cancelled) return;
       setInvoicePage({ scope: invoiceScope, ...page });
     }).catch(err => {
@@ -139,7 +139,7 @@ export function HybridBillingReportPage() {
     const requestCursor = invoiceCursor;
     setInvoiceBusyScope(requestScope);
     setInvoiceErrorState({ scope: requestScope, message: "" });
-    listHybridInvoices(tenant.id, { cursor: requestCursor }).then(page => {
+    listOwnIssuedHybridInvoices({cursor:requestCursor,expectedTenantId:tenant.id}).then(page => {
       setInvoicePage(current => mergeHybridTenantInvoicePage(
         current, requestScope, requestCursor, page
       ));
@@ -165,7 +165,9 @@ export function HybridBillingReportPage() {
   };
   const monthly = useMemo(() => data?.invoices || [], [data?.invoices]);
   const chosenInvoice = issuedInvoices.find(invoice =>
-    invoice.id === proofInvoiceId && isEligibleHybridInvoice(invoice)) || null;
+    invoice.id === proofInvoiceId &&
+    invoice.canPrepareLocalFile === true &&
+    isEligibleHybridInvoice(invoice)) || null;
 
   if (!stylesReady || auth.status === "loading" || tenantState.status === "loading") {
     return <PageReadyOverlay />;
@@ -277,8 +279,8 @@ export function HybridBillingReportPage() {
             </div>
             <p className="hybrid-report-notice">
               {intlLocale.startsWith("th")
-                ? "แสดงเฉพาะรายการที่ออกบิลแล้ว ไม่ใช่ยอดคาดการณ์ด้านบน ระบบรับชำระ Hybrid ยังไม่เปิดใช้งาน"
-                : "Only previously issued ledger records are shown, separate from projections above. Hybrid payments remain disabled."}
+                ? "รายการนี้อ่านจาก Invoice ที่ Server บันทึกแล้ว (ไม่ใช่ยอดคาดการณ์) สถานะ Paid ใน Firebase ยังไม่ใช่หลักฐานรับเงินธนาคารจากบัญชี Source และระบบรับชำระ Hybrid ยังไม่เปิดใช้งาน"
+                : "Issued Firebase invoices are read from the server, separate from estimates. A recorded Paid review is not independent Source bank proof; payment submission remains disabled."}
             </p>
             {invoiceLoading ? <p role="status">{t("hybrid_report.loading")}</p> : null}
             {invoiceError ? <p role="alert" className="hybrid-report-status error">{invoiceError}</p> : null}
@@ -296,13 +298,14 @@ export function HybridBillingReportPage() {
                     <td className="hybrid-review-id">{invoice.id}</td>
                     <td>{date(invoice.date)}</td>
                     <td>{currency(invoice.amount)}</td>
-                    <td><span className={`hybrid-review-status ${invoice.status || "issued"}`}>
-                      {({ issued: intlLocale.startsWith("th") ? "ออกบิลแล้ว" : "Issued",
+                    <td><span className={`hybrid-review-status ${invoice.displayStatus || "needs_review"}`}>
+                      {({ issued: intlLocale.startsWith("th") ? "ยังไม่ส่งหลักฐาน" : "Not submitted",
                         pending_review: intlLocale.startsWith("th") ? "รอตรวจสลิป" : "Pending review",
-                        paid: intlLocale.startsWith("th") ? "ชำระแล้ว" : "Paid",
-                        rejected: intlLocale.startsWith("th") ? "ปฏิเสธ" : "Rejected" })[invoice.status] || invoice.status || "-"}
+                        paid: intlLocale.startsWith("th") ? "บันทึก Paid ใน Firebase (รอเทียบ Source)" : "Recorded in Firebase (Source unverified)",
+                        rejected: intlLocale.startsWith("th") ? "ปฏิเสธ" : "Rejected",
+                        needs_review: intlLocale.startsWith("th") ? "หลักฐานไม่ครบ ต้องตรวจสอบ" : "Evidence inconsistent — review required" })[invoice.displayStatus] || "-"}
                     </span></td>
-                    <td>{isEligibleHybridInvoice(invoice) ? (
+                    <td>{invoice.canPrepareLocalFile === true && isEligibleHybridInvoice(invoice) ? (
                       <button type="button" className="btn btn-sm"
                         aria-expanded={proofInvoiceId === invoice.id}
                         onClick={() => setProofInvoiceId(value =>

@@ -93,7 +93,8 @@ test("submitting evidence is hard blocked independent of file validity", async (
 
 test("tenant report keeps live invoice history separate from projections and filters payment eligibility", () => {
   assert.match(page, /getHybridBillingPreview\(month\)/);
-  assert.match(page, /listHybridInvoices\(tenant\.id\)/);
+  assert.match(page, /listOwnIssuedHybridInvoices\(\{expectedTenantId:tenant\.id\}\)/);
+  assert.doesNotMatch(page, /listHybridInvoices\(/);
   assert.match(page, /const chosenInvoice = issuedInvoices\.find/);
   assert.match(page, /isEligibleHybridInvoice\(invoice\)/);
   assert.match(page, /<HybridTenantProofPanel/);

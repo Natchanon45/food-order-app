@@ -20,9 +20,10 @@ test("Super Admin invoice review route remains protected while its Platform card
 });
 
 test("Tenant invoice history is visible separately from nonpayable projected fees", () => {
-  assert.match(owner, /listHybridInvoices\(tenant\.id\)/);
+  assert.match(owner, /listOwnIssuedHybridInvoices\(\{expectedTenantId:tenant\.id\}\)/);
+  assert.doesNotMatch(owner, /listHybridInvoices\(/);
   assert.match(owner, /Your issued invoices|รายการบิลจริงของร้าน/);
-  assert.match(owner, /payments remain disabled/);
+  assert.match(owner, /payment submission remains disabled|Hybrid payments remain disabled/);
   assert.match(owner, /hybrid-review-status/);
   assert.match(owner, /getHybridBillingPreview\(month\)/);
 });

@@ -451,3 +451,9 @@ exports.stagePlatformM7UatFinancialShadow =
   m7UatOperationalLedger.stagePlatformM7UatFinancialShadow;
 exports.getPlatformM7UatFinancialShadowHistory =
   m7UatOperationalLedger.getPlatformM7UatFinancialShadowHistory;
+
+// Actual issued Firebase Hybrid invoice / payment evidence status, read only.
+exports.getOwnHybridIssuedInvoiceStatusPage =
+  require("./hybrid-issued-invoice-status").getOwnHybridIssuedInvoiceStatusPage;
+exports.getPlatformHybridIssuedInvoiceStatusPage =
+  require("./hybrid-issued-invoice-status").getPlatformHybridIssuedInvoiceStatusPage;

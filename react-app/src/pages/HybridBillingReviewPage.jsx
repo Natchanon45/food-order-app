@@ -9,8 +9,9 @@ import { HybridReviewDecisionPanel } from "@/components/HybridReviewDecisionPane
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { isHybridDemoMode } from "@/firebase/client";
+import {listPlatformIssuedHybridInvoices} from "@/data/hybridIssuedInvoiceStatusClient";
 import {
-  listHybridTenants, listHybridInvoices, listHybridPaymentAttempts,
+  listHybridTenants, listHybridPaymentAttempts,
   listHybridPaymentReviewEvents,
   listHybridAdjustments, listHybridAdjustmentReviewEvents,
   listHybridRefundCandidates,
@@ -28,8 +29,9 @@ function statusLabel(status, isThai) {
   const map = {
     issued: ["ออกบิลแล้ว", "Issued"],
     pending_review: ["รอตรวจสลิป", "Pending review"],
-    paid: ["ชำระแล้ว", "Paid"],
+    paid: ["บันทึก Paid ใน Firebase (รอเทียบ Source)", "Recorded in Firebase (Source unverified)"],
     rejected: ["ปฏิเสธ", "Rejected"],
+    needs_review: ["หลักฐานไม่ครบ ต้องตรวจสอบ", "Evidence inconsistent — review required"],
   };
   const choice = map[status] || [status || "-", status || "-"];
   return choice[isThai ? 0 : 1];
@@ -145,7 +147,7 @@ export function HybridBillingReviewPage() {
     setAdjustmentEvents([]);
     setRefundCandidates([]);
     Promise.all([
-      listHybridInvoices(selectedId),
+      listPlatformIssuedHybridInvoices(selectedId),
       listHybridPaymentAttempts(selectedId),
       listHybridPaymentReviewEvents(selectedId),
       listHybridAdjustments(selectedId),
@@ -272,8 +274,10 @@ export function HybridBillingReviewPage() {
                 selected.name || selected.shopName || selected.slug || selectedId],
               [label("จำนวนบิลที่โหลด", "Invoices loaded", thai), visibleInvoices.length],
               [label("สลิปรอตรวจที่โหลด", "Pending slips loaded", thai), unreviewed],
-              [label("ชำระแล้วในรายการที่โหลด", "Paid in loaded invoices", thai),
-                money(visibleInvoices.filter(row => row.status === "paid").reduce((sum, row) => sum + Number(row.amount || 0), 0), intlLocale)],
+              [label("ยอดบันทึก Paid ใน Firebase (รอเทียบ Source)",
+          "Firebase recorded Paid (Source unverified)", thai),
+                money(visibleInvoices.filter(row => row.paymentStatus === "recorded_paid")
+                  .reduce((sum, row) => sum + Number(row.amount || 0), 0), intlLocale)],
             ].map(([key, value]) => (
               <div key={key} className="card hybrid-report-metric">
                 <small>{key}</small><strong>{value}</strong>
@@ -310,7 +314,7 @@ export function HybridBillingReviewPage() {
               {moreInvoices && detailsReady ? <button type="button" className="btn btn-sm"
                 disabled={loadingDetails || Boolean(pageBusyScope)}
                 onClick={() => loadMoreDetails("invoices", invoiceCursor,
-                  listHybridInvoices, setInvoices, setInvoiceCursor, setMoreInvoices)}>
+                  listPlatformIssuedHybridInvoices, setInvoices, setInvoiceCursor, setMoreInvoices)}>
                 {label("โหลดบิลเพิ่มเติม", "Load more invoices", thai)}
               </button> : null}
             </section>
@@ -322,7 +326,7 @@ export function HybridBillingReviewPage() {
                     <th>{label("รหัสบิล", "Invoice ID", thai)}</th>
                     <th>{label("วันที่ส่ง", "Submitted", thai)}</th>
                     <th>{label("ยอด", "Amount", thai)}</th>
-                    <th>{label("ธนาคารยืนยัน", "Bank verified", thai)}</th>
+                    <th>{label("ผลระบบตรวจสลิป (ไม่ใช่บัญชี Source)", "Slip verifier result (not Source cash)", thai)}</th>
                     <th>{label("สถานะ", "Status", thai)}</th>
                     <th>{label("ผลการตรวจ", "Review action", thai)}</th>
                   </tr></thead>
@@ -332,7 +336,8 @@ export function HybridBillingReviewPage() {
                       <td>{recordDate(row.submittedAt, intlLocale)}</td>
                       <td>{money(row.amount, intlLocale)}</td>
                       <td>{row.bankVerified
-                        ? (isHybridDemoMode ? label("จำลอง", "Simulated", thai) : label("ใช่", "Yes", thai))
+                        ? (isHybridDemoMode ? label("จำลอง", "Simulated", thai)
+                          : label("ระบบตรวจสลิปผ่าน", "Slip verifier matched", thai))
                         : label("ยังไม่ยืนยัน", "Unverified", thai)}</td>
                       <td><span className={"hybrid-review-status " + row.status}>
                         {statusLabel(row.status, thai)}</span></td>
@@ -382,7 +387,7 @@ export function HybridBillingReviewPage() {
                       <td className="hybrid-review-id">{event.reviewerId || "-"}</td>
                       <td>{event.bankVerified
                         ? (isHybridDemoMode ? label("จำลอง", "Simulated", thai)
-                          : label("ธนาคารยืนยัน", "Bank verified", thai))
+                          : label("ระบบตรวจสลิปผ่าน (รอตรวจ Source)", "Proof verified (Source unconfirmed)", thai))
                         : event.verifiedExternally
                           ? label("ตรวจอิสระ", "Independent confirmation", thai)
                           : label("ไม่ได้ยืนยัน", "Not verified", thai)}</td>

@@ -396,3 +396,21 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - **Next module requires independent signed Source/real bank
   certification for an operational money writer.** Current UAT
   shadow events and Source-export money are NOT operational cash.
+
+### P1 continuation — Actual Firebase Hybrid Issued-Invoice Status module (not Shadow)
+
+- See `docs/LUKKAJA_P1_HYBRID_ISSUED_INVOICE_STATUS_MODULE_20261122.md`.
+- **Merchant** `HybridBillingReportPage` now reads issued Firebase
+  Hybrid invoices through a role-scoped server Callable and not raw
+  client-side Firestore Invoice documents. Server validates an
+  immutable Invoice, linked payment Attempt and immutable Review Event
+  in a single read-only transaction before returning a display state.
+- **Superadmin** `HybridBillingReviewPage` uses the same server
+  truth for Invoice status and paid totals; a stored `Paid` flag
+  alone is never reported as independently confirmed Source money.
+- Owner/Admin tenant is server-derived; Platform explicit tenant
+  requires active Superadmin. No forged amount/Bank account, Provider,
+  slip path, reviewer note or raw signature reaches React.
+- Payment submission/approval release gates remain OFF; no
+  operational M7 bank cash, Service Credit, tenant hold release or
+  Stripe Shadow promotion was added. No deployment.
