@@ -75,13 +75,14 @@ test("M7 quote mounted owner/admin only and provider writer remains private",asy
  const page=await readFile("react-app/src/pages/RevenueShareReportPage.jsx","utf8");
  const component=await readFile("react-app/src/components/M7StripeTestReservation.jsx","utf8");
  const policy=await readFile("functions/m7-stripe-test-reservation-policy.js","utf8");
+ const shadow=await readFile("functions/m7-stripe-test-shadow-policy.js","utf8");
  const callable=await readFile("functions/index.js","utf8");
  const rules=await readFile("firestore.rules","utf8");
  assert.match(page,/<M7StripeTestReservation key=\{"stripe-"/);
  assert.match(page,/\["owner","admin"\]\.includes\(profile\?\.role\)/);
  assert.match(component,/getOwnM7StripeTestQuoteReadiness/);
  assert.match(component,/reserveOwnM7StripeTestInvoice/);
- assert.match(policy,/PENGUIN_M7_STRIPE_TEST_CHECKOUT_ENABLED==="1"/);
+ assert.match(shadow,/PENGUIN_M7_STRIPE_TEST_CHECKOUT_ENABLED==="1"/);
  assert.match(policy,/PENGUIN_M7_STRIPE_TEST_SETTLEMENT_ENABLED==="1"/);
  assert.match(callable,/exports\.reserveOwnM7StripeTestInvoice/);
  assert.match(rules,/match \/m7StripeTestInvoiceQuotes\/\{invoiceKey\} \{\s*allow read, write: if false/);

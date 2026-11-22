@@ -310,6 +310,12 @@ service cloud.firestore {
     match /financeSlipClaims/{claimId} {
       allow read, write: if false;
     }
+    match /m7StripeTestIntentClaims/{intentId} {
+      allow read, write: if false;
+    }
+    match /m7StripeTestEventClaims/{eventId} {
+      allow read, write: if false;
+    }
     match /publicWaitingQueues/{publicToken} {
       allow get: if true;
       allow list: if false;
@@ -428,6 +434,9 @@ service cloud.firestore {
         allow read, write: if false;
       }
       match /m7StripeTestReservations/{attemptId} {
+        allow read, write: if false;
+      }
+      match /m7StripeTestSettlements/{attemptId} {
         allow read, write: if false;
       }
       // Private financial compensation: a Server Admin transaction is the

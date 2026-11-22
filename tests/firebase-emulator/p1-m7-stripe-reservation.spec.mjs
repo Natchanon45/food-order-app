@@ -100,13 +100,13 @@ test("only exact isolated TEST project enables quote availability; no provider c
  const env={GCLOUD_PROJECT:"penguin-m7-private-uat",PENGUIN_M7_STRIPE_TEST_PROJECT_ID:"penguin-m7-private-uat",
   PENGUIN_M7_STRIPE_TEST_TENANT_ID:tenantId,PENGUIN_M7_STRIPE_TEST_RESERVATIONS_ENABLED:"1"};
  assert.equal(realPolicy.testTenant(env),tenantId);
+ assert.equal(realPolicy.testTenant({...env,PENGUIN_M7_STRIPE_TEST_CHECKOUT_ENABLED:"1"}),tenantId);
  for(const patch of [
   {GCLOUD_PROJECT:"penguin-food",PENGUIN_M7_STRIPE_TEST_PROJECT_ID:"penguin-food"},
   {GCLOUD_PROJECT:"demo-any",PENGUIN_M7_STRIPE_TEST_PROJECT_ID:"demo-any"},
   {PENGUIN_M7_STRIPE_TEST_PROJECT_ID:"wrong-id"},
   {FUNCTIONS_EMULATOR:"true"},
   {FIRESTORE_EMULATOR_HOST:"127.0.0.1:18080"},
-  {PENGUIN_M7_STRIPE_TEST_CHECKOUT_ENABLED:"1"},
   {PENGUIN_M7_STRIPE_TEST_SETTLEMENT_ENABLED:"1"},
   {PENGUIN_M7_STRIPE_TEST_RESERVATIONS_ENABLED:"0"},
  ]){

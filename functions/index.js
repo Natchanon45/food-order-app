@@ -414,3 +414,11 @@ exports.getPlatformM7FinanceEvidenceHistory = m7EvidenceHistory.getPlatformM7Fin
 const m7StripeTestReservation=require("./m7-stripe-test-reservation");
 exports.getOwnM7StripeTestQuoteReadiness = m7StripeTestReservation.getOwnM7StripeTestQuoteReadiness;
 exports.reserveOwnM7StripeTestInvoice = m7StripeTestReservation.reserveOwnM7StripeTestInvoice;
+
+const m7StripeCheckout=require("./m7-stripe-test-checkout");
+exports.getOwnM7StripeTestCheckoutStatus = m7StripeCheckout.getOwnM7StripeTestCheckoutStatus;
+exports.createOwnM7StripeTestCheckout = m7StripeCheckout.createOwnM7StripeTestCheckout;
+exports.m7StripeTestShadowWebhook = m7StripeCheckout.m7StripeTestShadowWebhook;
+
+const m7StripeShadowHistory=require("./m7-stripe-test-shadow-history");
+exports.getPlatformM7StripeTestShadowHistory = m7StripeShadowHistory.getPlatformM7StripeTestShadowHistory;

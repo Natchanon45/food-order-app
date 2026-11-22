@@ -1,5 +1,13 @@
 # PENGUIN Firebase — M7 Stripe TEST invoice reservation (no charge)
 
+> **Continuation:** This document describes the quote-only stage at its
+> original commit. A newer **dedicated UAT-only Stripe TEST Checkout, signed
+> Webhook and non-operational Shadow Settlement Ledger** is implemented in
+> `LUKKAJA_P1_M7_STRIPE_TEST_SHADOW_CHECKOUT_WEBHOOK_20261122.md`.
+> The financial Invoice Paid/Service Credit writer remains disabled;
+> neither milestone authorizes a Production deployment.
+
+
 **Date:** 2026-11-22
 **Source:** `cosmatch/lukkhaja`, `feature/lukkaja_bankalert_stripe`, commit `03d2aaee` (read-only)
 **Destination:** `Natchanon45/food-order-app`, `feature/react-firebase-port`

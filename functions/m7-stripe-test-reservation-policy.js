@@ -9,6 +9,19 @@ const TENANT=/^[A-Za-z0-9_-]{3,160}$/;
 const HEX=/^[a-f0-9]{64}$/;
 const UUID=/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
 const MAX_ATTEMPTS=25;
+const PREPAID_FIELDS=["appliedServiceCreditCents","appliedServiceCredit",
+ "appliedServiceCreditAmount","appliedCreditCents","appliedCredit",
+ "creditAppliedCents","creditApplied","serviceCreditApplied",
+ "serviceCreditAmount","serviceCreditUsed","bankPaidCents",
+ "bankPaidAmount","verifiedBankPaidCents","verifiedBankCashCents",
+ "verifiedBankPaidAmount","paidAmount","prepaidCents",
+ "hasUnresolvedCorrection","hasPendingAdjustment","pendingPaymentReview"];
+function anyPrepaid(invoice){
+ return PREPAID_FIELDS.some(k=>{
+  const v=invoice?.[k];
+  return v!==undefined&&v!==null&&v!==false&&v!==0&&v!=="0"&&v!=="";
+ });
+}
 function testTenant(env=process.env){
  const p=String(env.GCLOUD_PROJECT||env.GCP_PROJECT||env.GOOGLE_CLOUD_PROJECT||"");
  const tenantId=String(env.PENGUIN_M7_STRIPE_TEST_TENANT_ID||"");
@@ -19,8 +32,8 @@ function testTenant(env=process.env){
     env.FUNCTIONS_EMULATOR==="true"||env.FIRESTORE_EMULATOR_HOST||
     env.FIREBASE_AUTH_EMULATOR_HOST||
     env.PENGUIN_M7_STRIPE_TEST_RESERVATIONS_ENABLED!=="1"||
-    env.PENGUIN_M7_STRIPE_TEST_CHECKOUT_ENABLED==="1"||
     env.PENGUIN_M7_STRIPE_TEST_SETTLEMENT_ENABLED==="1"||
+    env.PENGUIN_M7_STRIPE_LIVE_ENABLED==="1"||
     !TENANT.test(tenantId))return "";
  return tenantId;
 }
@@ -33,9 +46,7 @@ function quote(invoice,id,tenantId){
     invoice.version!==LEDGER_VERSION||invoice.tenantId!=null&&invoice.tenantId!==tenantId||
     !HEX.test(invoice.signature||"")||!["issued","rejected"].includes(invoice.status)||
     invoice.paidAttemptId||invoice.pendingAttemptId||
-    invoice.appliedServiceCreditCents||invoice.appliedServiceCredit||
-    invoice.serviceCreditApplied||invoice.hasUnresolvedCorrection||
-    invoice.hasPendingAdjustment)throw Error("M7_STRIPE_TEST_INVOICE_UNPAYABLE");
+    anyPrepaid(invoice))throw Error("M7_STRIPE_TEST_INVOICE_UNPAYABLE");
  const cents=satang(invoice.amount);
  if(cents<1000||cents>99999999)throw Error("M7_STRIPE_TEST_AMOUNT_OUT_OF_RANGE");
  const kind=invoice.kind==="fixed_monthly"?"monthly":
@@ -70,5 +81,6 @@ function blockOriginalAttempts(docs){
   if(!["rejected"].includes(s))throw Error("M7_STRIPE_TEST_EXISTING_FINANCE_PROOF");
  }
 }
-module.exports={TENANT,HEX,UUID,MAX_ATTEMPTS,testTenant,invoiceKey,quote,lockId,
+module.exports={TENANT,HEX,UUID,MAX_ATTEMPTS,PREPAID_FIELDS,anyPrepaid,
+ testTenant,invoiceKey,quote,lockId,
  validatePrior,publicQuote,blockOriginalAttempts};
