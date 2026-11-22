@@ -6,7 +6,11 @@ const state={
  reserved:"จองยอด TEST เท่านั้น",
  provider_requesting:"Stripe TEST ไม่ตอบแน่ชัด · ต้องตรวจ",
  checkout_ready:"เปิด Checkout TEST · รอหลักฐาน",
+ expired_test:"Stripe TEST หมดอายุ (ตรวจด้วย Webhook แล้ว) · ไม่ชำระเงิน",
+ payment_failed_test:"Stripe TEST ชำระไม่สำเร็จ (ตรวจด้วย Webhook แล้ว)",
  provider_test_verified:"Stripe TEST ยืนยันใน Shadow Ledger",
+ provider_test_refund_review:"พบ Refund ของ Stripe TEST · ต้องตรวจสอบ",
+ provider_test_dispute_review:"พบข้อพิพาท Stripe TEST · ต้องตรวจสอบ",
  needs_review:"ข้อมูล TEST ไม่สอดคล้อง · ต้องตรวจ",
 };
 function amount(value){return Number.isSafeInteger(value)&&value>0?

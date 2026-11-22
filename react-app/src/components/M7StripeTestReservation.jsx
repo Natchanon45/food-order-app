@@ -9,9 +9,10 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
  const [phase,setPhase]=useState("loading"),[items,setItems]=useState([]),[busy,setBusy]=useState("");
  const [quotes,setQuotes]=useState({}),[revision,setRevision]=useState(0);
  const [gateway,setGateway]=useState({available:false,items:[]});
+ const [inspections,setInspections]=useState({});
  useEffect(()=>{
   let active=true;
-  setPhase("loading");setItems([]);setQuotes({});
+  setPhase("loading");setItems([]);setQuotes({});setInspections({});
   // Do not discover tenant IDs or show a Stripe CTA for an unrelated store.
   if(!tenantId)return()=>{active=false;};
   httpsCallable(functions,"getOwnM7StripeTestQuoteReadiness")({}).then(({data})=>{
@@ -36,8 +37,9 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
        typeof row.invoiceId!=="string"||!Number.isSafeInteger(row.amountSatang)||
        row.amountSatang<1000||row.invoicePaid!==false||
        row.operationalSettlementEnabled!==false))throw Error("M7_SHADOW_STATUS_UNCONFIRMED");
-   setGateway(data.available===true&&data.checkoutEnabled===true&&data.shadowLedgerEnabled===true
-     ?{available:true,items:data.items}:{available:false,items:[]});
+   setGateway({available:data.available===true&&data.checkoutEnabled===true&&
+     data.shadowLedgerEnabled===true,
+     items:data.available===true&&data.shadowLedgerEnabled===true?data.items:[]});
   }).catch(()=>{if(active)setGateway({available:false,items:[]});});
   return()=>{active=false;};
  },[tenantId,revision]);
@@ -47,6 +49,33 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
    return u.protocol==="https:"&&u.hostname==="checkout.stripe.com"&&!u.port&&
      !u.username&&!u.password&&/^\/(c|g)\/pay\//.test(u.pathname)?u.href:"";
   }catch{return "";}
+ };
+ const inspectionLabels={
+  awaiting_payment:"Stripe TEST ยังรอผู้ชำระ · ไม่ใช่ Paid",
+  awaiting_signed_webhook:"Stripe TEST รายงานว่าชำระแล้ว · รอ Webhook และ Shadow Audit",
+  provider_expired_unpaid:"Stripe TEST ยืนยันว่าหมดอายุและยังไม่รับเงิน · จองใหม่ไม่ได้",
+  provider_failed_unpaid:"Stripe TEST ยืนยันว่าไม่สำเร็จ · จองใหม่ไม่ได้",
+  provider_request_uncertain:"Stripe TEST อาจสร้าง Session ไปแล้ว · ต้องตรวจสอบก่อน ไม่ยิงซ้ำ",
+  already_recorded_test:"Stripe TEST บันทึกหลักฐาน Shadow แล้ว · Invoice ยังไม่เป็น Paid",
+  provider_risk_review:"Stripe TEST มี Refund/Dispute ที่ตรวจสอบแล้ว · ต้องให้ Superadmin ตรวจ",
+  needs_review:"Stripe TEST มีข้อมูลไม่ครบหรือขัดแย้ง · ให้ผู้ดูแลตรวจ",
+ };
+ const inspect=async invoice=>{
+  if(busy||!invoice?.invoiceId)return;
+  setBusy(invoice.invoiceId);
+  try{
+   const {data}=await httpsCallable(functions,"inspectOwnM7StripeTestCheckout")({invoiceId:invoice.invoiceId});
+   if(data?.ok!==true||data.invoiceId!==invoice.invoiceId||
+      data.amountSatang!==invoice.amountSatang||data.currency!=="THB"||
+      data.operationalInvoicePaid!==false||data.serviceCreditChanged!==false||
+      data.canRetry!==false||data.providerTestModeOnly!==true||
+      !Object.hasOwn(inspectionLabels,data.status))
+    throw Error("M7_INSPECTION_UNCONFIRMED");
+   setInspections(old=>({...old,[invoice.invoiceId]:data.status}));
+   notify(inspectionLabels[data.status]);
+  }catch{setInspections(old=>({...old,[invoice.invoiceId]:"needs_review"}));
+   notify("ไม่สามารถตรวจ Stripe TEST ได้ ห้ามสร้าง Checkout ใหม่โดยไม่มีการตรวจสอบจากผู้ดูแล","error");
+  }finally{setBusy("");}
  };
  const startCheckout=async invoice=>{
   if(!gateway.available||busy||phase!=="ready")return;
@@ -109,14 +138,26 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
     const prior=quotes[item.invoiceId]||gateway.items.find(entry=>entry.invoiceId===item.invoiceId);
     const providerReady=gateway.available&&prior?.status==="reserved";
     const verified=prior?.status==="verified_test"||prior?.status==="provider_test_verified";
+    const terminal=prior?.status==="expired_test"||prior?.status==="payment_failed_test";
+    const requiresReview=prior?.status==="needs_review";
+    const reversed=prior?.status==="provider_test_refund_review"||
+      prior?.status==="provider_test_dispute_review";
+    const inspection=inspections[item.invoiceId];
     const url=safeURL(prior?.checkoutUrl);
     return <article key={item.invoiceId} className="m7-stripe-test-quote-item">
      <div><strong>{item.kind==="monthly"?"ค่าบริการรายเดือน":"ส่วนแบ่ง Delivery รายวัน"} · {money(item.amountSatang)}</strong>
        <small>Invoice: <code>{item.invoiceId}</code></small>
-       {prior&&<small role="status">{verified?"Stripe TEST ยืนยันใน Shadow Ledger แล้ว · Invoice จริงยังไม่เป็น Paid":
+       {prior&&<small role="status">{reversed?"Stripe TEST มีการคืนเงินหรือข้อพิพาท · Superadmin ต้องตรวจ (Invoice จริงไม่เปลี่ยน)":
+        verified?"Stripe TEST ยืนยันใน Shadow Ledger แล้ว · Invoice จริงยังไม่เป็น Paid":
+        terminal?(prior.status==="expired_test"?"Stripe TEST หมดอายุแล้ว · ห้ามจองใหม่โดยอัตโนมัติ":
+         "Stripe TEST แจ้งชำระไม่สำเร็จ · ห้ามจองใหม่โดยอัตโนมัติ"):
+        requiresReview?"หลักฐาน Stripe TEST ไม่ครบ · ต้องตรวจสอบ":
         prior.status==="provider_requesting"?"รอผล Stripe TEST · ห้ามสร้าง Checkout ใหม่":
         prior.status==="checkout_ready"?"เปิด Checkout TEST แล้ว · รอผล Webhook":
         "จองยอดแล้ว · ครั้งที่ "+prior.attemptNo+" · ยังไม่สร้าง Stripe Checkout"}</small>}
+       {inspection&&<small className="m7-stripe-test-inspection" role="status">
+        <i className="bi bi-info-circle" aria-hidden="true"/> {inspectionLabels[inspection]}
+       </small>}
      </div>
      <div className="m7-stripe-test-quote-actions">
       {!prior&&<button type="button" className="btn btn-sm" disabled={!!busy} onClick={()=>reserve(item)}>
@@ -128,6 +169,13 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
        </button>}
       {providerReady&&<button type="button" className="btn btn-sm" disabled={!!busy}
        onClick={()=>startCheckout(item)}><i className="bi bi-credit-card" aria-hidden="true"/> เริ่ม Stripe TEST Checkout</button>}
+      {prior&&["provider_requesting","checkout_ready","expired_test",
+        "payment_failed_test","needs_review","provider_test_verified",
+        "provider_test_refund_review","provider_test_dispute_review"].includes(prior.status)&&
+        <button type="button" className="btn btn-sm" disabled={!!busy}
+          onClick={()=>inspect(item)}><i className="bi bi-search" aria-hidden="true"/>
+          {busy===item.invoiceId?"กำลังตรวจสอบ…":"ตรวจ Stripe TEST"}
+        </button>}
       {prior?.status==="checkout_ready"&&url&&<a className="btn btn-sm" href={url}
        rel="noreferrer noopener" target="_blank"><i className="bi bi-box-arrow-up-right" aria-hidden="true"/> เปิดหน้า Stripe TEST</a>}
      </div>

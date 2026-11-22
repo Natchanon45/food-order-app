@@ -62,7 +62,8 @@ test("M7 Stripe TEST: merchant gated checkout + provider link and Superadmin sha
        notify={(message,tone)=>window.__toasts.push({message,tone})}/>:
       <M7StripeTestShadowHistory tenantId="tenant-uat-1234"/>}
     </main>);`);
-  server=await createServer({configFile:false,root,plugins:[react()],resolve:{alias:[
+  server=await createServer({configFile:false,root,cacheDir:resolve(dir,".vite-cache"),
+   plugins:[react()],resolve:{alias:[
    {find:"@/firebase/client",replacement:resolve(dir,"client.js")},
    {find:"@/components/sweetDialog",replacement:resolve(dir,"sweet.js")},
    {find:"firebase/functions",replacement:resolve(dir,"functions.js")},

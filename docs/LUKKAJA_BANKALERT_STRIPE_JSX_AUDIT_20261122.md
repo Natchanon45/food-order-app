@@ -272,3 +272,21 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - Added signed raw Stripe Webhook with independent Stripe event, Session and PaymentIntent re-read, exact amount/account/metadata validation, global Intent/Event claim deduplication and a Firestore shadow settlement transaction that writes only TEST evidence; **it does not mark any operational invoice Paid or adjust Service Credit, wallet, delivery, kitchen or access holds**.
 - Added own-test-status and Superadmin-scoped TEST shadow history, including missing-proof downgrade to needs_review, and checkout-off webhook ingress/audit history separation. All new shadow collections are server-only in Firestore Rules.
 - Existing Lalamove Stripe Wallet Sandbox remains separate. Source Go/MariaDB and pre-existing Android Companion modifications were not changed. No live provider request, Firebase deploy or production flag modification was made.
+
+### P1 continuation — M7 Stripe TEST lifecycle, merchant inspection and Risk Audit
+
+- See `docs/LUKKAJA_P1_M7_STRIPE_TEST_LIFECYCLE_RISK_AUDIT_20261122.md`.
+- Added independently verified signed TEST terminal events `checkout.session.expired`
+  and `checkout.session.async_payment_failed`; one Firestore transaction creates
+  a global event claim, tenant audit and a permanently non-retryable TEST
+  terminal status. Existing paid or pending manual evidence blocks it.
+- Added merchant read-only provider inspection: open/pending, paid-but-awaiting
+  signed webhook, expired-unpaid, failed-unpaid, and ambiguous-provider status.
+  A redirect/inspection never posts financial evidence or retries charge.
+- Added signed TEST `charge.refunded` and `charge.dispute.created` risk intake,
+  independent provider/charge/dispute/Session/Intent re-read, idempotent global
+  event claims and a tenant risk audit. Existing TEST settlements remain immutable,
+  and both merchant/Superadmin history downgrade to a needs-review/risk state.
+- Updated Firestore Rules, responsive UI and test suite. Does not touch
+  operational Invoice Paid, Service Credit, bank cash, wallet, delivery, holds
+  or Source branch. Real Stripe TEST and Production remain untested/undeployed.

@@ -34,7 +34,8 @@ test("M7 Stripe TEST owner-only quote UI: hidden by default, server amount, once
   await writeFile(resolve(dir,"fixture.jsx"),`import React from"react";import{createRoot}from"react-dom/client";import{M7StripeTestReservation}from"@/components/M7StripeTestReservation";
    createRoot(document.getElementById("root")).render(<main style={{padding:12,maxWidth:900,margin:"auto"}}>
     <M7StripeTestReservation tenantId="tenant-test-123" notify={(s,e)=>{window.__toast=[s,e]}}/></main>);`);
-  server=await createServer({configFile:false,root,plugins:[react()],resolve:{alias:[
+  server=await createServer({configFile:false,root,cacheDir:resolve(dir,".vite-cache"),
+   plugins:[react()],resolve:{alias:[
    {find:"@/firebase/client",replacement:resolve(dir,"client.js")},
    {find:"@/components/sweetDialog",replacement:resolve(dir,"sweet.js")},
    {find:"firebase/functions",replacement:resolve(dir,"functions.js")},

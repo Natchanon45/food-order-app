@@ -30,3 +30,6 @@
 .m7-stripe-test-shadow-scroll th,.m7-stripe-test-shadow-scroll td{padding:10px 12px;border-bottom:1px solid #e3eae6;text-align:left;vertical-align:top}
 .m7-stripe-test-shadow-scroll th{color:#456552;background:#f1f8f3;white-space:nowrap}
 .m7-stripe-test-shadow-scroll code{overflow-wrap:anywhere;white-space:normal}
+
+.m7-stripe-test-inspection{display:flex;align-items:flex-start;gap:5px;color:#704f1c;background:#fff7e8;border-radius:7px;padding:6px 8px;line-height:1.5}
+.m7-stripe-test-inspection i{flex-shrink:0}

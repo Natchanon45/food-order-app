@@ -52,8 +52,12 @@ test("signed-independent TEST proof: atomic single shadow settlement across 7 co
  assert.equal(after.paidAttemptId,undefined);
  assert.equal(after.serviceCreditApplied,undefined);
  assert.equal((await r.attempt.get()).data().status,"verified_test");
- assert.equal((await db.collection("m7StripeTestIntentClaims").get()).size,1);
- assert.equal((await db.collection("m7StripeTestEventClaims").get()).size,1);
+ const intentClaim=(await db.collection("m7StripeTestIntentClaims").doc(intentId).get()).data();
+ const eventClaim=(await db.collection("m7StripeTestEventClaims").doc(eventId).get()).data();
+ assert.equal(intentClaim.attemptId,id);
+ assert.equal(intentClaim.tenantId,tenantId);
+ assert.equal(eventClaim.attemptId,id);
+ assert.equal(eventClaim.tenantId,tenantId);
  assert.equal((await r.tenant.collection("m7StripeTestSettlements").get()).size,1);
  const retry=await ledger.settle({db,config:cfg,eventId,reservation:(await r.attempt.get()).data(),session,intent});
  assert.equal(retry.alreadySettled,true);

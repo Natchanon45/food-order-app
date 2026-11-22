@@ -9,6 +9,10 @@ const invoicePolicy=require("./m7-stripe-test-reservation-policy");
 const stripe=require("./m7-stripe-test-provider-policy");
 const shadow=require("./m7-stripe-test-shadow-policy");
 const ledger=require("./m7-stripe-test-shadow-ledger");
+const lifecycle=require("./m7-stripe-test-lifecycle-policy");
+const lifecycleLedger=require("./m7-stripe-test-lifecycle-ledger");
+const risk=require("./m7-stripe-test-risk-policy");
+const riskLedger=require("./m7-stripe-test-risk-ledger");
 const history=require("./m7-stripe-test-shadow-history");
 const adapter=require("./m7-stripe-test-provider-adapter");
 const opts={region:"asia-southeast1",timeoutSeconds:60,
@@ -179,11 +183,116 @@ async function webhook({db,config,raw,header,read=adapter.request}){
  // This writer is TEST-only and never promotes the operational invoice.
  return ledger.settle({db,config,eventId:hint.eventId,reservation:attempt,session,intent});
 }
+async function webhookTerminal({db,config,raw,header,read=adapter.request}){
+ const hint=lifecycle.verifiedEnvelope({raw,header,secret:config?.hook});
+ if(!config||!hint||hint.tenantId!==config.tenantId)
+  throw Error("M7_TEST_TERMINAL_EVENT_UNTRUSTED");
+ const event=await read(config,"/v1/events/"+hint.eventId);
+ if(event?.id!==hint.eventId||event.type!==hint.type||event.livemode!==false||
+    event.account&&event.account!==config.accountId||
+    event.data?.object?.id!==hint.sessionId||
+    event.data.object.livemode!==false||
+    event.data.object.metadata?.tenantId!==hint.tenantId||
+    event.data.object.metadata?.invoiceId!==hint.invoiceId||
+    event.data.object.metadata?.attemptId!==hint.attemptId||
+    event.data.object.metadata?.invoiceSignature!==hint.invoiceSignature||
+    event.data.object.metadata?.kind!==hint.kind||
+    event.data.object.metadata?.purpose!==stripe.PURPOSE)
+  throw Error("M7_TEST_TERMINAL_EVENT_MISMATCH");
+ const session=await read(config,"/v1/checkout/sessions/"+hint.sessionId);
+ if(session?.id!==hint.sessionId)throw Error("M7_TEST_TERMINAL_SESSION_MISMATCH");
+ const intent=session.payment_intent
+  ?await read(config,"/v1/payment_intents/"+session.payment_intent):null;
+ const r=ledger.refs(db,hint.tenantId,hint.invoiceId,hint.attemptId);
+ const record=(await r.attempt.get()).data();
+ if(!record||record.tenantId!==hint.tenantId||
+    record.attemptId!==hint.attemptId||
+    record.accountId!==config.accountId||
+    record.providerFingerprint!==config.fingerprint)
+  throw Error("M7_TEST_TERMINAL_RESERVATION_MISMATCH");
+ if(!lifecycle.terminalUnpaid(hint.type,record,session,intent))
+  throw Error("M7_TEST_TERMINAL_PROVIDER_PROOF_INVALID");
+ return lifecycleLedger.record({db,config,eventId:hint.eventId,
+  eventType:hint.type,attempt:record,session,intent});
+}
+async function webhookRisk({db,config,raw,header,read=adapter.request}){
+ const hint=risk.envelope({raw,header,secret:config?.hook});
+ if(!config||!hint)throw Error("M7_TEST_RISK_EVENT_UNTRUSTED");
+ const event=await read(config,"/v1/events/"+hint.eventId);
+ if(event?.id!==hint.eventId||event.type!==hint.eventType||
+    event.livemode!==false||event.account&&event.account!==config.accountId||
+    event.data?.object?.id!==hint.objectId||
+    event.data.object.object!==(hint.eventType==="charge.refunded"?"charge":"dispute")||
+    event.data.object.livemode!==false)
+  throw Error("M7_TEST_RISK_EVENT_MISMATCH");
+ const dispute=hint.eventType==="charge.dispute.created"
+  ?await read(config,"/v1/disputes/"+hint.objectId):null;
+ const chargeId=dispute?.charge||hint.objectId;
+ if(!risk.CHARGE.test(chargeId||""))throw Error("M7_TEST_RISK_CHARGE_INVALID");
+ const charge=await read(config,"/v1/charges/"+chargeId);
+ const evidence=risk.evidence({hint,event,charge,dispute});
+ if(!evidence)throw Error("M7_TEST_RISK_PROVIDER_EVIDENCE_INVALID");
+ const claim=(await db.collection("m7StripeTestIntentClaims")
+  .doc(evidence.intentId).get()).data();
+ if(!claim||claim.tenantId!==config.tenantId||
+    !stripe.SESSION.test(claim.sessionId||""))
+  throw Error("M7_TEST_RISK_INTENT_NOT_IN_M7_LEDGER");
+ const [session,intent]=await Promise.all([
+  read(config,"/v1/checkout/sessions/"+claim.sessionId),
+  read(config,"/v1/payment_intents/"+evidence.intentId),
+ ]);
+ return riskLedger.record({db,config,riskEvidence:evidence,session,intent});
+}
+async function inspect({db,auth,config,invoiceId,read=adapter.request}){
+ if(!config)throw err("failed-precondition","M7_TEST_INSPECTION_DISABLED");
+ const r=await loadReserved(db,auth,config,invoiceId);
+ const record=(await r.attempt.get()).data();
+ if(!record||record.tenantId!==config.tenantId||
+    record.invoiceId!==invoiceId||record.accountId!==config.accountId||
+    record.providerFingerprint!==config.fingerprint)
+  throw err("failed-precondition","M7_TEST_INSPECTION_BOUNDARY_MISMATCH");
+ if(record.status==="provider_requesting"&&!record.checkoutSessionId)
+  return lifecycle.publicInspection(record,"provider_request_uncertain");
+ if(["expired_test","payment_failed_test"].includes(record.status)){
+  const audit=stripe.EVENT.test(record.lifecycleLastEventId||"")
+    ?(await r.tenant.collection("m7StripeTestLifecycleAudits")
+       .doc(record.lifecycleLastEventId).get()).data():null;
+  const state=history._privateForTests.view(record,null,audit).status;
+  return lifecycle.publicInspection(record,
+   state==="expired_test"?"provider_expired_unpaid":
+   state==="payment_failed_test"?"provider_failed_unpaid":"needs_review");
+ }
+ if(record.status==="verified_test"){
+  const settled=(await r.settlement.get()).data();
+  const riskProof=stripe.EVENT.test(record.riskEventId||"")
+    ?(await r.tenant.collection("m7StripeTestRiskAudits").doc(record.riskEventId).get()).data():null;
+  const v=history._privateForTests.view(record,settled,null,riskProof);
+  return lifecycle.publicInspection(record,
+    ["provider_test_refund_review","provider_test_dispute_review"].includes(v.status)
+      ?"provider_risk_review":v.providerVerified?"already_recorded_test":"needs_review");
+ }
+ if(record.status!=="checkout_ready"||
+    !stripe.SESSION.test(record.checkoutSessionId||""))
+  return lifecycle.publicInspection(record,"needs_review");
+ // GET only. No mutation/settlement on browser polling. A paid return page
+ // is not a payment proof, even if provider independently reports success.
+ let state="needs_review";
+ try{
+  const session=await read(config,"/v1/checkout/sessions/"+record.checkoutSessionId);
+  const intent=session.payment_intent&&stripe.INTENT.test(session.payment_intent)
+   ?await read(config,"/v1/payment_intents/"+session.payment_intent):null;
+  state=lifecycle.inspect(record,session,intent);
+ }catch{
+  state="needs_review";
+ }
+ return lifecycle.publicInspection(record,state);
+}
 exports.getOwnM7StripeTestCheckoutStatus=onCall(opts,async request=>{
  canonical(request.data||{},[]);
- const config=cfg();
+ const config=cfg("ingress");
  if(!config)return {ok:true,available:false,mode:"test",checkoutEnabled:false,
   shadowLedgerEnabled:false,operationalSettlementEnabled:false,items:[]};
+ const checkoutEnabled=!!cfg();
  const db=getFirestore(),tenantId=await merchant(db,request.auth);
  if(tenantId!==config.tenantId)throw err("permission-denied","M7_STRIPE_TEST_TENANT_DENIED");
  const snapshots=await db.collection("tenants").doc(tenantId)
@@ -191,18 +300,51 @@ exports.getOwnM7StripeTestCheckoutStatus=onCall(opts,async request=>{
  const refs=snapshots.docs.map(x=>db.collection("tenants").doc(tenantId)
   .collection("m7StripeTestSettlements").doc(x.id));
  const proofs=refs.length?await db.getAll(...refs):[];
+ const auditRefs=snapshots.docs.map(doc=>{
+  const row=doc.data();
+  return ["expired_test","payment_failed_test"].includes(row.status)&&
+    stripe.EVENT.test(row.lifecycleLastEventId||"")
+    ?db.collection("tenants").doc(tenantId)
+      .collection("m7StripeTestLifecycleAudits").doc(row.lifecycleLastEventId):null;
+ });
+ const auditDocuments=auditRefs.filter(Boolean);
+ const auditFound=auditDocuments.length?await db.getAll(...auditDocuments):[];
+ let auditIndex=0;
+ const riskRefs=snapshots.docs.map(doc=>{
+  const row=doc.data();
+  return ["refund_review","dispute_review"].includes(row.riskStatus)&&
+    stripe.EVENT.test(row.riskEventId||"")
+    ?db.collection("tenants").doc(tenantId)
+       .collection("m7StripeTestRiskAudits").doc(row.riskEventId):null;
+ });
+ const riskDocs=riskRefs.filter(Boolean);
+ const riskFound=riskDocs.length?await db.getAll(...riskDocs):[];
+ let riskIndex=0;
  const items=snapshots.docs.map((doc,i)=>{
   const row=doc.data(),item=shadow.publicAttempt(row,{includeURL:true});
-  if(row.status==="verified_test"){
-   const certified=history._privateForTests.view(row,proofs[i]?.data());
-   item.status=certified.providerVerified?"provider_test_verified":"needs_review";
+  let audit=null;
+  if(auditRefs[i])audit=auditFound[auditIndex++]?.data();
+  const riskProof=riskRefs[i]?riskFound[riskIndex++]?.data():null;
+  const certified=history._privateForTests.view(row,proofs[i]?.data(),audit,riskProof);
+  if(["verified_test","expired_test","payment_failed_test"].includes(row.status)){
+   item.status=certified.status;
    item.providerVerified=certified.providerVerified;
    item.checkoutUrl="";
   }
   return item;
  });
- return {ok:true,available:true,mode:"test",checkoutEnabled:true,
+ return {ok:true,available:true,mode:"test",checkoutEnabled,
   shadowLedgerEnabled:true,operationalSettlementEnabled:false,items};
+});
+exports.inspectOwnM7StripeTestCheckout=onCall(opts,async request=>{
+ canonical(request.data||{},["invoiceId"]);
+ if(typeof request.data?.invoiceId!=="string")
+  throw err("invalid-argument","M7_TEST_INSPECTION_INVOICE_INVALID");
+ try{invoicePolicy.invoiceKey(request.data.invoiceId);}
+ catch{throw err("invalid-argument","M7_TEST_INSPECTION_INVOICE_INVALID");}
+ const config=cfg("ingress");
+ if(!config)throw err("failed-precondition","M7_TEST_INSPECTION_DISABLED");
+ return inspect({db:getFirestore(),auth:request.auth,config,invoiceId:request.data.invoiceId});
 });
 exports.createOwnM7StripeTestCheckout=onCall(opts,async request=>{
  canonical(request.data||{},["invoiceId"]);
@@ -218,16 +360,24 @@ exports.m7StripeTestShadowWebhook=onRequest(opts,async(req,res)=>{
   return res.status(400).send("Invalid signature");
  let payload;
  try{payload=JSON.parse(req.rawBody.toString("utf8"));}catch{return res.status(400).send("Invalid event");}
- if(!["checkout.session.completed","checkout.session.async_payment_succeeded"].includes(payload?.type))
-  return res.status(200).send("Ignored");
+ const paid=["checkout.session.completed","checkout.session.async_payment_succeeded"].includes(payload?.type);
+ const terminal=lifecycle.EVENTS.has(payload?.type);
+ const adverse=risk.EVENTS.has(payload?.type);
+ if(!paid&&!terminal&&!adverse)return res.status(200).send("Ignored");
  try{
-  const result=await webhook({db:getFirestore(),config,raw:req.rawBody,
-   header:req.get("stripe-signature")});
-  return res.status(200).json({received:true,providerVerified:true,
-   alreadySettled:result.alreadySettled,operationalInvoicePaid:false});
+  const params={db:getFirestore(),config,raw:req.rawBody,
+   header:req.get("stripe-signature")};
+  const result=paid?await webhook(params):
+   terminal?await webhookTerminal(params):await webhookRisk(params);
+  return res.status(200).json({received:true,providerVerified:paid,
+   providerVerifiedUnpaid:terminal,requiresRiskReview:adverse,
+   alreadySettled:paid?result.alreadySettled:false,
+   alreadyAudited:terminal?result.reused:adverse?result.alreadyAudited:false,
+   operationalInvoicePaid:false,canRetry:false});
  }catch{
   // Stripe may retry; immutable event/intent claims make retries idempotent.
   return res.status(503).send("M7 TEST shadow verification requires review");
  }
 });
-exports._privateForTests={cfg,begin,attach,checkout,webhook};
+exports._privateForTests={cfg,begin,attach,checkout,webhook,
+ webhookTerminal,webhookRisk,inspect};

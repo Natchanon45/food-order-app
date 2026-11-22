@@ -1,5 +1,11 @@
 # PENGUIN Firebase — M7 Stripe TEST Checkout, signed Webhook and Shadow Settlement Ledger
 
+> **Continuation:** The terminal-unpaid/Refund/Dispute safety and read-only
+> inspection stage is now documented in
+> `LUKKAJA_P1_M7_STRIPE_TEST_LIFECYCLE_RISK_AUDIT_20261122.md`.
+> Neither stage marks a Hybrid invoice Paid or authorizes deployment.
+
+
 **Date:** 22 November 2026
 **Source (read only):** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe`, source HEAD `03d2aaee`
 **Destination:** `Natchanon45/food-order-app` / `feature/react-firebase-port`

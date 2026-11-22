@@ -20,7 +20,9 @@ function safePath(path,method){
   (path===PATH.account||path===PATH.methods||
    /^\/v1\/events\/evt_[A-Za-z0-9_]{8,240}$/.test(path)||
    /^\/v1\/checkout\/sessions\/cs_test_[A-Za-z0-9_]{8,240}$/.test(path)||
-   /^\/v1\/payment_intents\/pi_[A-Za-z0-9_]{8,240}$/.test(path)))return true;
+   /^\/v1\/payment_intents\/pi_[A-Za-z0-9_]{8,240}$/.test(path)||
+   /^\/v1\/charges\/ch_[A-Za-z0-9_]{8,240}$/.test(path)||
+   /^\/v1\/disputes\/dp_[A-Za-z0-9_]{8,240}$/.test(path)))return true;
  return method==="POST"&&path===PATH.checkout;
 }
 async function request(cfg,path,{method="GET",form,idempotency,fetcher=fetch}={}){
