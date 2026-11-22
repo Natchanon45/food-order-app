@@ -20,6 +20,7 @@ function safePath(path,method){
   (path===PATH.account||path===PATH.methods||
    /^\/v1\/events\/evt_[A-Za-z0-9_]{8,240}$/.test(path)||
    /^\/v1\/checkout\/sessions\/cs_test_[A-Za-z0-9_]{8,240}$/.test(path)||
+   /^\/v1\/checkout\/sessions\?limit=100&created%5Bgte%5D=\d{1,12}&created%5Blte%5D=\d{1,12}(?:&starting_after=cs_test_[A-Za-z0-9_]{8,240})?$/.test(path)||
    /^\/v1\/payment_intents\/pi_[A-Za-z0-9_]{8,240}$/.test(path)||
    /^\/v1\/charges\/ch_[A-Za-z0-9_]{8,240}$/.test(path)||
    /^\/v1\/disputes\/dp_[A-Za-z0-9_]{8,240}$/.test(path)))return true;

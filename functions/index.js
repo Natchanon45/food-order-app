@@ -423,3 +423,7 @@ exports.m7StripeTestShadowWebhook = m7StripeCheckout.m7StripeTestShadowWebhook;
 
 const m7StripeShadowHistory=require("./m7-stripe-test-shadow-history");
 exports.getPlatformM7StripeTestShadowHistory = m7StripeShadowHistory.getPlatformM7StripeTestShadowHistory;
+
+const m7TestRecovery=require("./m7-stripe-test-recovery");
+exports.reviewPlatformM7StripeTestRecovery = m7TestRecovery.reviewPlatformM7StripeTestRecovery;
+exports.bindPlatformM7StripeTestRecovery = m7TestRecovery.bindPlatformM7StripeTestRecovery;

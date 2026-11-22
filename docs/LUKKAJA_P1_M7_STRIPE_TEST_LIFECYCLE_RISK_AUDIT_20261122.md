@@ -1,4 +1,11 @@
 # PENGUIN Firebase — M7 Stripe TEST Lifecycle, Safe Inspection and Risk Audit
+
+> **Continuation:** Superadmin-only recovery of a previously created but
+> unrecorded Stripe TEST Checkout Session is documented in
+> `LUKKAJA_P1_M7_STRIPE_TEST_AMBIGUOUS_SESSION_RECOVERY_20261122.md`.
+> The recovery workflow never sends another Stripe POST and never posts
+> operational Invoice Paid or Service Credit.
+
 **Date:** 22 Nov 2026 (Thailand)
 **Source (read-only):** cosmatch/lukkhaja / feature/lukkaja_bankalert_stripe @ 03d2aaee
 **Target:** Natchanon45/food-order-app / feature/react-firebase-port

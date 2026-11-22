@@ -445,6 +445,9 @@ service cloud.firestore {
       match /m7StripeTestRiskAudits/{eventId} {
         allow read, write: if false;
       }
+      match /m7StripeTestRecoveryAudits/{attemptId} {
+        allow read, write: if false;
+      }
       // Private financial compensation: a Server Admin transaction is the
       // only writer. The balance cap and decision audit must not be forged.
       match /hybridBillingAdjustments/{adjustmentId} {

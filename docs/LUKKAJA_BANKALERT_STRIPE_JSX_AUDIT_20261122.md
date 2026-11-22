@@ -290,3 +290,20 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - Updated Firestore Rules, responsive UI and test suite. Does not touch
   operational Invoice Paid, Service Credit, bank cash, wallet, delivery, holds
   or Source branch. Real Stripe TEST and Production remain untested/undeployed.
+
+### P1 continuation — M7 Stripe TEST uncertain Checkout recovery and operator audit
+
+- See `docs/LUKKAJA_P1_M7_STRIPE_TEST_AMBIGUOUS_SESSION_RECOVERY_20261122.md`.
+- Added a strict TEST-only Stripe Checkout Session list scan with timestamp window,
+  five-page cap, exact immutable invoice metadata/amount/payment method matching.
+  Search miss, multiple matches or incomplete page coverage **never authorizes
+  another Checkout**.
+- Added Superadmin-only read-only review and a separate, explicitly confirmed
+  reattach of a single existing `open/unpaid` Stripe TEST Session. Before
+  binding the server repeats the scan/GET and performs one transaction re-reading
+  the original invoice and lock, active operator, finance evidence and existing
+  settlement, creating a private immutable Recovery Audit in the same commit.
+- Added Browser/Emulator tests for five-way concurrent bind, wrong role,
+  malformed data, invoice changes, and signed Webhook winning a race.
+  **No provider POST during recovery, no new attempt, and no operational
+  Invoice Paid/Service Credit/wallet/hold mutation.** No Production deploy.

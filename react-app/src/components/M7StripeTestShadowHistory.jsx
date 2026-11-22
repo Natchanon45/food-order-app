@@ -1,6 +1,7 @@
 import {useEffect,useState} from "react";
 import {httpsCallable} from "firebase/functions";
 import {functions} from "@/firebase/client";
+import {sweetConfirm} from "@/components/sweetDialog";
 import "@/ui/m7-stripe-test-reservation.css";
 const state={
  reserved:"จองยอด TEST เท่านั้น",
@@ -19,8 +20,13 @@ export function M7StripeTestShadowHistory({tenantId="",refreshVersion=0}){
  const [open,setOpen]=useState(false);
  const [phase,setPhase]=useState("loading");
  const [data,setData]=useState({items:[],hasMore:false});
+ const [reviews,setReviews]=useState({});
+ const [busy,setBusy]=useState("");
+ const [message,setMessage]=useState("");
+ const [localRevision,setLocalRevision]=useState(0);
  useEffect(()=>{
   let alive=true;setPhase("loading");setData({items:[],hasMore:false});
+  setReviews({});
   if(!open||!tenantId)return()=>{alive=false;};
   httpsCallable(functions,"getPlatformM7StripeTestShadowHistory")({tenantId})
    .then(({data:response})=>{
@@ -36,7 +42,66 @@ export function M7StripeTestShadowHistory({tenantId="",refreshVersion=0}){
     setPhase(response.available?"ready":"unavailable");
    }).catch(()=>{if(alive)setPhase("error");});
   return()=>{alive=false;};
- },[tenantId,open,refreshVersion]);
+ },[tenantId,open,refreshVersion,localRevision]);
+ const messages={
+  single_open:"พบ Stripe TEST Session เดิม 1 รายการ เปิดอยู่และยังไม่ชำระ · สามารถยืนยันผูก Session เดิมได้",
+  already_paid_wait_webhook:"พบ Session ที่ Stripe TEST รายงาน Paid · ต้องรอ Signed Webhook ห้ามสร้างใหม่",
+  already_expired:"พบ Session หมดอายุ · ยังไม่เปิดให้จองยอดใหม่",
+  already_failed:"พบ Session ไม่สำเร็จ · ยังไม่เปิดให้จองยอดใหม่",
+  not_found_uncertain:"ค้นไม่พบในช่วงที่ตรวจ · ยังยืนยันไม่ได้ว่า Stripe ไม่ได้สร้าง Session",
+  ambiguous:"พบ Session ที่ผูก Attempt เดียวกันมากกว่าหนึ่งรายการ · ต้องตรวจสอบกับ Stripe",
+  mismatch:"ข้อมูล Session ไม่ตรงกับ Invoice หรือ Amount · ให้ตรวจสอบ",
+  scan_incomplete:"ยังตรวจ Stripe ได้ไม่ครบทุกหน้า / หมดระยะค้นหา · ห้ามสร้างใหม่",
+  requires_review:"ไม่สามารถยืนยันหลักฐาน TEST ได้ · ให้ตรวจสอบ",
+ };
+ const inspectRecovery=async row=>{
+  if(busy||row.status!=="provider_requesting")return;
+  setBusy(row.attemptId);setMessage("");
+  const data={tenantId,invoiceId:row.invoiceId,attemptId:row.attemptId};
+  try{
+   const {data:result}=await httpsCallable(functions,"reviewPlatformM7StripeTestRecovery")(data);
+   if(result?.ok!==true||result.mode!=="test"||result.readOnly!==true||
+      result.tenantId!==tenantId||result.invoiceId!==row.invoiceId||
+      result.attemptId!==row.attemptId||result.amountSatang!==row.amountSatang||
+      result.canCreateNewCheckout!==false||result.canSettleInvoice!==false||
+      result.checkoutCreatedByThisReview!==false||
+      !Object.hasOwn(messages,result.status)||
+      typeof result.sessionId!=="string"||
+      (result.status==="single_open"&&
+       (!/^cs_test_[A-Za-z0-9_]{8,240}$/.test(result.sessionId)||
+        result.matchedSingleOpen!==true)))
+    throw Error("M7_TEST_RECOVERY_REVIEW_UNCONFIRMED");
+   setReviews(prev=>({...prev,[row.attemptId]:{
+    status:result.status,sessionId:result.sessionId}}));
+   setMessage(messages[result.status]);
+  }catch{
+   setReviews(prev=>({...prev,[row.attemptId]:{status:"requires_review",sessionId:""}}));
+   setMessage("ไม่สามารถตรวจสอบ Stripe TEST Session เดิมได้ ห้ามจองยอดใหม่");
+  }finally{setBusy("");}
+ };
+ const bindRecovery=async row=>{
+  const proof=reviews[row.attemptId];
+  if(busy||row.status!=="provider_requesting"||proof?.status!=="single_open"||
+    !/^cs_test_[A-Za-z0-9_]{8,240}$/.test(proof.sessionId||""))return;
+  const agreed=await sweetConfirm(
+   "ยืนยันผูก Stripe TEST Session เดิมกับรายการจองที่เลือกเท่านั้น ระบบจะอ่านและตรวจ Stripe อีกครั้งก่อนบันทึก Audit โดยจะไม่สร้าง Session ใหม่ ไม่เปลี่ยน Invoice เป็น Paid และไม่เพิ่ม Service Credit",
+   {title:"M7 Stripe TEST · ยืนยันการกู้คืน",confirmText:"ผูก Session เดิม (TEST)",cancelText:"ยกเลิก",type:"warning"});
+  if(!agreed)return;
+  setBusy(row.attemptId);setMessage("");
+  try{
+   const {data:result}=await httpsCallable(functions,"bindPlatformM7StripeTestRecovery")({
+    tenantId,invoiceId:row.invoiceId,attemptId:row.attemptId,sessionId:proof.sessionId});
+   if(result?.ok!==true||result.status!=="checkout_ready"||
+      result.invoiceId!==row.invoiceId||result.attemptId!==row.attemptId||
+      result.existingSessionReattached!==true||result.createdStripeSession!==false||
+      result.canCreateNewCheckout!==false||
+      result.operationalInvoicePaid!==false||result.serviceCreditChanged!==false)
+    throw Error("M7_TEST_RECOVERY_BIND_UNCONFIRMED");
+   setMessage("ผูก Session เดิมของ Stripe TEST สำเร็จแล้ว · Audit บันทึกแล้ว · Invoice จริงยังไม่ Paid");
+   setLocalRevision(n=>n+1);
+  }catch{setMessage("ไม่สามารถยืนยันการผูก Session ได้ กรุณาตรวจข้อมูลใหม่ ห้ามสร้าง Checkout เพิ่ม");}
+  finally{setBusy("");}
+ };
  if(!tenantId)return null;
  return <details className="m7-stripe-test-reservation" onToggle={e=>setOpen(e.currentTarget.open)}
   data-m7-stripe-shadow-history>
@@ -48,6 +113,7 @@ export function M7StripeTestShadowHistory({tenantId="",refreshVersion=0}){
    <p className="m7-stripe-test-quote-warning"><i className="bi bi-shield-exclamation" aria-hidden="true"/>
     ตารางนี้ไม่ใช่การรับชำระ Invoice จริง ไม่ใช่ยอดเข้าธนาคาร และไม่เพิ่ม Service Credit หรือ Wallet
    </p>
+   {message&&<p className="m7-stripe-test-inspection" role="status"><i className="bi bi-info-circle" aria-hidden="true"/> {message}</p>}
    {phase==="loading"?<p role="status">กำลังอ่านหลักฐานจากเซิร์ฟเวอร์…</p>:
     phase==="unavailable"?<p role="status">Stripe TEST Shadow Ledger ไม่ได้เปิดในโครงการนี้</p>:
     phase==="error"?<p role="alert">ไม่สามารถตรวจสอบ Shadow Ledger ได้ กรุณารีเฟรช</p>:
@@ -58,7 +124,22 @@ export function M7StripeTestShadowHistory({tenantId="",refreshVersion=0}){
       <tbody>{data.items.map(row=><tr key={row.attemptId}>
        <td><code>{row.invoiceId}</code></td>
        <td>{amount(row.amountSatang)}</td><td>{row.attemptNo}</td>
-       <td>{state[row.status]}</td><td>ไม่ได้บันทึก Paid จากส่วนนี้</td>
+       <td>{state[row.status]}
+        {row.status==="provider_requesting"&&<div className="m7-stripe-test-recovery-actions">
+         <button type="button" className="btn btn-sm" disabled={!!busy}
+          onClick={()=>inspectRecovery(row)}><i className="bi bi-search" aria-hidden="true"/>
+          {busy===row.attemptId?"กำลังตรวจ Stripe TEST…":"ตรวจ Session เดิม"}
+         </button>
+         {reviews[row.attemptId]&&<small role="status" className="m7-stripe-test-recovery-note">
+          {messages[reviews[row.attemptId].status]}
+         </small>}
+         {reviews[row.attemptId]?.status==="single_open"&&
+          <button type="button" className="btn btn-sm" disabled={!!busy}
+           onClick={()=>bindRecovery(row)}><i className="bi bi-link-45deg" aria-hidden="true"/>
+           ผูก Session เดิม (TEST)
+          </button>}
+        </div>}
+       </td><td>ไม่ได้บันทึก Paid จากส่วนนี้</td>
       </tr>)}</tbody>
      </table>
     </div>:<p role="status">ยังไม่มีรายการ Stripe TEST ของร้านนี้</p>}
