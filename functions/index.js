@@ -410,3 +410,7 @@ exports.deliverTenantTelegramEvent = tenantTelegramEvents.deliverTenantTelegramE
 const m7EvidenceHistory=require("./m7-evidence-history");
 exports.getOwnM7FinanceEvidenceHistory = m7EvidenceHistory.getOwnM7FinanceEvidenceHistory;
 exports.getPlatformM7FinanceEvidenceHistory = m7EvidenceHistory.getPlatformM7FinanceEvidenceHistory;
+
+const m7StripeTestReservation=require("./m7-stripe-test-reservation");
+exports.getOwnM7StripeTestQuoteReadiness = m7StripeTestReservation.getOwnM7StripeTestQuoteReadiness;
+exports.reserveOwnM7StripeTestInvoice = m7StripeTestReservation.reserveOwnM7StripeTestInvoice;

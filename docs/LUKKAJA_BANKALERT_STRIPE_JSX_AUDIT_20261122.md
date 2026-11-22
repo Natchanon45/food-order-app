@@ -257,3 +257,10 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - Added merchant + Superadmin read-only evidence history using existing hybrid invoice/attempt/review and legacy revenue-share records; exact satang, Bangkok timestamp filtering, status/fee type filters, 200-row cap with truncation indicator and responsive UI. The platform view intentionally requires one selected tenant to avoid incomplete unbounded cross-tenant histories.
 - **No M7 Stripe settlement ledger was invented:** every projected row has `stripeSettled=false`, `verifiedStripeCents=0`, with an explicitly distinct source contract. A Firestore hybrid `paid` label requires invoice + attempt + reviewer audit matching; no BankAlert/manual slip is equated to a Stripe checkout settlement.
 - Existing Stripe Lalamove Wallet Sandbox remains an independent test ledger. No financial writers, Superadmin approval, database content, Source files, APK or Production deployment changed.
+
+### P1 continuation — M7 Stripe TEST immutable quote reservation, never a charge
+
+- See `docs/LUKKAJA_P1_M7_STRIPE_TEST_RESERVATION_20261122.md` for Source comparison, file tree, pure policy and transactional quote pseudocode, 7-way concurrent reservation tests, security boundaries, and remaining Checkout/Settlement milestones.
+- Added isolated one-tenant UAT/test gated quote reservation against existing immutable Hybrid invoices. It derives exact satang server-side, checks invoice version/state/signature, pending manual proofs/adjustments, and atomically locks one reservation per invoice. Seven concurrent calls reuse one quote; the browser cannot choose an amount.
+- Added independent raw Stripe-Signature and TEST Session/PaymentIntent proof validators with signed event treated only as an unverified hint. **No webhook, checkout issuance, payment writer, Stripe secret access, Service Credit conversion, Invoice Paid or Production enablement** has been added.
+- Merchant owner/admin sees a collapsed quote-only panel only if the server's UAT gate is explicitly enabled; everyone else retains existing payment flow. Source repo and unrelated Android companion local work stay untouched.

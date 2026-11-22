@@ -422,6 +422,14 @@ service cloud.firestore {
         allow get, list: if tenantAdminRole(tenantId) || superAdminRole();
         allow create, update, delete: if false;
       }
+      // M7 Stripe TEST reservations are not provider proof. Only Admin SDK
+      // may read/update these records; quotes cannot mark invoices paid.
+      match /m7StripeTestInvoiceQuotes/{invoiceKey} {
+        allow read, write: if false;
+      }
+      match /m7StripeTestReservations/{attemptId} {
+        allow read, write: if false;
+      }
       // Private financial compensation: a Server Admin transaction is the
       // only writer. The balance cap and decision audit must not be forged.
       match /hybridBillingAdjustments/{adjustmentId} {

@@ -1,0 +1,22 @@
+.m7-stripe-test-reservation{margin:14px 0;min-width:0}
+.m7-stripe-test-reservation>summary{cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;background:#fff;border:1px solid #dce7e0;border-radius:12px;padding:14px 15px;font-size:13px;font-weight:700;color:#265037}
+.m7-stripe-test-reservation>summary::-webkit-details-marker{display:none}
+.m7-stripe-test-reservation>summary span{flex:1;min-width:0}
+.m7-stripe-test-reservation[open]>summary{border-radius:12px 12px 0 0;border-bottom:0}
+.m7-stripe-test-reservation[open]>summary>.bi-chevron-down{transform:rotate(180deg)}
+.m7-stripe-test-quote-card{padding:14px;border-radius:0 0 12px 12px;border:1px solid #dce7e0;box-shadow:none;display:grid;gap:12px;min-width:0}
+.m7-stripe-test-quote-card header{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.m7-stripe-test-quote-card header>div{flex:1 1 240px;min-width:0}
+.m7-stripe-test-quote-card header h3{font-size:14px;color:#285037;margin:0 0 4px}
+.m7-stripe-test-quote-card header p{font-size:12px;color:#66766c;line-height:1.5;margin:0}
+.m7-stripe-test-quote-card header button{display:flex;align-items:center;gap:6px}
+.m7-stripe-test-quote-warning{display:flex;gap:8px;align-items:flex-start;color:#84521c;background:#fff5e6;border:1px solid #f1d8ac;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5}
+.m7-stripe-test-quote-list{display:grid;gap:8px;max-height:400px;overflow:auto;min-width:0}
+.m7-stripe-test-quote-item{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border:1px solid #e2ece4;border-radius:10px;padding:11px}
+.m7-stripe-test-quote-item>div{display:grid;gap:4px;flex:1 1 185px;min-width:0}
+.m7-stripe-test-quote-item strong{font-size:13px;color:#264a37}
+.m7-stripe-test-quote-item small{font-size:11px;color:#60786a;overflow-wrap:anywhere}
+.m7-stripe-test-quote-item code{font-size:11px;overflow-wrap:anywhere}
+.m7-stripe-test-quote-item button{display:flex;align-items:center;gap:6px}
+.m7-stripe-test-quote-empty{margin:0;padding:10px;font-size:12px;color:#718174}
+@media(max-width:480px){.m7-stripe-test-quote-card{padding:12px}.m7-stripe-test-quote-item button{width:100%;justify-content:center}.m7-stripe-test-quote-card header button{width:100%;justify-content:center}}

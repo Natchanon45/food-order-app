@@ -1,3 +1,4 @@
+import { M7StripeTestReservation } from "@/components/M7StripeTestReservation";
 import { M7FinanceEvidenceHistory } from "@/components/M7FinanceEvidenceHistory";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
@@ -780,6 +781,7 @@ export function RevenueShareReportPage() {
         </details>
 
         {["owner","admin"].includes(profile?.role)&&<M7FinanceEvidenceHistory key={tenant?.id} scope="merchant" tenantId={tenant?.id||""}/>}
+        {["owner","admin"].includes(profile?.role)&&<M7StripeTestReservation key={"stripe-"+tenant?.id} tenantId={tenant?.id||""} notify={showToast}/>}
 
         {error ? <div className="report-error" id="revenueShareError" role="alert">{error}</div>
           : <div className="report-error" id="revenueShareError" role="alert" hidden></div>}
