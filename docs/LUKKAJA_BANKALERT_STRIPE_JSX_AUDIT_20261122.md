@@ -307,3 +307,22 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
   malformed data, invoice changes, and signed Webhook winning a race.
   **No provider POST during recovery, no new attempt, and no operational
   Invoice Paid/Service Credit/wallet/hold mutation.** No Production deploy.
+
+### P1 continuation — audited TEST expiry closure and controlled next reservation
+
+- See `docs/LUKKAJA_P1_M7_STRIPE_TEST_VERIFIED_EXPIRY_CLOSURE_20261122.md`.
+- Implemented Superadmin-only read-only Stripe TEST Session closure review followed
+  by independent provider re-read and a separate explicit approval. Requires
+  verified original `checkout.session.expired` Event claim + immutable Lifecycle
+  Audit, 30-minute cooldown from Stripe expiration AND audit, exact TEST
+  Session, THB/PromptPay account/Invoice signature match and no PaymentIntent.
+- A single transaction records private Closure Audit and marks the original
+  TEST attempt and lock closed. Only then the original merchant quote
+  transaction can create attemptNo+1 with its own fresh UUID after validating
+  both Audits, Event claim, no Stripe Shadow Settlement, manual evidence or
+  adjustments. No new Stripe Session is created by closure or reservation.
+- Late, identical signed Stripe expiry Webhooks after a new TEST quote are
+  acknowledged idempotently without reverting the new invoice lock.
+- Added platform/merchant proof-based UI status and responsive Browser/Emulator
+  regression tests. No real Stripe provider charge/credit/Invoice Paid/hold
+  update and **no production deploy**.

@@ -15,14 +15,18 @@ function requestedMs(row){
   typeof stamp==="number"?stamp:null;
  return Number.isSafeInteger(ms)&&ms>1700000000000&&ms<Date.now()+60000?ms:0;
 }
-function validConfig(cfg,row){
+function validConfig(cfg,row,{allowExpired=false}={}){
+ const stateOk=allowExpired?
+  row?.status==="expired_test"&&row.providerCheckoutCreated===true&&
+  stripe.SESSION.test(row.checkoutSessionId||"")&&row.checkoutUrl===""&&
+  row.settled===false&&row.providerClosureVerified===false:
+  row?.status==="provider_requesting"&&row.providerCheckoutCreated===false&&
+  row.checkoutSessionId===""&&row.checkoutUrl===""&&row.settled===false;
  return !!cfg&&invoice.TENANT.test(cfg.tenantId||"")&&
   stripe.ACCOUNT.test(cfg.accountId||"")&&
   !!row&&row.tenantId===cfg.tenantId&&row.accountId===cfg.accountId&&
   row.providerFingerprint===cfg.fingerprint&&
-  row.status==="provider_requesting"&&row.mode==="test"&&
-  row.providerCheckoutCreated===false&&
-  row.checkoutSessionId===""&&row.checkoutUrl===""&&row.settled===false&&
+  stateOk&&row.mode==="test"&&
   invoice.UUID.test(row.attemptId||"")&&
   invoice.HEX.test(row.invoiceSignature||"")&&
   Number.isSafeInteger(row.amountSatang)&&
@@ -88,8 +92,8 @@ function publicReport(row,code,sessionId="",scanned=0){
   scannedPages:scanned,canCreateNewCheckout:false,canSettleInvoice:false,
   bankPaid:false,serviceCreditChanged:false,checkoutCreatedByThisReview:false};
 }
-async function scan({config,row,read,now=Date.now()}){
- if(!validConfig(config,row)||typeof read!=="function")
+async function scan({config,row,read,now=Date.now(),allowExpired=false}){
+ if(!validConfig(config,row,{allowExpired})||typeof read!=="function")
   return publicReport(row,"requires_review");
  const window=windowFor(row,now);
  if(!window)return publicReport(row,"scan_incomplete");
@@ -119,6 +123,10 @@ async function scan({config,row,read,now=Date.now()}){
  if(suspect)return publicReport(row,"mismatch","",pages);
  if(matched.length===0)return publicReport(row,"not_found_uncertain","",pages);
  const match=matched[0],state=status(match);
+ // A closure review must scan all pages and find exactly the *already
+ // persisted* Stripe Session ID, not merely a similar attempt reference.
+ if(allowExpired&&match.id!==row.checkoutSessionId)
+  return publicReport(row,"mismatch","",pages);
  const reportStatus={
   open_unpaid:"single_open",provider_paid_wait_webhook:"already_paid_wait_webhook",
   provider_expired_unpaid:"already_expired",provider_failed_unpaid:"already_failed",

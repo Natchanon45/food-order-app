@@ -66,7 +66,56 @@ async function reserve({db,auth,invoiceId,allowedTenant,uuid=randomUUID}){
         priorAttempt.data().settled!==false))
     throw error("failed-precondition","M7_STRIPE_TEST_ATTEMPT_INCONSISTENT");
    if(prior.status==="reserved")saved=priorAttempt.data();
-   else if(["expired","canceled"].includes(prior.status)&&prior.providerClosureVerified===true){
+   else if(prior.status==="expired"&&prior.providerClosureVerified===true&&
+      priorAttempt.data().providerClosureVerified===true&&
+      prior.closureAuditId===prior.attemptId&&
+      priorAttempt.data().closureAuditId===prior.attemptId){
+    const oldAttempt=priorAttempt.data();
+    const eventId=oldAttempt.lifecycleLastEventId;
+    if(!/^evt_[A-Za-z0-9_]{8,240}$/.test(eventId||"")||
+      !/^cs_test_[A-Za-z0-9_]{8,240}$/.test(oldAttempt.checkoutSessionId||"")||
+      oldAttempt.checkoutSessionId!==prior.checkoutSessionId||
+      oldAttempt.checkoutUrl!==""||prior.checkoutUrl!==""||
+      oldAttempt.settled!==false||prior.settled!==false)
+     throw error("failed-precondition","M7_STRIPE_TEST_CLOSURE_PROOF_MISSING");
+    const [closure,terminal,eventClaim,settlement]=await Promise.all([
+     tx.get(tenant.collection("m7StripeTestClosureAudits").doc(prior.attemptId)),
+     tx.get(tenant.collection("m7StripeTestLifecycleAudits").doc(eventId)),
+     tx.get(db.collection("m7StripeTestEventClaims").doc(eventId)),
+     tx.get(tenant.collection("m7StripeTestSettlements").doc(prior.attemptId)),
+    ]);
+    const evidence=closure.data(),life=terminal.data(),claim=eventClaim.data();
+    if(settlement.exists||
+      evidence?.mode!=="test_closure"||
+      evidence.status!=="reviewed_expired_no_intent"||
+      evidence.providerEvidenceVerified!==true||
+      evidence.providerPaymentIntentAbsent!==true||
+      evidence.newReservationAllowed!==true||
+      evidence.newCheckoutCreated!==false||
+      evidence.operationalInvoicePaid!==false||
+      evidence.tenantId!==tenantId||evidence.invoiceId!==invoiceId||
+      evidence.attemptId!==prior.attemptId||
+      evidence.invoiceSignature!==quote.invoiceSignature||
+      evidence.amountSatang!==quote.amountSatang||
+      evidence.sessionId!==oldAttempt.checkoutSessionId||
+      evidence.lifecycleEventId!==eventId||
+      evidence.accountId!==oldAttempt.accountId||
+      evidence.providerFingerprint!==oldAttempt.providerFingerprint||
+      evidence.operatorUid==null||
+      life?.mode!=="test_shadow_lifecycle"||
+      life.eventType!=="checkout.session.expired"||
+      life.status!=="expired_test"||
+      life.tenantId!==tenantId||life.invoiceId!==invoiceId||
+      life.attemptId!==prior.attemptId||
+      life.invoiceSignature!==quote.invoiceSignature||
+      life.amountSatang!==quote.amountSatang||
+      life.sessionId!==oldAttempt.checkoutSessionId||
+      life.providerVerifiedUnpaid!==true||life.invoicePaid!==false||
+      claim?.mode!=="test_shadow_lifecycle"||
+      claim.tenantId!==tenantId||claim.invoiceId!==invoiceId||
+      claim.attemptId!==prior.attemptId||
+      claim.sessionId!==oldAttempt.checkoutSessionId)
+     throw error("failed-precondition","M7_STRIPE_TEST_CLOSURE_AUDIT_CONFLICT");
     attemptNo=prior.attemptNo+1;
     if(attemptNo>policy.MAX_ATTEMPTS)throw error("failed-precondition","M7_STRIPE_TEST_ATTEMPT_LIMIT");
    }else throw error("failed-precondition","M7_STRIPE_TEST_PRIOR_ATTEMPT_NEEDS_REVIEW");

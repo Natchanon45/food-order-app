@@ -13,40 +13,79 @@ async function record({db,config,eventId,eventType,attempt,session,intent,now=Da
   !invoice.TENANT.test(config.tenantId||"")||
   !invoice.UUID.test(attempt?.attemptId||"")||
   attempt.tenantId!==config.tenantId||
-  !life.terminalUnpaid(eventType,attempt,session,intent))
+  !life.terminalUnpaid(eventType,{
+   ...attempt,status:attempt?.status==="expired"?"expired_test":attempt?.status
+  },session,intent))
   fail("PROVIDER_PROOF_INVALID");
  const r=refs(db,config.tenantId,attempt.invoiceId,attempt.attemptId);
  const state=life.CLOSED_STATES[eventType];
  const claim=db.collection("m7StripeTestEventClaims").doc(eventId);
  const audit=r.tenant.collection("m7StripeTestLifecycleAudits").doc(eventId);
+ const closure=r.tenant.collection("m7StripeTestClosureAudits").doc(attempt.attemptId);
  return db.runTransaction(async tx=>{
-  const [t,inv,l,a,s,c,x,manual,adjust]=await Promise.all([
+  const [t,inv,l,a,s,c,x,manual,adjust,closed]=await Promise.all([
    tx.get(r.tenant),tx.get(r.invoice),tx.get(r.lock),tx.get(r.attempt),
    tx.get(r.settlement),tx.get(claim),tx.get(audit),tx.get(r.manual),tx.get(r.adjustments),
+   tx.get(closure),
   ]);
   if(t.data()?.active!==true)fail("TENANT_INACTIVE");
   const old=a.data(),lock=l.data(),invoiceRow=inv.data();
-  if(!old||!lock||!invoiceRow||
+  if(!old||!invoiceRow||
     old.tenantId!==config.tenantId||old.attemptId!==attempt.attemptId||
-    old.invoiceId!==attempt.invoiceId||lock.attemptId!==old.attemptId||
-    old.mode!=="test"||lock.mode!=="test"||
-    old.accountId!==config.accountId||old.providerFingerprint!==config.fingerprint||
+    old.invoiceId!==attempt.invoiceId||
+    old.mode!=="test"||
+    old.accountId!==config.accountId||
+    old.providerFingerprint!==config.fingerprint||
     old.invoiceSignature!==attempt.invoiceSignature||
-    lock.invoiceSignature!==attempt.invoiceSignature||
     old.amountSatang!==attempt.amountSatang||
-    lock.amountSatang!==attempt.amountSatang||
-    old.kind!==attempt.kind||lock.kind!==attempt.kind)
+    old.kind!==attempt.kind)
    fail("IMMUTABLE_RESERVATION_CHANGED");
-  if(!life.terminalUnpaid(eventType,old,session,intent))
+  if(!life.terminalUnpaid(eventType,{
+   ...old,status:old.status==="expired"?"expired_test":old.status
+  },session,intent))
    fail("PROOF_CHANGED_DURING_TRANSACTION");
   if(c.exists){
-   if(!x.exists||c.data()?.tenantId!==config.tenantId||
-    c.data()?.attemptId!==old.attemptId||c.data()?.sessionId!==session.id||
-    x.data()?.status!==state||x.data()?.invoiceId!==old.invoiceId||
-    old.status!==state||lock.status!==state)
+   const proof=x.data(),claimData=c.data(),close=closed.data();
+   const alreadyRecorded=!!proof&&
+    claimData.mode==="test_shadow_lifecycle"&&
+    claimData.tenantId===config.tenantId&&
+    claimData.invoiceId===old.invoiceId&&
+    claimData.attemptId===old.attemptId&&
+    claimData.sessionId===session.id&&
+    proof.mode==="test_shadow_lifecycle"&&
+    proof.eventId===eventId&&proof.eventType===eventType&&
+    proof.status===state&&proof.tenantId===config.tenantId&&
+    proof.invoiceId===old.invoiceId&&proof.attemptId===old.attemptId&&
+    proof.invoiceSignature===old.invoiceSignature&&
+    proof.amountSatang===old.amountSatang&&
+    proof.sessionId===session.id&&
+    proof.providerVerifiedUnpaid===true&&proof.invoicePaid===false;
+   const normal=old.status===state&&lock?.status===state&&
+    lock.attemptId===old.attemptId;
+   const postClosure=state==="expired_test"&&old.status==="expired"&&
+    old.providerClosureVerified===true&&
+    close?.mode==="test_closure"&&
+    close.status==="reviewed_expired_no_intent"&&
+    close.tenantId===config.tenantId&&
+    close.invoiceId===old.invoiceId&&close.attemptId===old.attemptId&&
+    close.invoiceSignature===old.invoiceSignature&&
+    close.amountSatang===old.amountSatang&&
+    close.sessionId===session.id&&
+    close.lifecycleEventId===eventId&&
+    close.providerPaymentIntentAbsent===true&&
+    close.providerEvidenceVerified===true&&
+    close.newReservationAllowed===true&&
+    close.operationalInvoicePaid===false;
+   if(!alreadyRecorded||(!normal&&!postClosure))
     fail("REPLAY_AUDIT_CONFLICT");
    return {ok:true,reused:true,status:state,invoicePaid:false,canRetry:false};
   }
+  if(!lock||lock.attemptId!==old.attemptId||
+    lock.mode!=="test"||
+    lock.invoiceSignature!==attempt.invoiceSignature||
+    lock.amountSatang!==attempt.amountSatang||
+    lock.kind!==attempt.kind)
+   fail("IMMUTABLE_RESERVATION_CHANGED");
   if(s.exists||x.exists||!manual.empty||!adjust.empty||
     invoiceRow.status!=="issued"&&invoiceRow.status!=="rejected"||
     invoiceRow.paidAttemptId||invoiceRow.pendingAttemptId)

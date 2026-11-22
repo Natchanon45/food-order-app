@@ -11,8 +11,9 @@ async function actor(db,auth){
  if(doc?.active!==true)throw new HttpsError("permission-denied","Active profile required");
  return doc;
 }
-function view(attempt,settlement,lifecycleAudit,riskAudit){
- const a=attempt||{},s=settlement||{},audit=lifecycleAudit||{},risk=riskAudit||{};
+function view(attempt,settlement,lifecycleAudit,riskAudit,closureAudit){
+ const a=attempt||{},s=settlement||{},audit=lifecycleAudit||{},
+  risk=riskAudit||{},closed=closureAudit||{};
  const expected=a.status==="verified_test"&&s.status==="verified_test_shadow"&&
   s.providerVerified===true&&s.operationalInvoicePaid===false&&
   s.mode==="test_shadow"&&
@@ -44,11 +45,30 @@ function view(attempt,settlement,lifecycleAudit,riskAudit){
   risk.reversedSatang<=a.amountSatang&&
   risk.providerEvidenceVerified===true&&risk.invoicePaid===false&&
   risk.serviceCreditChanged===false&&risk.walletChanged===false;
+ const closureConfirmed=a.status==="expired"&&
+  a.providerClosureVerified===true&&a.closureAuditId===a.attemptId&&
+  a.checkoutUrl===""&&a.settled===false&&!settlement&&
+  closed.mode==="test_closure"&&
+  closed.status==="reviewed_expired_no_intent"&&
+  closed.providerEvidenceVerified===true&&
+  closed.providerPaymentIntentAbsent===true&&
+  closed.newReservationAllowed===true&&closed.newCheckoutCreated===false&&
+  closed.operationalInvoicePaid===false&&closed.serviceCreditChanged===false&&
+  closed.tenantId===a.tenantId&&closed.invoiceId===a.invoiceId&&
+  closed.attemptId===a.attemptId&&
+  closed.invoiceSignature===a.invoiceSignature&&
+  closed.amountSatang===a.amountSatang&&
+  closed.sessionId===a.checkoutSessionId&&
+  closed.lifecycleEventId===a.lifecycleLastEventId&&
+  closed.accountId===a.accountId&&
+  closed.providerFingerprint===a.providerFingerprint&&
+  typeof closed.operatorUid==="string"&&closed.operatorUid.length>3;
  const state=a.status==="verified_test"?
    riskType?(riskConfirmed&&expected?
      (riskType==="charge.refunded"?"provider_test_refund_review":"provider_test_dispute_review"):"needs_review"):
     (expected?"provider_test_verified":"needs_review"):
   lifecycleType?(terminal?a.status:"needs_review"):
+  a.status==="expired"?(closureConfirmed?"closed_expired_test":"needs_review"):
   ["reserved","provider_requesting","checkout_ready"].includes(a.status)?a.status:"needs_review";
  const timestamp=a.createdAt?.toDate?.()||null;
  return {invoiceId:String(a.invoiceId||"").slice(0,100),
@@ -57,7 +77,8 @@ function view(attempt,settlement,lifecycleAudit,riskAudit){
   currency:"THB",kind:a.kind==="monthly"?"monthly":"delivery_daily",
   attemptNo:Number.isSafeInteger(a.attemptNo)?a.attemptNo:0,
   status:state,providerVerified:expected&&!riskType,
-  terminalUnpaidAudited:terminal,riskAuditConfirmed:riskConfirmed,canRetry:false,
+  terminalUnpaidAudited:terminal,riskAuditConfirmed:riskConfirmed,
+  closedExpiredAuditConfirmed:closureConfirmed,canRetry:false,
   operationalSettlementEnabled:false,
   createdAt:timestamp instanceof Date&&Number.isFinite(timestamp.getTime())?
    timestamp.toISOString():"",
@@ -89,9 +110,19 @@ async function history(db,tenantId){
  const riskDocs=risks.filter(Boolean);
  const riskResults=riskDocs.length?await db.getAll(...riskDocs):[];
  let riskIndex=0;
+ const closures=attempts.map(doc=>{
+  const a=doc.data();
+  return a.status==="expired"&&a.closureAuditId===a.attemptId&&
+    policy.UUID.test(a.attemptId||"")
+    ?root.collection("m7StripeTestClosureAudits").doc(a.attemptId):null;
+ });
+ const closureDocs=closures.filter(Boolean);
+ const closureResults=closureDocs.length?await db.getAll(...closureDocs):[];
+ let closureIndex=0;
  const items=attempts.map((doc,i)=>view(doc.data(),matching[i]?.data(),
   audits[i]?auditResults[auditIndex++]?.data():null,
-  risks[i]?riskResults[riskIndex++]?.data():null));
+  risks[i]?riskResults[riskIndex++]?.data():null,
+  closures[i]?closureResults[closureIndex++]?.data():null));
  return {ok:true,available:true,tenantId,mode:"test_shadow",currency:"THB",
   operationalSettlementEnabled:false,items,hasMore:rows.size>50};
 }

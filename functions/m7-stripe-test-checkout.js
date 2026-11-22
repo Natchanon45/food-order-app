@@ -320,13 +320,25 @@ exports.getOwnM7StripeTestCheckoutStatus=onCall(opts,async request=>{
  const riskDocs=riskRefs.filter(Boolean);
  const riskFound=riskDocs.length?await db.getAll(...riskDocs):[];
  let riskIndex=0;
+ const closureRefs=snapshots.docs.map(doc=>{
+  const a=doc.data();
+  return a.status==="expired"&&a.closureAuditId===a.attemptId&&
+    invoicePolicy.UUID.test(a.attemptId||"")
+    ?db.collection("tenants").doc(tenantId)
+      .collection("m7StripeTestClosureAudits").doc(a.attemptId):null;
+ });
+ const closureDocs=closureRefs.filter(Boolean);
+ const closureFound=closureDocs.length?await db.getAll(...closureDocs):[];
+ let closureIndex=0;
  const items=snapshots.docs.map((doc,i)=>{
   const row=doc.data(),item=shadow.publicAttempt(row,{includeURL:true});
   let audit=null;
   if(auditRefs[i])audit=auditFound[auditIndex++]?.data();
   const riskProof=riskRefs[i]?riskFound[riskIndex++]?.data():null;
-  const certified=history._privateForTests.view(row,proofs[i]?.data(),audit,riskProof);
-  if(["verified_test","expired_test","payment_failed_test"].includes(row.status)){
+  const closureProof=closureRefs[i]?closureFound[closureIndex++]?.data():null;
+  const certified=history._privateForTests.view(row,proofs[i]?.data(),
+    audit,riskProof,closureProof);
+  if(["verified_test","expired_test","payment_failed_test","expired"].includes(row.status)){
    item.status=certified.status;
    item.providerVerified=certified.providerVerified;
    item.checkoutUrl="";

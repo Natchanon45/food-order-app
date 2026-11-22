@@ -1,5 +1,12 @@
 # PENGUIN Firebase — M7 Stripe TEST Ambiguous Session Recovery
 
+> **Follow-up:** The separate, supervised TEST-only expired-Session closure
+> and owner re-quote process is now in
+> `LUKKAJA_P1_M7_STRIPE_TEST_VERIFIED_EXPIRY_CLOSURE_20261122.md`.
+> It applies only to independently verified expired/unpaid Sessions
+> with **no PaymentIntent** and never automatically creates a charge.
+
+
 **Date:** 2026-11-22 (Thailand)
 **Source (read-only):** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe` @ `03d2aaee`
 **Target:** `Natchanon45/food-order-app` / `feature/react-firebase-port`

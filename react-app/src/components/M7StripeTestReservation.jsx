@@ -137,6 +137,7 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
    {items.length?<div className="m7-stripe-test-quote-list">{items.map(item=>{
     const prior=quotes[item.invoiceId]||gateway.items.find(entry=>entry.invoiceId===item.invoiceId);
     const providerReady=gateway.available&&prior?.status==="reserved";
+    const closureApproved=prior?.status==="closed_expired_test";
     const verified=prior?.status==="verified_test"||prior?.status==="provider_test_verified";
     const terminal=prior?.status==="expired_test"||prior?.status==="payment_failed_test";
     const requiresReview=prior?.status==="needs_review";
@@ -147,7 +148,9 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
     return <article key={item.invoiceId} className="m7-stripe-test-quote-item">
      <div><strong>{item.kind==="monthly"?"ค่าบริการรายเดือน":"ส่วนแบ่ง Delivery รายวัน"} · {money(item.amountSatang)}</strong>
        <small>Invoice: <code>{item.invoiceId}</code></small>
-       {prior&&<small role="status">{reversed?"Stripe TEST มีการคืนเงินหรือข้อพิพาท · Superadmin ต้องตรวจ (Invoice จริงไม่เปลี่ยน)":
+       {prior&&<small role="status">{closureApproved?
+        "Superadmin ตรวจปิด Stripe TEST Session เดิมแล้ว · สามารถจองยอดทดสอบใหม่ด้วยตัวเอง (ยังไม่ชำระเงินจริง)":
+        reversed?"Stripe TEST มีการคืนเงินหรือข้อพิพาท · Superadmin ต้องตรวจ (Invoice จริงไม่เปลี่ยน)":
         verified?"Stripe TEST ยืนยันใน Shadow Ledger แล้ว · Invoice จริงยังไม่เป็น Paid":
         terminal?(prior.status==="expired_test"?"Stripe TEST หมดอายุแล้ว · ห้ามจองใหม่โดยอัตโนมัติ":
          "Stripe TEST แจ้งชำระไม่สำเร็จ · ห้ามจองใหม่โดยอัตโนมัติ"):
@@ -160,8 +163,9 @@ export function M7StripeTestReservation({tenantId="",notify=()=>{}}){
        </small>}
      </div>
      <div className="m7-stripe-test-quote-actions">
-      {!prior&&<button type="button" className="btn btn-sm" disabled={!!busy} onClick={()=>reserve(item)}>
-       <i className="bi bi-lock" aria-hidden="true"/> {busy===item.invoiceId?"กำลังตรวจสอบ…":"จองยอดทดสอบ"}
+      {(!prior||closureApproved)&&<button type="button" className="btn btn-sm" disabled={!!busy} onClick={()=>reserve(item)}>
+       <i className="bi bi-lock" aria-hidden="true"/> {busy===item.invoiceId?"กำลังตรวจสอบ…":
+        closureApproved?"จองยอด TEST ใหม่หลังอนุมัติ":"จองยอดทดสอบ"}
       </button>}
       {prior?.status==="reserved"&&!gateway.available&&
        <button type="button" className="btn btn-sm" disabled={!!busy} onClick={()=>reserve(item)}>

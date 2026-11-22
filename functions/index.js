@@ -427,3 +427,7 @@ exports.getPlatformM7StripeTestShadowHistory = m7StripeShadowHistory.getPlatform
 const m7TestRecovery=require("./m7-stripe-test-recovery");
 exports.reviewPlatformM7StripeTestRecovery = m7TestRecovery.reviewPlatformM7StripeTestRecovery;
 exports.bindPlatformM7StripeTestRecovery = m7TestRecovery.bindPlatformM7StripeTestRecovery;
+
+const m7TestClosure=require("./m7-stripe-test-closure");
+exports.reviewPlatformM7StripeTestClosure = m7TestClosure.reviewPlatformM7StripeTestClosure;
+exports.approvePlatformM7StripeTestClosure = m7TestClosure.approvePlatformM7StripeTestClosure;

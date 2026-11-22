@@ -9,6 +9,7 @@ const state={
  checkout_ready:"เปิด Checkout TEST · รอหลักฐาน",
  expired_test:"Stripe TEST หมดอายุ (ตรวจด้วย Webhook แล้ว) · ไม่ชำระเงิน",
  payment_failed_test:"Stripe TEST ชำระไม่สำเร็จ (ตรวจด้วย Webhook แล้ว)",
+ closed_expired_test:"Superadmin ปิด TEST Session หมดอายุแล้ว · อนุญาตจองยอดทดสอบใหม่",
  provider_test_verified:"Stripe TEST ยืนยันใน Shadow Ledger",
  provider_test_refund_review:"พบ Refund ของ Stripe TEST · ต้องตรวจสอบ",
  provider_test_dispute_review:"พบข้อพิพาท Stripe TEST · ต้องตรวจสอบ",
@@ -21,12 +22,13 @@ export function M7StripeTestShadowHistory({tenantId="",refreshVersion=0}){
  const [phase,setPhase]=useState("loading");
  const [data,setData]=useState({items:[],hasMore:false});
  const [reviews,setReviews]=useState({});
+ const [closures,setClosures]=useState({});
  const [busy,setBusy]=useState("");
  const [message,setMessage]=useState("");
  const [localRevision,setLocalRevision]=useState(0);
  useEffect(()=>{
   let alive=true;setPhase("loading");setData({items:[],hasMore:false});
-  setReviews({});
+  setReviews({});setClosures({});
   if(!open||!tenantId)return()=>{alive=false;};
   httpsCallable(functions,"getPlatformM7StripeTestShadowHistory")({tenantId})
    .then(({data:response})=>{
@@ -53,6 +55,62 @@ export function M7StripeTestShadowHistory({tenantId="",refreshVersion=0}){
   mismatch:"ข้อมูล Session ไม่ตรงกับ Invoice หรือ Amount · ให้ตรวจสอบ",
   scan_incomplete:"ยังตรวจ Stripe ได้ไม่ครบทุกหน้า / หมดระยะค้นหา · ห้ามสร้างใหม่",
   requires_review:"ไม่สามารถยืนยันหลักฐาน TEST ได้ · ให้ตรวจสอบ",
+ };
+ const closureMessages={
+  can_review_closure:"Stripe TEST ยืนยันว่าหมดอายุ ไม่มี PaymentIntent และพ้นช่วงรอตรวจ · อนุมัติปิดได้โดยไม่สร้าง Checkout",
+  cooldown:"ยังไม่พ้นช่วงรอตรวจ · ต้องรอการยืนยันจากผู้ให้บริการ",
+  no_single_match:"พบข้อมูล Session ไม่ตรงหรือไม่ครบ · ยังอนุมัติปิดไม่ได้",
+  provider_changed:"Stripe TEST เปลี่ยนสถานะหรือข้อมูลไม่ตรง · ต้องตรวจสอบ",
+  scan_incomplete:"ค้น Session ยังไม่ครบ · ยังอนุมัติปิดไม่ได้",
+  requires_review:"หลักฐานปิด Session ไม่ครบ · ต้องตรวจสอบ",
+ };
+ const inspectClosure=async row=>{
+  if(busy||row.status!=="expired_test")return;
+  setBusy(row.attemptId);setMessage("");
+  const params={tenantId,invoiceId:row.invoiceId,attemptId:row.attemptId};
+  try{
+   const {data:result}=await httpsCallable(functions,"reviewPlatformM7StripeTestClosure")(params);
+   if(result?.ok!==true||result.mode!=="test"||
+     result.tenantId!==tenantId||result.invoiceId!==row.invoiceId||
+     result.attemptId!==row.attemptId||result.amountSatang!==row.amountSatang||
+     result.readOnly!==true||result.operationalInvoicePaid!==false||
+     result.canCreateNewCheckout!==false||result.serviceCreditChanged!==false||
+     result.providerClosureVerified!==false||
+     !Object.hasOwn(closureMessages,result.status)||
+     result.eligibleForOperatorApproval!==(result.status==="can_review_closure"))
+     throw Error("M7_TEST_CLOSURE_REVIEW_UNCONFIRMED");
+   setClosures(prev=>({...prev,[row.attemptId]:result.status}));
+   setMessage(closureMessages[result.status]);
+  }catch{
+   setClosures(prev=>({...prev,[row.attemptId]:"requires_review"}));
+   setMessage("ไม่สามารถยืนยันการปิด Stripe TEST Session ได้ · ห้ามเปิดรายการใหม่");
+  }finally{setBusy("");}
+ };
+ const approveClosure=async row=>{
+  if(busy||row.status!=="expired_test"||
+    closures[row.attemptId]!=="can_review_closure")return;
+  const confirmed=await sweetConfirm(
+   "ยืนยันปิดเฉพาะ Stripe TEST Session ที่ Stripe ยืนยันว่าหมดอายุ ไม่มี PaymentIntent และพ้นช่วงรอตรวจเท่านั้น ระบบจะตรวจทุกหลักฐานอีกครั้ง และอนุญาตให้เจ้าของร้านกดจองยอด TEST ใหม่เอง ไม่สร้าง Checkout อัตโนมัติ ไม่เปลี่ยน Invoice เป็น Paid หรือ Service Credit",
+   {title:"M7 Stripe TEST · อนุมัติปิด Session หมดอายุ",confirmText:"อนุมัติปิด TEST Session",cancelText:"ยกเลิก",type:"warning"});
+  if(!confirmed)return;
+  setBusy(row.attemptId);setMessage("");
+  try{
+   const {data:result}=await httpsCallable(functions,"approvePlatformM7StripeTestClosure")({
+    tenantId,invoiceId:row.invoiceId,attemptId:row.attemptId});
+   if(result?.ok!==true||result.mode!=="test"||
+     result.tenantId!==tenantId||result.invoiceId!==row.invoiceId||
+     result.attemptId!==row.attemptId||
+     result.status!=="reviewed_expired_no_intent"||
+     result.newQuotePermitted!==true||
+     result.newCheckoutCreated!==false||
+     result.operationalInvoicePaid!==false||
+     result.serviceCreditChanged!==false)
+     throw Error("M7_TEST_CLOSURE_APPROVAL_UNCONFIRMED");
+   setMessage("บันทึก Closure Audit แล้ว · เจ้าของร้านสามารถจองยอด TEST ใหม่เองได้ Invoice จริงยังไม่เป็น Paid");
+   setLocalRevision(n=>n+1);
+  }catch{
+   setMessage("ไม่สามารถอนุมัติปิด Session ได้ กรุณาตรวจสอบกับ Stripe ใหม่ก่อนดำเนินการ");
+  }finally{setBusy("");}
  };
  const inspectRecovery=async row=>{
   if(busy||row.status!=="provider_requesting")return;
@@ -125,6 +183,20 @@ export function M7StripeTestShadowHistory({tenantId="",refreshVersion=0}){
        <td><code>{row.invoiceId}</code></td>
        <td>{amount(row.amountSatang)}</td><td>{row.attemptNo}</td>
        <td>{state[row.status]}
+        {row.status==="expired_test"&&<div className="m7-stripe-test-recovery-actions">
+         <button type="button" className="btn btn-sm" disabled={!!busy}
+          onClick={()=>inspectClosure(row)}><i className="bi bi-shield-check" aria-hidden="true"/>
+          {busy===row.attemptId?"กำลังตรวจ Stripe TEST…":"ตรวจปิด Session หมดอายุ"}
+         </button>
+         {closures[row.attemptId]&&<small role="status" className="m7-stripe-test-recovery-note">
+          {closureMessages[closures[row.attemptId]]}
+         </small>}
+         {closures[row.attemptId]==="can_review_closure"&&
+          <button type="button" className="btn btn-sm" disabled={!!busy}
+           onClick={()=>approveClosure(row)}>
+           <i className="bi bi-check-circle" aria-hidden="true"/> อนุมัติปิด TEST Session
+          </button>}
+        </div>}
         {row.status==="provider_requesting"&&<div className="m7-stripe-test-recovery-actions">
          <button type="button" className="btn btn-sm" disabled={!!busy}
           onClick={()=>inspectRecovery(row)}><i className="bi bi-search" aria-hidden="true"/>
