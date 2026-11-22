@@ -14,9 +14,10 @@ export function BankalertStripePlatformSettings(){
     const id=++requestId.current;
     setBusy(true);setError("");setInfo(null);
     try{
-      const {data}=await httpsCallable(functions,"getPlatformStripeWalletSandboxStatus")({verify});
+      const [{data},{data:gate}]=await Promise.all([httpsCallable(functions,"getPlatformStripeWalletSandboxStatus")({verify}),httpsCallable(functions,"getPlatformStripeWalletSandboxGate")({})]);
       if(data?.ok!==true || data.mode!=="test" || data.checkoutEnabled!==false)throw Error("STRIPE_STATUS_INVALID");
-      if(id===requestId.current)setInfo(data);
+      if(gate?.ok!==true||gate.mode!=="test"||typeof gate.checkoutEnabled!=="boolean"||typeof gate.webhookReady!=="boolean")throw Error("STRIPE_GATE_INVALID");
+      if(id===requestId.current)setInfo({...data,...gate});
     }catch{if(id===requestId.current)setError("ไม่สามารถอ่านสถานะ Stripe Sandbox จาก Firebase ได้");}
     finally{if(id===requestId.current)setBusy(false);}
   };
@@ -28,13 +29,14 @@ export function BankalertStripePlatformSettings(){
     ["บัญชี Stripe Sandbox ประเทศไทย",info?.verified?"ตรวจสอบผ่าน":info?.providerChecked?"ไม่ผ่าน":"ยังไม่ตรวจสอบ",info?.verified],
     ["PromptPay ในบัญชี Stripe Sandbox",info?.promptPayEnabled?"เปิดใช้งานแล้ว":info?.providerChecked?"ยังไม่พร้อม":"ยังไม่ตรวจสอบ",info?.promptPayEnabled],
     ["Webhook Signing Secret",info?.webhookSecretConfigured?"ตั้งค่าแล้ว":"ยังไม่ยืนยัน",info?.webhookSecretConfigured],
-    ["Webhook และการสร้าง Checkout","ยังไม่เปิดใช้งาน",false],
+    ["Webhook",info?.webhookReady?"ยืนยันแล้ว":"ยังไม่ยืนยัน",info?.webhookReady],
+    ["Checkout Sandbox",info?.checkoutEnabled?"เปิดเฉพาะร้านทดสอบ":"ยังไม่เปิดใช้งาน",info?.checkoutEnabled],
   ];
   return <section className="card platform-google-api-card platform-card-collapsible bankalert-stripe-settings" data-bankalert-stripe-superadmin-settings data-expanded={expanded} aria-labelledby="walletStripeTitle">
     <PlatformCardAccordionHeader titleId="walletStripeTitle" panelId="walletStripePanel" icon="bi bi-qr-code" title="Stripe PromptPay — Lalamove Wallet Test Mode" description="Firebase Sandbox · จัดการ Secret Key ที่ Server" badge={status} badgeClass="is-error" expanded={expanded} onToggle={toggle}/>
     <div id="walletStripePanel" className="platform-card-accordion-panel" hidden={!expanded}>
       <div className="bankalert-stripe-notice"><i className="bi bi-info-circle" aria-hidden="true"/><span>ทดสอบการเติมเครดิต Lalamove แยกจาก Stripe Connect สำหรับค่าอาหาร Delivery ไม่เพิ่มเครดิตจริงของร้านค้า</span></div>
-      <div className="bankalert-stripe-alert bankalert-stripe-alert-warning" role="status"><i className="bi bi-shield-lock" aria-hidden="true"/><span>ยังไม่เปิดสร้าง QR หรือรับชำระเงิน จนกว่าระบบตรวจสอบ Webhook และบัญชีเครดิต Sandbox จะผ่านการทดสอบ</span></div>
+      <div className="bankalert-stripe-alert bankalert-stripe-alert-warning" role="status"><i className="bi bi-shield-lock" aria-hidden="true"/><span>อนุญาต Checkout เฉพาะร้านทดสอบที่กำหนดไว้ หลังยืนยัน Webhook และเปิดสิทธิ์ที่ Server เท่านั้น</span></div>
       {info&&<div className="bankalert-stripe-checklist" data-stripe-checklist>{rows.map(([label,value,ok])=><div key={label}><i className={ok?"bi bi-check-circle":"bi bi-exclamation-circle"} aria-hidden="true"/><span>{label}</span><strong>{value}</strong></div>)}</div>}
       {error&&<div role="alert" className="bankalert-stripe-alert bankalert-stripe-alert-error">{error}</div>}
       {info?.providerReadFailed&&<div role="alert" className="bankalert-stripe-alert bankalert-stripe-alert-error">ไม่สามารถตรวจสอบกับ Stripe ได้ กรุณาลองใหม่</div>}

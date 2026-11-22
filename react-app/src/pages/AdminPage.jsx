@@ -1,3 +1,4 @@
+import { BankalertStripeWalletTopup } from "@/components/BankalertStripeWalletTopup";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import Sortable from "sortablejs";
@@ -1872,6 +1873,8 @@ export function AdminPage() {
                                 </div>
                                 <div className="admin-lalamove-wallet-balance"><span>{t("admin.delivery_settings.fod_wallet_balance")}</span><strong id="lalamoveFodWalletBalance">{money(walletBalance, intlLocale)}</strong><small>{t("admin.delivery_settings.fod_wallet_credit_unit")}</small></div>
                               </div>
+
+                              <BankalertStripeWalletTopup key={tenant?.id} approved={!walletLoadError && walletTopup.allowed === true} />
 
                               <div className="admin-lalamove-wallet-topup" id="lalamoveFodWalletTopupPanel" hidden={!walletTopupReady}>
                                 <div className="admin-lalamove-wallet-topup-destination">

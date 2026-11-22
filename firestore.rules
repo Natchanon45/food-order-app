@@ -314,6 +314,11 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Stripe TEST wallet: only trusted Cloud Functions access these collections.
+    match /stripeWalletSandboxTenants/{path=**} { allow read, write: if false; }
+    match /stripeWalletSandboxIntentClaims/{path=**} { allow read, write: if false; }
+    match /stripeWalletSandboxControl/{path=**} { allow read, write: if false; }
+
     match /tenants/{tenantId} {
       allow read: if true; allow create, update, delete: if superAdminRole();
       match /menus/{menuId} { allow read: if tenantBusinessEnabled(tenantId, 'order_delivery') && (true); allow create, update, delete: if tenantBusinessEnabled(tenantId, 'order_delivery') && (tenantAdminRole(tenantId)); }

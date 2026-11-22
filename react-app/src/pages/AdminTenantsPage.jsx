@@ -1,3 +1,4 @@
+import { PlatformStripeWalletSandboxHistory } from "@/components/BankalertStripeHistory";
 import { PlatformPaymentHistory } from "@/components/PlatformPaymentHistory";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
@@ -1441,6 +1442,7 @@ export function AdminTenantsPage() {
               <small>{t("admin_tenants.wallet.credit_unit")}</small>
             </div>
             <div className="tenant-wallet-phase-note">{t("admin_tenants.wallet.credit_note")}</div>
+            {walletTenant?.id&&<PlatformStripeWalletSandboxHistory key={walletTenant.id} tenantId={walletTenant.id}/>}
             <div className="tenant-wallet-history-head"><strong>{t("admin_tenants.wallet.topups")}</strong></div>
             <div id="lalamoveWalletTopups" className="tenant-wallet-history">
               {walletLoading ? (

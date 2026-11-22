@@ -1,0 +1,213 @@
+/* LUKKAJA Lalamove wallet: responsive production-style Sandbox payment card. */
+.bankalert-wallet-topup {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: clamp(16px, 2.1vw, 26px);
+  border: 1px solid #dbe9e0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 6px 22px rgba(20, 67, 39, .045);
+}
+.bankalert-wallet-topup .bankalert-wallet-heading,
+.bankalert-wallet-topup .bankalert-wallet-heading-left,
+.bankalert-wallet-topup .bankalert-wallet-form-title,
+.bankalert-wallet-topup .bankalert-wallet-amount-summary,
+.bankalert-wallet-topup .bankalert-wallet-payment-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.bankalert-wallet-topup .bankalert-wallet-heading {flex-wrap: wrap}
+.bankalert-wallet-topup .bankalert-wallet-heading-left {justify-content: flex-start;min-width: 0}
+.bankalert-wallet-topup .bankalert-wallet-heading-left > div {display:grid;gap:4px;min-width:0}
+.bankalert-wallet-topup .bankalert-wallet-heading-left strong {font-size:17px;font-weight:800;color:#173e28}
+.bankalert-wallet-topup .bankalert-wallet-heading-left small {font-size:12px;line-height:1.5;color:#688174}
+.bankalert-wallet-topup .bankalert-wallet-heading-icon {
+  display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;
+  background:#e9f7ee;color:#168748;border-radius:14px;font-size:23px;
+}
+.bankalert-wallet-topup .bankalert-wallet-test-badge {
+  display:inline-flex;align-items:center;gap:7px;padding:6px 11px;
+  border:1px solid #d5e6d9;border-radius:999px;background:#f2faf4;
+  color:#377b50;font-size:11px;font-weight:700;white-space:nowrap;
+}
+.bankalert-wallet-topup .bankalert-wallet-state {
+  display:flex;gap:12px;align-items:flex-start;padding:13px 16px;
+  border-radius:12px;background:#fff9ef;border:1px solid #f0e1bd;color:#8b601d;
+}
+.bankalert-wallet-topup .bankalert-wallet-state.is-ready {background:#edf9f1;border-color:#cee9d5;color:#1a7741}
+.bankalert-wallet-topup .bankalert-wallet-state > i {flex:0 0 auto;font-size:18px;margin-top:2px}
+.bankalert-wallet-topup .bankalert-wallet-state > div {display:grid;gap:3px;min-width:0}
+.bankalert-wallet-topup .bankalert-wallet-state strong {font-size:13px;font-weight:800;line-height:1.5}
+.bankalert-wallet-topup .bankalert-wallet-state small {font-size:12px;line-height:1.6}
+.bankalert-wallet-topup .bankalert-wallet-form {display:grid;gap:15px;min-width:0}
+.bankalert-wallet-topup .bankalert-wallet-form-title > div {display:grid;gap:4px}
+.bankalert-wallet-topup .bankalert-wallet-form-title strong {font-size:14px;font-weight:800;color:#234831}
+.bankalert-wallet-topup .bankalert-wallet-form-title small {font-size:12px;color:#7a8b80;line-height:1.5}
+.bankalert-wallet-topup .bankalert-wallet-currency {font-size:11px;font-weight:800;letter-spacing:.06em;color:#668575}
+.bankalert-wallet-topup .bankalert-wallet-amount {display:block;width:100%;margin:0;min-width:0}
+.bankalert-wallet-topup .bankalert-wallet-amount-input-wrap {
+  display:flex;align-items:center;gap:12px;width:100%;min-width:0;
+  padding:0 17px;border:1.5px solid #d2e3d7;background:#fbfdfb;border-radius:14px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.bankalert-wallet-topup .bankalert-wallet-amount-input-wrap:focus-within {border-color:#249957;box-shadow:0 0 0 3px rgba(36,153,87,.12)}
+.bankalert-wallet-topup .bankalert-wallet-baht-sign {font-size:22px;font-weight:800;color:#23864d}
+.bankalert-wallet-topup .bankalert-wallet-amount-unit {font-size:12px;font-weight:700;color:#789284}
+.bankalert-wallet-topup .bankalert-wallet-amount-input-wrap input {
+  width:100%;min-width:0;height:62px;padding:0;border:0!important;box-shadow:none!important;
+  background:transparent!important;font-size:27px;font-weight:800;color:#1c4931;outline:0;
+}
+.bankalert-wallet-topup .bankalert-wallet-quick-amounts {display:flex;flex-wrap:wrap;gap:8px}
+.bankalert-wallet-topup .bankalert-wallet-quick-amount {
+  min-height:36px;min-width:72px;padding:7px 14px;border:1px solid #d8e5db;
+  background:#fff;border-radius:9px;color:#42624c;font-size:12px;font-weight:700;
+  cursor:pointer;transition:background .16s,border-color .16s;
+}
+.bankalert-wallet-topup .bankalert-wallet-quick-amount:hover:not(:disabled) {background:#eef8f1;border-color:#9bcfab}
+.bankalert-wallet-topup .bankalert-wallet-quick-amount.is-selected {background:#e9f8ee;border-color:#208b4c;color:#168347}
+.bankalert-wallet-topup .bankalert-wallet-quick-amount:disabled {opacity:.55;cursor:not-allowed}
+.bankalert-wallet-topup .bankalert-wallet-amount-summary {
+  padding:14px 16px;background:#f4f9f5;border:1px solid #e3ece5;border-radius:12px;
+}
+.bankalert-wallet-topup .bankalert-wallet-amount-summary span {font-size:12px;color:#5b7362}
+.bankalert-wallet-topup .bankalert-wallet-amount-summary strong {font-size:19px;color:#176e3c;font-weight:800}
+.bankalert-wallet-topup .bankalert-wallet-payment {display:grid;gap:12px;padding:15px 16px;border:1px solid #e6eadd;border-radius:13px;background:#fbfcf8;overflow-wrap:anywhere}
+.bankalert-wallet-topup .bankalert-wallet-payment.is-success {background:#f0f9f2;border-color:#cdebd5}
+.bankalert-wallet-topup .bankalert-wallet-payment.is-error {background:#fff5f4;border-color:#f1d3ce}
+.bankalert-wallet-topup .bankalert-wallet-payment-heading {flex-wrap:wrap}
+.bankalert-wallet-topup .bankalert-wallet-payment-heading > span:first-child {display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:#304f3c}
+.bankalert-wallet-topup .bankalert-wallet-status-pill {padding:5px 10px;border-radius:999px;background:#fff0d2;color:#946514;font-size:11px;font-weight:800;white-space:nowrap}
+.bankalert-wallet-topup .bankalert-wallet-status-pill.is-success {background:#dff2e4;color:#1d864b}
+.bankalert-wallet-topup .bankalert-wallet-status-pill.is-error {background:#ffe6e1;color:#a73e30}
+.bankalert-wallet-topup .bankalert-wallet-payment-reference {display:grid;gap:5px}
+.bankalert-wallet-topup .bankalert-wallet-payment-reference small {font-size:11px;color:#7a8f80}
+.bankalert-wallet-topup .bankalert-wallet-payment-reference code {font-size:12px;color:#355d44;overflow-wrap:anywhere}
+.bankalert-wallet-topup .bankalert-wallet-payment-help {font-size:11px;color:#758778;line-height:1.6}
+.bankalert-wallet-topup .bankalert-wallet-error {display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:#fff5f3;border:1px solid #f0d1cd;color:#a13e38;border-radius:10px;font-size:12px;line-height:1.6}
+.bankalert-wallet-topup .bankalert-wallet-actions {display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.bankalert-wallet-topup .bankalert-wallet-actions .btn {display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;border-radius:11px;padding:9px 18px;font-weight:800;font-size:12px}
+.bankalert-wallet-topup .bankalert-wallet-primary {background:#148b48;color:#fff;border-color:#148b48}
+.bankalert-wallet-topup .bankalert-wallet-primary:hover:not(:disabled) {background:#0d773c;color:#fff}
+.bankalert-wallet-topup .bankalert-wallet-secondary {background:#f6f9f6;border:1px solid #d9e4da;color:#376149}
+.bankalert-wallet-topup .bankalert-wallet-footer {display:flex;gap:8px;align-items:flex-start;padding-top:13px;border-top:1px solid #edf1ed;font-size:11px;color:#819186;line-height:1.6}
+@media(max-width:640px){
+  .bankalert-wallet-topup{padding:15px;gap:15px}
+  .bankalert-wallet-topup .bankalert-wallet-heading-left strong{font-size:15px}
+  .bankalert-wallet-topup .bankalert-wallet-amount-input-wrap input{height:56px;font-size:23px}
+  .bankalert-wallet-topup .bankalert-wallet-quick-amount{flex:1 1 75px}
+  .bankalert-wallet-topup .bankalert-wallet-actions .btn{flex:1 1 155px}
+  .bankalert-wallet-topup .bankalert-wallet-amount-summary strong{font-size:17px}
+}
+
+/* Leave room for the sticky admin header after a Stripe return redirect. */
+.bankalert-wallet-topup[data-bankalert-stripe-wallet-topup] {scroll-margin-top: 105px}
+.bankalert-wallet-topup[data-bankalert-stripe-wallet-topup]:focus {outline: 2px solid #72be90; outline-offset: 4px}
+/* Stripe payment status and ledger history, shared by owner and Superadmin. */
+.bankalert-wallet-topup .bankalert-wallet-payment.is-waiting {background:#fffaf0;border-color:#f3e1b2}
+.bankalert-wallet-topup .bankalert-wallet-payment.is-expired {background:#f3f4f6;border-color:#dce0e4}
+.bankalert-wallet-topup .bankalert-wallet-status-pill.is-expired,.bankalert-wallet-status-pill.is-expired {background:#e8ebee;color:#6f7882}
+.bankalert-wallet-topup .bankalert-wallet-payment-reference {grid-template-columns:1fr;gap:5px}
+.bankalert-wallet-topup .bankalert-wallet-payment-reference .bankalert-wallet-payment-date {color:#64786a;font-size:12px}
+.bankalert-stripe-history {border:1px solid #dfebe2;background:#fff;border-radius:14px;padding:14px;display:grid;gap:11px;min-width:0}
+.bankalert-stripe-history-heading {display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bankalert-stripe-history-heading > div {display:grid;gap:3px}
+.bankalert-stripe-history-heading strong {font-size:13px;color:#19442b}
+.bankalert-stripe-history-heading small {font-size:11px;color:#718379}
+.bankalert-stripe-history-count {font-size:11px;color:#38724c;background:#eaf7ee;border-radius:40px;padding:5px 9px;white-space:nowrap}
+.bankalert-stripe-history-list {display:grid;gap:7px;max-height:430px;overflow:auto}
+.bankalert-stripe-history-item {border:1px solid #e7eee9;border-left:4px solid #e7ba4c;padding:10px 12px;border-radius:10px;background:#fefefd;min-width:0}
+.bankalert-stripe-history-item.is-success {border-left-color:#2ba768}
+.bankalert-stripe-history-item.is-error {border-left-color:#d85d51}
+.bankalert-stripe-history-item.is-expired {border-left-color:#a7afb6}
+.bankalert-stripe-history-item-main {display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bankalert-stripe-history-item-main strong {color:#254e35;font-size:14px}
+.bankalert-stripe-history-item-meta {display:flex;flex-wrap:wrap;gap:5px 14px;font-size:11px;color:#667a6d;margin-top:8px}
+.bankalert-stripe-history-item-meta code {overflow-wrap:anywhere;color:#5c6a60;font-size:11px}
+.bankalert-stripe-history-more {justify-self:end;display:inline-flex;gap:7px;align-items:center;color:#267348}
+.bankalert-stripe-history-empty {font-size:12px;color:#718379;padding:14px 0;margin:0}
+.bankalert-wallet-topup .bankalert-wallet-cancel {border:1px solid #eac4bd;color:#a7352e;background:#fff6f4}
+.bankalert-wallet-topup .bankalert-wallet-cancel:hover:not(:disabled){background:#ffe7e3}
+
+/* Superadmin wallet dialog: match Store Admin history while avoiding nested scrollbars. */
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact {
+  width:100%;min-width:0;box-sizing:border-box;
+  padding:14px 15px;gap:12px;
+  background:#fff;border:1px solid #dcebe1;border-radius:15px;
+  margin:0 0 16px;
+}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-heading {
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-heading > div {min-width:0;flex:1}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-list {
+  max-height:none;overflow:visible;min-height:0;padding:0;gap:8px;
+}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-item {
+  min-width:0;padding:11px 13px;border:1px solid #e2eae5;
+  border-left-width:4px;border-radius:11px;background:#fff;
+}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-item.is-waiting {border-left-color:#e6ba4b}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-item.is-success {border-left-color:#2ba768}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-item.is-error {border-left-color:#d85d51}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-item.is-expired {border-left-color:#a7afb6}
+.lalamove-wallet-dialog .bankalert-stripe-history .bankalert-wallet-status-pill {
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;padding:5px 10px;border:0;border-radius:999px;
+  font-size:11px;font-weight:800;line-height:1.35;white-space:nowrap;
+  background:#fff0d2;color:#946514;
+}
+.lalamove-wallet-dialog .bankalert-stripe-history .bankalert-wallet-status-pill.is-success {background:#dff2e4;color:#1d864b}
+.lalamove-wallet-dialog .bankalert-stripe-history .bankalert-wallet-status-pill.is-error {background:#ffe6e1;color:#a73e30}
+.lalamove-wallet-dialog .bankalert-stripe-history .bankalert-wallet-status-pill.is-expired {background:#e8ebee;color:#697580}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-item-meta {
+  display:flex;gap:5px 12px;flex-wrap:wrap;line-height:1.55;
+}
+.lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-more {
+  justify-self:end;display:inline-flex;align-items:center;justify-content:center;
+  gap:7px;margin:0;padding:8px 13px;min-height:36px;
+  border:1px solid #dbe9df;border-radius:10px;background:#f3f9f5;
+  color:#266b42;font-weight:700;white-space:nowrap;
+}
+@media(max-width:520px){
+  .lalamove-wallet-dialog .bankalert-stripe-history.is-compact{padding:12px;gap:10px}
+  .lalamove-wallet-dialog .bankalert-stripe-history.is-compact .bankalert-stripe-history-item-main{flex-wrap:wrap}
+}
+/* M7 invoice-bound payment readiness, independent from Lalamove wallet topups. */
+.m7-stripe-invoice-card {display:grid;gap:12px;margin-top:14px;padding:16px;border:1px solid #d7e8de;border-radius:14px;background:#fbfefc;min-width:0}
+.m7-stripe-invoice-head,.m7-stripe-invoice-title,.m7-stripe-invoice-amount,.m7-stripe-invoice-actions {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.m7-stripe-invoice-title{justify-content:flex-start}
+.m7-stripe-invoice-title > i {display:grid;place-items:center;width:42px;height:42px;font-size:21px;color:#18874c;background:#e8f6ed;border-radius:12px}
+.m7-stripe-invoice-title > div {display:grid;gap:4px}
+.m7-stripe-invoice-title strong {font-size:15px;color:#17452d}
+.m7-stripe-invoice-title small,.m7-stripe-invoice-amount span {font-size:12px;color:#6a8070}
+.m7-stripe-invoice-test {border-radius:999px;padding:5px 9px;background:#eaf7ee;color:#2f7547;font-size:11px;font-weight:700}
+.m7-stripe-invoice-amount {background:#f0f7f2;padding:12px;border-radius:11px}
+.m7-stripe-invoice-amount strong {font-size:21px;color:#176c3b}
+.m7-stripe-invoice-detail {display:flex;flex-wrap:wrap;gap:8px 18px;color:#5b7564;font-size:11px}
+.m7-stripe-invoice-note {margin:0;padding:9px 11px;background:#f0f7f2;border-radius:9px;color:#2a6f45;font-size:12px}
+.m7-stripe-invoice-warning {margin:0;color:#98652e;font-size:11px;line-height:1.6}
+.m7-stripe-invoice-actions {justify-content:flex-end}
+.m7-stripe-invoice-actions .btn {display:inline-flex;align-items:center;gap:7px;border-radius:10px;padding:9px 13px}
+.m7-stripe-invoice-actions .m7-stripe-invoice-pay:disabled {background:#e7ede9;border-color:#dde6e0;color:#728679;opacity:1;cursor:not-allowed}
+@media(max-width:600px){.m7-stripe-invoice-actions .btn {flex:1;justify-content:center}.m7-stripe-invoice-amount strong{font-size:18px}}
+/* Telegram deep-link highlight for the exact committed Stripe wallet credit. */
+.bankalert-stripe-history-item.is-notification-focus {
+ border-color:#78ba92!important;border-left-color:#168849!important;
+ background:#effaf3!important;box-shadow:0 0 0 3px rgba(28,146,78,.12);
+ scroll-margin:120px;
+}
+.bankalert-stripe-history-item.is-notification-focus:focus {outline:2px solid #218f54;outline-offset:2px}
+.report-wallet-item.is-notification-focus {border:2px solid #2aa05b!important;background:#edfaf2!important;
+ box-shadow:0 0 0 3px rgba(36,153,87,.10);scroll-margin-top:110px}
+.sa-review-bell .sa-stripe-wallet-alert {width:100%;font:inherit;text-align:left;
+ border:0;border-bottom:1px solid #e8eee9;background:#f3fbf5;cursor:pointer}
+.sa-review-bell .sa-stripe-wallet-alert:hover,.sa-review-bell .sa-stripe-wallet-alert:focus-visible {background:#e5f6eb}
+.sa-review-bell .sa-stripe-wallet-alert .sa-review-bell-item-copy small {overflow-wrap:anywhere}
+
+/* M7 Sandbox Checkout life-cycle actions: usable on desktop and phone. */
+.m7-stripe-invoice-actions .m7-stripe-invoice-close{border:1px solid #d9b6b6;background:#fff9f9;color:#a32a35;border-radius:9px;white-space:normal;}
+.m7-stripe-invoice-actions .m7-stripe-invoice-close:hover{background:#fceaea;border-color:#c98f93}
+@media(max-width:620px){.m7-stripe-invoice-actions .m7-stripe-invoice-close{flex:1 1 45%;min-width:0}}
