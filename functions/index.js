@@ -406,3 +406,7 @@ exports.notifyTenantTelegramWalletTopup = tenantTelegramEvents.notifyTenantTeleg
 exports.notifyTenantTelegramRevenueShare = tenantTelegramEvents.notifyTenantTelegramRevenueShare;
 exports.notifyTenantTelegramHybridPlatformFee = tenantTelegramEvents.notifyTenantTelegramHybridPlatformFee;
 exports.deliverTenantTelegramEvent = tenantTelegramEvents.deliverTenantTelegramEvent;
+
+const m7EvidenceHistory=require("./m7-evidence-history");
+exports.getOwnM7FinanceEvidenceHistory = m7EvidenceHistory.getOwnM7FinanceEvidenceHistory;
+exports.getPlatformM7FinanceEvidenceHistory = m7EvidenceHistory.getPlatformM7FinanceEvidenceHistory;

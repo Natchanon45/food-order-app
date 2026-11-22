@@ -1,3 +1,4 @@
+import { M7FinanceEvidenceHistory } from "@/components/M7FinanceEvidenceHistory";
 import { PlatformStripeWalletSandboxHistory } from "@/components/BankalertStripeHistory";
 import { PlatformPaymentHistory } from "@/components/PlatformPaymentHistory";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1150,6 +1151,7 @@ export function AdminTenantsPage() {
         </section>
 
         <PlatformPaymentHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
+        <M7FinanceEvidenceHistory scope="platform" tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
 
         <section className="card tenant-list-card">
           <div className="section-title tenant-list-heading">

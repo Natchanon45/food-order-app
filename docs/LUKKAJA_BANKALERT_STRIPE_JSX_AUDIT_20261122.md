@@ -250,3 +250,10 @@ Count physical lines in committed UTF-8 JSX blobs (including blank lines). Only 
 - Added one-way, deterministic per-tenant outbox for new COD, original pay-first review, QR late original slip, isolated BankAlert UAT kitchen, Paid transition, wallet top-up, delivery revenue share, and hybrid platform-fee receipt/review. Disabled/unconfigured channels do nothing; ambiguous Telegram HTTP results are marked unconfirmed, never retried automatically.
 - Existing QR order creation now suppresses premature cashier FCM; review/BankAlert UAT admission can notify only with explicit unverified label. All financial and dispatch state remains server-authoritative; no Telegram message is evidence of payment.
 - No real BotFather credential, Telegram message, Firebase deployment, APK build, production tenant update, or source repository changes were made.
+
+### P1 continuation — read-only M7 finance evidence history (not Stripe settlement)
+
+- See `docs/LUKKAJA_P1_M7_FINANCE_EVIDENCE_HISTORY_20261122.md` for Source/Firestore field mapping, access boundary, acceptance scenarios and exclusions.
+- Added merchant + Superadmin read-only evidence history using existing hybrid invoice/attempt/review and legacy revenue-share records; exact satang, Bangkok timestamp filtering, status/fee type filters, 200-row cap with truncation indicator and responsive UI. The platform view intentionally requires one selected tenant to avoid incomplete unbounded cross-tenant histories.
+- **No M7 Stripe settlement ledger was invented:** every projected row has `stripeSettled=false`, `verifiedStripeCents=0`, with an explicitly distinct source contract. A Firestore hybrid `paid` label requires invoice + attempt + reviewer audit matching; no BankAlert/manual slip is equated to a Stripe checkout settlement.
+- Existing Stripe Lalamove Wallet Sandbox remains an independent test ledger. No financial writers, Superadmin approval, database content, Source files, APK or Production deployment changed.
