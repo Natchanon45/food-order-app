@@ -437,6 +437,9 @@ exports.approvePlatformM7StripeTestClosure = m7TestClosure.approvePlatformM7Stri
 const m7OperationalFinanceReadiness=require("./m7-operational-finance-readiness");
 exports.getPlatformM7OperationalFinanceReadiness =
   m7OperationalFinanceReadiness.getPlatformM7OperationalFinanceReadiness;
+const tenantAccessEvidence=require("./tenant-access-evidence");
+exports.getPlatformTenantAccessEvidence=
+  tenantAccessEvidence.getPlatformTenantAccessEvidence;
 
 const m7SourceMigrationPreflight = require("./m7-source-migration-preflight");
 exports.previewPlatformM7SourceMigrationPreflight =

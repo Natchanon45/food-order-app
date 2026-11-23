@@ -118,3 +118,29 @@ business/finance fields are not changed. Combined Auth/Firestore
 Emulator and responsive React browser evidence, limitations and
 Source SHA are documented in
 `docs/LUKKAJA_P1_2_LEGACY_SUBSCRIPTION_ACCESS_CONTROL_20261123.md`.
+
+## 2026-11-23 P1.2e — signed-hold evidence triage for Superadmin (read-only)
+
+Added a new Superadmin-scoped, consistent Firestore read-only
+Tenant+Slug evidence projection with separate classifications for
+manual/security, subscription, historical Revenue Share, Hybrid
+Billing, M7 hold metadata, missing original activation and TEST
+override. The Source Go HMAC signer, bank journal, global claims and
+credit ledger have **not** been migrated to Firebase: those
+restrictions show as recorded metadata, never certified finance
+hold or permission to reactivate selling.
+
+`TenantControlPanel` now includes a lazily loaded and fully
+responsive independent hold evidence panel inside the collapsed
+Tenant details. All financial authority flags are false and
+certified cash/invoice amounts remain null; there are no
+activate/suspend/paid buttons in the report. The existing
+module-access grid is labelled *according to recorded shop
+data*, not as proof of operational access. A TEST allow metadata
+cannot mask other recorded holds.
+
+Security Rules prevent Browser writes to the additional M7
+access/test-override flags, including Superadmin clients.
+Source branch remains read-only and Production was not deployed.
+See `docs/LUKKAJA_P1_2_TENANT_ACCESS_EVIDENCE_TRIAGE_20261123.md`
+for the new contract, test coverage and original Go requirements.

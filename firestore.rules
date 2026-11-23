@@ -376,7 +376,10 @@ service cloud.firestore {
           'gracePeriodDays', 'firstActivatedAt',
           'trialStartsAt', 'trialEndsAt', 'suspensionReason', 'suspendedAt',
           'revenueShareSuspended', 'hybridBillingSuspended',
-          'm7FinanceAccessStatus', 'm7FinanceAccessReason'
+          'm7FinanceAccessStatus', 'm7FinanceAccessReason',
+          'm7AdminTestOverrideMode', 'm7AdminTestOverrideExpiresAt',
+          'm7AdminTestOverrideAvailable', 'm7MaturedInvoiceHolds',
+          'm7InvoiceUnpaidCents'
         ]);
       match /menus/{menuId} { allow read: if tenantBusinessEnabled(tenantId, 'order_delivery') && (true); allow create, update, delete: if tenantBusinessEnabled(tenantId, 'order_delivery') && (tenantAdminRole(tenantId)); }
       match /settings/{settingId} { allow read: if true; allow create, update, delete: if (tenantAdminRole(tenantId) && settingId != 'lalamove' && settingId != 'lalamoveWallet') || (settingId == 'catalog-order' && tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId)); }

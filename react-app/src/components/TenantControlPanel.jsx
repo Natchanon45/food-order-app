@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPlatformTenantSavedPaymentAccount } from "@/data/platformTenantService";
 import { TenantFinanceSourceEvidence } from "@/components/TenantFinanceSourceEvidence";
 import { TenantDeliveryManualReview } from "@/components/TenantDeliveryManualReview";
+import { TenantAccessEvidencePanel } from "@/components/TenantAccessEvidencePanel";
 import { tenantCalendarLabel } from "@/data/tenantActivationCalendar.mjs";
 import { tenantAccessReasonLabel, SIGNED_TENANT_ACCESS_REASONS } from "@/data/tenantAccessReason.mjs";
 
@@ -132,12 +133,8 @@ function creditAvailableLabel(data, locale) {
     ? "เครดิตพร้อมใช้ " + value + " บาท" : value;
 }
 function effectiveStatus(tenant) {
-  if (tenant.m7AdminTestOverrideMode === "allow" &&
-      tenant.m7FinanceAccessReason === "superadmin_test_open")
-    return "ปลดระงับชั่วคราว (ทดสอบ)";
-  if (tenant.m7AdminTestOverrideMode === "suspend" &&
-      tenant.m7FinanceAccessReason === "superadmin_test_suspension")
-    return "ระงับโดย Super Admin (ทดสอบ)";
+  // Source test-mode metadata must not outrank a manual/security,
+  // subscription, Delivery share or signed-financial hold.
   if (tenant.m7FinanceAccessStatus === "suspended" && tenant.m7FinanceAccessReason === "m7_overdue_invoice")
     return "ระงับจาก Invoice ค้างชำระ";
   if (tenant.m7FinanceAccessStatus === "review_required")
@@ -147,9 +144,21 @@ function effectiveStatus(tenant) {
       tenant.m7FinanceAccessReason !== "none")
     return tenantAccessReasonLabel(tenant.m7FinanceAccessReason);
   if (tenant.m7FinanceAccessStatus === "suspended" ||
-      tenant.accessStatus === "revenue_share_suspended" || tenant.active === false)
+      tenant.accessStatus === "revenue_share_suspended" ||
+      tenant.revenueShareSuspended === true ||
+      tenant.hybridBillingSuspended === true ||
+      ["suspended", "expired", "past_due", "cancelled"].includes(
+        String(tenant.subscriptionStatus || "").toLowerCase()) ||
+      Boolean(String(tenant.suspensionReason || "").trim()) ||
+      tenant.active === false)
     return "ระงับการใช้งาน";
-  return "ใช้งานตามสิทธิ์";
+  if (tenant.m7AdminTestOverrideMode === "suspend" &&
+      tenant.m7FinanceAccessReason === "superadmin_test_suspension")
+    return "ระงับโดย Super Admin (ทดสอบ)";
+  if (tenant.m7AdminTestOverrideMode === "allow" &&
+      tenant.m7FinanceAccessReason === "superadmin_test_open")
+    return "บันทึกโหมดทดสอบ Allow (ยังไม่รับรองสิทธิ์ขาย)";
+  return "ไม่พบค่าระงับในทะเบียนร้าน (ยังไม่ยืนยันสิทธิ์)";
 }
 
 function SummaryCards({ tenant, ledger, operational, locale, suspended }) {
@@ -197,7 +206,9 @@ function SummaryCards({ tenant, ledger, operational, locale, suspended }) {
           : "รอข้อมูลโควตาจากทะเบียน Slip2Go"}
         accent={data?.slipQuota?.unlimited ? "tenant-control-stat-highlight" : ""}/>
       <Stat field="access-status" label="สถานะการระงับ" icon="shield-lock"
-        value={suspended ? "ระงับ" : "ไม่ถูกระงับ"}
+        value={tenant.m7FinanceAccessStatus === "review_required"
+          ? "ต้องตรวจสอบ"
+          : suspended ? "มีค่าระงับ" : "รอตรวจหลักฐาน"}
         note={effectiveStatus(tenant)} accent={suspended ? "tenant-control-stat-warning" : ""}/>
     </div>
     <LedgerNotice state={ledger} refresh={ledger.refresh} operational={operational}/>
@@ -318,8 +329,15 @@ export function TenantControlPanel({
   const operational = useLegacyOperationalSnapshot(tenant.id, (overviewVisible || expanded) && ledger.status !== "ready");
   const storeAccount = useSavedStoreAccount(tenant.id, expanded);
   const status = effectiveStatus(tenant);
-  const suspended = status !== "ใช้งานตามสิทธิ์" &&
-    status !== "ปลดระงับชั่วคราว (ทดสอบ)";
+  // TEST override metadata must never visually bypass an independent
+  // manual, security, Revenue Share, Hybrid, or M7 invoice restriction.
+  const suspended = tenant.active !== true ||
+    tenant.revenueShareSuspended === true ||
+    tenant.hybridBillingSuspended === true ||
+    ["suspended", "expired", "past_due", "cancelled"].includes(
+      String(tenant.subscriptionStatus || "").toLowerCase()) ||
+    ["suspended", "review_required"].includes(tenant.m7FinanceAccessStatus) ||
+    tenant.m7AdminTestOverrideMode === "suspend";
   const financeHold = tenant.m7FinanceAccessStatus === "suspended" &&
     tenant.m7FinanceAccessReason === "m7_overdue_invoice";
   const calendar = tenant.activationCalendar || {};
@@ -398,9 +416,9 @@ export function TenantControlPanel({
       data-tenant-m7-invoice-hold={financeHold ? tenant.id : undefined}>
       <i className="bi bi-exclamation-triangle" aria-hidden="true"></i>
       <div><strong>{status}</strong><p>{financeHold
-        ? "Invoice ครบกำหนด " + (Number(tenant.m7MaturedInvoiceHolds) || 0) +
-          " รายการ ยอดค้างตามรายการที่ระงับ " + money(tenant.m7InvoiceUnpaidCents,locale) +
-          " บาท • ระบบปลดระงับเมื่อรับชำระครบและตรวจสลิปผ่าน"
+        ? "มีค่าระงับ Invoice ในทะเบียนร้าน แต่ยังไม่มีลายเซ็นอนุมัติจาก Source"
+          + " และยังไม่ยืนยันยอดค้างจากธนาคาร • ห้ามสรุปว่าได้รับชำระ"
+          + " หรือปลดระงับอัตโนมัติจากค่าที่บันทึก"
         : "ต้องตรวจสอบสถานะและสิทธิ์ของร้านจากระบบกลาง"}</p></div>
     </div> : null}
     <SummaryCards tenant={tenant} ledger={ledger} operational={operational} locale={locale} suspended={suspended}/>
@@ -416,13 +434,21 @@ export function TenantControlPanel({
         <TenantDeliveryManualReview tenantId={tenant.id} onReload={onReload} />
       </Section>
       <Section id="access" icon="shield-check" title="Module Access Status"
-        subtitle="แสดงสิทธิ์ตามสถานะการระงับจากระบบกลาง ไม่ใช่ผลทดสอบหน้าเว็บรายโมดูล">
+        subtitle="แสดงค่าจากทะเบียนร้านเพื่อประกอบการตรวจสอบ ไม่ใช่ผลรับรองการขายจริง">
+        <TenantAccessEvidencePanel tenantId={tenant.id} enabled={expanded}
+          refreshVersion={tenant.subscriptionAdminRevision ?? 0}/>
+        <p className="tenant-control-access-disclaimer" role="note">
+          สถานะโมดูลด้านล่างเป็นข้อมูลคาดหมายจากทะเบียนร้าน
+          ต้องทดสอบสิทธิ์จริงและหลักฐาน Go/SQL ก่อนสรุปการเปิดหรือระงับ
+        </p>
         <div className="tenant-control-modules">
           {moduleAccess.map(([module, allowed, note]) => <div className="tenant-control-module" key={module}>
             <div><strong>{module}</strong><small>{note}</small></div>
             <span className={"tenant-control-tag " + (allowed ? "success" : "danger")}>
               <i className={"bi bi-" + (allowed ? "check-circle" : "lock")} aria-hidden="true"></i>
-              {allowed ? "เข้าถึงได้" : "ระงับ"}
+              {allowed ? "ตามข้อมูลร้าน" :
+                tenant.m7FinanceAccessStatus === "review_required"
+                  ? "ต้องตรวจสิทธิ์" : "ระงับตามข้อมูล"}
             </span>
           </div>)}
         </div>

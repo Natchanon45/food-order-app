@@ -404,3 +404,51 @@ build contract passed. No Production deployment, no `main`
 merge, no financial provider settlement or M7 invoice activation.
 JSX physical lines are an inventory metric, never a completion
 percentage.
+
+## 2026-11-23 P1.2e — Superadmin independent Tenant Access / M7 hold evidence triage
+
+**Module scope:** read-only, source-aligned classification of
+existing Firebase tenant access and suspected financial hold
+metadata. This is **not** original Go HMAC/SQL/bank certification
+or operational collection/suspension/unlock.
+
+An authenticated Superadmin can expand a shop to inspect one
+consistent Tenant+public Slug Firestore snapshot, with separate
+Manual/Security, Membership, Delivery Revenue Share, Hybrid,
+recorded M7 hold and TEST override categories. The Server
+returns no financial authority, no verified unpaid balance and
+no canSell=true. There is no issuing, accepting Paid, Credit
+posting, HMAC creation, bank verification or Tenant mutation.
+A missing or inconsistent source must display review required
+rather than inventing a zero balance or opening a shop.
+
+Client-side Superadmin Tenant status and module-access rows now
+indicate **metadata, not verified operational permission**.
+The M7 suspicious amount/count metadata can no longer label a
+real overdue debt or claim automatic release. Additional M7
+metadata fields are protected from Browser writes in Firestore
+Rules even for Superadmin.
+
+The Go/SQL source commit and JSX inventory remain pinned;
+all Source files are read-only. No Production deployment or
+`main` merge. Full reference:
+`docs/LUKKAJA_P1_2_TENANT_ACCESS_EVIDENCE_TRIAGE_20261123.md`.
+
+**Important:** P1.2e acceptance only means the **diagnostic
+Module** is finished; operational M7 Source-certified hold,
+real bank cash posting and automatic tenant recovery remain
+separately gated.
+
+### P1.2e final isolated local acceptance
+
+Combined Firebase Auth + Firestore Emulator **39/39 PASS**
+(P1.2c, P1.2d and P1.2e); new P1.2e pure policy
+**14/14 PASS** and React/Chrome contract **3/3 PASS**,
+including 320/390/768/1440 responsive snapshots.
+Full `npm run test:react-parity` **PASS**;
+Callable contract **117 / 0 missing exports**;
+React Vite build and generated hosting contract **PASS**.
+The signed original Go policy, independently authenticated bank
+evidence, global bank reference claims and Service Credit ledger
+are still absent from Firebase. No operational access release
+was performed.

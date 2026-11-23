@@ -121,3 +121,4 @@ export const reviewTenantLalamoveWalletTopup = payload => call("reviewTenantLala
 export const backfillTenantSubscriptions = payload => call("backfillTenantSubscriptions", payload);
 export const updateTenantSubscription = payload => call("updateTenantSubscription", payload);
 export const getPlatformTenantSubscriptionOperation = payload => call("getPlatformTenantSubscriptionOperation", payload);
+export const getPlatformTenantAccessEvidence = payload => call("getPlatformTenantAccessEvidence", payload);
