@@ -228,6 +228,7 @@ exports.createTenant = tenantAdmin.createTenant;
 exports.createTenantOwner = tenantAdmin.createTenantOwner;
 const tenantProvision = require("./tenant-provision");
 exports.createActiveTenantWithOwner = tenantProvision.createActiveTenantWithOwner;
+exports.getPlatformTenantProvisionStatus = require("./tenant-provision-status").getPlatformTenantProvisionStatus;
 exports.updateTenantOwner = tenantAdmin.updateTenantOwner;
 exports.updateTenant = tenantAdmin.updateTenant;
 exports.deleteTenant = tenantAdmin.deleteTenant;

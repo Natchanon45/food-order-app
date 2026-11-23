@@ -46,3 +46,53 @@ Source is **read only**: `cosmatch/lukkhaja@feature/react-golang-vite-tailwind-a
 - **No** LUKKAJA edits, **no** main merge, **no** owner/test shop data copy or real money operations.
 
 Next implement a **small read-only TenantControlPanel-derived source JSX slice** with server-scoped Firebase adapter and compare against source CSS before wiring any new controls. Do not replicate the 611-line component wholesale with dangling Go-specific imports.
+
+
+## 2026-11-23 — Completed P1.2c one-call Owner Provisioning Recovery Module
+
+The earlier status at the top of this document is a **historical snapshot**
+from the previous 09/11 P1.2 inventory. P1.2c is now implemented in the
+Firebase target. The original Source stays pinned read-only at
+`e60858c1`, and `AdminTenantsPage.jsx` keeps its Source three-step
+New Store → Owner → Plan flow.
+
+The existing `createActiveTenantWithOwner` Callable remains one
+**logical** operation: Firebase Auth and Firestore are *not* a shared
+atomic transaction. The implementation uses an idempotent UUID,
+transactional slug reservation, Auth creation, atomic Firestore
+tenant + owner + membership activation, Auth compensation and durable
+operation status. This module closes the ambiguity gap across
+provider/network interruptions instead of claiming distributed ACID.
+
+New Superadmin-only read-only
+`getPlatformTenantProvisionStatus({operationId})` reconciles
+five records + native Firebase Auth, and explicitly classifies
+`complete_verified`, `pending_review`, `failed_released`,
+`review_required`, or `not_found`. The browser also independently
+re-reads `listTenants` before claiming completion. A different
+Superadmin cannot inspect another administrator's operation.
+
+- Repeated UUIDs cannot spawn a second tenant or owner. A concurrent
+  request that hits a reservation in progress returns a review state.
+- Auth `createUser` ambiguous errors (timeout, network or internal)
+  **never** release the slug/operation; only definite Auth validation
+  failures or confirmed Auth deletion can authorize terminal release.
+- Server checks the Superadmin role within both Firestore transactions.
+- A historical tenant with a slug missing from `tenantSlugs` prevents
+  a new store using the same slug.
+- New Store page persists only the opaque operation UUID per signed-in
+  Superadmin in sessionStorage. After a lost response or reload, it
+  shows a pending banner and modal action and blocks duplicate submission.
+  Password/name/email are never persisted in local browser storage.
+- Explicit status verification is allowed; no retry, Auth user creation,
+  financial invoice issuance, subscription billing or hold release may
+  happen during reconciliation.
+- Only `failed_released` with strict absence proofs, or a definitive
+  input error known to occur *before any mutation*, can reset the client
+  operation UUID automatically. A definite 409 must also have
+  server-confirmed `not_found` or `failed_released` before reset.
+
+This closes **P1.2c** but does not claim acceptance of P1.2d payment
+override/subscription changes, P1.2e financial M7 activation or a
+signed-in live Production release. See dedicated acceptance:
+`docs/LUKKAJA_P1_2_ATOMIC_OWNER_PROVISION_RECOVERY_20261123.md`.

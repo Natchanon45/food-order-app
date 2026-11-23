@@ -50,7 +50,17 @@ function result(op, replay = false) {
     tenant: { id: op.tenantId, name: op.name, slug: op.slug, active: true },
     owner: { uid: op.ownerUid, role: "owner" }, idempotent: replay };
 }
-exports._privateForTests = { validate, fingerprint, result };
+function definitiveAuthCreateRejection(error) {
+  // Never infer "not created" from a network/timeout/internal failure:
+  // Auth can have committed before the caller lost its response.
+  return new Set([
+    "auth/email-already-exists",
+    "auth/invalid-email",
+    "auth/invalid-password",
+    "auth/weak-password",
+  ]).has(error?.code);
+}
+exports._privateForTests = { validate, fingerprint, result, definitiveAuthCreateRejection };
 
 exports.createActiveTenantWithOwner = onCall(
   { region: "asia-southeast1", timeoutSeconds: 60 }, async request => {
@@ -79,12 +89,24 @@ exports.createActiveTenantWithOwner = onCall(
       pricing.deliveryShareRate >= 0 && pricing.deliveryShareRate <= 100))
       throw new HttpsError("failed-precondition", "Platform pricing is invalid");
 
+    // Legacy tenants may exist without tenantSlugs. Block silently reusing
+    // their slug rather than creating a second store at the same public URL.
+    const legacyCollision = await db.collection("tenants")
+      .where("slug", "==", input.slug).limit(1).get();
+    if(!legacyCollision.empty)
+      throw new HttpsError("already-exists", "Store slug already belongs to a tenant");
+
     const tenantId = randomUUID();
     const reserved = { status: "reserved", createdBy: request.auth.uid,
       fingerprint: proof, tenantId, name: input.name, slug: input.slug,
       planCode: input.planCode, createdAt: Timestamp.now() };
     await db.runTransaction(async tx => {
-      const [op, slug] = await Promise.all([tx.get(opRef), tx.get(slugRef)]);
+      const [op, slug, issuer] = await Promise.all([
+        tx.get(opRef), tx.get(slugRef),
+        tx.get(db.collection("users").doc(request.auth.uid)),
+      ]);
+      if(issuer.data()?.active!==true || issuer.data()?.role!=="super_admin")
+        throw new HttpsError("permission-denied", "Super Admin role changed");
       if (op.exists || slug.exists)
         throw new HttpsError("already-exists", "Store slug or operation already exists");
       tx.create(opRef, reserved);
@@ -112,7 +134,12 @@ exports.createActiveTenantWithOwner = onCall(
         tenantName: input.name, createdAt: started, updatedAt: started,
       };
       await db.runTransaction(async tx => {
-        const [op, slug] = await Promise.all([tx.get(opRef), tx.get(slugRef)]);
+        const [op, slug, issuer] = await Promise.all([
+          tx.get(opRef), tx.get(slugRef),
+          tx.get(db.collection("users").doc(request.auth.uid)),
+        ]);
+        if(issuer.data()?.active!==true || issuer.data()?.role!=="super_admin")
+          throw new HttpsError("permission-denied", "Super Admin role changed");
         if (op.data()?.status !== "reserved" ||
           op.data()?.tenantId !== tenantId ||
           slug.data()?.provisioningId !== input.operationId)
@@ -152,6 +179,15 @@ exports.createActiveTenantWithOwner = onCall(
       });
       return result({ ...reserved, ownerUid: createdAuth.uid }, false);
     } catch (error) {
+      // A failed Auth.createUser promise does NOT establish that no user was
+      // created. For transient/unknown provider outcomes do not free the
+      // reserved slug: another request could accidentally create a second
+      // Owner while the first still exists in Auth.
+      if(!createdAuth && !definitiveAuthCreateRejection(error)){
+        throw new HttpsError("failed-precondition",
+          "Owner creation outcome unknown; Super Admin review required",
+          {code:"TENANT_PROVISION_REVIEW_REQUIRED"});
+      }
       // A timed-out transaction might already have committed. Never delete an
       // Auth owner unless the persisted operation is definitely still reserved.
       let op;
@@ -189,7 +225,11 @@ exports.createActiveTenantWithOwner = onCall(
             throw new Error("RESERVATION_UNCERTAIN");
           }
           tx.delete(slugRef);
-          tx.update(opRef, { status: "failed_released", failedAt: Timestamp.now() });
+          tx.update(opRef, {
+            status: "failed_released", failedAt: Timestamp.now(),
+            releaseReason: createdAuth ? "AUTH_DELETED_CONFIRMED" :
+              "AUTH_CREATE_DEFINITIVE_REJECTION",
+          });
         });
         released = true;
       } catch { /* leave the reservation locked if its ownership is uncertain */ }

@@ -300,6 +300,12 @@ service cloud.firestore {
 
     match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
     match /tenantSlugs/{slug} { allow read: if true; allow write: if superAdminRole(); }
+    // One-call Auth/Firestore provisioning reservations are written and
+    // reconciled only by Admin SDK. Even Superadmin browsers cannot mutate
+    // operation receipts to forge creation or free a reserved public slug.
+    match /platformTenantProvisions/{operationId} {
+      allow read, write: if false;
+    }
     // Global claims are trusted-server-only and contain payment correlations
     // across tenants. Even a Super Admin browser cannot forge or erase them.
     match /hybridBillingSlipReferences/{referenceId} {

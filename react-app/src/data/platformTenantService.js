@@ -102,6 +102,7 @@ export async function listTenants() {
 }
 export const createTenant = payload => call("createTenant", payload);
 export const createActiveTenantWithOwner = payload => call("createActiveTenantWithOwner", payload);
+export const getPlatformTenantProvisionStatus = payload => call("getPlatformTenantProvisionStatus", payload);
 export const getPlatformTenantSavedPaymentAccount = payload => call("getPlatformTenantSavedPaymentAccount", payload);
 export const getPlatformTenantHybridInvoiceEvidence = payload => call("getPlatformTenantHybridInvoiceEvidence", payload);
 export const updateTenant = payload => call("updateTenant", payload);

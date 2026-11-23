@@ -12,16 +12,22 @@ import { storage } from "@/firebase/client";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { TenantControlPanel } from "@/components/TenantControlPanel";
+import { TenantProvisionRecoveryNotice } from "@/components/TenantProvisionRecoveryNotice";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { sweetConfirm, sweetPrompt } from "@/components/sweetDialog";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { loadAdminSubscriptionPricing } from "@/data/subscriptionPricing";
+import {
+  readPendingProvision, holdPendingProvision, releasePendingProvision,
+  validateProvisionStatus, canonicalOwnerMatches, isProvisionUnknownError,
+} from "@/data/tenantProvisionRecovery.mjs";
 import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
   backfillTenantSubscriptions,
   createActiveTenantWithOwner,
+  getPlatformTenantProvisionStatus,
   createTenant,
   deleteTenant,
   getPlatformRevenueShareSummary,
@@ -381,6 +387,8 @@ export function AdminTenantsPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: "", slug: "", phone: "", address: "", businessType: "both", ownerName: "", ownerEmail: "", ownerPassword: "", confirmPassword: "", planCode: "monthly" });
   const [uncertainTenantWrites, setUncertainTenantWrites] = useState({});
+  const [pendingProvisionId, setPendingProvisionId] = useState("");
+  const [provisionChecking, setProvisionChecking] = useState(false);
   const [slugEdited, setSlugEdited] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reviewStatus, setReviewStatus] = useState("pending");
@@ -416,6 +424,16 @@ export function AdminTenantsPage() {
     if (period === "custom") Object.assign(payload, { startDate, endDate });
     return payload;
   }, [period, tenantId, date, month, year, startDate, endDate]);
+
+  useEffect(() => {
+    if (profile?.role !== "super_admin" || !authState.user?.uid) return;
+    const saved = readPendingProvision(authState.user.uid);
+    setPendingProvisionId(saved || "");
+    setUncertainTenantWrites(current => ({
+      ...current, __create__: Boolean(saved),
+    }));
+    if (saved) createOperationIdRef.current = saved;
+  }, [authState.user?.uid, profile?.role]);
 
   const loadTenantList = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
@@ -521,11 +539,64 @@ export function AdminTenantsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    createOperationIdRef.current = crypto.randomUUID();
+    const recovered = readPendingProvision(authState.user?.uid);
+    createOperationIdRef.current = recovered || crypto.randomUUID();
+    setPendingProvisionId(recovered || "");
+    setUncertainTenantWrites(current => ({
+      ...current, __create__: Boolean(recovered),
+    }));
     setForm({ name: "", slug: "", phone: "", address: "", businessType: "both", ownerName: "", ownerEmail: "", ownerPassword: "", confirmPassword: "", planCode: "monthly" });
     setSlugEdited(false);
-    setStatus("");
+    setStatus(recovered ? "มีคำขอสร้างร้านที่ยังตรวจสอบผลไม่ครบ กรุณาตรวจสถานะคำขอเดิมก่อน ไม่ส่งคำขอใหม่ซ้ำ" : "");
     dialogRef.current?.showModal?.();
+  };
+
+  const reconcileProvision = async () => {
+    const uid = authState.user?.uid;
+    const operationId = readPendingProvision(uid);
+    if (!operationId || provisionChecking) return;
+    setProvisionChecking(true);
+    setStatus("");
+    try {
+      const checked = validateProvisionStatus(
+        await getPlatformTenantProvisionStatus({ operationId }), operationId,
+      );
+      if (checked.status === "complete_verified") {
+        // A server result is not sufficient by itself: independently re-read
+        // the canonical tenant list from this Superadmin session.
+        const canonical = await listTenants();
+        if (!canonicalOwnerMatches(canonical, checked))
+          throw new Error("TENANT_WRITE_UNCONFIRMED");
+        setTenants(canonical);
+        releasePendingProvision(uid, operationId);
+        setPendingProvisionId("");
+        setUncertainTenantWrites(current => ({ ...current, __create__: false }));
+        createOperationIdRef.current = crypto.randomUUID();
+        setStatus("ยืนยันแล้ว: ร้านและ Owner ถูกสร้างพร้อมสิทธิ์ครบ ตรวจพบข้อมูลตรงกันทั้งสองแหล่ง");
+        showToast("ยืนยันการสร้างร้านและ Owner สำเร็จ");
+        dialogRef.current?.close?.();
+        void loadSales();
+      } else if (checked.status === "failed_released") {
+        // Only explicit terminal server rollback is safe to clear.
+        releasePendingProvision(uid, operationId);
+        setPendingProvisionId("");
+        setUncertainTenantWrites(current => ({ ...current, __create__: false }));
+        createOperationIdRef.current = crypto.randomUUID();
+        setStatus("เซิร์ฟเวอร์ยืนยันว่าคำขอเดิมไม่สำเร็จและคืน Slug แล้ว สามารถกรอกข้อมูลใหม่และส่งคำขอใหม่ได้");
+      } else if (checked.status === "not_found") {
+        setStatus("ยังไม่พบทะเบียนคำขอนี้ อาจเป็นการเชื่อมต่อขาดหายก่อนเซิร์ฟเวอร์รับคำขอ ห้ามสร้างซ้ำทันที กรุณาตรวจสอบกับผู้ดูแลระบบ");
+      } else if (checked.status === "pending_review") {
+        setStatus("คำขอยังรอการตรวจสอบสถานะ Owner/Firestore ห้ามส่งคำขอซ้ำหรือใช้ Slug เดิมจนกว่าจะยืนยัน");
+      } else {
+        setStatus("หลักฐาน Auth/Owner/ร้าน ไม่ตรงกัน ต้องให้ผู้ดูแลตรวจสอบก่อนสร้างคำขออื่น");
+      }
+    } catch (error) {
+      console.warn("TENANT_PROVISION_RECONCILIATION_FAILED", error?.code || error?.message);
+      setStatus("ไม่สามารถรับรองสถานะคำขอจากเซิร์ฟเวอร์ได้ เก็บเลขคำขอเดิมไว้และห้ามส่งซ้ำ");
+      showToast("ยังตรวจยืนยันคำขอเดิมไม่ได้", "error");
+    } finally {
+      setProvisionChecking(false);
+    }
   };
   const openEdit = tenant => {
     setEditing(tenant);
@@ -623,11 +694,19 @@ export function AdminTenantsPage() {
       setStatus("รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน");
       return;
     }
-    if (!editing) Object.assign(payload, {
-      ownerName: form.ownerName.trim(), ownerEmail: form.ownerEmail.trim(),
-      ownerPassword: form.ownerPassword, planCode: form.planCode,
-      operationId: createOperationIdRef.current,
-    });
+    if (!editing) {
+      const operationId = createOperationIdRef.current;
+      if (!holdPendingProvision(authState.user?.uid, operationId)) {
+        setStatus("เบราว์เซอร์เก็บเลขคำขอชั่วคราวไม่ได้ จึงยังไม่ส่งการสร้างร้าน เพื่อป้องกันการสร้าง Owner ซ้ำ");
+        return;
+      }
+      setPendingProvisionId(operationId);
+      Object.assign(payload, {
+        ownerName: form.ownerName.trim(), ownerEmail: form.ownerEmail.trim(),
+        ownerPassword: form.ownerPassword, planCode: form.planCode,
+        operationId,
+      });
+    }
     setSaving(true);
     setStatus("");
     try {
@@ -642,8 +721,17 @@ export function AdminTenantsPage() {
           created.owner.role !== "owner" || !created.tenant?.id) {
           throw new Error("TENANT_WRITE_UNCONFIRMED");
         }
-        // A successful Callable alone does not confirm the stored owner and
-        // initial state; re-read tenant data before closing this dialog.
+        // Independently inspect Auth + reserved slug + both Firestore
+        // identities, then re-read the canonical tenant list. A successful
+        // Callable response alone is not proof of a usable Owner account.
+        const verified = validateProvisionStatus(
+          await getPlatformTenantProvisionStatus({operationId: payload.operationId}),
+          payload.operationId,
+        );
+        if (verified.status !== "complete_verified" ||
+          verified.owner.uid !== created.owner.uid ||
+          verified.tenant.id !== created.tenant.id)
+          throw new Error("TENANT_WRITE_UNCONFIRMED");
         const canonical = await listTenants();
         const saved = canonical.find(row => row.id === created.tenant.id);
         if (!saved || saved.active !== true || saved.onboardingRequired === true ||
@@ -654,6 +742,10 @@ export function AdminTenantsPage() {
           throw new Error("TENANT_WRITE_UNCONFIRMED");
         }
         setTenants(canonical);
+        releasePendingProvision(authState.user?.uid, payload.operationId);
+        setPendingProvisionId("");
+        setUncertainTenantWrites(current => ({ ...current, __create__: false }));
+        createOperationIdRef.current = crypto.randomUUID();
       }
       showToast(t(editing ? "admin_tenants.tenant.updated" : "admin_tenants.tenant.created"));
       dialogRef.current?.close?.();
@@ -661,23 +753,56 @@ export function AdminTenantsPage() {
     } catch (error) {
       console.error("TENANT_SAVE_FAILED", error?.code || error?.message);
       let message = t(editing ? "admin_tenants.tenant.update_failed" : "admin_tenants.tenant.create_failed");
+      let definitiveSafeToRetry = false;
       if (error?.message === "TENANT_WRITE_UNCONFIRMED" ||
-        ["functions/deadline-exceeded", "functions/unavailable",
-          "functions/internal", "functions/unknown"].includes(error?.code) ||
-        error?.details?.code === "TENANT_PROVISION_REVIEW_REQUIRED") {
+        isProvisionUnknownError(error)) {
         setUncertainTenantWrites(current => ({ ...current, [writeKey]: true }));
         message = "ยังยืนยันผลการสร้างร้านและ Owner ไม่ได้ กรุณารีโหลดและตรวจสอบข้อมูลก่อนส่งคำสั่งซ้ำ";
       } else if (error?.code === "functions/already-exists") {
-        // A confirmed rejection did not create the requested shop. A corrected
-        // email/slug must use a fresh request ID, while ambiguous requests
-        // remain locked against retries.
-        if (!editing) createOperationIdRef.current = crypto.randomUUID();
-        message = "Slug หรืออีเมล Owner นี้ถูกใช้งานแล้ว กรุณาตรวจสอบข้อมูล";
+        // This is a definitive rejection, but must confirm the matching
+        // operation was never reserved or was safely rolled back before
+        // allowing a new UUID/slug/email. Never treat a stale reply as proof.
+        message = "Slug หรืออีเมล Owner นี้ถูกใช้งานแล้ว กรุณาตรวจสถานะคำขอเดิมก่อนส่งซ้ำ";
+        if (!editing) {
+          try {
+            const checked = validateProvisionStatus(
+              await getPlatformTenantProvisionStatus({ operationId: payload.operationId }),
+              payload.operationId,
+            );
+            if (checked.status === "not_found" || checked.status === "failed_released") {
+              definitiveSafeToRetry = releasePendingProvision(
+                authState.user?.uid, payload.operationId,
+              );
+              if (definitiveSafeToRetry) {
+                setPendingProvisionId("");
+                createOperationIdRef.current = crypto.randomUUID();
+                message = "ระบบยืนยันว่าไม่สร้างร้านและ Owner จากคำขอนี้ กรุณาแก้ Slug หรืออีเมลก่อนส่งใหม่";
+              }
+            }
+          } catch {
+            // Read uncertainty must keep the write lock, even for an HTTP 409.
+          }
+        }
       } else if (error?.code === "functions/failed-precondition") {
         message = "ยังไม่พร้อมสร้างร้าน กรุณาตรวจสอบราคาแพ็กเกจจากส่วนกลางก่อน";
       } else if (error?.code === "functions/invalid-argument") {
         message = error.message || t("admin_tenants.tenant.invalid");
+        // Server validation is performed before any reservation/Auth call.
+        // A definite field-validation rejection may be corrected using
+        // a FRESH UUID; never reuse the previous request identifier.
+        if (!editing) {
+          definitiveSafeToRetry = releasePendingProvision(
+            authState.user?.uid, payload.operationId,
+          );
+          if (definitiveSafeToRetry) {
+            setPendingProvisionId("");
+            createOperationIdRef.current = crypto.randomUUID();
+          }
+        }
       }
+      if (!editing) setUncertainTenantWrites(current => ({
+        ...current, __create__: !definitiveSafeToRetry,
+      }));
       setStatus(message);
       showToast(message, "error");
     } finally {
@@ -1031,6 +1156,10 @@ export function AdminTenantsPage() {
           </button>
         </section>
 
+        {pendingProvisionId ? <TenantProvisionRecoveryNotice
+          operationId={pendingProvisionId} checking={provisionChecking}
+          busy={saving} onCheck={reconcileProvision} /> : null}
+
         {!adminNotificationsLoading && notificationTotal > 0 ? (
           <section className="card tenant-admin-notification-panel" aria-labelledby="tenantAdminNotificationTitle" data-admin-notification-total={notificationTotal}>
             <div className="tenant-admin-notification-copy">
@@ -1217,6 +1346,10 @@ export function AdminTenantsPage() {
             </button>
           </div>
           <div className="tenant-dialog-body">
+            {!editing && pendingProvisionId ? <TenantProvisionRecoveryNotice
+              mode="modal" operationId={pendingProvisionId}
+              checking={provisionChecking} busy={saving}
+              onCheck={reconcileProvision} /> : null}
             {!editing ? <div className="tenant-new-step-title"><span>01</span><strong>ข้อมูลร้านค้า</strong><small>ข้อมูลสำหรับเปิดใช้งานร้านใหม่</small></div> : null}
             <div className="grid grid-2">
               <div className="field">

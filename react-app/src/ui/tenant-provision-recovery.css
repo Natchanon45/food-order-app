@@ -1,0 +1,30 @@
+/* Scoped to the Platform Tenant Admin module and its modal. */
+.tenant-admin-page .tenant-provision-banner,
+#tenantDialog .tenant-provision-inline{
+ display:flex;align-items:center;flex-wrap:wrap;gap:12px;
+ padding:14px 16px;border:1px solid #d9bf85;
+ border-left:4px solid #b7791f;border-radius:12px;
+ background:#fffaf0;color:#785010;min-width:0;
+}
+.tenant-admin-page .tenant-provision-banner{margin:12px 0}
+.tenant-admin-page .tenant-provision-banner>.bi,
+#tenantDialog .tenant-provision-inline>.bi{font-size:22px;flex-shrink:0}
+.tenant-admin-page .tenant-provision-banner>div,
+#tenantDialog .tenant-provision-inline>div{flex:1 1 195px;min-width:0;display:grid;gap:4px}
+.tenant-admin-page .tenant-provision-banner strong,
+#tenantDialog .tenant-provision-inline strong{font-size:13px;line-height:1.45}
+.tenant-admin-page .tenant-provision-banner small,
+#tenantDialog .tenant-provision-inline small{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.tenant-admin-page .tenant-provision-banner>.btn,
+#tenantDialog .tenant-provision-inline>.btn{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ border:1px solid #b7791f;background:#8b5f19;color:white;
+ border-radius:10px;padding:10px 12px;white-space:normal;
+}
+#tenantDialog .tenant-provision-inline{margin-bottom:16px}
+@media(max-width:560px){
+ .tenant-admin-page .tenant-provision-banner,
+ #tenantDialog .tenant-provision-inline{padding:12px}
+ .tenant-admin-page .tenant-provision-banner>.btn,
+ #tenantDialog .tenant-provision-inline>.btn{width:100%}
+}

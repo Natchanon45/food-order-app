@@ -286,3 +286,41 @@ passed, 114 Callable references remain resolved, and generated
 React build contract passed. These are local/dev evidence only:
 provider FCM/APNs device proof and signed app distribution still
 require authorized external provisioning. No Production push sent.
+
+## 2026-11-23 P1.2c complete — Atomic Store + Owner creation and ambiguous operation recovery
+
+The P1.2c module is completed at local Source-code / Emulator acceptance,
+not Production release. The existing Source-like Superadmin Store →
+Owner → Plan dialog now retains **only** its opaque operation UUID in
+per-Superadmin session storage and blocks duplicate creation across
+navigation/reload when Auth or Firestore may have committed but a
+network response was lost.
+
+A new server-only read-only Callable checks the authenticated
+Superadmin's own operation, complete Store + Owner + Membership +
+Slug + native Firebase Auth coherence and immutable original billing
+activation. It reports `complete_verified`, `pending_review`,
+`failed_released`, `review_required` or `not_found` without
+creating another account, generating invoice debt, opening suspended
+stores, backdating membership or restoring credit. A new operation ID
+is permitted only upon confirmed terminal rollback or a field
+validation rejection that occurs before any reservation.
+
+The existing atomic provisioning Callable now leaves a reserved slug
+locked if Firebase Auth `createUser` may have committed but returned
+an indeterminate error. It also blocks legacy tenants with unindexed
+colliding slugs and rechecks Superadmin authority inside both
+Firestore transactions. Tenants and their first activation dates
+are unchanged unless the new one-step creation itself succeeds.
+
+Local acceptance: **16/16 combined Firebase Auth + Firestore Emulator
+tests**, including five same-UUID and four same-slug concurrent
+requests, plus **7/7 React policy/browser tests at 320/390/768/1440**;
+the full `npm run test:react-parity` chain, all 115 current
+Callable references and React generated build contract pass.
+Source branch is read-only; no Production deployment.
+Full module documentation:
+`docs/LUKKAJA_P1_2_ATOMIC_OWNER_PROVISION_RECOVERY_20261123.md`.
+
+P1.2d/e write-provider/financial override and final signed-in
+Production UAT remain separate and **are not** accepted by this module.
