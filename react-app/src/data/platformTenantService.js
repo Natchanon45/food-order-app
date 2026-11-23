@@ -109,6 +109,10 @@ export const updateTenantMasterAtomic = payload => call("updateTenantMasterAtomi
 export const getPlatformTenantMasterEditOperation = payload => call("getPlatformTenantMasterEditOperation", payload);
 export const updateTenant = payload => call("updateTenant", payload);
 export const deleteTenant = payload => call("deleteTenant", payload);
+export const getPlatformTenantDeletionSafety = payload =>
+  call("getPlatformTenantDeletionSafety", payload);
+export const getPlatformTenantDeletionStatus = payload =>
+  call("getPlatformTenantDeletionStatus", payload);
 export const getPlatformRevenueShareSummary = payload => call("getPlatformRevenueShareSummary", payload);
 export const updateTenantRevenueShare = payload => call("updateTenantRevenueShare", payload);
 export const unlockTenantRevenueShare = payload => call("unlockTenantRevenueShare", payload);

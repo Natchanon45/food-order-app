@@ -1,0 +1,28 @@
+.tenant-admin-page .tenant-deletion-recovery{
+ display:flex;align-items:flex-start;flex-wrap:wrap;gap:12px;
+ padding:14px 15px;margin:12px 0;border:1px solid #e2c7aa;
+ background:#fff8ef;border-radius:13px;min-width:0;
+}
+.tenant-admin-page .tenant-deletion-recovery>.bi{
+ color:#a05c32;font-size:21px;flex-shrink:0;
+}
+.tenant-admin-page .tenant-deletion-recovery-body{
+ flex:1 1 240px;min-width:0;display:grid;gap:7px;
+}
+.tenant-admin-page .tenant-deletion-recovery-body strong{
+ font-size:13px;color:#69401e;
+}
+.tenant-admin-page .tenant-deletion-recovery-body p{
+ margin:0;font-size:11.5px;line-height:1.55;color:#755b45;
+}
+.tenant-admin-page .tenant-deletion-recovery-body small{
+ color:#7c7061;overflow-wrap:anywhere;
+}
+.tenant-admin-page .tenant-deletion-recovery>.btn{
+ display:flex;align-items:center;justify-content:center;gap:8px;
+ background:#80542f;color:white;border-radius:10px;
+ min-height:36px;padding:8px 12px;flex:0 1 auto;
+}
+@media(max-width:550px){
+ .tenant-admin-page .tenant-deletion-recovery>.btn{width:100%}
+}

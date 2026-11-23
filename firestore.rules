@@ -309,6 +309,14 @@ service cloud.firestore {
     match /platformTenantProvisions/{operationId} {
       allow read, write: if false;
     }
+    // Atomic deletion receipts/tombstones: no browser may forge a deletion
+    // certificate, reassign a deleted ID or remove the audit trail.
+    match /platformTenantDeletions/{operationId} {
+      allow read, write: if false;
+    }
+    match /platformTenantDeletionTombstones/{tenantId} {
+      allow read, write: if false;
+    }
     // Global claims are trusted-server-only and contain payment correlations
     // across tenants. Even a Super Admin browser cannot forge or erase them.
     match /hybridBillingSlipReferences/{referenceId} {
@@ -364,24 +372,18 @@ service cloud.firestore {
 
     match /tenants/{tenantId} {
       allow read: if true;
-      allow create, delete: if superAdminRole();
-      // Non-financial tenant profile edits remain supported, but subscription
-      // and store-access fields may only change from authoritative Callables.
-      // Firestore clients cannot evade the atomic receipt+CAS transaction.
+      // Hard deletes are only possible through strict Admin SDK transactions.
+      allow create: if superAdminRole();
+      allow delete: if false;
+      // Only a narrow set of non-operational presentation metadata can
+      // change directly in a Superadmin browser. An open-ended blacklist
+      // allows a browser to strip FUTURE finance/Owner/provenance fields,
+      // then falsely turn a shop into an empty, deletion-eligible draft.
+      // Master, Owner, activation, access, subscription, credits, invoicing
+      // and all unknown future metadata must use trusted-server Callables.
       allow update: if superAdminRole()
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-          'active', 'planCode', 'subscriptionStatus',
-          'subscriptionExpiresAt', 'subscriptionStartedAt',
-          'subscriptionUpdatedBy', 'subscriptionAdminRevision',
-          'gracePeriodDays', 'firstActivatedAt',
-          'trialStartsAt', 'trialEndsAt', 'suspensionReason', 'suspendedAt',
-          'revenueShareSuspended', 'hybridBillingSuspended',
-          'm7FinanceAccessStatus', 'm7FinanceAccessReason',
-          'm7AdminTestOverrideMode', 'm7AdminTestOverrideExpiresAt',
-          'm7AdminTestOverrideAvailable', 'm7MaturedInvoiceHolds',
-          'm7InvoiceUnpaidCents',
-          'name', 'slug', 'businessType', 'businessUnits',
-          'masterEditRevision', 'masterEditedBy'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'description', 'logoUrl', 'coverUrl', 'updatedAt'
         ]);
       match /menus/{menuId} { allow read: if tenantBusinessEnabled(tenantId, 'order_delivery') && (true); allow create, update, delete: if tenantBusinessEnabled(tenantId, 'order_delivery') && (tenantAdminRole(tenantId)); }
       match /settings/{settingId} { allow read: if true; allow create, update, delete: if (tenantAdminRole(tenantId) && settingId != 'lalamove' && settingId != 'lalamoveWallet') || (settingId == 'catalog-order' && tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId)); }

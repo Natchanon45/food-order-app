@@ -35,12 +35,20 @@ import {
   canonicalMasterMatches, masterUnknownError,
 } from "@/data/tenantMasterEditRecovery.mjs";
 import { TenantMasterEditRecoveryNotice } from "@/components/TenantMasterEditRecoveryNotice";
+import { TenantDeletionRecoveryNotice } from "@/components/TenantDeletionRecoveryNotice";
+import {
+  readPendingDeletion, holdPendingDeletion, releasePendingDeletion,
+  validateDeletionSafety, validateDeletionWrite, validateDeletionStatus,
+  canonicalTenantAbsent, deletionReasonLabel,
+} from "@/data/tenantSafeDeletionRecovery.mjs";
 import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
   createActiveTenantWithOwner,
   getPlatformTenantProvisionStatus,
   createTenant,
   deleteTenant,
+  getPlatformTenantDeletionSafety,
+  getPlatformTenantDeletionStatus,
   getPlatformRevenueShareSummary,
   getTenantLalamoveWallet,
   listPlatformRevenueSharePayments,
@@ -312,6 +320,9 @@ export function AdminTenantsPage() {
   const [pendingProvisionId, setPendingProvisionId] = useState("");
   const [provisionChecking, setProvisionChecking] = useState(false);
   const [masterEditChecking, setMasterEditChecking] = useState("");
+  const tenantDeleteBusyRef = useRef(false);
+  const [deletionPending,setDeletionPending] = useState(null);
+  const [deletionChecking,setDeletionChecking] = useState(false);
   const [slugEdited, setSlugEdited] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reviewStatus, setReviewStatus] = useState("pending");
@@ -357,6 +368,10 @@ export function AdminTenantsPage() {
     }));
     if (saved) createOperationIdRef.current = saved;
   }, [authState.user?.uid, profile?.role]);
+
+  useEffect(()=>{
+    setDeletionPending(readPendingDeletion(authState.user?.uid));
+  },[authState.user?.uid]);
 
   const loadTenantList = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
@@ -844,30 +859,117 @@ export function AdminTenantsPage() {
     }
   };
 
+  const reconcileDeletion = async () => {
+    const uid=authState.user?.uid;
+    const pending=readPendingDeletion(uid);
+    if(!pending||deletionChecking)return;
+    setDeletionChecking(true);
+    try{
+      const checked=validateDeletionStatus(
+        await getPlatformTenantDeletionStatus(pending),pending,
+      );
+      if(checked.status!=="deleted_verified"){
+        setStatus("คำสั่งลบเดิมยังไม่ยืนยันผลจาก Firebase กรุณาให้ผู้ดูแลตรวจสอบ ห้ามลบซ้ำ");
+        return;
+      }
+      const canonical=await listTenants();
+      if(!canonicalTenantAbsent(canonical,pending.tenantId))
+        throw new Error("TENANT_DELETE_CANONICAL_STILL_PRESENT");
+      if(!releasePendingDeletion(uid,pending))
+        throw new Error("TENANT_DELETE_PENDING_RECEIPT_UNAVAILABLE");
+      setDeletionPending(null);
+      setTenants(canonical);
+      setStatus("");
+      showToast("ยืนยันแล้ว: ลบเฉพาะร้านทดสอบว่างและคืน Slug สำเร็จ");
+      void loadSales();
+    }catch(error){
+      console.warn("TENANT_DELETE_RECOVERY_UNVERIFIED",error?.code||error?.message);
+      setStatus("ยังไม่สามารถยืนยันผลการลบร้านจาก Firebase ได้ ต้องตรวจสอบก่อนทำรายการใหม่");
+      showToast("ยังยืนยันการลบร้านไม่ได้","error");
+    }finally{setDeletionChecking(false);}
+  };
+
   const removeTenant = async tenant => {
-    const confirmed = await sweetConfirm(
-      t("admin_tenants.tenant.delete_confirm", { name: tenant.name || tenant.id }),
-      {
-        title: t("admin_tenants.tenant.delete_title"),
-        confirmText: t("admin_tenants.tenant.delete_confirm_button"),
-        cancelText: t("admin_tenants.common.cancel"),
-        type: "warning",
-        danger: true,
-      },
-    );
-    if (!confirmed) return;
-    try {
-      await deleteTenant({ tenantId: tenant.id });
-      showToast(t("admin_tenants.tenant.deleted"));
-      await Promise.all([loadTenantList(), loadSales()]);
-    } catch (error) {
-      console.error("TENANT_DELETE_FAILED", error);
-      const message = error?.code === "functions/failed-precondition"
-        ? t("admin_tenants.tenant.delete_has_data")
-        : t("admin_tenants.tenant.delete_failed");
-      setStatus(message);
-      showToast(message, "error");
+    const uid=authState.user?.uid;
+    const tenantId=String(tenant?.id||"");
+    if(tenantDeleteBusyRef.current||readPendingDeletion(uid)||
+      readPendingProvision(uid)||
+      uncertainTenantWrites[tenantId]||
+      readPendingMasterEdit(uid,tenantId)||
+      readPendingSubscription(uid,tenantId)){
+      showToast("มีคำสั่งร้านค้า/Owner/สมาชิกที่ต้องตรวจผลก่อน ห้ามลบหรือส่งคำสั่งซ้ำ","error");
+      return;
     }
+    tenantDeleteBusyRef.current=true;
+    try{
+      const preview=validateDeletionSafety(
+        await getPlatformTenantDeletionSafety({tenantId}),tenantId,
+      );
+      if(!preview.ready){
+        const detail=preview.reasonCodes.map(deletionReasonLabel).join(" • ");
+        const message="ไม่สามารถลบร้านนี้ได้: "+(detail||"ต้องตรวจสอบข้อมูลร้าน");
+        setStatus(message);
+        showToast(message,"error");
+        return;
+      }
+      const confirmed=await sweetConfirm(
+        "ลบเฉพาะร้านทดสอบที่ยังไม่เคยเปิดใช้งานหรือมี Owner เท่านั้น: "+
+          (tenant.name||tenantId)+" (/"+tenant.slug+
+          ") — การลบนี้ถาวรและจะคืน Slug ไปใช้กับร้านอื่นได้",
+        {title:"ยืนยันลบร้านทดสอบว่างเท่านั้น",
+         confirmText:"ยืนยันลบถาวร",
+         cancelText:t("admin_tenants.common.cancel"),
+         type:"warning",danger:true},
+      );
+      if(!confirmed)return;
+      const pending={tenantId,operationId:crypto.randomUUID()};
+      if(!holdPendingDeletion(uid,pending)){
+        setStatus("เบราว์เซอร์ไม่สามารถเก็บเลขคำสั่งได้ จึงไม่ส่งการลบ");
+        return;
+      }
+      setDeletionPending(pending);
+      const request={
+        ...pending,expectedName:tenant.name,expectedSlug:tenant.slug,
+        expectedRevision:tenant.masterEditRevision??0,
+        intent:"delete_unowned_placeholder",
+      };
+      try{
+        validateDeletionWrite(await deleteTenant(request),pending);
+        const checked=validateDeletionStatus(
+          await getPlatformTenantDeletionStatus(pending),pending,
+        );
+        if(checked.status!=="deleted_verified")
+          throw new Error("TENANT_DELETE_WRITE_UNCONFIRMED");
+        const canonical=await listTenants();
+        if(!canonicalTenantAbsent(canonical,tenantId))
+          throw new Error("TENANT_DELETE_WRITE_UNCONFIRMED");
+        if(!releasePendingDeletion(uid,pending))
+          throw new Error("TENANT_DELETE_WRITE_UNCONFIRMED");
+        setDeletionPending(null);
+        setTenants(canonical);
+        setStatus("");
+        showToast("ลบร้านทดสอบว่างสำเร็จ โดยไม่มีการลบ Owner หรือข้อมูลการเงิน");
+        void loadSales();
+      }catch(error){
+        console.warn("TENANT_DELETE_UNCONFIRMED",error?.code||error?.message);
+        if(error?.code==="functions/failed-precondition"||
+           error?.code==="functions/invalid-argument"){
+          // The server rejected before the mutation transaction committed.
+          releasePendingDeletion(uid,pending);
+          setDeletionPending(null);
+          setStatus("สถานะร้านเปลี่ยนแล้ว หรือพบข้อมูลต้องเก็บรักษา กรุณารีเฟรชและตรวจสอบอีกครั้ง");
+        }else{
+          // Timeouts, "not found" on a delayed status read and uncertain
+          // rejections can follow a COMMITTED delete: never re-submit.
+          setStatus("ผลลบร้านยังไม่ยืนยัน ใช้ปุ่มตรวจสถานะคำสั่งเดิม ห้ามส่งคำสั่งใหม่");
+        }
+        showToast("ยังยืนยันผลการลบร้านไม่ได้","error");
+      }
+    }catch(error){
+      console.warn("TENANT_DELETE_SAFETY_UNAVAILABLE",error?.code||error?.message);
+      setStatus("ตรวจสอบสิทธิ์ลบร้านไม่ได้ จึงไม่ได้ส่งคำสั่งลบ");
+      showToast("ยังตรวจสอบเงื่อนไขลบร้านไม่ได้","error");
+    }finally{tenantDeleteBusyRef.current=false;}
   };
 
   const refreshReviews = async () => {
@@ -1410,6 +1512,8 @@ export function AdminTenantsPage() {
         <M7SourceMigrationPreflight tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
         <M7StripeTestShadowHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
 
+        <TenantDeletionRecoveryNotice pending={deletionPending}
+          checking={deletionChecking} onCheck={reconcileDeletion}/>
         <section className="card tenant-list-card">
           <div className="section-title tenant-list-heading">
             <div><h2><i className="bi bi-shop" aria-hidden="true"></i><span>{t("admin_tenants.list.title")}</span></h2><p>{t("admin_tenants.list.description")}</p></div>

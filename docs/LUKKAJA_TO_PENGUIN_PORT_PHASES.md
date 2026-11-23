@@ -532,3 +532,44 @@ missing**, Vite build and hosting-generated build
 contract **PASS**. No Production deploy, `main` merge,
 Owner account identity mutation, financial paid posting
 or unrestricted Tenant deletion.
+
+## 2026-11-23 P1.2g — Safe Tenant Deletion of never-activated placeholders
+
+The P1.2f atomic edit Module is followed by the
+P1.2g practical **safe deletion** of only pristine,
+never-activated and unowned original draft shops.
+The previous hard-delete implementation had a
+fixed child collection list and separate Slug
+deletion; both were replaced with a strict Firestore
+transaction, exact CAS/UUID, global operation
+tombstone and independently recoverable results.
+
+A known Owner, activated/trial/member shop, banking
+metadata, unknown new child collection or external
+tenant reference always blocks deletion. The browser
+uses read-only Superadmin preflight and never retries
+an ambiguous destructive call automatically.
+FireStore Browser hard deletes of Tenant are denied,
+even for Superadmin. All operational financial
+ledgers, payment providers and existing Owners are
+untouched. No Production deploy or `main` merge.
+
+Acceptance: **14/14** dedicated Emulator,
+**65/65** combined Firebase Auth/Firestore
+P1.2c–P1.2g tests, **10/10** pure policy and
+**7/7** React UI/contract, 320/390/768/1440 px
+Chrome responsive, full React parity,
+**121** Callables / zero missing, Vite Build PASS.
+See `docs/LUKKAJA_P1_2_SAFE_TENANT_DELETION_20261123.md`.
+
+### Source APK maintenance observed during P1.2g
+
+Source externally advanced from `e60858c1` to
+`18093091` (LK Shop UAT APK preservation in the LUKKAJA
+deployment script). The PENGUIN Target feature branch
+did **not** import the Source Android APK or enable its
+Firebase download button: its Flutter pairing endpoint is
+still LUKKAJA-specific. Source JSX LOC was unchanged.
+The final P1.2g Firestore Rules also guard Owner/provenance
+fields from browser-side edits so a provisioned Tenant
+cannot be disguised as an empty placeholder.

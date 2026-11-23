@@ -171,3 +171,39 @@ explicitly not part of this module and has its own
 data-retention requirements.
 
 See `docs/LUKKAJA_P1_2_ATOMIC_TENANT_MASTER_EDIT_20261123.md`.
+
+## 2026-11-23 P1.2g — hard delete of empty, never-owned drafts only
+
+Replaced the previous `deleteTenant` implementation that
+called `db.recursiveDelete` after checking a fixed set of
+subcollections. A Superadmin may now delete **only** an
+inactive, never-activated, unowned, pristine legacy
+placeholder with a single original Store Settings
+document and matching Slug. Any Owner identity,
+membership/trial, ledger state, bank/payment metadata,
+unrecognized child data or external reference blocks
+deletion. The exact original Store, public Slug and
+Tenant are removed atomically with an immutable
+operation receipt and tombstone; no Auth account or
+financial record is deleted.
+
+The browser now preflights before confirmation and
+persists only a pending UUID/tenant ID, requiring
+independent status and canonical list verification.
+A lost response cannot trigger another delete and
+the operation can be reconciled after reload.
+Browser tenant deletes and receipt writes are denied
+through Firestore Rules. There is no force mode or
+Production deploy. See
+`docs/LUKKAJA_P1_2_SAFE_TENANT_DELETION_20261123.md`.
+
+Root Tenant Browser updates are now a narrow allowlist
+(description/logo/cover/updatedAt), not an open-ended
+financial-field blacklist, to prevent a Superadmin Browser
+stripping future unknown data before requesting deletion.
+
+P1.2g final security hardening also protects historical Owner
+and onboarding/provenance fields from direct Superadmin
+browser writes. Final Rules: 14/14 dedicated Emulator
+PASS; combined module suites: 65/65 test assertions PASS.
+This does not license deletion of activated shops.

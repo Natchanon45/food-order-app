@@ -236,6 +236,11 @@ exports.getPlatformTenantMasterEditOperation=
   tenantMasterEdit.getPlatformTenantMasterEditOperation;
 exports.updateTenant = tenantAdmin.updateTenant;
 exports.deleteTenant = tenantAdmin.deleteTenant;
+const tenantSafeDeletion=require("./tenant-safe-deletion");
+exports.getPlatformTenantDeletionSafety=
+  tenantSafeDeletion.getPlatformTenantDeletionSafety;
+exports.getPlatformTenantDeletionStatus=
+  tenantSafeDeletion.getPlatformTenantDeletionStatus;
 
 const saasMigration = require("./saas-migration");
 exports.inspectLegacySaasMigration = saasMigration.inspectLegacySaasMigration;

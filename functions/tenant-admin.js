@@ -6,6 +6,7 @@ const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
 // Legacy master edits are routed to the transactional P1.2f engine.
 const tenantMasterEdit = require("./tenant-master-edit");
+const tenantSafeDeletion = require("./tenant-safe-deletion");
 
 function normalizeSlug(value = "") {
   return String(value)
@@ -301,36 +302,9 @@ exports.updateTenantOwner = onCall(
 // Legacy unversioned batch edits MUST NOT bypass atomic slug ownership.
 exports.updateTenant = tenantMasterEdit.updateTenantMasterAtomic;
 
-exports.deleteTenant = onCall(
-  { region: "asia-southeast1" },
-  async request => {
-    await assertSuperAdmin(request.auth);
-
-    const tenantId = String(request.data?.tenantId || "").trim();
-    if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
-
-    const db = getFirestore();
-    const tenantRef = db.collection("tenants").doc(tenantId);
-    const tenantSnapshot = await tenantRef.get();
-    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
-
-    const protectedCollections = [
-      "orders", "memberships", "menus", "tables", "notificationTokens", "deliveryCustomers",
-      "sales", "products", "categories", "revenueSharePayments"
-    ];
-    for (const collectionName of protectedCollections) {
-      const snapshot = await tenantRef.collection(collectionName).limit(1).get();
-      if (!snapshot.empty) {
-        throw new HttpsError("failed-precondition", `Tenant contains data in ${collectionName}`);
-      }
-    }
-
-    const slug = String(tenantSnapshot.data().slug || "").trim();
-    if (slug) await db.collection("tenantSlugs").doc(slug).delete().catch(() => {});
-    await db.recursiveDelete(tenantRef);
-    return { ok: true, tenantId };
-  }
-);
+// Older frontend entrypoint retained, now requiring a strict operation
+// receipt, preflight CAS and pristine legacy placeholder proof.
+exports.deleteTenant = tenantSafeDeletion.deleteTenant;
 
 function maskAccount(value) {
   const raw = String(value || "").replace(/[^0-9]/g, "");

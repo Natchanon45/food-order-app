@@ -289,7 +289,12 @@ requireAll("Admin tenant create/edit/share actions", tenants, [
   "await reconcileRevenueShare(tenantId ? { tenantId } : {})",
 ]);
 requireAll("Admin tenant destructive/review actions", tenants, [
-  "await deleteTenant({ tenantId: tenant.id })",
+  "getPlatformTenantDeletionSafety({tenantId})",
+  "validateDeletionSafety(",
+  "validateDeletionWrite(await deleteTenant(request),pending)",
+  "getPlatformTenantDeletionStatus(pending)",
+  "canonicalTenantAbsent(canonical,pending.tenantId)",
+  "TenantDeletionRecoveryNotice",
   'reviewRevenueSharePayment({ tenantId: item.tenant.id, paymentId: item.id, action: "approve" })',
   'action: "reject"',
   "await unlockTenantRevenueShare({ tenantId: tenant.id })",
@@ -308,6 +313,8 @@ for (const fn of [
   "updateTenantRevenueShare",
   "reconcileRevenueShare",
   "deleteTenant",
+  "getPlatformTenantDeletionSafety",
+  "getPlatformTenantDeletionStatus",
   "reviewRevenueSharePayment",
   "unlockTenantRevenueShare",
   "updateTenantLalamoveApproval",
