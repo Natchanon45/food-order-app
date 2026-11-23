@@ -1,7 +1,7 @@
 # P1.3 — Users, Owners and Public Contact: source parity / Firebase boundary audit
 
 **Date:** 2026-11-23 (Asia/Bangkok)
-**Status:** P1.3a Contact UI and **P1.3b Staff Auth lifecycle complete as local code/tests**; P1.3c Owner identity and P1.3d email/live-browser release **OPEN**.
+**Status:** **P1.3a Contact UI, P1.3b Staff Auth lifecycle and P1.3c Owner Auth lifecycle complete locally with tests**; P1.3d email delivery and authenticated Production UAT **OPEN**.
 **Source, strictly read-only:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe` @ `8b108f1278b7c59bd44c02133d659b8e6cd6fd3f`.
 **Destination only:** `Natchanon45/food-order-app` / `feature/react-firebase-port` (baseline `0bf16cd1`).
 
@@ -11,7 +11,7 @@ The 8b108f Source delta after 18093091 changes APK copy/build scripts, .gitignor
 
 | Page | Source JSX lines | Target JSX lines after this slice | Main Firebase boundary | Status |
 | --- | ---: | ---: | --- | --- |
-| `PlatformOwnersPage` | 371 | 397 | `platformTenantService` → `listTenants/createTenantOwner/updateTenantOwner` | JSX aligned; identity operation acceptance blocked |
+| `PlatformOwnersPage` | 371 | 491 | `platformTenantService` → UUID Owner create/update + read-only status | P1.3c local Auth Emulator + browser accepted; email/Production UAT open |
 | `AdminUsersPage` | 435 | 571 | `adminStaff` → strict UUID create/update + read-only status | Source-style page retained; P1.3b local/Auth Emulator/browser accepted; email/live release open |
 | `PlatformContactPage` | 664 | 665 | `platformContactService`/Telegram/`LKShopPairingPanel` | Source LK Shop layout + preview ported; provider UAT blocked |
 
@@ -38,7 +38,7 @@ These are source/UI action families. They are **not** signed-off backend scenari
 ## Firebase action pseudocode boundaries (7)
 
 1. Owners READ: require active super_admin → trusted listTenants → normalize fields → search/filter; no credential or password leak.
-2. Owner CREATE/EDIT: require active super_admin → validate name/email/password/plan → trusted Callable → independently re-read canonical Tenant. **Legacy createTenantOwner is not idempotent under an unknown Auth outcome; NOT signed off.** Never claim email sent.
+2. Owner CREATE/EDIT: active Superadmin → typed UUID/expected snapshot → immutable tenant and email reservations → deterministic native Auth UID / revision CAS → transactional Tenant+profile+membership update → independent Auth+Firestore+Slug+billing status and canonical list verification. Legacy unversioned callables are now aliases to this strict flow; unknown results stay reserved. Never claim email sent.
 3. Staff READ: owner-only UI + server profile role → expectedTenantId must match canonical owner tenant → list membership projections → reject stale tenant response and failed read.
 4. Staff CREATE: strict owner-scoped input → UUID and globally unique email reservation → deterministic native Auth UID → transactionally finalize user/membership/receipt → independent status and staff-list verification. Reserved partial Auth results remain review-required, not auto retried.
 5. Staff EDIT/SUSPEND: owner+tenant+native Auth preflight → exact staffRevision CAS and per-staff lock → native Auth update → transactionally update both Firestore mirrors and release lock → status+canonical read. Never claim atomic Auth+Firestore cross-service mutation or email delivery.
@@ -58,7 +58,7 @@ These are source/UI action families. They are **not** signed-off backend scenari
 | Full React parity regression | See current worklog / release receipt |
 | React build and generated-asset contract | See current worklog / release receipt |
 | Firebase Auth/Firestore create/edit/suspend across tenants | P1.3b Emulator combined 16/16 PASS; protected private receipt/lock collections |
-| Owner/staff ambiguous Auth provisioning recovery | Staff: P1.3b read-only recovery completed locally; Owner: P1.3c still OPEN |
+| Owner/staff ambiguous Auth provisioning recovery | Staff P1.3b + Owner P1.3c both completed locally; combined Emulator 25/25 PASS |
 | Actual email delivery, verification/invitation | NOT IMPLEMENTED OR PROVEN by this slice |
 | Mobile native LK Shop package/FCM end-to-end | BLOCKED; UI does not assert installed APK readiness |
 | Owner manual browser acceptance on live PENGUIN | NOT PERFORMED |
@@ -68,7 +68,7 @@ These are source/UI action families. They are **not** signed-off backend scenari
 
 **P1.3b COMPLETE IN LOCAL CODE + REGRESSION (not Production):** Staff account create/update recovery now has UUID/idempotency locks, owner+tenant-scoped status, Auth ambiguity handling without duplicate creation, independent Firestore/Auth readback, Emulator concurrency and Browser tests. See [P1.3b acceptance](./LUKKAJA_P1_3_STAFF_ACCOUNT_LIFECYCLE_20261123.md). No automatic email claim.
 
-**P1.3c** — Existing unowned Tenant → Owner attach/rename: replace legacy `createTenantOwner` / `updateTenantOwner` ambiguous multi-service operations with guarded CAS/idempotency/status and immutable original activation. Reuse P1.2c provenance rules; do not recreate or backdate the free trial.
+**P1.3c COMPLETE IN LOCAL CODE + REGRESSION (not Production):** Existing unowned Tenant → Owner attach/rename uses strict UUID reservation/CAS, verified native Auth, tenant/slug/membership coherence and immutable billing digest; pristine placeholders start trial exactly once and activated ownerless Tenants keep financial and subscription history. Browser Recovery rechecks original receipt without duplicating Auth. See [P1.3c receipt](./LUKKAJA_P1_3_OWNER_ACCOUNT_LIFECYCLE_20261123.md).
 
 **P1.3d** — Provider-backed email verification/invitation and authorized Superadmin/Owner browser UAT; test global contact/Google settings and LK Shop room pairing with real provider credentials separately. Require explicit approval before any Production deployment.
 

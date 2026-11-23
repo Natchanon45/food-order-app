@@ -14,6 +14,10 @@ const admin = { auth: { uid: "p1-superadmin" } };
 
 test("Superadmin-only tenant and owner provisioning is inaccessible until the Owner exists", async () => {
   await db.collection("users").doc(admin.auth.uid).set({ role: "super_admin", active: true });
+  await db.collection("platformSettings").doc("subscriptionPricing").set({
+    planId: "premium", monthlyPrice: 590, deliveryThreshold: 10000,
+    deliveryShareRate: 5, annualMonths: 12, monthlySlipQuota: 100,
+  });
   await db.collection("users").doc("p1-not-superadmin").set({ role: "admin", active: true });
   const key = "p1-test-tenant";
   await assert.rejects(
@@ -35,7 +39,9 @@ test("Superadmin-only tenant and owner provisioning is inaccessible until the Ow
   assert.equal((await db.collection("tenantSlugs").doc(key).get()).data().active, false);
 
   const owner = await tenantCalls.createTenantOwner.run({
-    ...admin, data: { tenantId, displayName: "Test owner",
+    ...admin, data: { tenantId, operationId: "d4b74162-4d57-4fb7-b69c-f9e8b725ac35",
+      expectedSlug: key, expectedName: "P1 test shop", expectedRevision: 0,
+      expectedOnboardingRequired: true, displayName: "Test owner",
       email: "p1-test-owner@example.com", password: "example-only-123", planCode: "yearly" },
   });
   assert.equal(owner.ok, true);
@@ -44,11 +50,11 @@ test("Superadmin-only tenant and owner provisioning is inaccessible until the Ow
   assert.equal(actual.onboardingRequired, false);
   assert.equal(actual.planCode, "yearly");
   assert.equal(actual.subscriptionStatus, "trialing");
-  assert.equal(actual.ownerUid, owner.owner.uid);
+  assert.equal(actual.ownerUid, owner.ownerUid);
   assert.equal((await db.collection("tenantSlugs").doc(key).get()).data().active, true);
-  assert.equal((await db.collection("users").doc(owner.owner.uid).get()).data().role, "owner");
+  assert.equal((await db.collection("users").doc(owner.ownerUid).get()).data().role, "owner");
   assert.equal((await db.collection("tenants").doc(tenantId).collection("memberships")
-    .doc(owner.owner.uid).get()).data().role, "owner");
+    .doc(owner.ownerUid).get()).data().role, "owner");
 
   const trial = actual.trialEndsAt.toDate(), expiry = actual.subscriptionExpiresAt.toDate();
   assert.ok(trial.getTime() > Date.now());
@@ -57,13 +63,15 @@ test("Superadmin-only tenant and owner provisioning is inaccessible until the Ow
 
   await assert.rejects(
     tenantCalls.createTenantOwner.run({
-      ...admin, data: { tenantId, displayName: "Duplicate",
-        email: "duplicate-owner@example.com", password: "example-only-456", planCode: "yearly" },
+      ...admin, data: { tenantId, operationId: "91121227-3c95-41b0-831c-0c121a731bf9",
+        expectedSlug: key, expectedName: "P1 test shop", expectedRevision: 1,
+        expectedOnboardingRequired: false, displayName: "Duplicate",
+        email: "duplicate-owner@example.com", password: "example-only-456", planCode: "" },
     }),
-    error => error.code === "already-exists",
+    error => ["already-exists","failed-precondition"].includes(error.code),
   );
 
-  const ownerAuth = { auth: { uid: owner.owner.uid } };
+  const ownerAuth = { auth: { uid: owner.ownerUid } };
   const staff = await staffCalls.listTenantStaff.run({
     ...ownerAuth, data: { expectedTenantId: tenantId },
   });
@@ -77,7 +85,7 @@ test("Superadmin-only tenant and owner provisioning is inaccessible until the Ow
       data: { expectedTenantId: "another-tenant" } }),
     error => error.code === "permission-denied",
   );
-  const authOwner = await adminAuth.getUser(owner.owner.uid);
+  const authOwner = await adminAuth.getUser(owner.ownerUid);
   assert.equal(authOwner.disabled, false);
 });
 

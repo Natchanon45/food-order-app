@@ -7,7 +7,11 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
-import { createTenantOwner, listTenants, updateTenantOwner } from "@/data/platformTenantService";
+import { createTenantOwner, listTenants, updateTenantOwner,
+  getPlatformTenantOwnerOperation } from "@/data/platformTenantService";
+import { readOwnerOperation, holdOwnerOperation, releaseOwnerOperation,
+  verifyOwnerOperation, canonicalOwnerMatches } from "@/data/ownerAccountRecovery.mjs";
+import { OwnerOperationRecoveryNotice } from "@/components/OwnerOperationRecoveryNotice";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
@@ -50,8 +54,93 @@ export function PlatformOwnersPage() {
   const [planCode, setPlanCode] = useState("monthly");
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
-  // An uncertain Callable may already have committed. Lock the tenant until a fresh server list confirms the result.
-  const [unconfirmedOwners, setUnconfirmedOwners] = useState([]);
+  // Unknown Auth/Firestore outcome is a durable per-Superadmin + Tenant
+  // operation receipt. Only independent server proof can release this lock.
+  const [pendingOwners, setPendingOwners] = useState({});
+  const [storageReady, setStorageReady] = useState(false);
+  const [storageError, setStorageError] = useState("");
+  const [checkingTenant, setCheckingTenant] = useState("");
+  const [statusMessages, setStatusMessages] = useState({});
+  const actorUid = String(authState.user?.uid || "");
+  const isOwnerLocked = tenantId => !storageReady || Boolean(storageError) ||
+    Boolean(pendingOwners[tenantId]) || Boolean(checkingTenant);
+
+  useEffect(() => {
+    setStorageReady(false);
+    setPendingOwners({});
+    setStorageError("");
+    if (!actorUid || profile?.role !== "super_admin") return;
+    try {
+      const saved = {};
+      for (const tenant of tenants) {
+        const id = readOwnerOperation(window.sessionStorage, actorUid, tenant.id);
+        if (id) saved[tenant.id] = id;
+      }
+      setPendingOwners(saved);
+    } catch {
+      setStorageError("ไม่สามารถตรวจสอบข้อมูลคำสั่งเดิมใน Session ได้ ระบบจึงป้องกันการส่งคำสั่ง Owner ใหม่");
+    }
+    setStorageReady(true);
+  }, [actorUid, profile?.role, tenants]);
+
+  const reserveOwnerOperation = tenantId => {
+    if (!actorUid || isOwnerLocked(tenantId))
+      throw Error("OWNER_OPERATION_NOT_READY");
+    const operationId = crypto.randomUUID();
+    holdOwnerOperation(window.sessionStorage, actorUid, tenantId, operationId);
+    setPendingOwners(old => ({...old,[tenantId]:operationId}));
+    setStatusMessages(old => ({...old,[tenantId]:""}));
+    return operationId;
+  };
+
+  const finishOwnerOperation = async (tenantId, operationId, expectedKind = null) => {
+    const status = verifyOwnerOperation(await getPlatformTenantOwnerOperation({
+      tenantId,operationId,
+    }),tenantId,operationId);
+    if (status.status !== "complete_verified" ||
+        (expectedKind && status.kind !== expectedKind))
+      throw Error("OWNER_OPERATION_NOT_CONFIRMED");
+    const nextTenants = await listTenants();
+    if (!canonicalOwnerMatches(nextTenants,status))
+      throw Error("OWNER_CANONICAL_LIST_NOT_CONFIRMED");
+    releaseOwnerOperation(window.sessionStorage,actorUid,tenantId,operationId);
+    setPendingOwners(old => {const next={...old};delete next[tenantId];return next;});
+    setStatusMessages(old => ({...old,[tenantId]:""}));
+    setTenants(nextTenants);
+    return status;
+  };
+
+  const inspectOwnerOperation = async tenantId => {
+    const operationId = pendingOwners[tenantId];
+    if (!operationId || checkingTenant || storageError) return;
+    setCheckingTenant(tenantId);
+    try {
+      const status = verifyOwnerOperation(await getPlatformTenantOwnerOperation({
+        tenantId,operationId,
+      }),tenantId,operationId);
+      if (status.status === "complete_verified") {
+        await finishOwnerOperation(tenantId,operationId);
+        showToast("ตรวจสอบข้อมูล Owner จาก Firebase Auth และ Firestore เรียบร้อยแล้ว");
+        return;
+      }
+      if (status.status === "failed_released" && status.mayRetryWithNewOperationId===true) {
+        releaseOwnerOperation(window.sessionStorage,actorUid,tenantId,operationId);
+        setPendingOwners(old => {const next={...old};delete next[tenantId];return next;});
+        setStatusMessages(old => ({...old,[tenantId]:""}));
+        showToast("คำสั่งเดิมถูกปฏิเสธและยกเลิกการจองแล้ว สามารถเริ่มคำสั่งใหม่ได้");
+        return;
+      }
+      setStatusMessages(old => ({...old,[tenantId]:
+        status.status==="not_found"?"ยังไม่พบหมายเลขคำสั่งเดิม ห้ามส่งซ้ำจนกว่าจะตรวจสอบ":
+        status.status==="pending_review"?"คำสั่งเดิมอยู่ระหว่างตรวจสอบ ห้ามส่งซ้ำ":
+        "ข้อมูล Firebase Auth และ Firestore ไม่ตรงกัน ต้องให้ผู้ดูแลตรวจสอบโดยไม่สร้างบัญชีซ้ำ",
+      }));
+    } catch {
+      setStatusMessages(old => ({...old,[tenantId]:
+        "ไม่สามารถยืนยันสถานะ Owner จาก Firebase ได้ ระบบยังล็อกคำสั่งเดิมไว้",
+      }));
+    } finally {setCheckingTenant("");}
+  };
   const displayNameRef = useRef(null);
   const confirmSecretRef = useRef(null);
 
@@ -93,6 +182,7 @@ export function PlatformOwnersPage() {
   const inactiveCount = tenants.filter(item => item.active === false).length;
 
   const openModal = (tenant, nextMode) => {
+    if (isOwnerLocked(tenant.id)) return;
     setSelected(tenant);
     setMode(nextMode);
     setDisplayName(nextMode === "edit" ? tenant.ownerDisplayName || "" : "");
@@ -115,75 +205,70 @@ export function PlatformOwnersPage() {
 
   const submit = async event => {
     event.preventDefault();
-    if (authState.status !== "ready" || profile?.role !== "super_admin" || loadError || saving || !selected || unconfirmedOwners.includes(selected.id)) return;
+    if (authState.status !== "ready" || profile?.role !== "super_admin" ||
+        loadError || saving || !selected || isOwnerLocked(selected.id)) return;
     setFormError("");
-    if (mode === "create" && secret !== confirmSecret) {
-      setFormError(t("platform_owners.modal.password_mismatch"));
+    const tenantId = selected.id;
+    const nextName = displayName.trim();
+    const nextEmail = email.trim().toLowerCase();
+    if (nextName.length < 2 || nextName.length > 120 ||
+        (mode === "create" &&
+          (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail) ||
+           secret !== confirmSecret ||
+           new TextEncoder().encode(secret).length < 8 ||
+           new TextEncoder().encode(secret).length > 72))) {
+      setFormError(t("platform_owners.errors.invalid"));
       return;
     }
     setSaving(true);
+    let reservedOperationId = "";
     try {
-      // A write is successful only after a second authorized Firebase read
-      // confirms the owner UID, tenant, email and name.
-      let accepted = false;
-      let createdUid = "";
-      try {
-        const result = mode === "edit"
-          ? await updateTenantOwner({ tenantId: selected.id, displayName: displayName.trim() })
-          : await createTenantOwner({
-            tenantId: selected.id,
-            displayName: displayName.trim(),
-            email: email.trim().toLowerCase(),
-            password: secret,
-            onboardingRequired: selected.onboardingRequired === true,
-            planCode: selected.onboardingRequired === true ? planCode : undefined,
-          });
-        accepted = result?.ok === true;
-        if (!accepted) throw new Error("OWNER_WRITE_UNCONFIRMED");
-        createdUid = String(result?.owner?.uid || "");
-        // The Callable's success acknowledgement is not enough: a subsequent
-        // authorized list must show exactly the expected tenant and owner.
-        const confirmedTenants = await listTenants();
-        const confirmed = confirmedTenants.find(item => item.id === selected.id);
-        if (!confirmed ||
-            String(confirmed.ownerDisplayName || "").trim() !== displayName.trim() ||
-            (mode === "create" &&
-              (confirmed.ownerEmail?.toLowerCase() !== email.trim().toLowerCase() ||
-                !confirmed.ownerUid || (createdUid && confirmed.ownerUid !== createdUid)))) {
-          throw new Error("OWNER_WRITE_UNCONFIRMED");
-        }
-        setTenants(confirmedTenants);
-      } catch (error) {
-        // A network timeout can happen after Firebase has committed.
-        // Avoid resubmitting the same create/update; force the operator to reload.
-        if (accepted || error?.message === "OWNER_WRITE_UNCONFIRMED" ||
-            ["functions/deadline-exceeded", "functions/unavailable", "functions/internal", "functions/unknown"].includes(error?.code)) {
-          throw new Error("OWNER_WRITE_UNCONFIRMED");
-        }
-        throw error;
-      }
+      const operationId = reserveOwnerOperation(tenantId);
+      reservedOperationId = operationId;
+      const result = mode === "edit"
+        ? await updateTenantOwner({
+          tenantId,operationId,ownerUid:selected.ownerUid,
+          expectedRevision:selected.ownerRevision ?? 0,
+          expectedDisplayName:selected.ownerDisplayName,
+          displayName:nextName,
+        })
+        : await createTenantOwner({
+          tenantId,operationId,expectedSlug:selected.slug,
+          expectedName:selected.name,expectedRevision:selected.ownerRevision ?? 0,
+          expectedOnboardingRequired:selected.onboardingRequired===true,
+          planCode:selected.onboardingRequired===true?planCode:"",
+          displayName:nextName,email:nextEmail,password:secret,
+        });
+      if (result?.ok!==true || result.operationId!==operationId ||
+          result.pendingIndependentVerification!==true)
+        throw Error("OWNER_WRITE_ACK_UNCONFIRMED");
+      await finishOwnerOperation(tenantId,operationId,
+        mode==="edit"?"update":"create");
       setSelected(null);
       setFormError("");
       document.body.classList.remove("owner-modal-open");
-      showToast(mode === "create" && selected.onboardingRequired === true
-        ? "ร้านเปิดใช้งานแล้ว และเริ่มทดลองใช้ฟรีหนึ่งเดือนตามรอบบิลที่เลือก"
-        : t(mode === "edit" ? "platform_owners.toast.updated" : "platform_owners.toast.created"));
+      showToast(mode==="create"&&selected.onboardingRequired===true
+        ? "สร้าง Owner และยืนยันวันเริ่มทดลองใช้ฟรีจาก Firebase แล้ว"
+        : t(mode==="edit"?"platform_owners.toast.updated":"platform_owners.toast.created"));
     } catch (error) {
-      console.error("PLATFORM_OWNER_SAVE_FAILED", error);
-      let message = mode === "edit" ? t("platform_owners.errors.update_failed") : t("platform_owners.errors.create_failed");
-      if (error?.message === "OWNER_WRITE_UNCONFIRMED") {
-        // No retry after a possibly committed owner creation/rename.
-        setUnconfirmedOwners(current => current.includes(selected.id) ? current : [...current, selected.id]);
-        message = "ยังยืนยันผลบันทึกเจ้าของร้านจาก Firebase ไม่ได้ กรุณารีเฟรชและตรวจสอบรายชื่อก่อนส่งซ้ำ";
+      console.error("PLATFORM_OWNER_SAVE_FAILED",error);
+      const unconfirmed=Boolean(reservedOperationId);
+      let message=mode==="edit"?t("platform_owners.errors.update_failed"):
+        t("platform_owners.errors.create_failed");
+      if(unconfirmed) {
+        message="ยังยืนยันผลบันทึก Owner ไม่ได้ ระบบล็อกคำสั่งเดิมไว้ กรุณาตรวจสถานะก่อนส่งซ้ำ";
+        setSelected(null);
+        document.body.classList.remove("owner-modal-open");
+      } else if (error?.code==="functions/already-exists") {
+        message=t("platform_owners.errors.already_exists");
+      } else if (error?.code==="functions/invalid-argument") {
+        message=t("platform_owners.errors.invalid");
+      } else if (error?.code==="functions/permission-denied") {
+        message=t("platform_owners.errors.permission_denied");
       }
-      else if (error?.response?.status === 409 || error?.code === "functions/already-exists") message = t("platform_owners.errors.already_exists");
-      if (error?.response?.status === 422 || error?.code === "functions/invalid-argument") message = t("platform_owners.errors.invalid");
-      if (error?.response?.status === 403 || error?.code === "functions/permission-denied") message = t("platform_owners.errors.permission_denied");
       setFormError(message);
-      showToast(message, "error");
-    } finally {
-      setSaving(false);
-    }
+      showToast(message,"error");
+    } finally {setSaving(false);}
   };
 
   useEffect(() => {
@@ -224,6 +309,15 @@ export function PlatformOwnersPage() {
       </header>
 
       <main className="container platform-owners-page">
+        {storageError
+          ? <OwnerOperationRecoveryNotice storageError={storageError}/>
+          : tenants.filter(item => pendingOwners[item.id]).map(item => (
+            <OwnerOperationRecoveryNotice key={item.id}
+              tenantName={item.name} pendingOperationId={pendingOwners[item.id]}
+              statusText={statusMessages[item.id] || ""}
+              checking={checkingTenant === item.id}
+              onCheck={() => inspectOwnerOperation(item.id)}/>
+          ))}
         <section className="platform-owners-hero">
           <div className="platform-owners-hero-copy">
             <span className="platform-owners-eyebrow"><i className="bi bi-stars" aria-hidden="true"></i>{t("platform_owners.hero.eyebrow")}</span>
@@ -324,8 +418,8 @@ export function PlatformOwnersPage() {
                       {tenant.ownerUid ? t("platform_owners.tenant.ready_help") : t("platform_owners.tenant.pending_help")}
                     </span>
                     {tenant.ownerUid
-                      ? <button className="btn platform-owner-action" type="button" data-owner-action="edit" data-tenant-id={tenant.id} onClick={() => openModal(tenant, "edit")}><i className="bi bi-pencil-square app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.edit_owner")}</span></button>
-                      : <button className="btn btn-primary platform-owner-action" type="button" data-owner-action="create" data-tenant-id={tenant.id} onClick={() => openModal(tenant, "create")}><i className="bi bi-person-plus app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.create_owner")}</span></button>}
+                      ? <button className="btn platform-owner-action" type="button" data-owner-action="edit" data-tenant-id={tenant.id} disabled={isOwnerLocked(tenant.id)} onClick={() => openModal(tenant, "edit")}><i className="bi bi-pencil-square app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.edit_owner")}</span></button>
+                      : <button className="btn btn-primary platform-owner-action" type="button" data-owner-action="create" data-tenant-id={tenant.id} disabled={isOwnerLocked(tenant.id)} onClick={() => openModal(tenant, "create")}><i className="bi bi-person-plus app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.create_owner")}</span></button>}
                   </footer>
                 </article>
               )) : <div className="platform-owner-empty-state"><i className="bi bi-search" aria-hidden="true"></i><strong>{t("platform_owners.list.empty")}</strong><span>{t("platform_owners.list.empty_help")}</span></div>}
@@ -385,7 +479,7 @@ export function PlatformOwnersPage() {
             {formError ? <div className="upload-error owner-form-error" id="ownerFormError">{formError}</div> : <div className="upload-error owner-form-error" id="ownerFormError" hidden></div>}
             <div className="owner-modal-actions">
               <button type="button" className="btn" data-owner-close onClick={closeModal}><i className="bi bi-x-lg app-icon"></i><span>{t("platform_owners.modal.cancel")}</span></button>
-              <button type="submit" className="btn btn-primary" id="ownerSubmitButton" disabled={saving || (selected != null && unconfirmedOwners.includes(selected.id))}>{saving ? <span>{t("platform_owners.modal.saving")}</span> : <><i className="bi bi-floppy app-icon"></i><span>{t(mode === "edit" ? "platform_owners.modal.save_name" : "platform_owners.modal.create_account")}</span></>}</button>
+              <button type="submit" className="btn btn-primary" id="ownerSubmitButton" disabled={saving || (selected != null && isOwnerLocked(selected.id))}>{saving ? <span>{t("platform_owners.modal.saving")}</span> : <><i className="bi bi-floppy app-icon"></i><span>{t(mode === "edit" ? "platform_owners.modal.save_name" : "platform_owners.modal.create_account")}</span></>}</button>
             </div>
           </form>
         </section>

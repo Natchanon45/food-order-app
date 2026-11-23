@@ -1,0 +1,8 @@
+.owner-op-recovery{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:12px 0 16px;padding:16px;border:1px solid #d4c49b;border-radius:16px;background:#fff9eb;color:#513e13}
+.owner-op-recovery-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#fff0c3;font-size:20px;color:#795609}
+.owner-op-recovery-copy{flex:1 1 250px;min-width:0}
+.owner-op-recovery-copy strong{display:block;font-size:15px;font-weight:800;line-height:1.45}
+.owner-op-recovery-copy p{margin:6px 0 0;font-size:13px;line-height:1.6}
+.owner-op-recovery-copy small{display:block;margin-top:8px;color:#634c1f}
+.owner-op-recovery-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;min-height:40px}
+@media(max-width:600px){.owner-op-recovery{padding:13px;gap:10px}.owner-op-recovery-icon{flex-basis:36px;height:36px;font-size:17px}.owner-op-recovery-copy{flex-basis:calc(100% - 52px)}.owner-op-recovery-action{width:100%}}

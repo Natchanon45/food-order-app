@@ -40,6 +40,7 @@ const platformPricingPage = read("react-app/src/pages/PlatformPricingPage.jsx");
 const subscriptionPricing = read("react-app/src/data/subscriptionPricing.js");
 const platformSettingsFunction = read("functions/platform-settings.js");
 const tenantAdminFunction = read("functions/tenant-admin.js");
+const tenantOwnerFunction = read("functions/tenant-owner-operation.js");
 const subscriptionPricingFunction = read("functions/subscription-pricing.js");
 const firestoreRules = read("firestore.rules");
 const saasPage = read("react-app/src/pages/SaasSetupPage.jsx");
@@ -381,17 +382,27 @@ requireAll("Platform contact Firestore rules", firestoreRules, [
 ]);
 
 requireAll("Platform owner actions", platformOwnersPage, [
-  "await updateTenantOwner({ tenantId: selected.id, displayName: displayName.trim() })",
+  "await updateTenantOwner({",
   "await createTenantOwner({",
+  "holdOwnerOperation(window.sessionStorage",
+  "getPlatformTenantOwnerOperation({",
+  "canonicalOwnerMatches(nextTenants,status)",
   "setCustomValidity",
 ]);
-for (const fn of ["createTenantOwner", "updateTenantOwner"]) {
+for (const fn of ["createTenantOwner", "updateTenantOwner", "getPlatformTenantOwnerOperation"]) {
   if (!tenantService.includes(`call("${fn}"`)) fail(`platform owner callable mapping missing ${fn}`);
 }
-requireAll("Platform owner server guard", tenantAdminFunction, [
-  "exports.createTenantOwner = onCall",
-  "exports.updateTenantOwner = onCall",
-  "await assertSuperAdmin(request.auth)",
+requireAll("Platform owner hardened aliases", tenantAdminFunction, [
+  "exports.createTenantOwner = tenantOwnerOperation.createTenantOwner",
+  "exports.updateTenantOwner = tenantOwnerOperation.updateTenantOwner",
+]);
+requireAll("Platform owner server guard", tenantOwnerFunction, [
+  "const actor=await authorized(db,identity)",
+  "tx.create(operation,",
+  "tx.create(lock,",
+  "tx.create(account,profile)",
+  "policy.billingDigest(t)",
+  "exports.getPlatformTenantOwnerOperation=onCall",
 ]);
 
 requireAll("Platform pricing action", platformPricingPage, [

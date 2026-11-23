@@ -230,6 +230,8 @@ const tenantProvision = require("./tenant-provision");
 exports.createActiveTenantWithOwner = tenantProvision.createActiveTenantWithOwner;
 exports.getPlatformTenantProvisionStatus = require("./tenant-provision-status").getPlatformTenantProvisionStatus;
 exports.updateTenantOwner = tenantAdmin.updateTenantOwner;
+exports.getPlatformTenantOwnerOperation =
+  require("./tenant-owner-operation").getPlatformTenantOwnerOperation;
 const tenantMasterEdit=require("./tenant-master-edit");
 exports.updateTenantMasterAtomic=tenantMasterEdit.updateTenantMasterAtomic;
 exports.getPlatformTenantMasterEditOperation=

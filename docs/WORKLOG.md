@@ -1,3 +1,15 @@
+## 2026-11-23 — P1.3c Owner Account Lifecycle; first-trial and legacy-finance integrity
+
+- Destination `Natchanon45/food-order-app` branch `feature/react-firebase-port`; Source LUKKAJA `cosmatch/lukkhaja@8b108f1` read-only. Original Owners JSX modal, search/status card actions preserved; Cloud Functions remain PENGUIN Firebase only.
+- `createTenantOwner` and `updateTenantOwner` legacy names now strictly alias the new operation engine: Superadmin-only UUID, canonical Tenant+Slug+store proof, deterministic Auth UID, SHA-256 global email claim, per-Tenant operation lock and CAS/immutable proof. Removed non-idempotent Auth create/update plus unsafe arbitrary Firestore batch and automatic deletion on uncertain result.
+- A **pristine placeholder** with valid master pricing gets one first activation trial from the successful commit time; an **already activated ownerless legacy Tenant** keeps its original dates, plan, signupBilling and financial markers. Native Auth and both Firestore mirrors plus billing digest must match before success. Rename uses original owner UID/name and `ownerRevision` CAS; email, plan and finance never change.
+- Owner Browser persists only UUID in per-Superadmin/tenant sessionStorage. Status recovery never retries an uncertain Auth create, and requires independent `listTenants` proof before unlocking. Added responsive recovery notice for mobile and desktop. No fake email sent confirmation.
+- Final tests: **Auth+Firestore Emulator 25/25 PASS** (Owner + Staff + old P1 onboarding); **Owner Node+Chrome 11/11 PASS**; **Full React Parity Exit 0**; **React Build + Generated Hosting Contract PASS** (version `2026.11.09.535`). Build-only `public/**` changes and new assets removed; no Production deployment.
+- Remaining: **P1.3d** actual email verification/invitation and signed Browser UAT; no `main` merge or APK/IPA. Auth/Firestore unknown partial results remain locked for manual administrator investigation, not auto repair.
+- Detailed plan, schemas, pseudocode and acceptance: `docs/LUKKAJA_P1_3_OWNER_ACCOUNT_LIFECYCLE_20261123.md`.
+
+---
+
 ## 2026-11-23 — P1.3b Staff Account Lifecycle: UUID, native Auth proof and safe recovery
 
 - Source LUKKAJA is **read only** at `8b108f1`; target PENGUIN is `feature/react-firebase-port`. Original Staff JSX layout retained while Firebase identity operations received durable owner/tenant-scoped UUID receipts, SHA-256 email reservations, per-staff edit locks, strict revision/CAS and server read-only status.

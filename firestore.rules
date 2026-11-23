@@ -314,6 +314,10 @@ service cloud.firestore {
     match /staffEmailReservations/{emailHash} {
       allow read, write: if false;
     }
+    // Owner email claims are trusted cross-tenant identifiers.
+    match /ownerEmailReservations/{emailHash} {
+      allow read, write: if false;
+    }
 
     // Atomic deletion receipts/tombstones: no browser may forge a deletion
     // certificate, reassign a deleted ID or remove the audit trail.
@@ -548,6 +552,12 @@ service cloud.firestore {
         allow read, write: if false;
       }
       match /staffAccountLocks/{userId} {
+        allow read, write: if false;
+      }
+      match /ownerAccountOperations/{operationId} {
+        allow read, write: if false;
+      }
+      match /ownerAccountLocks/{lockId} {
         allow read, write: if false;
       }
 

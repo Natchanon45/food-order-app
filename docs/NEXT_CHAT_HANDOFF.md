@@ -1,3 +1,15 @@
+## 2026-11-23 — Latest handoff: P1.3c Owner Account Lifecycle passed locally
+
+- **Repository/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`. **Source reference read-only:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1`.
+- **Completed Modules:** P1.3a Contact/LK Shop Source parity; P1.3b Staff UUID/Auth/Firestore lifecycle (`427add83`); **P1.3c Owner UUID create/rename and safe original trial/finance retention**. No Production release or `main` merge.
+- New `functions/tenant-owner-operation.js` and `tenant-owner-operation-policy.js` implement immutable operation UUID, Tenant lock, global email claim, deterministic Auth UID, strict original Tenant/Slug/store proofs and native Auth readback. Original `createTenantOwner` and `updateTenantOwner` names are now strict aliases; old unversioned clients must NOT be released against the new Cloud Functions alone.
+- Owner Portal persists only per-Superadmin/Tenant UUID and displays a recovery card. It must independently verify `getPlatformTenantOwnerOperation` AND a canonical `listTenants` before clearing the pending operation. Never auto-delete or reissue Auth after an unknown write; reserved partial operations remain manual review.
+- Local evidence: Emulator Owner+Staff+P1 onboarding **25/25 PASS**, Owner Node+Chrome **11/11 PASS**, Full React Parity **EXIT 0**, React Build and generated Hosting Contract **PASS**. Temporary emulator config and generated Hosting artifacts removed.
+- **Next complete Module P1.3d:** real provider-backed email verification and invitation (Owner + Staff), signed-in browser UAT for Superadmin/Owner and source-faithful Contact/Google settings, then prepare a coordinated future release. Until user approves, no live email send, Production Functions/Rules/Hosting deploy, merge `main`, APK/IPA or Source mutation.
+- Detailed docs: `docs/LUKKAJA_P1_3_OWNER_ACCOUNT_LIFECYCLE_20261123.md`, `docs/LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md`, `docs/LUKKAJA_TO_PENGUIN_PORT_PHASES.md`.
+
+---
+
 ## 2026-11-23 — Latest handoff: P1.3b Staff identity lifecycle completed locally
 
 - Destination: `Natchanon45/food-order-app` / `feature/react-firebase-port`. Source `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1` is read-only and has not been changed by this port.

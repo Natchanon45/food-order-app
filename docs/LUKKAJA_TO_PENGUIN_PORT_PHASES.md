@@ -1,5 +1,20 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-23 P1.3c — Owner Account Lifecycle (existing Tenant attach/rename)
+
+**Target:** `Natchanon45/food-order-app` / `feature/react-firebase-port`; Source `cosmatch/lukkhaja@8b108f1` strictly read only. Preserve LUKKAJA PlatformOwnersPage JSX hierarchy and keep PENGUIN Firebase Auth/Firestore identity operations.
+
+The legacy `createTenantOwner` and `updateTenantOwner` entrypoints now delegate to strict scoped UUID transaction handlers; no unversioned batch/unknown Auth rollback path remains. Every create requires a canonical Tenant/Slug/store proof, expected onboarding/master state, global email claim and Tenant operation lock; assigns a deterministic native Auth UID and finalizes Tenant+profile+membership transactionally. Only a pristine never-activated placeholder starts its **first** Bangkok Trial at commit. Existing activated ownerless stores preserve the original membership dates, plan and billing/finance footprint, including unpaid amounts. Rename uses Owner UID + old name + revision CAS, immutable billing digest and native Auth proof. Read-only status and independent `listTenants` confirmation are mandatory before clearing the Browser UUID.
+
+Results: **Firebase Auth+Firestore Emulator 25/25 PASS** including P1.3b Staff and original onboarding regression; **Owner Node+Chrome 11/11 PASS**, with real React lost response → reload → receipt → edit at 390/1440 px, notice responsive to 320/390/768/1440 px; full React Parity **Exit 0**, Vite Build and Generated Hosting Contract **PASS**. All build-only public assets reverted from working tree, not deployed.
+
+**P1.3 still OPEN** for P1.3d actual provider email verification/invitation, signed-in Superadmin/Owner browser acceptance and a future authorized Production release. No `main` merge, APK/IPA or Production Firebase changes.
+
+[Full P1.3c audit](./LUKKAJA_P1_3_OWNER_ACCOUNT_LIFECYCLE_20261123.md) · [P1.3 module matrix](./LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md)
+
+---
+
+
 ## 2026-11-23 P1.3b — Staff Account Lifecycle (Firebase Auth + Firestore)
 
 Source `cosmatch/lukkhaja@8b108f1` remains strictly read-only; Target `Natchanon45/food-order-app` `feature/react-firebase-port` only. Preserve `AdminUsersPage` original JSX hierarchy, staff roles, scope, PENGUIN branding, and Source-aligned modal. The prior staff Callables did not provide immutable command status and treated an unknown Auth/Firestore response as a retryable failure.

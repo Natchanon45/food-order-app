@@ -121,6 +121,8 @@ export const reviewRevenueSharePayment = payload => call("reviewRevenueSharePaym
 export const reconcileRevenueShare = payload => call("reconcileRevenueShare", payload);
 export const createTenantOwner = payload => call("createTenantOwner", payload);
 export const updateTenantOwner = payload => call("updateTenantOwner", payload);
+export const getPlatformTenantOwnerOperation = payload =>
+  call("getPlatformTenantOwnerOperation", payload);
 export const updateTenantLalamoveApproval = payload => call("updateTenantLalamoveApproval", payload);
 export const getTenantLalamoveWallet = payload => call("getTenantLalamoveWallet", payload);
 export const reviewTenantLalamoveWalletTopup = payload => call("reviewTenantLalamoveWalletTopup", payload);
