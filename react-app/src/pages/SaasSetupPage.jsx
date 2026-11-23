@@ -4,11 +4,9 @@ import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
-import { sweetConfirm } from "@/components/sweetDialog";
 import { UserMenu } from "@/components/UserMenu";
 import {
   inspectLegacyData,
-  migrateLegacyStore,
   SAAS_SOURCE_SHOP_ID,
   SAAS_TARGET_TENANT,
 } from "@/data/saasMigrationService";
@@ -56,14 +54,8 @@ export function SaasSetupPage() {
   });
   const [summary, setSummary] = useState(null);
   const [stateKey, setStateKey] = useState("runtime.state.checking");
-  const [overwrite, setOverwrite] = useState(false);
   const [busy, setBusy] = useState(true);
   const [initialReady, setInitialReady] = useState(false);
-  const [logLines, setLogLines] = useState([]);
-  const [migrationUnconfirmed, setMigrationUnconfirmed] = useState(false);
-
-  const appendLog = message => setLogLines(lines => [...lines, String(message || "")]);
-
   const refreshSummary = async () => {
     setStateKey("runtime.state.checking");
     setSummary(null);
@@ -71,7 +63,7 @@ export function SaasSetupPage() {
     try {
       const data = await inspectLegacyData();
       setSummary(data);
-      setStateKey(data.tenantExists ? "runtime.state.tenant_exists" : "runtime.state.ready");
+      setStateKey(data.tenantExists ? "runtime.state.inspection_only" : "runtime.state.target_not_found");
     } catch (error) {
       console.error("SAAS_SETUP_INSPECT_FAILED", error);
       setStateKey("runtime.state.check_failed");
@@ -89,57 +81,10 @@ export function SaasSetupPage() {
     return undefined;
   }, [profile?.role]);
 
-  const startMigration = async () => {
-    if (busy || !summary || migrationUnconfirmed) return;
-    const confirmed = await sweetConfirm(
-      overwrite
-        ? t("runtime.confirm.overwrite")
-        : t("runtime.confirm.copy", { source: SAAS_SOURCE_SHOP_ID }),
-      {
-        title: t("runtime.confirm.title"),
-        confirmText: t("runtime.confirm.confirm"),
-        cancelText: t("runtime.confirm.cancel"),
-        type: "warning",
-      },
-    );
-    if (!confirmed) return;
-
-    setBusy(true);
-    setLogLines([t("runtime.log.start")]);
-    try {
-      const results = await migrateLegacyStore({
-        overwrite,
-        onProgress: progress => {
-          if (progress.step === "tenant") appendLog(t("runtime.progress.tenant"));
-          else if (progress.step === "collection") appendLog(t("runtime.progress.collection", { name: progress.name }));
-          else if (progress.step === "settings") appendLog(t("runtime.progress.settings"));
-          else if (progress.step === "done") appendLog(t("runtime.progress.done"));
-        },
-      });
-      results.forEach(result => appendLog(t("runtime.log.result", {
-        source: result.sourceName,
-        copied: result.copied,
-        skipped: result.skipped,
-        total: result.total,
-      })));
-      setStateKey("runtime.state.migration_success");
-      showToast(t("runtime.toast.migration_success"));
-      await refreshSummary();
-    } catch (error) {
-      console.error("SAAS_SETUP_MIGRATION_FAILED", error);
-      // Any of the multi-call steps may have committed despite a lost reply.
-      // Inspection counts cannot prove completion or authorize a blind retry.
-      setMigrationUnconfirmed(true);
-      setStateKey("runtime.state.migration_failed");
-      appendLog(t("runtime.log.error", { message: error?.message || error }));
-      showToast(t("runtime.toast.migration_failed"), "error");
-      setBusy(false);
-    }
-  };
-
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
     return <PageReadyOverlay context="PENGUIN" title={globalT("shared.state.loading")} message={globalT("shared.state.please_wait")} />;
   }
+  if (authState.status !== "ready") return <main role="alert" data-saas-auth-error>{t("runtime.state.check_failed")}</main>;
   if (!profile) return <Navigate to="/login?next=%2Fsuper-admin%2Fsaas-setup" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
@@ -148,7 +93,7 @@ export function SaasSetupPage() {
       <header className="app-header super-admin-header">
         <div className="super-admin-header-leading">
           <div className="brand"><span className="brand-mark">PG</span><span>{t("header.brand")}</span></div>
-          <Link className="btn btn-sm super-admin-header-back" to="/">
+          <Link className="btn btn-sm super-admin-header-back" to="/platform">
             <i className="bi bi-arrow-left" aria-hidden="true"></i><span>{t("header.back")}</span>
           </Link>
         </div>
@@ -170,37 +115,35 @@ export function SaasSetupPage() {
             <span className="badge" id="migrationState">{t(stateKey)}</span>
           </div>
           <div className="grid grid-2" id="migrationSummary">
-            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.menus")}</strong><div className="price" id="menuCount">{summary ? t("runtime.count.items", { count: summary.menus }) : "-"}</div></div>
-            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.tables")}</strong><div className="price" id="tableCount">{summary ? t("runtime.count.tables", { count: summary.tables }) : "-"}</div></div>
-            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.orders")}</strong><div className="price" id="orderCount">{summary ? t("runtime.count.orders", { count: summary.orders }) : "-"}</div></div>
-            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.settings")}</strong><div className="price" id="settingCount">{summary ? t(summary.settings ? "runtime.settings.found" : "runtime.settings.missing") : "-"}</div></div>
+            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.menus")}</strong><div className="price" id="menuCount">{Number.isInteger(summary?.menus) ? t("runtime.count.items", { count: summary.menus }) : "-"}</div></div>
+            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.tables")}</strong><div className="price" id="tableCount">{Number.isInteger(summary?.tables) ? t("runtime.count.tables", { count: summary.tables }) : "-"}</div></div>
+            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.orders")}</strong><div className="price" id="orderCount">{Number.isInteger(summary?.orders) ? t("runtime.count.orders", { count: summary.orders }) : "-"}</div></div>
+            <div className="card" style={{ boxShadow: "none" }}><strong>{t("summary.settings")}</strong><div className="price" id="settingCount">{typeof summary?.settings === "boolean" ? t(summary.settings ? "runtime.settings.found" : "runtime.settings.missing") : "-"}</div></div>
           </div>
 
           <div className="card" style={{ marginTop: 16, boxShadow: "none", background: "#f8fbf9" }}>
             <strong>{t("target.title")}</strong>
-            <div className="menu-category">{t("target.name")}: {SAAS_TARGET_TENANT.name}</div>
-            <div className="menu-category">{t("target.slug")}: {SAAS_TARGET_TENANT.slug}</div>
+            <div className="menu-category">{t("target.name")}: {summary?.target?.name || SAAS_TARGET_TENANT.name}</div>
+            <div className="menu-category">{t("target.slug")}: {summary?.target?.slug || SAAS_TARGET_TENANT.slug}</div>
             <div className="menu-category">{t("target.id")}: {SAAS_TARGET_TENANT.id}</div>
           </div>
 
-          <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 16 }}>
-            <input type="checkbox" id="overwriteData" checked={overwrite} disabled={busy} onChange={event => setOverwrite(event.target.checked)} />
-            {t("overwrite")}
-          </label>
+          <p id="saasInspectionNotice" role="note" className="menu-category" style={{ marginTop: 16 }}>
+            <i className="bi bi-shield-lock" aria-hidden="true" />{" "}
+            {t("runtime.state.source_unavailable")}
+          </p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>
             <button className="btn" id="refreshMigration" type="button" disabled={busy} onClick={refreshSummary}>
               {t("actions.refresh")}
             </button>
-            <button className="btn btn-primary" id="startMigration" type="button" disabled={busy || !summary || migrationUnconfirmed} onClick={startMigration}>
+            <button className="btn btn-primary" id="startMigration" type="button"
+              disabled aria-disabled="true" aria-describedby="saasInspectionNotice">
               {t("actions.start")}
             </button>
           </div>
-
-          {logLines.length ? (
-            <div id="migrationLog" className="card" style={{ marginTop: 16, boxShadow: "none", whiteSpace: "pre-line" }}>
-              {logLines.join("\n")}
-            </div>
-          ) : null}
+          <div id="migrationLog" role="status" className="menu-category" style={{ marginTop: 12 }}>
+            {t("runtime.state.inspection_only")}
+          </div>
         </section>
       </main>
 

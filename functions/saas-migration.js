@@ -1,5 +1,9 @@
+"use strict";
+// P1.4: read-only SaaS inspection. Source LUKKAJA explicitly rejects
+// cross-system migration while it cannot verify its original Firebase shop.
+// Never infer authorization to copy legacy shops or overwrite tenant/finance.
 const { HttpsError, onCall } = require("./managed-email-callable");
-const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getFirestore } = require("firebase-admin/firestore");
 
 const SOURCE_SHOP_ID = "default-shop";
 const TARGET_TENANT = Object.freeze({
@@ -7,151 +11,53 @@ const TARGET_TENANT = Object.freeze({
   slug: "tuahere-somtam",
   name: "ส้มตำตัวเฮีย",
 });
-const COLLECTIONS = Object.freeze(["menus", "tables", "orders", "deliveryCustomers"]);
+const COLLECTIONS = Object.freeze(["menus", "tables", "orders"]);
 
 async function assertSuperAdmin(auth) {
   if (!auth?.uid) throw new HttpsError("unauthenticated", "Authentication required");
   const profile = (await getFirestore().collection("users").doc(auth.uid).get()).data();
-  if (!profile || profile.active === false || profile.role !== "super_admin") {
+  if (!profile || profile.active !== true || profile.role !== "super_admin") {
     throw new HttpsError("permission-denied", "Super admin permission required");
   }
-  return profile;
 }
 
-async function ensureTenant(auth, profile) {
-  const db = getFirestore();
-  const tenantRef = db.collection("tenants").doc(TARGET_TENANT.id);
-  const tenantSnapshot = await tenantRef.get();
-  const existing = tenantSnapshot.exists ? tenantSnapshot.data() : {};
-  const now = FieldValue.serverTimestamp();
-  await tenantRef.set({
-    id: TARGET_TENANT.id,
-    slug: TARGET_TENANT.slug,
-    name: TARGET_TENANT.name,
-    status: existing.status || "active",
-    plan: existing.plan || "development",
-    ownerId: existing.ownerId || auth.uid,
-    updatedAt: now,
-    ...(tenantSnapshot.exists ? {} : { createdAt: now }),
-  }, { merge: true });
-
-  await db.collection("tenantSlugs").doc(TARGET_TENANT.slug).set({
-    tenantId: TARGET_TENANT.id,
-    slug: TARGET_TENANT.slug,
-    name: TARGET_TENANT.name,
-    active: true,
-    updatedAt: now,
-  }, { merge: true });
-
-  await tenantRef.collection("memberships").doc(auth.uid).set({
-    uid: auth.uid,
-    email: String(auth.token?.email || profile.email || ""),
-    displayName: String(profile.displayName || auth.token?.name || auth.token?.email || "Owner"),
-    role: "owner",
-    active: true,
-    updatedAt: now,
-  }, { merge: true });
-}
-async function copyCollection(name, overwrite) {
-  if (!COLLECTIONS.includes(name)) throw new HttpsError("invalid-argument", "Unsupported migration collection");
-  const db = getFirestore();
-  const sourceSnapshot = await db.collection("shops").doc(SOURCE_SHOP_ID).collection(name).get();
-  let copied = 0;
-  let skipped = 0;
-
-  for (const sourceDoc of sourceSnapshot.docs) {
-    const targetRef = db.collection("tenants").doc(TARGET_TENANT.id).collection(name).doc(sourceDoc.id);
-    const targetSnapshot = await targetRef.get();
-    if (targetSnapshot.exists && !overwrite) {
-      skipped += 1;
-      continue;
-    }
-    await targetRef.set({
-      ...sourceDoc.data(),
-      legacyId: sourceDoc.id,
-      tenantId: TARGET_TENANT.id,
-      migratedAt: FieldValue.serverTimestamp(),
-    }, { merge: true });
-    copied += 1;
-  }
-
-  return {
-    sourceName: `shops/${SOURCE_SHOP_ID}/${name}`,
-    targetName: `tenants/${TARGET_TENANT.id}/${name}`,
-    total: sourceSnapshot.size,
-    copied,
-    skipped,
-  };
-}
-async function copySettings(overwrite) {
-  const db = getFirestore();
-  const sourceRef = db.collection("shops").doc(SOURCE_SHOP_ID).collection("settings").doc("store");
-  const sourceSnapshot = await sourceRef.get();
-  const sourceName = `shops/${SOURCE_SHOP_ID}/settings/store`;
-  if (!sourceSnapshot.exists) return { sourceName, total: 0, copied: 0, skipped: 0 };
-
-  const targetRef = db.collection("tenants").doc(TARGET_TENANT.id).collection("settings").doc("store");
-  const targetSnapshot = await targetRef.get();
-  if (targetSnapshot.exists && !overwrite) return { sourceName, total: 1, copied: 0, skipped: 1 };
-
-  await targetRef.set({
-    ...sourceSnapshot.data(),
-    tenantId: TARGET_TENANT.id,
-    migratedAt: FieldValue.serverTimestamp(),
-  }, { merge: true });
-  return { sourceName, total: 1, copied: 1, skipped: 0 };
-}
-
-async function finalizeMigration(overwrite) {
-  await getFirestore().collection("tenants").doc(TARGET_TENANT.id).set({
-    migration: {
-      sourceShopId: SOURCE_SHOP_ID,
-      legacyCompleted: true,
-      completedAt: FieldValue.serverTimestamp(),
-      overwrite,
-    },
-    updatedAt: FieldValue.serverTimestamp(),
-  }, { merge: true });
-}
+// Do not accept caller-provided source/target IDs, migration flags or overwrite.
+// Reading an absent target must not fabricate source counts or provision a shop.
 exports.inspectLegacySaasMigration = onCall({ region: "asia-southeast1" }, async request => {
   await assertSuperAdmin(request.auth);
   const db = getFirestore();
-  const source = db.collection("shops").doc(SOURCE_SHOP_ID);
-  const counts = {};
-  for (const name of COLLECTIONS) counts[name] = (await source.collection(name).get()).size;
-  const [settingsSnapshot, tenantSnapshot] = await Promise.all([
-    source.collection("settings").doc("store").get(),
-    db.collection("tenants").doc(TARGET_TENANT.id).get(),
-  ]);
-  return {
-    ok: true,
-    summary: {
-      tenantExists: tenantSnapshot.exists,
-      tenantId: TARGET_TENANT.id,
-      tenantSlug: TARGET_TENANT.slug,
-      tenantName: TARGET_TENANT.name,
-      settings: settingsSnapshot.exists ? 1 : 0,
-      ...counts,
-    },
+  const targetRef = db.collection("tenants").doc(TARGET_TENANT.id);
+  const tenant = await targetRef.get();
+  const summary = {
+    scope: "firebase_target_only",
+    sourceInspectable: false,
+    migrationEnabled: false,
+    tenantExists: tenant.exists,
+    tenantId: TARGET_TENANT.id,
+    tenantSlug: TARGET_TENANT.slug,
+    tenantName: TARGET_TENANT.name,
+    target: { ...TARGET_TENANT },
+    menus: null,
+    tables: null,
+    orders: null,
+    settings: null,
   };
+  if (tenant.exists) {
+    const [menus, tables, orders, store] = await Promise.all([
+      ...COLLECTIONS.map(name => targetRef.collection(name).count().get()),
+      targetRef.collection("settings").doc("store").get(),
+    ]);
+    summary.menus = menus.data().count;
+    summary.tables = tables.data().count;
+    summary.orders = orders.data().count;
+    summary.settings = store.exists;
+  }
+  return { ok: true, summary };
 });
 
-exports.migrateLegacySaasStore = onCall({ region: "asia-southeast1", timeoutSeconds: 540 }, async request => {
-  const profile = await assertSuperAdmin(request.auth);
-  const action = String(request.data?.action || "").trim();
-  const overwrite = request.data?.overwrite === true;
-
-  if (action === "prepare") {
-    await ensureTenant(request.auth, profile);
-    return { ok: true };
-  }
-  if (action === "collection") {
-    return { ok: true, result: await copyCollection(String(request.data?.collectionName || ""), overwrite) };
-  }
-  if (action === "settings") return { ok: true, result: await copySettings(overwrite) };
-  if (action === "finalize") {
-    await finalizeMigration(overwrite);
-    return { ok: true };
-  }
-  throw new HttpsError("invalid-argument", "Unsupported migration action");
+// Retain the old Callable name for deployed clients but permanently fail
+// closed. No operation/collection/overwrite input may mutate either system.
+exports.migrateLegacySaasStore = onCall({ region: "asia-southeast1" }, async request => {
+  await assertSuperAdmin(request.auth);
+  throw new HttpsError("failed-precondition", "SAAS_SOURCE_MIGRATION_DISABLED_INSPECTION_ONLY");
 });

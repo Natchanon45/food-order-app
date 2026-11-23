@@ -18,11 +18,22 @@ async function assertSuperAdmin(auth) {
   }
 }
 
+// Reject raw economic values before normalizePricing rounds/clamps them.
+// Otherwise e.g. 590.001, 1.4 annual months or a VAT=none with VAT rate=31
+// may be silently converted into an apparently acceptable billing policy.
+function centsExact(value) {
+  const n=Number(value);
+  return Number.isFinite(n) && Math.abs(n*100-Math.round(n*100)) < 0.00001;
+}
 function validate(raw = {}) {
-  const config = normalizePricing(raw);
-  if (!Number.isFinite(Number(raw.monthlyPrice)) || config.monthlyPrice <= 0 || config.monthlyPrice > 1000000) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new HttpsError("invalid-argument", "Pricing payload is invalid");
+  }
+  const monthlyPrice=Number(raw.monthlyPrice);
+  if (!centsExact(raw.monthlyPrice) || monthlyPrice <= 0 || monthlyPrice > 1000000) {
     throw new HttpsError("invalid-argument", "Monthly price is invalid");
   }
+  const config = normalizePricing(raw);
   for (const [key, maximum] of [["deliveryThreshold", 1000000000], ["deliveryShareRate", 100]]) {
     const value = Number(raw[key] ?? config[key]);
     if (!Number.isFinite(value) || value < 0 || value > maximum
@@ -35,23 +46,30 @@ function validate(raw = {}) {
   if (!Number.isInteger(Number(quota)) || Number(quota) < 0 || Number(quota) > 1000000) {
     throw new HttpsError("invalid-argument", "Monthly Slip2Go quota must be a whole number");
   }
-  if (!Number.isFinite(Number(raw.annualMonths)) || config.annualMonths < 1 || config.annualMonths > 60) {
+  const annualMonths=Number(raw.annualMonths);
+  if (!Number.isInteger(annualMonths) || annualMonths < 1 || annualMonths > 60) {
     throw new HttpsError("invalid-argument", "Annual period is invalid");
   }
   if (!["none", "amount", "percent"].includes(String(raw.discountType || ""))) {
     throw new HttpsError("invalid-argument", "Discount type is invalid");
   }
-  const annualBase = config.monthlyPrice * config.annualMonths;
-  if (config.discountType === "percent" && config.discountValue > 100) {
+  const discountValue=Number(raw.discountValue);
+  if (!centsExact(raw.discountValue) || discountValue < 0) {
+    throw new HttpsError("invalid-argument", "Discount value is invalid");
+  }
+  const annualBase = config.monthlyPrice * annualMonths;
+  if (config.discountType === "percent" && discountValue > 100) {
     throw new HttpsError("invalid-argument", "Discount percent is invalid");
   }
-  if (config.discountType === "amount" && config.discountValue > annualBase) {
+  if (config.discountType === "amount" && discountValue > annualBase) {
     throw new HttpsError("invalid-argument", "Discount amount is invalid");
   }
   if (!["inclusive", "exclusive", "none"].includes(String(raw.vatMode || ""))) {
     throw new HttpsError("invalid-argument", "VAT mode is invalid");
   }
-  if (!Number.isFinite(Number(raw.vatRate)) || config.vatRate < 0 || config.vatRate > 30) {
+  const vatRate=Number(raw.vatRate);
+  if (!centsExact(raw.vatRate) || vatRate < 0 || vatRate > 30
+    || (config.vatMode === "none" && vatRate !== 0)) {
     throw new HttpsError("invalid-argument", "VAT rate is invalid");
   }
   return config;

@@ -109,7 +109,19 @@ export async function loadAdminSubscriptionPricing() {
 
 export async function saveAdminSubscriptionPricing(input = {}) {
   const config = normalizeSubscriptionPricing(input);
-  const response = await httpsCallable(functions, "updateSubscriptionPricing")(config);
+  let response;
+  try {
+    response = await httpsCallable(functions, "updateSubscriptionPricing")(config);
+  } catch (error) {
+    // A network timeout or a lost HTTP reply can occur AFTER the master
+    // pricing write committed. Do not let the operator blindly resubmit.
+    // Only explicit server-side authorization/validation/precondition failures
+    // are known to be rejected before the write transaction.
+    const code = String(error?.code || "").replace(/^functions\//, "");
+    if (["invalid-argument", "unauthenticated", "permission-denied",
+      "failed-precondition"].includes(code)) throw error;
+    throw new Error("SUBSCRIPTION_PRICING_WRITE_UNCONFIRMED", { cause: error });
+  }
   if (response?.data?.ok !== true) throw new Error("SUBSCRIPTION_PRICING_WRITE_UNCONFIRMED");
   const saved = normalizeSubscriptionPricing(response?.data?.config || config);
   let confirmed;

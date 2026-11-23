@@ -1,5 +1,20 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-23 P1.4 — Pricing / SaaS Setup MODULE COMPLETE (LOCAL)
+
+**Target:** `Natchanon45/food-order-app` `feature/react-firebase-port`; **Source READ ONLY:** `cosmatch/lukkhaja` `feature/lukkaja_bankalert_stripe@8b108f1`. Compared pinned Source JSX for **both P1.4 pages**: `PlatformPricingPage.jsx` Source 461 lines → Firebase 462 lines; `SaasSetupPage.jsx` Source 152 → Firebase 153. Original Source SaaS page is **inspection-only**, not an approved migration tool.
+
+**Completed P1.4 action families:** 13 across Premium Price read/preview/edit/Save/Reset, annual discount/VAT, Slip2Go quota, immutable Delivery threshold and append-only future schedule; SaaS fixed target Tenant inspection/counts/settings, strict Superadmin authority and disabled source migration. Original destructive SaaS migration copy/overwrite/finalize was **removed from UI/client and blocked server-side for all actions**, with a backwards-compatible `failed-precondition` Callable for old clients. Target-only missing-source counts return null rather than fabricated values. Pricing validation now checks unrounded raw economic values (cents, integer annual months, VAT and discount constraints) before storage. Lost-ack pricing writes now lock client retry until canonical refresh; tested with an intentionally dropped HTTPS response **after a successful commit**.
+
+**Local tests:** P1.4 Source/UI/static contracts **6/6 PASS**; isolated Firebase Firestore Pricing/SaaS/Threshold/payment-history regression **13/13 PASS**; real signed Chrome + React + Firebase Auth/Functions/Firestore/Storage Browser **1/1 PASS**, testing 320/390/768/1440 px, canonical pricing write/readback, locked threshold, SaaS inspection and wrong-role redirect. Reproduce with `npm run test:p14-source-contract` and `npm run test:p14-local-acceptance` (separate isolated demo emulator runs, no external email/provider/payment). React Build/Hosting Contract **PASS** (`2026.11.09.535`, build-only assets cleaned). Full React parity was **interrupted only by a Source-checkout cleanliness assertion** in `test:lk-shop-native`, because a separate checkout has concurrent Android/Go edits; earlier groups and all post-check groups passed. See detailed audit.
+
+**Release boundary:** P1.4 **complete locally**, not Production accepted. P1.3 independent real-Staging QA email/provider gates remain blocked (no separate Firebase Staging project). Do **not** merge `main`, deploy Firebase/Hosting, send real email, activate billing retroactively, migrate legacy shops or build APK/IPA. Future cross-system SaaS migration is a **separate high-risk module requiring explicit scope and user approval**, because the pinned Source explicitly has `migrationEnabled:false`.
+
+[Complete P1.4 code/action/7-pseudocode/acceptance report](./LUKKAJA_P1_4_PRICING_SAAS_MODULE_20261123.md)
+
+---
+
+
 ## 2026-11-23 P1.3f — Staging Provider UAT Readiness: signed Browser local evidence
 
 **Working repo:** `Natchanon45/food-order-app` `feature/react-firebase-port`; LUKKAJA Source `cosmatch/lukkhaja@8b108f1` read-only. **P1.3f locally accepted; real Staging and Production signoff remain BLOCKED.**
@@ -244,7 +259,7 @@ P0  Baseline, component/UI/CSS inventory, source pin, test gates  [DONE: invento
 - **P1.1 — Platform shell and dashboard:** bring `PlatformPage.jsx` source markup/styles/components into destination without changing the approved PENGUIN branding. Check buttons, notice bell, cards, navigation, locale, overlays, and permission guards. Reuse a Firebase adapter for branding/settings instead of source Go API.
 - **P1.2 — Tenant workspace:** source `AdminTenantsPage.jsx` + dependencies such as `TenantControlPanel`, `SuperAdminNotificationBell`, owner/tenant review and source CSS, implemented with scoped Firebase Auth/Firestore/Functions. Inventory all create/edit/suspend/reset actions; **write actions require separate emulator approval**.
 - **P1.3 — Users, owners and public contact:** source `AdminUsersPage`, `PlatformOwnersPage`, `PlatformContactPage`; verify role, staff, owner invitation and delivery of email before enabling create/disable actions.
-- **P1.4 — Pricing and SaaS setup:** `PlatformPricingPage`, `SaasSetupPage`; UI first, audited Firebase settings and permissions. Do not silently turn on billing, migrate existing tenants or issue invoices.
+- **P1.4 — Pricing and SaaS setup:** **COMPLETE locally** (2026-11-23), 2/2 Source JSX pages, 13 action families, 7 pseudocodes, 6/6 contracts, 13/13 Firebase regression, 1/1 real signed Browser UAT. SaaS is Source-aligned **inspection-only**, old migration endpoint blocked. [P1.4 full audit](./LUKKAJA_P1_4_PRICING_SAAS_MODULE_20261123.md). Never turn on billing, migrate shops or issue invoices without separate approval.
 - **P1 Done:** 7/7 audited JSX files, all actions inventoried, Firebase contract implemented, desktop/tablet/mobile parity, auth/permission tests, Emulator write tests and live-browser evidence; explicit status stored per page. A screenshot or build alone is not acceptance.
 
 ### P2 — Merchant Admin and onboarding

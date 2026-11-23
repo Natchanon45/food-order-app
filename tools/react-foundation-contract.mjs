@@ -60,9 +60,15 @@ const saasFunctions=read("functions/saas-migration.js");
 const functionsIndex=read("functions/index.js");
 const saasTranslations=JSON.parse(read("react-app/src/i18n/saas-setup-master-translations.json"));
 for(const locale of ["th","en","my","lo","km"]) assert(Boolean(saasTranslations?.[locale]?.meta?.title),`SaaS Setup MASTER locale missing: ${locale}`);
-assert(saasPage.includes("SAAS_TARGET_TENANT")&&saasService.includes("inspectLegacySaasMigration")&&saasService.includes("migrateLegacySaasStore"),"SaaS Setup React callable bridge missing");
-assert(saasFunctions.includes('profile.role !== "super_admin"')&&saasFunctions.includes('collection("shops")'),"SaaS migration must remain server-side and super-admin protected");
-assert(functionsIndex.includes("inspectLegacySaasMigration")&&functionsIndex.includes("migrateLegacySaasStore"),"SaaS migration callables must be exported");
+assert(saasPage.includes("SAAS_TARGET_TENANT")&&saasService.includes("inspectLegacySaasMigration")&&
+  !saasService.includes("migrateLegacySaasStore")&&!saasPage.includes("migrateLegacyStore"),
+  "SaaS Source inspection-only React Callable must not expose migration writes");
+assert(saasFunctions.includes('profile.role !== "super_admin"')&&
+  saasFunctions.includes("SAAS_SOURCE_MIGRATION_DISABLED_INSPECTION_ONLY")&&
+  !saasFunctions.includes('collection("shops")')&&
+  !saasFunctions.includes(".set("),"SaaS Source migration must be disabled server-side");
+assert(functionsIndex.includes("inspectLegacySaasMigration")&&functionsIndex.includes("migrateLegacySaasStore"),
+  "Read-only inspection + blocked legacy Callable must remain exported for backwards compatibility");
 const platformSettingsService=read("react-app/src/data/platformSettingsService.js");
 for(const name of [
   "getPlatformBranding","updatePlatformBranding","getPlatformGoogleApis","updatePlatformGoogleApis",

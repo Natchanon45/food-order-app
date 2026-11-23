@@ -420,25 +420,32 @@ requireAll("Platform pricing server guard", subscriptionPricingFunction, [
   "await assertSuperAdmin(request.auth)",
 ]);
 
-requireAll("SaaS Setup UI/service", saasPage, [
+requireAll("SaaS Setup UI Source inspection-only", saasPage, [
   "inspectLegacyData()",
-  "migrateLegacyStore({",
-  "overwrite,",
+  'id="saasInspectionNotice"',
+  'id="refreshMigration"',
+  'id="startMigration"',
+  'disabled aria-disabled="true"',
 ]);
-requireAll("SaaS Setup callables", saasService, [
+for(const forbidden of ["migrateLegacyStore({", "overwriteData", "onClick={startMigration}"]){
+  if(saasPage.includes(forbidden))fail("SaaS inspection-only page exposes migration: "+forbidden);
+}
+requireAll("SaaS Setup read-only Callable", saasService, [
   'httpsCallable(functions, "inspectLegacySaasMigration")',
-  'httpsCallable(functions, "migrateLegacySaasStore")',
-  'action: "prepare"',
-  'action: "collection"',
-  'action: "settings"',
-  'action: "finalize"',
+  'summary.migrationEnabled !== false',
+  'summary.sourceInspectable !== false',
 ]);
-requireAll("SaaS Setup server authorization", saasFunction, [
+if(saasService.includes('httpsCallable(functions, "migrateLegacySaasStore")'))
+  fail("SaaS Setup React must not call destructive migration");
+requireAll("SaaS Setup server authorization and disabled migration", saasFunction, [
   'profile.role !== "super_admin"',
   'throw new HttpsError("permission-denied"',
-  'db.collection("shops").doc(SOURCE_SHOP_ID)',
   'db.collection("tenants").doc(TARGET_TENANT.id)',
+  'SAAS_SOURCE_MIGRATION_DISABLED_INSPECTION_ONLY',
 ]);
+for(const forbidden of ['.set(', 'collection("shops")', '.update(']){
+  if(saasFunction.includes(forbidden))fail("SaaS inspection server must have no write/source transport: "+forbidden);
+}
 
 console.log("P0 action contract: PASS");
 console.log("Covered: Cashier, Waiting Queue staff/customer, Admin Tenants, SaaS Setup");

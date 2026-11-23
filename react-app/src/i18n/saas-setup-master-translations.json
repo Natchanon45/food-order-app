@@ -8,11 +8,11 @@
       "back": "กลับหน้าหลัก"
     },
     "hero": {
-      "title": "ย้ายร้านแรกเข้าสู่ระบบ Tenant",
-      "description": "คัดลอกข้อมูลจาก :source ไปยัง Tenant :tenant โดยไม่ลบข้อมูลต้นทาง"
+      "title": "การตรวจสอบ Tenant (อ่านอย่างเดียว)",
+      "description": "แสดงข้อมูลของ Tenant เป้าหมายเท่านั้น ไม่มีการย้ายข้อมูลจาก :source"
     },
     "summary": {
-      "title": "ข้อมูลที่จะย้าย",
+      "title": "รายการใน Tenant เป้าหมาย",
       "checking": "กำลังตรวจสอบ",
       "menus": "เมนู",
       "tables": "โต๊ะ",
@@ -46,7 +46,10 @@
         "ready": "พร้อมเริ่ม",
         "check_failed": "ตรวจสอบไม่สำเร็จ",
         "migration_success": "ย้ายสำเร็จ",
-        "migration_failed": "ย้ายไม่สำเร็จ"
+        "migration_failed": "ย้ายไม่สำเร็จ",
+        "inspection_only": "ตรวจสอบข้อมูล Tenant เท่านั้น",
+        "target_not_found": "ไม่พบ Tenant เป้าหมาย",
+        "source_unavailable": "ยังไม่สามารถยืนยันข้อมูลร้านจากระบบต้นทางได้ จึงปิดการย้าย/เขียนทับทั้งหมดจนกว่าจะมีแผนตรวจสอบและอนุมัติแยกต่างหาก"
       },
       "toast": {
         "check_failed": "ตรวจสอบข้อมูลต้นทางไม่สำเร็จ",
@@ -82,11 +85,11 @@
       "back": "Back to home"
     },
     "hero": {
-      "title": "Migrate the first store into Tenant mode",
-      "description": "Copy data from :source into Tenant :tenant without deleting the source data."
+      "title": "Tenant inspection (read only)",
+      "description": "Target Tenant data only; no migration from :source is performed"
     },
     "summary": {
-      "title": "Data to migrate",
+      "title": "Target Tenant records",
       "checking": "Checking",
       "menus": "Menus",
       "tables": "Tables",
@@ -120,7 +123,10 @@
         "ready": "Ready",
         "check_failed": "Check failed",
         "migration_success": "Migration complete",
-        "migration_failed": "Migration failed"
+        "migration_failed": "Migration failed",
+        "inspection_only": "Tenant inspection only",
+        "target_not_found": "Target Tenant missing",
+        "source_unavailable": "The original source cannot be verified. Migration and overwrite are disabled until a separately reviewed and approved procedure exists."
       },
       "toast": {
         "check_failed": "Unable to inspect the source data.",
@@ -156,11 +162,11 @@
       "back": "အိမ်ပြန်"
     },
     "hero": {
-      "title": "ပထမစတိုးကို Tenant မုဒ်သို့ ပြောင်းရွှေ့ပါ။",
-      "description": "အရင်းအမြစ်ဒေတာကို မဖျက်ဘဲ :source မှဒေတာကို Tenant :tenant သို့ ကူးယူပါ။"
+      "title": "Tenant အချက်အလက် စစ်ဆေးရန်သာ",
+      "description": "ရည်မှန်းထားသော Tenant အချက်အလက်များသာ ဖော်ပြသည်"
     },
     "summary": {
-      "title": "ဒေတာရွှေ့ပြောင်းရန်",
+      "title": "Tenant အချက်အလက်",
       "checking": "စစ်ဆေးနေပါတယ်။",
       "menus": "မီနူးများ",
       "tables": "စားပွဲများ",
@@ -194,7 +200,10 @@
         "ready": "အဆင်သင့်",
         "check_failed": "စစ်ဆေးခြင်း မအောင်မြင်ပါ။",
         "migration_success": "ရွှေ့ပြောင်းခြင်း ပြီးပါပြီ။",
-        "migration_failed": "ရွှေ့ပြောင်းခြင်း မအောင်မြင်ပါ။"
+        "migration_failed": "ရွှေ့ပြောင်းခြင်း မအောင်မြင်ပါ။",
+        "inspection_only": "Tenant ကို စစ်ဆေးရန်သာ",
+        "target_not_found": "ရည်မှန်းထားသော Tenant မရှိပါ",
+        "source_unavailable": "မူလဒေတာကို အတည်မပြုနိုင်သေးပါ။ ရွှေ့ပြောင်းခြင်းနှင့် အစားထိုးရေးသားခြင်းကို ပိတ်ထားပါသည်။"
       },
       "toast": {
         "check_failed": "အရင်းအမြစ်ဒေတာကို စစ်ဆေး၍မရပါ။",
@@ -230,11 +239,11 @@
       "back": "ກັບໄປຫາບ້ານ"
     },
     "hero": {
-      "title": "ຍ້າຍຮ້ານທຳອິດເຂົ້າໄປໃນໂໝດ Tenant",
-      "description": "ສຳເນົາຂໍ້ມູນຈາກ :source ໄປໃສ່ Tenant :tenant ໂດຍບໍ່ຕ້ອງລຶບແຫຼ່ງທີ່ມາ."
+      "title": "ກວດສອບ Tenant (ອ່ານຢ່າງດຽວ)",
+      "description": "ສະແດງຂໍ້ມູນ Tenant ເປົ້າໝາຍເທົ່ານັ້ນ"
     },
     "summary": {
-      "title": "ຂໍ້ມູນເພື່ອຍ້າຍ",
+      "title": "ຂໍ້ມູນ Tenant ເປົ້າໝາຍ",
       "checking": "ກຳລັງກວດສອບ",
       "menus": "ເມນູ",
       "tables": "ຕາຕະລາງ",
@@ -268,7 +277,10 @@
         "ready": "ພ້ອມ",
         "check_failed": "ກວດສອບບໍ່ສຳເລັດ",
         "migration_success": "ການຍົກຍ້າຍສຳເລັດແລ້ວ",
-        "migration_failed": "ການເຄື່ອນຍ້າຍລົ້ມເຫລວ"
+        "migration_failed": "ການເຄື່ອນຍ້າຍລົ້ມເຫລວ",
+        "inspection_only": "ກວດສອບ Tenant ເທົ່ານັ້ນ",
+        "target_not_found": "ບໍ່ພົບ Tenant ເປົ້າໝາຍ",
+        "source_unavailable": "ຍັງຢືນຢັນຂໍ້ມູນຕົ້ນທາງບໍ່ໄດ້ ຈຶ່ງປິດການຍ້າຍ ແລະ ຂຽນທັບ"
       },
       "toast": {
         "check_failed": "ບໍ່ສາມາດກວດສອບຂໍ້ມູນແຫຼ່ງໄດ້.",
@@ -304,11 +316,11 @@
       "back": "ត្រឡប់ទៅផ្ទះវិញ។"
     },
     "hero": {
-      "title": "ផ្ទេរហាងដំបូងទៅជារបៀប Tenant",
-      "description": "ចម្លងទិន្នន័យពី :source ចូលទៅក្នុង Tenant :tenant ដោយមិនចាំបាច់លុបទិន្នន័យប្រភព។"
+      "title": "ពិនិត្យ Tenant (អានតែប៉ុណ្ណោះ)",
+      "description": "បង្ហាញតែទិន្នន័យ Tenant គោលដៅ មិនមានការផ្ទេរ"
     },
     "summary": {
-      "title": "ទិន្នន័យ​ត្រូវ​ធ្វើ​ចំណាក​ស្រុក",
+      "title": "ទិន្នន័យ Tenant គោលដៅ",
       "checking": "កំពុងពិនិត្យ",
       "menus": "ម៉ឺនុយ",
       "tables": "តុ",
@@ -342,7 +354,10 @@
         "ready": "រួចរាល់",
         "check_failed": "ការត្រួតពិនិត្យបានបរាជ័យ",
         "migration_success": "ការធ្វើចំណាកស្រុកបានបញ្ចប់",
-        "migration_failed": "ការធ្វើចំណាកស្រុកបានបរាជ័យ"
+        "migration_failed": "ការធ្វើចំណាកស្រុកបានបរាជ័យ",
+        "inspection_only": "ពិនិត្យ Tenant តែប៉ុណ្ណោះ",
+        "target_not_found": "រកមិនឃើញ Tenant គោលដៅ",
+        "source_unavailable": "មិនទាន់អាចផ្ទៀងផ្ទាត់ប្រភពបានទេ។ បិទការផ្ទេរ និងការសរសេរជាន់លើ។"
       },
       "toast": {
         "check_failed": "មិនអាចពិនិត្យទិន្នន័យប្រភពបានទេ។",
