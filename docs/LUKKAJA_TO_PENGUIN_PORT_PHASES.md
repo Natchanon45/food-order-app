@@ -1,8 +1,8 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
 > **LATEST SOURCE REFRESH — 23 NOV 2026 (authoritative for next slice):**
-> Source `cosmatch/lukkhaja@e60858c1` on `feature/lukkaja_bankalert_stripe`, Target
-> `Natchanon45/food-order-app@e91f0615` on `feature/react-firebase-port`.
+> Source `cosmatch/lukkhaja@18093091` on `feature/lukkaja_bankalert_stripe`, Target
+> `Natchanon45/food-order-app@08ab95c7` on `feature/react-firebase-port`.
 > New machine-readable full JSX inventory:
 > [23 Nov audit (Markdown)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md) /
 > [23 Nov audit (JSON)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json).
@@ -14,17 +14,18 @@
 
 | Metric | Source | Firebase target | Meaning |
 | --- | ---: | ---: | --- |
-| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,394** | 52 same-name, 13 Source-only; these are *files*, not route counts |
-| Direct component JSX | **86 / 12,590** | **51 / 6,587** | 36 same-name, 50 Source-only, 15 Target-only |
+| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,498** | 52 same-name, 13 Source-only; these are *files*, not route counts |
+| Direct component JSX | **86 / 12,590** | **52 / 6,607** | 36 same-name, 50 Source-only, 16 Target-only |
 | Other React-root JSX | **5 / 486** | **6 / 790** | Platform/Auth/runtime adapters differ by architecture |
-| **All included JSX** | **156 / 48,954** | **109 / 37,771** | Never treat raw line delta as unimplemented code or completion percentage |
+| **All included JSX** | **156 / 48,954** | **110 / 37,895** | Never treat raw line delta as unimplemented code or completion percentage |
 
-The 23 Nov Source contains **3 new commits** relative to the previously
-pinned `03d2aaee`, changing **8 React JSX files**, including **two new
-components** (`LKShopPairingPanel.jsx`, `PublicAppDownloads.jsx`),
-with **+454 net physical JSX lines**. No new Source page JSX file
-or `PortRoutes.jsx` change occurred in those three commits.
-Target meanwhile grew by **21 JSX files** since its prior
+The latest Source now contains **1 new commit** relative to
+`e60858c1`: `18093091` preserves the LK Shop APK across
+LUKKAJA UAT frontend releases. The commit changes deployment
+scripts/docs/tests but **no React JSX** (0 files, +0 JSX lines).
+The earlier LK Shop/Delivery JSX additions remain included
+in the 156-file current Source baseline.
+Target meanwhile grew by **1 JSX file** since its prior
 audit commit `c42b2981`. These must be re-evaluated for reuse rather
 than copied/overwritten. See the audit JSON for all per-file LOC.
 
@@ -573,3 +574,21 @@ still LUKKAJA-specific. Source JSX LOC was unchanged.
 The final P1.2g Firestore Rules also guard Owner/provenance
 fields from browser-side edits so a provisioned Tenant
 cannot be disguised as an empty placeholder.
+
+## Final P1.2g JSX inventory — feature commit `08ab95c7`
+
+Latest Source `18093091`: **156 JSX / 48,954 physical lines**,
+unchanged from prior JSX commit (new Source changes are for APK
+deployment scripts only). Firebase Target `08ab95c7`:
+**110 JSX / 37,895 lines**, split into 52 Pages /
+30,498; 52 Components / 6,607; six other / 790.
+`AdminTenantsPage.jsx` now has **1,943 lines** and the new
+`TenantDeletionRecoveryNotice.jsx` has **20 lines**. Source remains
+read-only from this P1.2g module.
+
+Tests: P1.2g Firebase Emulator 14/14, combined P1.2c–g
+65/65 test assertions, new pure policy/Chrome 17/17,
+121 callable references with 0 missing, full
+React parity and Vite/hosting build PASS. Browser direct
+tenant deletes, financial/Owner bypass and tombstone
+forgery are rejected. No Production deploy or `main` merge.

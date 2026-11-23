@@ -41,7 +41,12 @@ placeholders created by the source-aligned
   name, inactive status, no Owner and no provisioning ID.
 - No tenant-owned document exists in separately named
   identity, registration, finance, companion, Stripe TEST,
-  Lalamove or notification external collections.
+  Lalamove or notification external collections. This
+  includes `paymentCompanionTenants/{tenantId}` and
+  `stripeWalletSandboxTenants/{tenantId}` where the global
+  document ID itself is the Tenant ID (not merely a
+  `tenantId` field query), as well as any pending
+  `publicTenantSignupSlugs/{slug}` reservation.
 - The exact original name, Slug and `masterEditRevision`
   match the Superadmin's chosen record.
 - Anything missing, unfamiliar, divergent, protected or
@@ -205,3 +210,14 @@ During the module, Source independently advanced to
 `18093091` to preserve LK Shop Android APK downloads across
 LUKKAJA UAT deployments. This was not an edit by this module.
 That commit touched deployment/docs/tests, not Source JSX.
+
+## Final JSX receipt after Source APK fix commit
+
+Source `18093091` contains **156 JSX / 48,954 lines**.
+Target `08ab95c7` contains **110 JSX / 37,895 lines**:
+52 Pages / 30,498; 52 components / 6,607;
+six other / 790. The new `TenantDeletionRecoveryNotice.jsx`
+is 20 lines and `AdminTenantsPage.jsx` is 1,943 lines.
+Source APK deployment fix added **zero JSX files** and
+**zero JSX lines**. JSX counts are not operational
+feature-completeness percentages.
