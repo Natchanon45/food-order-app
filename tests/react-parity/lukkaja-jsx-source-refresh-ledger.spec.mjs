@@ -29,12 +29,12 @@ test("Current pinned audit has complete group arithmetic and correctly scoped so
  const sums=(field)=>Object.values(ledger.groups).reduce((n,g)=>n+g[field],0);
  assert.equal(sums("sourceFiles"),156);
  assert.equal(sums("sourceLines"),48954);
- assert.equal(sums("targetFiles"),108);
- assert.equal(sums("targetLines"),37618);
+ assert.equal(sums("targetFiles"),109);
+ assert.equal(sums("targetLines"),37771);
  assert.equal(sums("sourceLines")-sums("priorSourceLines"),454);
  assert.equal(sums("sourceChangedSincePrior"),8);
  assert.equal(sums("newSourceFiles"),2);
- assert.equal(sums("targetAddedSincePrior"),20);
+ assert.equal(sums("targetAddedSincePrior"),21);
  assert.equal(ledger.delta.sourceRouteFileChanged,false);
  assert.equal(ledger.delta.sourceCommittedApp,"apps/lk-shop");
 });
@@ -56,7 +56,7 @@ test("The JSX file inventory matches tracked Target paths and current committed 
     || (!/^(?:pages|components)\//.test(rel) && rel.endsWith(".jsx"));
  });
  const rows=new Map(ledger.files.map(x=>[x.path,x]));
- assert.equal(scope.length,108);
+ assert.equal(scope.length,109);
  for(const file of scope){
   const relative=file.slice(ledger.target.root.length+1);
   const row=rows.get(relative);
@@ -74,7 +74,7 @@ test("All 65 source pages retain original phase, current per-file LOC and no inv
  assert.equal(tracker.latestJsxAuditJson,path.relative(process.cwd(),json));
  assert.equal(tracker.counts.sourcePageJsx,65);
  assert.equal(tracker.counts.sourceComponentJsx,86);
- assert.equal(tracker.counts.destinationComponentJsx,50);
+ assert.equal(tracker.counts.destinationComponentJsx,51);
  const seen=new Set();
  const records=new Map(ledger.files.map(x=>[x.path,x]));
  for(const page of tracker.pages){

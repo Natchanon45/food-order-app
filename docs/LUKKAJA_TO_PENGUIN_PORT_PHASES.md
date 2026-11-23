@@ -2,7 +2,7 @@
 
 > **LATEST SOURCE REFRESH — 23 NOV 2026 (authoritative for next slice):**
 > Source `cosmatch/lukkhaja@e60858c1` on `feature/lukkaja_bankalert_stripe`, Target
-> `Natchanon45/food-order-app@6f686392` on `feature/react-firebase-port`.
+> `Natchanon45/food-order-app@e91f0615` on `feature/react-firebase-port`.
 > New machine-readable full JSX inventory:
 > [23 Nov audit (Markdown)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md) /
 > [23 Nov audit (JSON)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json).
@@ -14,17 +14,17 @@
 
 | Metric | Source | Firebase target | Meaning |
 | --- | ---: | ---: | --- |
-| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,263** | 52 same-name, 13 Source-only; these are *files*, not route counts |
-| Direct component JSX | **86 / 12,590** | **50 / 6,565** | 36 same-name, 50 Source-only, 14 Target-only |
+| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,394** | 52 same-name, 13 Source-only; these are *files*, not route counts |
+| Direct component JSX | **86 / 12,590** | **51 / 6,587** | 36 same-name, 50 Source-only, 15 Target-only |
 | Other React-root JSX | **5 / 486** | **6 / 790** | Platform/Auth/runtime adapters differ by architecture |
-| **All included JSX** | **156 / 48,954** | **108 / 37,618** | Never treat raw line delta as unimplemented code or completion percentage |
+| **All included JSX** | **156 / 48,954** | **109 / 37,771** | Never treat raw line delta as unimplemented code or completion percentage |
 
 The 23 Nov Source contains **3 new commits** relative to the previously
 pinned `03d2aaee`, changing **8 React JSX files**, including **two new
 components** (`LKShopPairingPanel.jsx`, `PublicAppDownloads.jsx`),
 with **+454 net physical JSX lines**. No new Source page JSX file
 or `PortRoutes.jsx` change occurred in those three commits.
-Target meanwhile grew by **20 JSX files** since its prior
+Target meanwhile grew by **21 JSX files** since its prior
 audit commit `c42b2981`. These must be re-evaluated for reuse rather
 than copied/overwritten. See the audit JSON for all per-file LOC.
 
@@ -508,3 +508,27 @@ missing exports; React build and generated hosting contract
 pass. Original signup, plans, Owner identity and financial
 statuses remain untouched. The module is **not** a
 financial settlement or deletion authority.
+
+
+## Final P1.2f JSX inventory pinned to committed module e91f0615
+
+Source `e60858c1` remains **156 JSX files / 48,954 lines**.
+Firebase Target `e91f0615` now has **109 JSX files /
+37,771 lines**, split into 52 Pages / 30,394 lines,
+51 Components / 6,587 lines and six other JSX /
+790 lines. `AdminTenantsPage.jsx` is now 1,839
+physical lines, and the new
+`TenantMasterEditRecoveryNotice.jsx` adds 22 component
+lines. The source Checkout/Go/SQL files are not modified.
+JSX LOC remains an inventory metric, not a completion
+percentage or evidence of banking acceptance.
+
+This Module's final accepted local gates are **51/51**
+combined Firebase Auth/Firestore Emulator tests,
+**8/8** pure master-edit policy cases and **8/8**
+React/Chrome browser/UI cases, including four screen widths.
+Full React parity **PASS**, Callable contract **119/0
+missing**, Vite build and hosting-generated build
+contract **PASS**. No Production deploy, `main` merge,
+Owner account identity mutation, financial paid posting
+or unrestricted Tenant deletion.
