@@ -1,4 +1,5 @@
 import { TelegramSettingsPanel } from "@/components/TelegramSettingsPanel";
+import { LKShopPairingPanel } from "@/components/LKShopPairingPanel";
 import { PaymentCompanionPairingCard } from "@/components/PaymentCompanionPairingCard";
 import { BankalertStripeWalletTopup } from "@/components/BankalertStripeWalletTopup";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1792,6 +1793,12 @@ export function AdminPage() {
               title="แจ้งเตือน Telegram ของร้านค้า" description="ตั้งค่าช่องทาง Admin ร้าน แคชเชียร์ และครัว พร้อม Bot Token ที่เข้ารหัส"
               status="3 ช่องทาง" statusTone="neutral">
               <TelegramSettingsPanel key={tenant?.id} scope="tenant" hideHeading />
+            </AdminSettingsGroup>
+
+            <AdminSettingsGroup id="tenantLKShopSettingsGroup" icon="bell"
+              title="LK Shop • ห้องแจ้งเตือน" description="จับคู่โทรศัพท์ตามห้อง Admin, แคชเชียร์ และครัว พร้อมเพิกถอนสิทธิ์"
+              status="Firebase UAT" statusTone="neutral">
+              <LKShopPairingPanel key={tenant?.id} scope="tenant" embedded notify={showToast}/>
             </AdminSettingsGroup>
 
             <AdminSettingsGroup

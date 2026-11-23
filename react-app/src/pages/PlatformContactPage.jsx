@@ -15,6 +15,7 @@ import {
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { TelegramSettingsPanel } from "@/components/TelegramSettingsPanel";
+import { LKShopPairingPanel } from "@/components/LKShopPairingPanel";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -96,7 +97,7 @@ export function PlatformContactPage() {
   const authState = useAuth();
   const { profile } = authState;
   const { t } = useI18n();
-  const [expandedCards, setExpandedCards] = useState({ public: false, telegram: false, google: false });
+  const [expandedCards, setExpandedCards] = useState({ public: false, telegram: false, google: false, lkShop: false });
   const toggleCard = key => setExpandedCards(current => ({ ...current, [key]: !current[key] }));
   const stylesReady = useParityPage({
     title: t("platform_contact.meta.title"),
@@ -596,6 +597,24 @@ export function PlatformContactPage() {
             </div>
           </aside>
         </div>
+
+        <section className="card platform-contact-toggle-host"
+          data-expanded={expandedCards.lkShop} aria-labelledby="platformLKShopHeading">
+          <ContactCornerToggle expanded={expandedCards.lkShop}
+            onToggle={()=>toggleCard("lkShop")} controls="platformLKShopPanel"
+            label="LK Shop • ห้องแจ้งเตือนส่วนกลาง" />
+          <div className="platform-telegram-settings-heading">
+            <span className="platform-contact-heading-icon platform-contact-heading-icon-telegram"
+              aria-hidden="true"><i className="bi bi-phone"/></span>
+            <div className="platform-contact-heading-copy">
+              <h2 id="platformLKShopHeading">LK Shop • ห้องแจ้งเตือนส่วนกลาง</h2>
+              <p>สร้าง QR สำหรับ Superadmin โดยไม่ปะปนกับห้องของร้านค้า</p>
+            </div>
+          </div>
+          <div id="platformLKShopPanel" hidden={!expandedCards.lkShop}>
+            {expandedCards.lkShop&&<LKShopPairingPanel scope="platform" embedded notify={showToast}/>}
+          </div>
+        </section>
       </main>
 
       <ParityFooter />

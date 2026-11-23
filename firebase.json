@@ -510,6 +510,13 @@
         "destination": "/react/index.html"
       },
       {
+        "source": "/api/lk-shop/**",
+        "function": {
+          "functionId": "lkShopDeviceGateway",
+          "region": "asia-southeast1"
+        }
+      },
+      {
         "source": "/api/tax-buyer/lookup",
         "function": {
           "functionId": "lookupTaxBuyer",

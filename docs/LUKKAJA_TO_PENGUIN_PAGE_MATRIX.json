@@ -159,7 +159,10 @@
         "sourceChangedSincePreviousAudit": true,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
         "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
-      }
+      },
+      "lkShopModuleStatus": "Firebase QR/device/inbox role rooms integrated; live native app FCM still unverified",
+      "lkShopModuleEvidence": "docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md",
+      "lkShopDeployment": "not_deployed"
     },
     {
       "id": "P1-04",
@@ -275,7 +278,10 @@
         "sourceChangedSincePreviousAudit": true,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
         "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
-      }
+      },
+      "lkShopModuleStatus": "Firebase QR/device/inbox role rooms integrated; live native app FCM still unverified",
+      "lkShopModuleEvidence": "docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md",
+      "lkShopDeployment": "not_deployed"
     },
     {
       "id": "P2-02",
@@ -344,7 +350,10 @@
         "sourceChangedSincePreviousAudit": true,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
         "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
-      }
+      },
+      "lkShopModuleStatus": "Firebase QR/device/inbox role rooms integrated; live native app FCM still unverified",
+      "lkShopModuleEvidence": "docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md",
+      "lkShopDeployment": "not_deployed"
     },
     {
       "id": "P2-05",

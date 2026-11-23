@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { PublicAppDownloads } from "@/components/PublicAppDownloads";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
@@ -298,6 +299,8 @@ export function HomePage() {
               </Link>
             </div>
           </section>
+
+          <PublicAppDownloads />
 
           <section className="card public-about-card" style={{ marginTop: 18 }}>
             <h2 style={{ marginTop: 0 }}><i className="bi bi-info-circle app-icon public-heading-icon" aria-hidden="true"></i><span>{t("home.public.about.title")}</span></h2>

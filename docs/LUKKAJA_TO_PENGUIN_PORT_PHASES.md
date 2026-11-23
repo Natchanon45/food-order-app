@@ -226,3 +226,18 @@ a declaration that the full 1,005-line Source Success page is ported.
   for exact file scope and tested scenarios.
 - This is **UI/safe-status parity only**, not acceptance of all
   Go/SQL Source DeliverySuccess functionality.
+
+## 2026-11-23 P1/P2 LK Shop role-room Firebase Module
+
+- Server-issued role-room single-use five-minute QR, atomic Firebase
+  enrollment, private bearer-scoped native inbox, active device cap 10,
+  global FCM token claim, revocation and strict Firestore denial.
+- 4 role rooms: global Superadmin; tenant Admin, Cashier, Kitchen.
+  Backend/Frontend modules integrated in Platform/Store/Admin and public
+  Home pages without changing Telegram or finance settlement authority.
+- Native Source Flutter `apps/lk-shop` must still be adapted to
+  `penguin-food.web.app` and built/tested separately. No fake or
+  incompatible UAT APK is offered. Both LK Shop server and FCM send
+  runtime gates remain OFF by default.
+- See `docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md`
+  for precise acceptance and further native/APNs/FCM blockers.

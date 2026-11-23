@@ -344,6 +344,14 @@ service cloud.firestore {
     match /paymentCompanionTenants/{path=**} { allow read, write: if false; }
     match /paymentCompanionDeviceKeys/{path=**} { allow read, write: if false; }
     match /paymentCompanionSlipHashes/{path=**} { allow read, write: if false; }
+    // LK Shop native devices are bearer-capability scoped. App/browser clients
+    // may NEVER read codes, credentials, FCM tokens or inbox documents directly.
+    match /lkShopPairChallenges/{path=**} { allow read, write: if false; }
+    match /lkShopActivePairings/{path=**} { allow read, write: if false; }
+    match /lkShopDevices/{path=**} { allow read, write: if false; }
+    match /lkShopDeviceKeys/{path=**} { allow read, write: if false; }
+    match /lkShopRoomCounters/{path=**} { allow read, write: if false; }
+    match /lkShopFcmTokenClaims/{path=**} { allow read, write: if false; }
 
     match /tenants/{tenantId} {
       allow read: if true; allow create, update, delete: if superAdminRole();

@@ -457,3 +457,13 @@ exports.getOwnHybridIssuedInvoiceStatusPage =
   require("./hybrid-issued-invoice-status").getOwnHybridIssuedInvoiceStatusPage;
 exports.getPlatformHybridIssuedInvoiceStatusPage =
   require("./hybrid-issued-invoice-status").getPlatformHybridIssuedInvoiceStatusPage;
+
+// LK Shop Source role-room parity: UAT-gated Firebase pairing, device inbox and
+// parallel optional FCM channel. Disabled unless explicitly enabled in runtime.
+for(const [name,fn] of Object.entries(require("./lk-shop-firebase"))){
+ if(!name.startsWith("_"))exports[name]=fn;
+}
+exports.lkShopDeviceGateway=require("./lk-shop-device-gateway").lkShopDeviceGateway;
+for(const [name,fn] of Object.entries(require("./lk-shop-notifications"))){
+ if(!name.startsWith("_"))exports[name]=fn;
+}
