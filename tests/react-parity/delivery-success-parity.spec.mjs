@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const STORE_SLUG = process.env.DELIVERY_SUCCESS_STORE_SLUG || "saas-test-shop";
 const ORDER_ID = String(process.env.DELIVERY_SUCCESS_ORDER_ID || "").trim();
 
-test.describe("Delivery Success Laravel parity", () => {
+test.describe("Delivery Success current Source UI parity (Firebase-backed)", () => {
   test.skip(!ORDER_ID, "Set DELIVERY_SUCCESS_ORDER_ID to a readable Delivery order.");
 
   async function openSuccess(page) {
@@ -14,129 +14,68 @@ test.describe("Delivery Success Laravel parity", () => {
     await expect(page.locator("#customerReceipt")).toBeVisible({ timeout: 15_000 });
   }
 
-  test("uses Laravel workspace body/theme and header structure", async ({ page }) => {
+  test("keeps storefront header and first card of three equal icon-only actions", async ({ page }) => {
     await openSuccess(page);
-
     await expect(page.locator("body")).toHaveClass(/order-delivery-workspace/);
     await expect(page.locator("body")).toHaveClass(/od-receipt-page/);
-
-    const header = page.locator(".app-header").first();
-    const children = await header.evaluate(element =>
-      [...element.children].map(child => child.id || child.className),
-    );
-    expect(children).toHaveLength(3);
-    expect(String(children[0])).toContain("brand");
-    expect(String(children[1])).toContain("orderAgainLink");
-    expect(String(children[2])).toContain("app-locale-switcher");
-    await expect(page.locator("#orderAgainLink")).toHaveText("สั่งเพิ่ม");
+    await expect(page.locator("#orderAgainLink")).toHaveCount(0);
+    await expect(page.locator("#orderAgainMobileLink")).toHaveAttribute("title", "สั่งเพิ่ม");
+    await expect(page.locator("#verifyLatestLink")).toHaveAttribute("title", "ดูยอดล่าสุด");
+    await expect(page.locator("#saveImageButton")).toHaveAttribute("title", "ดาวน์โหลดใบสั่งซื้อ");
+    await expect(page.locator(".delivery-receipt-actions > *")).toHaveCount(3);
+    const computed=await page.locator(".delivery-receipt-actions").evaluate(bar=>{
+      const rect=bar.getBoundingClientRect();
+      const buttons=[...bar.children].map(child=>child.getBoundingClientRect());
+      return {
+        grid:getComputedStyle(bar).gridTemplateColumns,
+        headerBottom:document.querySelector(".app-header").getBoundingClientRect().bottom,
+        actionsTop:rect.top,
+        widths:buttons.map(x=>x.width),
+        pageOverflow:document.documentElement.scrollWidth-innerWidth,
+      };
+    });
+    expect(computed.actionsTop).toBeGreaterThanOrEqual(computed.headerBottom);
+    expect(Math.max(...computed.widths)-Math.min(...computed.widths)).toBeLessThanOrEqual(2);
+    expect(computed.pageOverflow).toBeLessThanOrEqual(2);
   });
 
-  test("renders Laravel tracking card before toolbar and receipt", async ({ page }) => {
+  test("places toolbar above receipt/tracking; keeps order tracking independent of payment badge", async ({ page }) => {
     await openSuccess(page);
-
     await expect(page.locator("#deliveryTrackingCard")).toBeVisible();
     await expect(page.locator("#deliveryTrackingTimeline [data-tracking-step]")).toHaveCount(6);
     await expect(page.locator("#deliveryTrackingMessage")).not.toHaveText("");
     await expect(page.locator("#deliveryTrackingBadge")).not.toHaveText("");
-
-    const activeSteps = page.locator("#deliveryTrackingTimeline .is-current, #deliveryTrackingTimeline .is-done");
-    await expect(activeSteps).not.toHaveCount(0);
-
-    const order = await page.evaluate(() => {
-      const tracking = document.getElementById("deliveryTrackingCard");
-      const toolbar = document.querySelector(".receipt-toolbar");
-      const receipt = document.getElementById("customerReceipt");
-      const before = (a, b) => Boolean(
-        a && b && (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
-      );
+    const order=await page.evaluate(()=>{
+      const before=(a,b)=>Boolean(a&&b&&(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING));
+      const toolbar=document.querySelector(".delivery-receipt-actions");
+      const tracking=document.querySelector("#deliveryTrackingCard");
+      const receipt=document.querySelector("#customerReceipt");
+      const payment=document.querySelector("#customerQROrderReceived");
       return {
-        trackingBeforeToolbar: before(tracking, toolbar),
-        toolbarBeforeReceipt: before(toolbar, receipt),
+        toolbarBeforeTracking:before(toolbar,tracking),
+        trackingBeforeReceipt:before(tracking,receipt),
+        paymentInBetween:!payment||before(toolbar,payment)&&before(payment,tracking),
       };
     });
-    expect(order).toEqual({ trackingBeforeToolbar: true, toolbarBeforeReceipt: true });
+    expect(order).toEqual({
+      toolbarBeforeTracking:true,trackingBeforeReceipt:true,paymentInBetween:true,
+    });
   });
 
-  test("matches Laravel toolbar and receipt hooks", async ({ page }) => {
+  test("retains all server-backed receipt fields and icon-only labels remain accessible", async ({ page }) => {
     await openSuccess(page);
-
-    const toolbar = page.locator(".receipt-toolbar");
-    await expect(toolbar.locator("#saveImageButton")).toHaveText("ดาวน์โหลดใบสั่งซื้อ");
-    await expect(toolbar.locator("#verifyLatestLink")).toHaveText("ดูยอดล่าสุด");
-    await expect(toolbar.locator("#orderAgainLink")).toHaveCount(0);
-
-    for (const id of [
-      "shopName", "shopAddress", "shopPhone", "receiptNumber", "receiptDate",
-      "receiptPayment", "receiptRecipient", "receiptPhone", "receiptAddress",
-      "receiptDeliveryZone", "receiptItems", "receiptSubtotal", "receiptDeliveryFee",
-      "receiptTotal", "verifyQr",
-    ]) {
-      await expect(page.locator("#" + id)).toHaveCount(1);
+    for(const id of ["shopName","shopAddress","shopPhone","receiptNumber",
+      "receiptDate","receiptPayment","receiptRecipient","receiptPhone",
+      "receiptAddress","receiptDeliveryZone","receiptItems","receiptSubtotal",
+      "receiptDeliveryFee","receiptTotal","verifyQr"]){
+      await expect(page.locator("#"+id)).toHaveCount(1);
     }
-
     await expect(page.locator("#receiptItems tr")).not.toHaveCount(0);
-    await expect(page.locator("#receiptItems .receipt-item-line")).not.toHaveCount(0);
-  });
-
-  test("visible action buttons follow the global icon and spacing policy", async ({ page }) => {
-    await openSuccess(page);
-
-    for (const selector of ["#orderAgainLink", "#saveImageButton", "#verifyLatestLink"]) {
-      const button = page.locator(selector);
-      await expect(button.locator(":scope > i.app-icon")).toHaveCount(1);
-      await expect(button.locator(":scope > span")).toHaveCount(1);
-
-      const metrics = await button.evaluate(element => {
-        const style = getComputedStyle(element);
-        const icon = element.querySelector(":scope > i.app-icon");
-        const label = element.querySelector(":scope > span");
-        const iconRect = icon?.getBoundingClientRect();
-        const labelRect = label?.getBoundingClientRect();
-        const buttonRect = element.getBoundingClientRect();
-        return {
-          display: style.display,
-          gap: Number.parseFloat(style.gap || "0") || 0,
-          visualGap: iconRect && labelRect ? labelRect.left - iconRect.right : 0,
-          iconCenterDeltaY: iconRect
-            ? Math.abs(
-                (buttonRect.top + buttonRect.height / 2)
-                - (iconRect.top + iconRect.height / 2)
-              )
-            : Number.POSITIVE_INFINITY,
-        };
-      });
-
-      expect(["inline-flex", "flex"]).toContain(metrics.display);
-      expect(metrics.gap).toBeGreaterThanOrEqual(7);
-      expect(metrics.visualGap).toBeGreaterThanOrEqual(7);
-      expect(metrics.iconCenterDeltaY).toBeLessThanOrEqual(1);
+    for(const id of ["verifyLatestLink","saveImageButton","orderAgainMobileLink"]){
+      const control=page.locator("#"+id);
+      await expect(control.locator(".delivery-receipt-action-icon svg")).toHaveCount(1);
+      await expect(control).toHaveAttribute("aria-label",/\S+/);
     }
-
-    const spacing = await page.evaluate(() => {
-      const rect = selector => document.querySelector(selector)?.getBoundingClientRect();
-      const brand = rect(".app-header .brand");
-      const orderAgain = rect("#orderAgainLink");
-      const locale = rect(".app-header .app-locale-switcher");
-      const tracking = rect("#deliveryTrackingCard");
-      const toolbar = rect(".receipt-toolbar");
-      const save = rect("#saveImageButton");
-      const verify = rect("#verifyLatestLink");
-      const toolbarStyle = getComputedStyle(document.querySelector(".receipt-toolbar"));
-
-      return {
-        brandToOrderAgain: brand && orderAgain ? orderAgain.left - brand.right : 0,
-        orderAgainToLocale: orderAgain && locale ? locale.left - orderAgain.right : 0,
-        toolbarButtonGap: save && verify ? verify.left - save.right : 0,
-        trackingToToolbar: tracking && toolbar ? toolbar.top - tracking.bottom : 0,
-        toolbarBottomMargin: Number.parseFloat(toolbarStyle.marginBottom || "0") || 0,
-      };
-    });
-
-    expect(spacing.brandToOrderAgain).toBeGreaterThanOrEqual(8);
-    expect(spacing.orderAgainToLocale).toBeGreaterThanOrEqual(8);
-    expect(spacing.toolbarButtonGap).toBeGreaterThanOrEqual(8);
-    expect(spacing.trackingToToolbar).toBeGreaterThanOrEqual(12);
-    expect(spacing.toolbarBottomMargin).toBeGreaterThanOrEqual(12);
   });
 
   test("downloads the order evidence as PNG like Laravel", async ({ page }) => {

@@ -201,3 +201,17 @@ Record at minimum for each page:
 Continue **P1.2a** by adapting read-only JSX/CSS from source `AdminTenantsPage.jsx` and `TenantControlPanel.jsx`, pinned to LUKKAJA `e84c8990`, using the authorized Firebase service reads. Source read-only; do not wire new create-owner, override/suspend, payment/Slip2Go, refund or M7 approval controls until proper Firebase adapter/permission tests. Preserve P1.1 Hosting release and accepted PENGUIN-specific badges; no `main` merge.
 
 **Phase 0 deliverables:** this plan; versioned JSON page ledger; a baseline-regression test. Documentation/scaffolding only; no production deployment is warranted until a source JSX / Firebase behavior slice is implemented and tested.
+
+## 2026-11-23 P3 Delivery Success UI module continuation
+
+- New Source-derived three-action equal-width toolbar and shared green
+  order-received card, PromptPay/Stripe/COD/Sandbox badges (payment
+  status is never inferred from a badge).
+- Read and subscription paths remain Firebase-only; original
+  `CompanionConfirmedQr`, preview/download PNG and tracking retained.
+- Stripe unpaid/failed stays separate; real Stripe execution, provider
+  settlement, COD charging and refund remain gated.
+- See `docs/LUKKAJA_P3_DELIVERY_SUCCESS_SOURCE_PARITY_20261123.md`
+  for exact file scope and tested scenarios.
+- This is **UI/safe-status parity only**, not acceptance of all
+  Go/SQL Source DeliverySuccess functionality.

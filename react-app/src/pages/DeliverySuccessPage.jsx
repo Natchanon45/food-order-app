@@ -8,6 +8,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { qrDataUrl } from "@/utils/localQr";
 import { deliveryReceiptPaymentLabel, deliveryReceiptZoneLabel, deliveryReceiptItemLabel } from "@/utils/deliveryReceiptPresentation";
+import { deliverySuccessCustomerState } from "@/utils/deliverySuccessCustomerState";
 
 function valueMs(value) {
   if (!value) return 0;
@@ -111,6 +112,7 @@ export function DeliverySuccessPage() {
       "icons.css",
       "order-delivery-workspace-theme.css",
       "delivery-success-tracking.css",
+      "delivery-success-customer-actions.css",
     ],
   });
 
@@ -188,6 +190,20 @@ export function DeliverySuccessPage() {
   const paymentText = deliveryReceiptPaymentLabel(order, t);
   const deliveryZoneText = deliveryReceiptZoneLabel(order, t);
 
+  // The badge is environment-only: it never authorizes or discovers money.
+  // Set VITE_SHOW_PAYMENT_SANDBOX_BADGE=false for a future live Stripe release.
+  const showStripeSandboxBadge = import.meta.env.VITE_SHOW_PAYMENT_SANDBOX_BADGE !== "false";
+  const successView = deliverySuccessCustomerState(order, {
+    sandboxBadge: showStripeSandboxBadge,
+  });
+  const orderAgainHref = slug ? "/s/" + encodeURIComponent(slug) + "/delivery" : "/";
+  const mayShowReceipt = Boolean(order && !successView.hideReceipt &&
+    !(order?.paymentQrMode === "confirmed_order_5m" &&
+      order?.paymentStatus === "pending_verification"));
+  const showToolbar = Boolean(order && !successView.hideToolbar &&
+    !(order?.paymentQrMode === "confirmed_order_5m" &&
+      order?.paymentStatus === "pending_verification"));
+
   const tracking = trackingState(order || {});
   const trackingText = t("delivery.success.tracking.statuses." + tracking.key);
   const trackingSteps = [
@@ -231,12 +247,121 @@ export function DeliverySuccessPage() {
   return <>
     <PublicStorefrontHeader
       title={t("delivery.success.header.title")}
-      action={<Link className="btn btn-sm" id="orderAgainLink" to={slug ? "/s/" + encodeURIComponent(slug) + "/delivery" : "/"}><i className="bi bi-plus-circle app-icon" aria-hidden="true"></i><span>{t("delivery.success.header.order_again")}</span></Link>}
+      action={!showToolbar ? <Link className="btn btn-sm" id="orderAgainLink" to={orderAgainHref}><i className="bi bi-plus-circle app-icon" aria-hidden="true"></i><span>{t("delivery.success.header.order_again")}</span></Link> : null}
     />
 
     <main className="receipt-page">
-      {order?.paymentQrMode==="confirmed_order_5m"&&<CompanionConfirmedQr tenant={tenant} order={order} orderId={orderId} onToast={showStorefrontToast}/>}
-      {!(order?.paymentQrMode==="confirmed_order_5m"&&order?.paymentStatus==="pending_verification"&&order?.companionKitchenRelease?.status!=="admitted_unverified")&&<section className="delivery-tracking-card" id="deliveryTrackingCard">
+      {order?.paymentQrMode === "confirmed_order_5m" &&
+        <CompanionConfirmedQr tenant={tenant} order={order}
+          orderId={orderId} onToast={showStorefrontToast} />}
+
+      {/* Three high-frequency customer controls sit immediately below the
+          storefront header in one equal-width card on mobile and desktop. */}
+      {showToolbar && <nav className="receipt-toolbar delivery-receipt-actions"
+        aria-label="การดำเนินการกับคำสั่งซื้อ">
+        <a className="btn delivery-receipt-action" id="verifyLatestLink"
+          href={verifyUrl || "#"} target="_blank" rel="noopener noreferrer"
+          aria-label={t("delivery.success.actions.verify_latest")}
+          title={t("delivery.success.actions.verify_latest")}>
+          <span className="delivery-receipt-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="25" height="25" fill="none"
+              stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"
+              strokeLinejoin="round" focusable="false">
+              <path d="M2 12c2.5-4.2 5.8-6.3 10-6.3s7.5 2.1 10 6.3c-2.5 4.2-5.8 6.3-10 6.3S4.5 16.2 2 12Z"/>
+              <circle cx="12" cy="12" r="3.2"/>
+            </svg>
+          </span>
+          <span className="delivery-receipt-action-label">
+            {t("delivery.success.actions.verify_latest")}
+          </span>
+        </a>
+        <button className="btn btn-primary delivery-receipt-action"
+          id="saveImageButton" type="button" disabled={!mayShowReceipt || downloading}
+          aria-label={t(downloading ? "delivery.success.actions.creating_image" :
+            "delivery.success.actions.download")}
+          aria-busy={downloading}
+          title={t(downloading ? "delivery.success.actions.creating_image" :
+            "delivery.success.actions.download")} onClick={download}>
+          <span className="delivery-receipt-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="23" height="23" fill="none"
+              stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"
+              strokeLinejoin="round" focusable="false">
+              <path d="M12 3v12m-5-5 5 5 5-5"/>
+              <path d="M4 17v3h16v-3"/>
+            </svg>
+          </span>
+          <span className="delivery-receipt-action-label">
+            {t(downloading ? "delivery.success.actions.creating_image" :
+              "delivery.success.actions.download")}
+          </span>
+        </button>
+        <Link className="delivery-mobile-order-again" id="orderAgainMobileLink"
+          to={orderAgainHref} aria-label={t("delivery.success.header.order_again")}
+          title={t("delivery.success.header.order_again")}>
+          <span className="delivery-receipt-action-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="23" height="23" fill="none"
+              stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"
+              strokeLinejoin="round" focusable="false">
+              <path d="M5 9h14l1 12H4L5 9Z"/>
+              <path d="M8 9V6a4 4 0 0 1 8 0v3"/>
+              <path d="M12 12v6m-3-3h6"/>
+            </svg>
+          </span>
+        </Link>
+      </nav>}
+
+      {successView.orderReceived && <section className="card customer-order-received"
+        id="customerQROrderReceived" role="status" data-paid={successView.verifiedPaid}>
+        <span className="customer-order-received-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+            stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"
+            strokeLinejoin="round" focusable="false">
+            <path d="M5 12.5l4.5 4.5L19 7"/>
+          </svg>
+        </span>
+        <div className="customer-order-received-copy">
+          <h2>{successView.title}</h2>
+          <p>{successView.note}</p>
+          <small>เลขที่บิล {successView.billNo}</small>
+          <div className="customer-payment-badges" aria-label="ช่องทางการชำระเงิน">
+            <span className="customer-payment-badge" data-payment-method={successView.payment}>
+              <i className={successView.payment === "stripe" ?
+                "bi bi-credit-card" : successView.payment === "promptpay" ?
+                  "bi bi-qr-code" : "bi bi-wallet2"} aria-hidden="true"/>
+              {successView.badge}
+            </span>
+            {successView.showSandboxBadge && <span
+              className="customer-payment-badge customer-payment-badge-sandbox"
+              data-sandbox-badge="true">Sandbox</span>}
+          </div>
+        </div>
+      </section>}
+
+      {(successView.stripePending || successView.stripeFailed) &&
+        <section className="card customer-stripe-payment-status"
+          id="customerStripePaymentStatus" role="status"
+          data-payment-state={successView.stripeFailed ? "failed" : "pending"}>
+          <span className="customer-stripe-payment-status-icon" aria-hidden="true">
+            <i className={successView.stripeFailed ?
+              "bi bi-exclamation-circle" : "bi bi-clock-history"}/>
+          </span>
+          <div className="customer-stripe-payment-status-copy">
+            <h2>{successView.stripeFailed ?
+              "รายการชำระเงินไม่สำเร็จ" : "รอการยืนยันจาก Stripe"}</h2>
+            <p>{successView.stripeFailed ?
+              "รายการนี้ยังไม่ยืนยันการชำระเงิน หากมีการตัดเงินจริงกรุณาติดต่อร้านก่อนชำระซ้ำ" :
+              "คำสั่งซื้อยังไม่ยืนยันชำระเงิน กรุณาตรวจสอบสถานะผ่านหน้าติดตามคำสั่งซื้อ"}</p>
+            <div className="customer-payment-badges" aria-label="ช่องทางการชำระเงิน">
+              <span className="customer-payment-badge" data-payment-method="stripe">Stripe</span>
+              {successView.showSandboxBadge && <span
+                className="customer-payment-badge customer-payment-badge-sandbox"
+                data-sandbox-badge="true">Sandbox</span>}
+            </div>
+          </div>
+        </section>}
+
+      {!successView.stripePending && !successView.stripeFailed &&
+        !(order?.paymentQrMode==="confirmed_order_5m"&&order?.paymentStatus==="pending_verification"&&order?.companionKitchenRelease?.status!=="admitted_unverified")&&<section className="delivery-tracking-card" id="deliveryTrackingCard">
         <div className="delivery-tracking-head">
           <div>
             <h2>{t("delivery.success.tracking.title")}</h2>
@@ -278,19 +403,10 @@ export function DeliverySuccessPage() {
         </div>
       </section>}
 
-      <div className="receipt-toolbar">
-        <button className="btn btn-primary" id="saveImageButton" type="button" disabled={!order || downloading || (order.paymentQrMode==="confirmed_order_5m"&&order.paymentStatus==="pending_verification")} onClick={download}>
-          <i className="bi bi-download app-icon" aria-hidden="true"></i><span>{t(downloading ? "delivery.success.actions.creating_image" : "delivery.success.actions.download")}</span>
-        </button>
-        <a className="btn" id="verifyLatestLink" href={verifyUrl || "#"} target="_blank" rel="noopener">
-          <i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("delivery.success.actions.verify_latest")}</span>
-        </a>
-      </div>
-
       {loading ? <section className="card empty">{t("delivery.success.tracking.loading")}</section> : null}
       {errorText ? <section className="card empty">{errorText}</section> : null}
 
-      {order && !(order.paymentQrMode==="confirmed_order_5m"&&order.paymentStatus==="pending_verification") ? <section className="receipt" id="customerReceipt" ref={receiptRef}>
+      {mayShowReceipt ? <section className="receipt" id="customerReceipt" ref={receiptRef}>
         <div className="receipt-header">
           <h1 id="shopName">{shopName}</h1>
           <div id="shopAddress">{settings.shopAddress || ""}</div>

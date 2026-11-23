@@ -399,6 +399,7 @@ const deliveryPage=read("react-app/src/pages/DeliveryPage.jsx");
 const takeawayPage=read("react-app/src/pages/TakeawayPage.jsx");
 const deliverySuccessPage=read("react-app/src/pages/DeliverySuccessPage.jsx");
 const deliverySuccessTrackingCss=read("react-app/public/parity/css/delivery-success-tracking.css");
+const deliverySuccessCustomerCss=read("public/react/parity/css/delivery-success-customer-actions.css");
 const sharedResponsiveCss=read("react-app/public/parity/css/shared-responsive.css");
 const readmeRules=read("README.md");
 const structureRules=read("STRUCTURE.md");
@@ -812,18 +813,23 @@ assert(
 );
 assert(
   deliverySuccessPage.includes('id="orderAgainLink"')
-  &&deliverySuccessPage.includes('bi bi-plus-circle app-icon')
+  &&deliverySuccessPage.includes('id="orderAgainMobileLink"')
   &&deliverySuccessPage.includes('id="saveImageButton"')
-  &&deliverySuccessPage.includes('bi bi-download app-icon')
   &&deliverySuccessPage.includes('id="verifyLatestLink"')
-  &&deliverySuccessPage.includes('bi bi-eye app-icon')
   &&deliverySuccessPage.includes('id="customerLalamoveTrackLink"')
   &&deliverySuccessPage.includes('bi bi-truck app-icon')
+  &&deliverySuccessPage.includes('className="receipt-toolbar delivery-receipt-actions"')
+  &&deliverySuccessPage.includes('className="delivery-receipt-action-icon"')
+  &&deliverySuccessPage.includes('aria-label={t("delivery.success.actions.verify_latest")}')
+  &&deliverySuccessPage.includes('aria-label={t("delivery.success.header.order_again")}')
+  &&deliverySuccessPage.includes('role="status" data-paid={successView.verifiedPaid}')
+  &&deliverySuccessPage.includes('deliverySuccessCustomerState(order')
+  &&deliverySuccessPage.includes('delivery-success-customer-actions.css')
+  &&deliverySuccessCustomerCss.includes('grid-template-columns:repeat(3,minmax(0,1fr))')
+  &&deliverySuccessCustomerCss.includes('.customer-payment-badge-sandbox')
   &&deliverySuccessTrackingCss.includes(".delivery-success-page .app-header {")
-  &&deliverySuccessTrackingCss.includes("gap: 12px;")
-  &&deliverySuccessTrackingCss.includes(".delivery-success-page .receipt-toolbar {")
-  &&deliverySuccessTrackingCss.includes("margin-bottom: 16px;"),
-  "Delivery Success visible actions must retain semantic icons and perimeter spacing"
+  &&deliverySuccessTrackingCss.includes("gap: 12px;"),
+  "Delivery Success source-first three SVG customer controls, payment-safe card and responsive CSS must stay aligned"
 );
 assert(
   deliveryPage.includes('extraCategory={favoriteIds.size > 0 ? "__favorites__" : null}')
