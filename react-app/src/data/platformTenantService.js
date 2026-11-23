@@ -120,3 +120,4 @@ export const getTenantLalamoveWallet = payload => call("getTenantLalamoveWallet"
 export const reviewTenantLalamoveWalletTopup = payload => call("reviewTenantLalamoveWalletTopup", payload);
 export const backfillTenantSubscriptions = payload => call("backfillTenantSubscriptions", payload);
 export const updateTenantSubscription = payload => call("updateTenantSubscription", payload);
+export const getPlatformTenantSubscriptionOperation = payload => call("getPlatformTenantSubscriptionOperation", payload);

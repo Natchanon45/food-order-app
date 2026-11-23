@@ -342,3 +342,46 @@ The one-operation Owner provisioning recovery is accepted only
 for local code + Auth/Firestore Emulator and Browser tests, not
 for Production UAT or financial settlement. JSX line count is
 NOT a functional completion percentage.
+
+## 2026-11-23 P1.2d — legacy membership and access controls (local module acceptance)
+
+Following P1.2c, P1.2d closes the Superadmin **legacy
+subscription** update path through one server-authoritative
+transaction for Tenant + canonical public Slug + immutable
+idempotent operation receipt, cross-checking the original
+membership and stale-state/revision. A new read-only recovery
+Callable and per-Superadmin/tenant opaque browser operation
+lock handle ambiguous transport outcomes without double
+30/365-day extensions, while preserving original signup/activation.
+
+The card retains Source layout/responsive behavior with strict
+0–30 grace-day validation and Bangkok end-of-day expiry.
+Manual membership suspend/activate require confirmation and
+cannot release independent security, M7 invoice, Revenue Share
+or Hybrid holds. Plan migration remains gated until authentic
+historical financial terms are reviewed.
+
+Tenant page load no longer backfills missing historical
+subscriptions or creates a free trial for older stores. The
+subscription on-create hook is diagnostic only for incomplete
+historical records; the legacy 00:15 expiry sync is transactionally
+guarded against cross-tenant slug mismatches.
+Firestore browser writes to subscription/access fields,
+canonical public slug and operation receipts are denied;
+Admin SDK transaction operations alone can change them.
+
+Acceptance is **local/dev only**. This did not deploy a
+Production build, mutate LUKKAJA Source, approve real payment,
+migrate financial ledgers, or accept P1.2e finance workflow.
+See `docs/LUKKAJA_P1_2_LEGACY_SUBSCRIPTION_ACCESS_CONTROL_20261123.md`
+for test evidence and remaining blockers.
+
+
+### P1.2d full local acceptance gate
+
+28/28 combined Auth + Firestore Emulator tests, 11/11 pure
+subscription-policy tests and 8/8 React contract/browser tests,
+responsive at 320/390/768/1440 px. The entire React parity chain,
+116 Function-Callable references (0 missing), generated-build
+contract and Vite build passed. This is a **local Module completion**,
+not signed-in live Production UAT or permission for financial settlement.

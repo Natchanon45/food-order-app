@@ -1480,9 +1480,20 @@ assert(
   "Lalamove approval must update the target tenant locally without blocking on a full tenant-list reload"
 );
 assert(adminTenantsPage.includes("initialTenantsReady")&&adminTenantsPage.includes('profile?.role === "super_admin" && !initialTenantsReady'),"Admin Tenants full-page readiness must wait for the initial tenant list");
-const initialTenantEffect=adminTenantsPage.slice(adminTenantsPage.indexOf("// Critical page data starts immediately"),adminTenantsPage.indexOf("useEffect(() => {",adminTenantsPage.indexOf("// Critical page data starts immediately")+1));
-assert(initialTenantEffect.indexOf("loadTenantList();")>=0&&initialTenantEffect.indexOf("loadTenantList();")<initialTenantEffect.indexOf("backfillTenantSubscriptions"),"Admin Tenants must start tenant loading before subscription backfill");
-assert(adminTenantsPage.includes("loadTenantList({ silent: true })"),"Admin Tenants backfill refresh must remain silent after initial render");
+// Membership P1.2d: tenant inventory may NEVER run a background mutation.
+ // Historic stores with missing terms require their original evidence rather
+ // than a fresh trial anchored to the day Superadmin opened this page.
+const initialTenantEffect=adminTenantsPage.slice(
+  adminTenantsPage.indexOf("// Read only. Historical subscription backfills"),
+  adminTenantsPage.indexOf("useEffect(() => {",
+    adminTenantsPage.indexOf("// Read only. Historical subscription backfills")+1));
+assert(initialTenantEffect.includes("loadTenantList();") &&
+  !initialTenantEffect.includes("backfillTenantSubscriptions("),
+  "Admin Tenant first load must read tenants without retroactive subscription backfill");
+assert(!adminTenantsPage.includes("await backfillTenantSubscriptions("),
+  "Superadmin tenant UI cannot create or reset historical trials on page load");
+assert(adminTenantsPage.includes("loadTenantList({ silent: true })"),
+  "Admin Tenant background canonical rereads must remain silent after initial render");
 const salesReportPage=read("react-app/src/pages/AdminSalesReportPage.jsx");
 const salesReportModernCss=read("react-app/public/parity/css/sales-report-modern.css");
 const salesReportParityCss=read("react-app/public/parity/css/admin-sales-report-retail-pos-parity.css");

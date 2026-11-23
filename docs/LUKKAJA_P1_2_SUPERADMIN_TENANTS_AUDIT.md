@@ -96,3 +96,25 @@ This closes **P1.2c** but does not claim acceptance of P1.2d payment
 override/subscription changes, P1.2e financial M7 activation or a
 signed-in live Production release. See dedicated acceptance:
 `docs/LUKKAJA_P1_2_ATOMIC_OWNER_PROVISION_RECOVERY_20261123.md`.
+
+## 2026-11-23 P1.2d — legacy subscription membership control (completed local module)
+
+Firebase's legacy `updateTenantSubscription` now uses a checked
+server-side transaction and immutable operation receipt rather
+than optimistic UI state or repeated non-idempotent extension.
+The Source-inspired card supports 30/365-day extension, exact
+Bangkok expiry, manual suspend and separately confirmed
+activate, but the package selector is locked until authentic
+original pricing/billing terms are reviewed. A lost request
+stays locked through navigation and is read back by a new
+Superadmin-only operation Callable. No real financial Hold
+can be released by a membership command.
+
+Opening the Tenant list is now **strictly read-only**; historical
+backfill and old-subscription automatic re-trial are disabled.
+Firestore client writes to subscription/activation/access fields
+and public slug activation are disallowed. The separate immutable
+business/finance fields are not changed. Combined Auth/Firestore
+Emulator and responsive React browser evidence, limitations and
+Source SHA are documented in
+`docs/LUKKAJA_P1_2_LEGACY_SUBSCRIPTION_ACCESS_CONTROL_20261123.md`.

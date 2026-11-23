@@ -15,8 +15,12 @@ test("Premium Delivery suspension routes owner/admin to the payment report", () 
 });
 
 test("Subscription scheduler and subscription edits do not unsuspend unpaid Premium shops", () => {
-  assert.match(sub, /if \(revenueShareEnabled\(tenant\) \|\| tenant\.revenueShareSuspended === true\) continue/);
-  assert.match(sub, /if \(tenant\.revenueShareSuspended === true\) active = false/);
+  assert.match(sub, /if \(revenueShareEnabled\(tenant\) \|\| tenant\.revenueShareSuspended === true\) return false/);
+  assert.match(sub, /tx.update\(slugRef/);
+  const policy = fs.readFileSync("functions/tenant-subscription-command-policy.js","utf8");
+  assert.match(policy,/tenant\.revenueShareSuspended===true/);
+  assert.match(policy,/SUBSCRIPTION_FINANCIAL_MODE_UNSUPPORTED/);
+  assert.match(policy,/SUBSCRIPTION_INDEPENDENT_HOLD/);
   assert.match(sub, /every day 00:15/);
   const callable = sub.slice(sub.indexOf("exports.updateTenantSubscription"));
   assert.match(callable, /subscriptionUpdatedBy:/);

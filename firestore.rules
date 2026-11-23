@@ -299,7 +299,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
-    match /tenantSlugs/{slug} { allow read: if true; allow write: if superAdminRole(); }
+    // The canonical slug is an authority for store activation.
+    // All writes MUST flow through server transactions; even a Superadmin
+    // browser cannot mark a tenant active or change membership here.
+    match /tenantSlugs/{slug} { allow read: if true; allow write: if false; }
     // One-call Auth/Firestore provisioning reservations are written and
     // reconciled only by Admin SDK. Even Superadmin browsers cannot mutate
     // operation receipts to forge creation or free a reserved public slug.
@@ -360,7 +363,21 @@ service cloud.firestore {
     match /lkShopFcmTokenClaims/{path=**} { allow read, write: if false; }
 
     match /tenants/{tenantId} {
-      allow read: if true; allow create, update, delete: if superAdminRole();
+      allow read: if true;
+      allow create, delete: if superAdminRole();
+      // Non-financial tenant profile edits remain supported, but subscription
+      // and store-access fields may only change from authoritative Callables.
+      // Firestore clients cannot evade the atomic receipt+CAS transaction.
+      allow update: if superAdminRole()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'active', 'planCode', 'subscriptionStatus',
+          'subscriptionExpiresAt', 'subscriptionStartedAt',
+          'subscriptionUpdatedBy', 'subscriptionAdminRevision',
+          'gracePeriodDays', 'firstActivatedAt',
+          'trialStartsAt', 'trialEndsAt', 'suspensionReason', 'suspendedAt',
+          'revenueShareSuspended', 'hybridBillingSuspended',
+          'm7FinanceAccessStatus', 'm7FinanceAccessReason'
+        ]);
       match /menus/{menuId} { allow read: if tenantBusinessEnabled(tenantId, 'order_delivery') && (true); allow create, update, delete: if tenantBusinessEnabled(tenantId, 'order_delivery') && (tenantAdminRole(tenantId)); }
       match /settings/{settingId} { allow read: if true; allow create, update, delete: if (tenantAdminRole(tenantId) && settingId != 'lalamove' && settingId != 'lalamoveWallet') || (settingId == 'catalog-order' && tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId)); }
       match /products/{productId} { allow read: if tenantBusinessEnabled(tenantId, 'retail_pos') && (true); allow create: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId) && ((!('importedFromExcel' in request.resource.data) && !('importedFromCatalog' in request.resource.data)) || tenantOwner(tenantId))); allow update: if tenantBusinessEnabled(tenantId, 'retail_pos') && ((tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId) && tenantResourceMatches(tenantId)) || retailStockUpdate(tenantId) || validPosStockUpdate(tenantId)); allow delete: if tenantBusinessEnabled(tenantId, 'retail_pos') && (tenantProductManagerRole(tenantId) && tenantResourceMatches(tenantId)); }
@@ -502,6 +519,11 @@ service cloud.firestore {
       match /hybridBillingRefundCandidates/{adjustmentId} {
         allow get, list: if superAdminRole();
         allow create, update, delete: if false;
+      }
+      // Immutable Superadmin subscription command receipts are not editable
+      // by any browser, including the same Superadmin. Admin SDK only.
+      match /subscriptionAdminActions/{operationId} {
+        allow read, write: if false;
       }
       match /memberships/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole() || tenantAdminRole(tenantId)); allow create, update, delete: if superAdminRole(); }
     }

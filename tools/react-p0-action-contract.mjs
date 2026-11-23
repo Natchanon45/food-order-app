@@ -291,7 +291,10 @@ requireAll("Admin tenant destructive/review actions", tenants, [
   "await unlockTenantRevenueShare({ tenantId: tenant.id })",
   "const result = await updateTenantLalamoveApproval({ tenantId: tenant.id, approved: nextApproved })",
   "await reviewTenantLalamoveWalletTopup({",
-  "const result = await updateTenantSubscription(payload)",
+  "await updateTenantSubscription(payload)",
+  "validateSubscriptionWrite(",
+  "getPlatformTenantSubscriptionOperation({ tenantId, operationId })",
+  "canonicalSubscriptionMatches(canonical, response)",
 ]);
 for (const fn of [
   "createTenant",

@@ -100,13 +100,19 @@ test("subscription pricing does not load inactive Hybrid Billing settings", () =
 });
 test("legacy subscription schedulers skip new hybrid tenants", () => {
   const backend = fs.readFileSync("functions/subscription-admin.js", "utf8");
-  assert.equal((backend.match(/billingPolicyVersion === "hybrid_v1"/g) || []).length, 4);
+  // The nonfinancial command policy also rejects Hybrid before any receipt
+  // or Tenant/Slug write. Legacy init/backfill cannot start a new trial.
+  assert.equal((backend.match(/billingPolicyVersion === "hybrid_v1"/g) || []).length, 2);
+  const policy = fs.readFileSync("functions/tenant-subscription-command-policy.js","utf8");
+  assert.match(policy,/billingPolicyVersion==="hybrid_v1"/);
 });
 
 test("legacy subscription controls reject Hybrid, and per-Tenant share edits are disabled", () => {
   const subscription = fs.readFileSync("functions/subscription-admin.js", "utf8");
   const commission = fs.readFileSync("functions/revenue-share.js", "utf8");
-  assert.match(subscription, /Hybrid tenants cannot use legacy/);
+  const policy = fs.readFileSync("functions/tenant-subscription-command-policy.js","utf8");
+  assert.match(policy, /SUBSCRIPTION_FINANCIAL_MODE_UNSUPPORTED/);
+  assert.match(subscription, /cmdPolicy.next\(tenant,input,new Date\(\)\)/);
   const update = commission.slice(commission.indexOf("exports.updateTenantRevenueShare ="), commission.indexOf("exports.unlockTenantRevenueShare ="));
   assert.match(update, /Per-Tenant commission settings are disabled/);
   assert.doesNotMatch(update, /mirrorTenantAccess|tenantRef\.update/);

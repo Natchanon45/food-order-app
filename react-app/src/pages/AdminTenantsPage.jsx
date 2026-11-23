@@ -12,6 +12,7 @@ import { storage } from "@/firebase/client";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { TenantControlPanel } from "@/components/TenantControlPanel";
+import { TenantSubscriptionControl } from "@/components/TenantSubscriptionControl";
 import { TenantProvisionRecoveryNotice } from "@/components/TenantProvisionRecoveryNotice";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
@@ -23,9 +24,13 @@ import {
   readPendingProvision, holdPendingProvision, releasePendingProvision,
   validateProvisionStatus, canonicalOwnerMatches, isProvisionUnknownError,
 } from "@/data/tenantProvisionRecovery.mjs";
+import {
+  readPendingSubscription, holdPendingSubscription, releasePendingSubscription,
+  validateSubscriptionWrite, validateSubscriptionOperation,
+  canonicalSubscriptionMatches, subscriptionUnknownError,
+} from "@/data/tenantSubscriptionRecovery.mjs";
 import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
-  backfillTenantSubscriptions,
   createActiveTenantWithOwner,
   getPlatformTenantProvisionStatus,
   createTenant,
@@ -41,6 +46,7 @@ import {
   updateTenant,
   updateTenantLalamoveApproval,
   updateTenantSubscription,
+  getPlatformTenantSubscriptionOperation,
 } from "@/data/platformTenantService";
 
 const todayKey = () => {
@@ -123,110 +129,13 @@ function closeTenantDialog(dialog) {
   syncTenantModalBody();
 }
 
-function tenantDate(value) {
-  if (!value) return null;
-  if (typeof value?.toDate === "function") return value.toDate();
-  if (typeof value?.seconds === "number") return new Date(value.seconds * 1000);
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function dateInputValue(value) {
-  const date = tenantDate(value);
-  if (!date) return "";
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
-}
-
-function subscriptionDisplayDate(value, intlLocale, fallback) {
-  const date = tenantDate(value);
-  return date
-    ? new Intl.DateTimeFormat(intlLocale, { year: "numeric", month: "short", day: "numeric" }).format(date)
-    : fallback;
-}
-
-function subscriptionStatusText(tenant, t, namespace = "statuses") {
-  const status = tenant.subscriptionStatus || (tenant.active === false ? "inactive" : "active");
-  const key = `admin_tenants.subscription.${namespace}.${status}`;
-  const translated = t(key);
-  return translated === key ? status : translated;
-}
-
-function TenantSubscription({ tenant, t, intlLocale, onAction }) {
-  const [expiresAt, setExpiresAt] = useState(() => dateInputValue(tenant.subscriptionExpiresAt));
-  const [gracePeriodDays, setGracePeriodDays] = useState(() => String(tenant.gracePeriodDays ?? 3));
-  const [planCode, setPlanCode] = useState(() => tenant.planCode === "yearly" ? "yearly" : "monthly");
-  const [busyAction, setBusyAction] = useState("");
-
-  useEffect(() => {
-    setExpiresAt(dateInputValue(tenant.subscriptionExpiresAt));
-    setGracePeriodDays(String(tenant.gracePeriodDays ?? 3));
-    setPlanCode(tenant.planCode === "yearly" ? "yearly" : "monthly");
-  }, [tenant.subscriptionExpiresAt, tenant.gracePeriodDays, tenant.planCode]);
-
-  const expiry = tenantDate(tenant.subscriptionExpiresAt);
-  const remaining = expiry ? Math.ceil((expiry.getTime() - Date.now()) / 86400000) : null;
-  const status = tenant.subscriptionStatus || "active";
-  const statusLabel = subscriptionStatusText(tenant, t);
-  const planLabel = t(`admin_tenants.subscription.plans.${planCode}`);
-  const remainingLabel = remaining === null
-    ? "-"
-    : remaining >= 0
-      ? t("admin_tenants.subscription.days", { count: remaining })
-      : t("admin_tenants.subscription.days_over", { count: Math.abs(remaining) });
-
-  const run = async (action, days = 0) => {
-    const token = `${action}:${days}`;
-    setBusyAction(token);
-    try {
-      await onAction(tenant, {
-        tenantId: tenant.id,
-        action,
-        days,
-        expiresAt,
-        gracePeriodDays: Number(gracePeriodDays || 3),
-        planCode,
-      });
-    } finally {
-      setBusyAction("");
-    }
-  };
-
-  return (
-    <details className="tenant-subscription" data-subscription-tenant={tenant.id}>
-      <summary>
-        <span><i className="bi bi-credit-card-2-front" aria-hidden="true"></i><strong>{t("admin_tenants.subscription.title")}</strong></span>
-        <span className="tenant-subscription-summary">{statusLabel} · {subscriptionDisplayDate(tenant.subscriptionExpiresAt, intlLocale, t("admin_tenants.subscription.not_set"))}<i className="bi bi-chevron-down" aria-hidden="true"></i></span>
-      </summary>
-      <div className="tenant-subscription-body">
-        <div className="tenant-subscription-info">
-          <article><span>{t("admin_tenants.subscription.package")}</span><strong>{planLabel}</strong></article>
-          <article><span>{t("admin_tenants.subscription.status")}</span><strong>{statusLabel}</strong></article>
-          <article><span>{t("admin_tenants.subscription.remaining")}</span><strong>{remainingLabel}</strong></article>
-        </div>
-        <div className="tenant-subscription-fields">
-          <label>{t("admin_tenants.subscription.expiry")}<input className="input" type="date" data-expiry-date value={expiresAt} onChange={event => setExpiresAt(event.target.value)} /></label>
-          <label>{t("admin_tenants.subscription.grace_days")}<input className="input" type="number" min="0" max="30" data-grace-days value={gracePeriodDays} onChange={event => setGracePeriodDays(event.target.value)} /></label>
-          <label>{t("admin_tenants.subscription.plan")}<select className="input" data-plan-code value={planCode} onChange={event => setPlanCode(event.target.value)}><option value="monthly">{t("admin_tenants.subscription.plans.monthly")}</option><option value="yearly">{t("admin_tenants.subscription.plans.yearly")}</option></select></label>
-        </div>
-        <div className="tenant-subscription-actions">
-          <button className="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="30" disabled={busyAction === "extend:30"} onClick={() => run("extend", 30)}><i className="bi bi-calendar-plus" aria-hidden="true"></i><span>{t("admin_tenants.subscription.extend_30")}</span></button>
-          <button className="btn btn-primary btn-sm" type="button" data-subscription-action="extend" data-days="365" disabled={busyAction === "extend:365"} onClick={() => run("extend", 365)}><i className="bi bi-calendar2-plus" aria-hidden="true"></i><span>{t("admin_tenants.subscription.extend_year")}</span></button>
-          <button className="btn btn-sm" type="button" data-subscription-action="set-expiry" disabled={busyAction === "set-expiry:0"} onClick={() => run("set-expiry")}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("admin_tenants.subscription.save_expiry")}</span></button>
-          {status === "suspended"
-            ? <button className="btn btn-primary btn-sm" type="button" data-subscription-action="activate" disabled={busyAction === "activate:0"} onClick={() => run("activate")}><i className="bi bi-check-circle" aria-hidden="true"></i><span>{t("admin_tenants.subscription.activate")}</span></button>
-            : <button className="btn btn-danger btn-sm" type="button" data-subscription-action="suspend" disabled={busyAction === "suspend:0"} onClick={() => run("suspend")}><i className="bi bi-pause-circle" aria-hidden="true"></i><span>{t("admin_tenants.subscription.suspend")}</span></button>}
-        </div>
-      </div>
-    </details>
-  );
-}
-
 // Source TenantControlPanel already owns the visible store identity, summary,
 // status and primary actions. Only preserve PENGUIN-specific maintenance tools
 // that are not present in its source JSX; never nest a second tenant card.
 function TenantMaintenanceControls({
   tenant, summary = {}, t, intlLocale, onUnlock, onSubscriptionAction,
+  subscriptionWriteUnconfirmed = false, subscriptionCheckBusy = false,
+  onCheckSubscription,
 }) {
   const shareEnabled = tenant.billingMode === "revenue_share" ||
     summary.revenueShareEnabled === true;
@@ -246,8 +155,12 @@ function TenantMaintenanceControls({
           <span>{t("admin_tenants.tenant.unlock_revenue_share")}</span>
         </button>
       ) : null}
-      {!shareEnabled ? <TenantSubscription tenant={tenant} t={t}
-        intlLocale={intlLocale} onAction={onSubscriptionAction} /> : null}
+      {!shareEnabled && tenant.billingPolicyVersion !== "hybrid_v1" ?
+        <TenantSubscriptionControl tenant={tenant} t={t} intlLocale={intlLocale}
+          onAction={onSubscriptionAction}
+          writeUnconfirmed={subscriptionWriteUnconfirmed}
+          checking={subscriptionCheckBusy}
+          onCheck={onCheckSubscription} /> : null}
     </div>
   );
 }
@@ -387,6 +300,8 @@ export function AdminTenantsPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: "", slug: "", phone: "", address: "", businessType: "both", ownerName: "", ownerEmail: "", ownerPassword: "", confirmPassword: "", planCode: "monthly" });
   const [uncertainTenantWrites, setUncertainTenantWrites] = useState({});
+  const [uncertainSubscriptionWrites, setUncertainSubscriptionWrites] = useState({});
+  const [subscriptionCheckBusy, setSubscriptionCheckBusy] = useState("");
   const [pendingProvisionId, setPendingProvisionId] = useState("");
   const [provisionChecking, setProvisionChecking] = useState(false);
   const [slugEdited, setSlugEdited] = useState(false);
@@ -479,28 +394,28 @@ export function AdminTenantsPage() {
   }, [reviewStatus, tenantId]);
 
   useEffect(() => {
-    if (profile?.role !== "super_admin") return undefined;
-    let cancelled = false;
-
-    // Critical page data starts immediately. Do not serialize the tenant list
-    // behind the one-time subscription backfill.
+    if (profile?.role !== "super_admin") return;
+    // Read only. Historical subscription backfills are never a side effect
+    // of opening the tenant directory, to avoid new trials for old stores.
     loadTenantList();
+  }, [profile?.role, loadTenantList]);
 
-    // Backfill is maintenance work. Keep it off the critical render path and
-    // refresh silently only when it actually changed tenant subscription data.
-    (async () => {
-      try {
-        const result = await backfillTenantSubscriptions({});
-        if (cancelled || Number(result?.updated || 0) <= 0) return;
-        showToast(t("admin_tenants.subscription.backfilled", { count: formatNumber(result.updated) }));
-        await loadTenantList({ silent: true });
-      } catch (error) {
-        console.error("SUBSCRIPTION_BACKFILL_FAILED", error);
+  useEffect(() => {
+    if (profile?.role !== "super_admin" || !authState.user?.uid) return;
+    const uid = authState.user.uid;
+    setUncertainSubscriptionWrites(current => {
+      const next = { ...current };
+      let changed = false;
+      for (const tenant of tenants) {
+        const pending = Boolean(readPendingSubscription(uid,tenant.id));
+        if (Boolean(next[tenant.id]) !== pending) {
+          next[tenant.id] = pending;
+          changed = true;
+        }
       }
-    })();
-
-    return () => { cancelled = true; };
-  }, [profile?.role, loadTenantList, t, formatNumber]);
+      return changed ? next : current;
+    });
+  }, [authState.user?.uid, profile?.role, tenants]);
 
   useEffect(() => {
     if (profile?.role !== "super_admin") return;
@@ -925,36 +840,124 @@ export function AdminTenantsPage() {
     setSlipUrl("");
   };
 
-  const updateSubscription = async (tenant, payload) => {
-    if (payload.action === "suspend") {
+  const reconcileSubscription = async tenant => {
+    const uid = authState.user?.uid;
+    const operationId = readPendingSubscription(uid, tenant.id);
+    if (!operationId || subscriptionCheckBusy) return;
+    setSubscriptionCheckBusy(tenant.id);
+    try {
+      const checked = validateSubscriptionOperation(
+        await getPlatformTenantSubscriptionOperation({
+          tenantId: tenant.id, operationId,
+        }), tenant.id, operationId,
+      );
+      if (checked.status === "complete_current") {
+        const canonical = await listTenants();
+        const receipt = {
+          tenantId: tenant.id,
+          status: checked.tenant.subscriptionStatus,
+          active: checked.tenant.active,
+          planCode: checked.tenant.planCode,
+          gracePeriodDays: checked.tenant.gracePeriodDays,
+          expiresAt: checked.tenant.subscriptionExpiresAt,
+          revision: checked.tenant.subscriptionAdminRevision,
+        };
+        if (!canonicalSubscriptionMatches(canonical, receipt))
+          throw new Error("SUBSCRIPTION_WRITE_UNCONFIRMED");
+        setTenants(canonical);
+        releasePendingSubscription(uid, tenant.id, operationId);
+        setUncertainSubscriptionWrites(current => ({ ...current, [tenant.id]: false }));
+        showToast("ยืนยันผลการปรับสมาชิกจาก Firebase แล้ว");
+      } else if (checked.status === "complete_superseded") {
+        // This operation committed; a later canonical change superseded it.
+        // Never replay the old command over another admin's newer data.
+        const canonical = await listTenants();
+        if (!canonical.some(row => row.id === tenant.id))
+          throw new Error("SUBSCRIPTION_WRITE_UNCONFIRMED");
+        setTenants(canonical);
+        releasePendingSubscription(uid, tenant.id, operationId);
+        setUncertainSubscriptionWrites(current => ({ ...current, [tenant.id]: false }));
+        showToast("คำสั่งเดิมบันทึกแล้ว แต่มีข้อมูลใหม่กว่า โปรดตรวจรอบสมาชิกล่าสุด");
+      } else {
+        showToast("ยังยืนยันผลคำสั่งเดิมไม่ได้ กรุณาตรวจสอบกับผู้ดูแลก่อนส่งซ้ำ", "error");
+      }
+    } catch (error) {
+      console.warn("SUBSCRIPTION_OPERATION_RECONCILIATION_FAILED",
+        error?.code || error?.message);
+      showToast("หลักฐานคำสั่งเดิมยังไม่ครบ ห้ามส่งรายการซ้ำ", "error");
+    } finally {
+      setSubscriptionCheckBusy("");
+    }
+  };
+
+  const updateSubscription = async (tenant, command) => {
+    const uid = authState.user?.uid;
+    const tenantId = String(tenant.id || "");
+    if (readPendingSubscription(uid, tenantId) ||
+      uncertainSubscriptionWrites[tenantId]) {
+      showToast("มีคำสั่งสมาชิกที่ต้องตรวจสอบก่อน ห้ามส่งซ้ำ", "error");
+      return null;
+    }
+    if (command.action === "suspend" || command.action === "activate") {
       const confirmed = await sweetConfirm(
-        t("admin_tenants.subscription.suspend_confirm"),
+        command.action === "suspend"
+          ? t("admin_tenants.subscription.suspend_confirm")
+          : "ยืนยันการคืนสถานะสมาชิกจากการระงับด้วยตนเอง? ระบบจะไม่ปลด Hold การเงินหรือยอดค้างชำระ",
         {
-          title: t("admin_tenants.subscription.suspend_title"),
-          confirmText: t("admin_tenants.subscription.suspend"),
+          title: command.action === "suspend"
+            ? t("admin_tenants.subscription.suspend_title") : "ยืนยันคืนสถานะสมาชิก",
+          confirmText: command.action === "suspend"
+            ? t("admin_tenants.subscription.suspend") : "ยืนยันคืนสถานะ",
           cancelText: t("admin_tenants.common.cancel"),
           type: "warning",
         },
       );
       if (!confirmed) return null;
     }
-
+    const operationId = crypto.randomUUID();
+    const payload = { ...command, tenantId, operationId };
+    if (!holdPendingSubscription(uid, tenantId, operationId)) {
+      showToast("ไม่สามารถเก็บรหัสคำสั่งในเบราว์เซอร์ได้ จึงไม่ส่งคำสั่งสมาชิก", "error");
+      return null;
+    }
+    setUncertainSubscriptionWrites(current => ({ ...current, [tenantId]: true }));
     try {
-      const result = await updateTenantSubscription(payload);
-      setTenants(current => current.map(item => item.id === tenant.id ? {
-        ...item,
-        active: result.active !== false,
-        subscriptionStatus: result.status || item.subscriptionStatus || "active",
-        subscriptionExpiresAt: result.expiresAt || item.subscriptionExpiresAt,
-        gracePeriodDays: Number(result.gracePeriodDays ?? payload.gracePeriodDays),
-        planCode: payload.planCode || item.planCode || "monthly",
-        suspendedAt: result.status === "suspended" ? new Date().toISOString() : null,
-      } : item));
+      const response = validateSubscriptionWrite(
+        await updateTenantSubscription(payload), payload,
+      );
+      const checked = validateSubscriptionOperation(
+        await getPlatformTenantSubscriptionOperation({ tenantId, operationId }),
+        tenantId, operationId,
+      );
+      if (checked.status !== "complete_current" ||
+        checked.tenant.subscriptionAdminRevision !== response.revision)
+        throw new Error("SUBSCRIPTION_WRITE_UNCONFIRMED");
+      const canonical = await listTenants();
+      if (!canonicalSubscriptionMatches(canonical, response))
+        throw new Error("SUBSCRIPTION_WRITE_UNCONFIRMED");
+      setTenants(canonical);
+      releasePendingSubscription(uid, tenantId, operationId);
+      setUncertainSubscriptionWrites(current => ({ ...current, [tenantId]: false }));
       showToast(t("admin_tenants.subscription.updated"));
-      return result;
+      return response;
     } catch (error) {
-      console.error("TENANT_SUBSCRIPTION_UPDATE_FAILED", error);
-      showToast(error?.message || t("admin_tenants.subscription.update_failed"), "error");
+      const code = String(error?.message || "");
+      const definitive = error?.code === "functions/invalid-argument" ||
+        (error?.code === "functions/failed-precondition" &&
+        /^(SUBSCRIPTION_STALE_STATE|SUBSCRIPTION_.*(?:INVALID|REQUIRED|UNSUPPORTED|REVIEW|MISMATCH|HOLD)|SUBSCRIPTION_NOT_MANUALLY_SUSPENDED)$/.test(code));
+      if (definitive) {
+        releasePendingSubscription(uid, tenantId, operationId);
+        setUncertainSubscriptionWrites(current => ({ ...current, [tenantId]: false }));
+        showToast(code === "SUBSCRIPTION_STALE_STATE"
+          ? "ข้อมูลสมาชิกร้านเปลี่ยนแล้ว กรุณาโหลดข้อมูลใหม่ก่อนบันทึก"
+          : "ระบบปฏิเสธการเปลี่ยนสมาชิก กรุณาตรวจสอบสิทธิ์และรอบบัญชีเดิม", "error");
+        await loadTenantList({ silent: true });
+      } else {
+        setUncertainSubscriptionWrites(current => ({ ...current, [tenantId]: true }));
+        showToast(subscriptionUnknownError(error)
+          ? "ไม่ยืนยันผลบันทึกได้ กรุณาใช้ปุ่มตรวจสถานะคำสั่งเดิมก่อนส่งซ้ำ"
+          : "ยังตรวจผลคำสั่งสมาชิกจากเซิร์ฟเวอร์ไม่ได้ ห้ามส่งคำสั่งซ้ำ", "error");
+      }
       throw error;
     }
   };
@@ -1319,6 +1322,9 @@ export function AdminTenantsPage() {
                         intlLocale={intlLocale}
                         onUnlock={unlockShare}
                         onSubscriptionAction={updateSubscription}
+                        subscriptionWriteUnconfirmed={Boolean(uncertainSubscriptionWrites[tenant.id])}
+                        subscriptionCheckBusy={subscriptionCheckBusy === tenant.id}
+                        onCheckSubscription={reconcileSubscription}
                       />
                     </TenantControlPanel>
                   ))

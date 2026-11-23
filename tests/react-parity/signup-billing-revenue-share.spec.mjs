@@ -137,10 +137,16 @@ test("Super Admin Tenant modal shows only central Delivery settings, without per
 test("subscription initializer/backfill/scheduler preserve signup cycle/trial and skip revenue-share tenants", () => {
   const source = fs.readFileSync("functions/subscription-admin.js", "utf8");
   assert.ok(source.includes("if (tenant.subscriptionExpiresAt || revenueShareEnabled(tenant)) return;"));
-  assert.ok(source.includes('tenant.planCode === "yearly" ? "yearly" : "monthly"'));
+  assert.match(source,/SUBSCRIPTION_ORIGINAL_ENROLLMENT_REQUIRED/);
+  assert.doesNotMatch(source,/function defaultPatch/);
   assert.ok(source.includes("tenant.trialEndsAt"));
   assert.ok(source.includes('tenant.subscriptionStatus === "trialing"'));
-  assert.equal((source.match(/defaultPatch\(new Date\(\), tenant\)/g) || []).length, 3);
+  // New shops may initialize once. Existing old shops and the 00:15
+  // scheduler must not fabricate a fresh trial/expiry from today's date.
+  assert.equal((source.match(/defaultPatch\(new Date\(\), tenant\)/g) || []).length, 0);
+  assert.match(source, /SUBSCRIPTION_HISTORICAL_BACKFILL_REQUIRES_ORIGINAL_EVIDENCE/);
+  assert.match(source, /if \(!tenant.subscriptionExpiresAt\) \{/);
+  assert.match(source, /Original signup|original activation|original\/evidence|original terms|original enrollment|original subscription|original billing|original membership|original date|original signup|original time|original receipt|original plan|original anniversary|original evidence/i);
 });
 
 test("repeat activation preserves the original subscription trial end", () => {

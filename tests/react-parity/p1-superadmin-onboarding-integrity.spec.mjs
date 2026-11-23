@@ -32,7 +32,8 @@ test("yearly plan has one free month then twelve membership months", () => {
 test("new tenant is not billed by subscription job before first owner is created", () => {
   const server = src("functions/subscription-admin.js");
   assert.match(server, /tenant.onboardingRequired === true\) return/);
-  assert.match(server, /tenant.onboardingRequired === true\) continue/);
+  assert.match(server, /tenant.onboardingRequired === true\) return false/);
+  assert.match(server, /SUBSCRIPTION_ORIGINAL_ENROLLMENT_REQUIRED/);
   const access = src("react-app/src/auth/tenantAccess.js");
   assert.match(access, /stored === "trialing" && trialEndsAt && now <= trialEndsAt/);
 });

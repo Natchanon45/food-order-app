@@ -298,6 +298,7 @@ const subscriptionAdmin = require("./subscription-admin");
 exports.initializeTenantSubscription = subscriptionAdmin.initializeTenantSubscription;
 exports.backfillTenantSubscriptions = subscriptionAdmin.backfillTenantSubscriptions;
 exports.updateTenantSubscription = subscriptionAdmin.updateTenantSubscription;
+exports.getPlatformTenantSubscriptionOperation = subscriptionAdmin.getPlatformTenantSubscriptionOperation;
 exports.syncExpiredTenants = subscriptionAdmin.syncExpiredTenants;
 
 const hybridBillingSettings = require("./hybrid-billing-settings");
