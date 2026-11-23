@@ -1,7 +1,7 @@
 # LUKKAJA BankAlert Stripe → PENGUIN: refreshed JSX inventory (2026-11-23)
 
 **Source (read-only):** `cosmatch/lukkhaja` `feature/lukkaja_bankalert_stripe` `e60858c12b3e52a7ca6785e329d77004160e6657`
-**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `bd7a337429aaff869cb60d1dba728f0878be0599`
+**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `045c8ddc6e123057d363546397049db0c1efc808`
 **Previous Source audit:** `03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd`. **New Source commits:** 3.
 **Previous target audit:** `c42b2981b7fd8b6388faa377cc2afe5423078162`. These are counts at the pinned commits, not tests of JSX parity.
 
