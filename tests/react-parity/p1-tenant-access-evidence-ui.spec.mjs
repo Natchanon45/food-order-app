@@ -77,8 +77,11 @@ test("source-aligned read-only frontend uses ONLY the new Superadmin report; no 
  assert.doesNotMatch(callable,/tx\.(?:update|create|delete|set)\(/);
  assert.match(policy,/sourceOriginalHoldSignatureVerified:false/);
  assert.match(policy,/canSell:null,canReleaseTenant:false/);
- assert.match(rules,/m7AdminTestOverrideMode/);
- assert.match(rules,/m7InvoiceUnpaidCents/);
+ // New P1.2g rules are stronger than a blacklist of two M7 fields:
+ // only harmless presentation fields are directly editable by browsers.
+ assert.match(rules,/allow update: if superAdminRole\(\)/);
+ assert.match(rules,/affectedKeys\(\)\.hasOnly\(\[/);
+ assert.match(rules,/'description', 'logoUrl', 'coverUrl', 'updatedAt'/);
 });
 test("read-only panel lazy loads and renders proof gaps at 320/390/768/1440 with no fake Paid, unlock or 0 balance",async()=>{
  const root=resolve("react-app");

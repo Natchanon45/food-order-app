@@ -162,7 +162,10 @@ test("Admin Tenants page integrates one-call atomic edit, recoverable status and
  assert.match(policy,/usersRef.where\("tenantId","==",input.tenantId\)/);
  assert.match(legacy,/exports.updateTenant = tenantMasterEdit.updateTenantMasterAtomic/);
  assert.match(rules,/match \/masterEditOperations\/\{operationId\}/);
- assert.match(rules,/'masterEditRevision'/);
+ // Master revisions are not on the browser allowlist.
+ assert.match(rules,/allow update: if superAdminRole\(\)/);
+ assert.match(rules,/affectedKeys\(\)\.hasOnly\(\[/);
+ assert.match(rules,/'description', 'logoUrl', 'coverUrl', 'updatedAt'/);
 });
 test("Recovery card React/Chrome at 320,390,768,1440: in-flight disabled, exact one explicit Check, no destructive buttons",async()=>{
  const root=resolve("react-app");

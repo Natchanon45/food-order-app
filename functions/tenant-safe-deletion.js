@@ -46,6 +46,19 @@ async function inspectSnapshot(tx,db,tenantId,structureInfo){
  const externals=await Promise.all(queries.map(query=>tx.get(query)));
  const found=externals.flatMap((snap,i)=>snap.empty?[]:
   [p.EXTERNAL_TENANT_REFERENCES[i]]);
+ // Query-by-field does not detect globally keyed Tenant documents.
+ // Cross-check both known integrations and a possibly reserved signup Slug.
+ const directRefs=p.EXTERNAL_TENANT_DOCUMENT_ROOTS.map(root=>
+  db.collection(root).doc(tenantId));
+ if(p.SLUG.test(data?.slug||""))
+  directRefs.push(db.collection("publicTenantSignupSlugs").doc(data.slug));
+ const directSnaps=await Promise.all(directRefs.map(doc=>tx.get(doc)));
+ for(let i=0;i<directSnaps.length;i++){
+  if(directSnaps[i].exists)found.push(
+   i<p.EXTERNAL_TENANT_DOCUMENT_ROOTS.length
+    ?p.EXTERNAL_TENANT_DOCUMENT_ROOTS[i]
+    :"publicTenantSignupSlugs");
+ }
  const subcollections=structureInfo.storeOnly
   ?structureInfo.names:[...structureInfo.names,"invalid_settings_shape"];
  const safety=p.inspect(data,storeDoc.data()||null,

@@ -163,8 +163,8 @@ The existing Delete action is retained with a safer flow:
   P1.2d subscription control, P1.2e financial
   evidence triage and P1.2f atomic master edits.
 
-**Observed local tests: 14/14 dedicated Firebase Auth +
-Firestore Emulator; 65/65 combined P1.2c–P1.2g Emulator;
+**Observed local tests: 15/15 dedicated Firebase Auth +
+Firestore Emulator; 66/66 combined P1.2c–P1.2g Emulator;
 10/10 pure policy and 7/7 React UI/contract tests;
 full React parity, 121 Callable references / zero
 missing exports, and Vite React Build/hosting contract PASS.**
@@ -221,3 +221,18 @@ is 20 lines and `AdminTenantsPage.jsx` is 1,943 lines.
 Source APK deployment fix added **zero JSX files** and
 **zero JSX lines**. JSX counts are not operational
 feature-completeness percentages.
+
+### Final P1.2g external-reference safety acceptance
+
+The final revision explicitly checks global documents keyed by
+Tenant ID in `paymentCompanionTenants` and
+`stripeWalletSandboxTenants`, plus a pending
+`publicTenantSignupSlugs/{slug}` registration reservation.
+These references can otherwise be missed by collection queries
+that only filter a `tenantId` field. The additional Emulator
+case confirms all three block hard deletion, preserving each
+original reference. Security Rules now limit all Browser root
+Tenant edits to four non-operational presentation fields,
+protecting future unknown finance/provenance fields.
+**Final test receipt:** 15/15 dedicated Emulator, 66/66
+combined; all 17 pure/Chrome cases and full React parity pass.

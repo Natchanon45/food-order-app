@@ -22,6 +22,11 @@ const EXTERNAL_TENANT_REFERENCES=Object.freeze([
  "lalamoveWalletTopupDedupe","merchantSlipImageClaims",
  "lkShopDevices","lkShopActivePairings",
 ]);
+// Some integrations use the tenant ID as the global DOCUMENT ID,
+// not as a tenantId field. These require direct document lookups.
+const EXTERNAL_TENANT_DOCUMENT_ROOTS=Object.freeze([
+ "paymentCompanionTenants","stripeWalletSandboxTenants",
+]);
 const REASONS=Object.freeze({
  TENANT_NOT_FOUND:"TENANT_NOT_FOUND",
  TENANT_NOT_PRISTINE:"TENANT_NOT_PRISTINE",
@@ -131,5 +136,6 @@ function status({tenantId,operationId,state}){
   canSettleMoney:false,canIssueInvoice:false};
 }
 module.exports={ID,OP,SLUG,REASONS,TENANT_FIELDS,STORE_FIELDS,
- EXTERNAL_TENANT_REFERENCES,selector,request,inspect,compare,digest,
+ EXTERNAL_TENANT_REFERENCES,EXTERNAL_TENANT_DOCUMENT_ROOTS,
+ selector,request,inspect,compare,digest,
  receipt,response,status};

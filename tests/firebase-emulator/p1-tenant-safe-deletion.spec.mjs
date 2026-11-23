@@ -211,6 +211,29 @@ test("external Auth/Owner index or pending provision with tenantId blocks even i
  assert.ok(reason(result,"TENANT_EXTERNAL_REFERENCES"));
  await op.delete();
 });
+test("globally keyed companion/Stripe and pending signup Slug reservations block empty draft deletion",async()=>{
+ const {tenant}=await create();
+ for(const root of ["paymentCompanionTenants","stripeWalletSandboxTenants"]){
+  const external=db.collection(root).doc(tenant.id);
+  await external.set({testOnly:true,correlationId:"p12g-global-keyed"});
+  const safety=await preview(superUid,tenant.id);
+  assert.equal(safety.ready,false);
+  assert.ok(reason(safety,"TENANT_EXTERNAL_REFERENCES"),root);
+  await assert.rejects(remove(superUid,makePayload(tenant)),
+    e=>e.code==="failed-precondition");
+  assert.equal((await external.get()).exists,true);
+  await external.delete();
+ }
+ const signup=db.collection("publicTenantSignupSlugs").doc(tenant.slug);
+ await signup.set({uid:"future-signup",createdAt:"2026-11-23"});
+ const safety=await preview(superUid,tenant.id);
+ assert.ok(reason(safety,"TENANT_EXTERNAL_REFERENCES"));
+ await assert.rejects(remove(superUid,makePayload(tenant)),
+  e=>e.code==="failed-precondition");
+ assert.equal((await signup.get()).exists,true);
+ assert.equal((await slugRef(tenant.slug).get()).exists,true);
+ await signup.delete();
+});
 test("foreign original slug index cannot be deleted under same tenant; no delete receipt",async()=>{
  const {tenant}=await create();
  const old=(await slugRef(tenant.slug).get()).data();

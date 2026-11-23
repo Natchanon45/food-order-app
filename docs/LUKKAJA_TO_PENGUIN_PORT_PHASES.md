@@ -555,8 +555,8 @@ even for Superadmin. All operational financial
 ledgers, payment providers and existing Owners are
 untouched. No Production deploy or `main` merge.
 
-Acceptance: **14/14** dedicated Emulator,
-**65/65** combined Firebase Auth/Firestore
+Acceptance: **15/15** dedicated Emulator,
+**66/66** combined Firebase Auth/Firestore
 P1.2c–P1.2g tests, **10/10** pure policy and
 **7/7** React UI/contract, 320/390/768/1440 px
 Chrome responsive, full React parity,
@@ -586,9 +586,20 @@ deployment scripts only). Firebase Target `08ab95c7`:
 `TenantDeletionRecoveryNotice.jsx` has **20 lines**. Source remains
 read-only from this P1.2g module.
 
-Tests: P1.2g Firebase Emulator 14/14, combined P1.2c–g
-65/65 test assertions, new pure policy/Chrome 17/17,
+Tests: P1.2g Firebase Emulator 15/15, combined P1.2c–g
+66/66 test assertions, new pure policy/Chrome 17/17,
 121 callable references with 0 missing, full
 React parity and Vite/hosting build PASS. Browser direct
 tenant deletes, financial/Owner bypass and tombstone
 forgery are rejected. No Production deploy or `main` merge.
+
+### P1.2g direct-key reference guard (final acceptance)
+
+The deletion preflight and transaction now also check
+`paymentCompanionTenants/{tenantId}`,
+`stripeWalletSandboxTenants/{tenantId}` and
+`publicTenantSignupSlugs/{slug}` by document ID, rather
+than relying only on `where('tenantId')` queries.
+The stricter root-Tenant Browser update allowlist is
+verified against P1.2d/e/f contracts. **Final 66/66**
+combined Emulator and complete React parity pass.

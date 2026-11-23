@@ -108,6 +108,8 @@ test("any non-settings subcollection or external reference blocks a hard delete"
   const r=inspect(old(),store(),slug(),names);
   assert.ok(has(r,"TENANT_HAS_SUBCOLLECTIONS"));
  }
+ assert.deepEqual(p.EXTERNAL_TENANT_DOCUMENT_ROOTS,
+  ["paymentCompanionTenants","stripeWalletSandboxTenants"]);
  for(const collectionName of p.EXTERNAL_TENANT_REFERENCES){
   const r=inspect(old(),store(),slug(),["settings"],[collectionName]);
   assert.ok(has(r,"TENANT_EXTERNAL_REFERENCES"));
