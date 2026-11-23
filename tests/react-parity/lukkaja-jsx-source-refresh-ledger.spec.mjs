@@ -30,7 +30,7 @@ test("Current pinned audit has complete group arithmetic and correctly scoped so
  assert.equal(sums("sourceFiles"),156);
  assert.equal(sums("sourceLines"),48954);
  assert.equal(sums("targetFiles"),103);
- assert.equal(sums("targetLines"),36758);
+ assert.equal(sums("targetLines"),36874);
  assert.equal(sums("sourceLines")-sums("priorSourceLines"),454);
  assert.equal(sums("sourceChangedSincePrior"),8);
  assert.equal(sums("newSourceFiles"),2);

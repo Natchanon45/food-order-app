@@ -1,7 +1,7 @@
 # LUKKAJA BankAlert Stripe → PENGUIN: refreshed JSX inventory (2026-11-23)
 
 **Source (read-only):** `cosmatch/lukkhaja` `feature/lukkaja_bankalert_stripe` `e60858c12b3e52a7ca6785e329d77004160e6657`
-**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `1946035875ab2aadd381af87f92265eebb2bdacd`
+**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `1f3a039e3e65c9c3562dac24136ce2f67fa80154`
 **Previous Source audit:** `03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd`. **New Source commits:** 3.
 **Previous target audit:** `c42b2981b7fd8b6388faa377cc2afe5423078162`. These are counts at the pinned commits, not tests of JSX parity.
 
@@ -9,10 +9,10 @@
 
 | Group | Prior Source | New Source | Source Δ lines | Target current | Matched names | Source only | Target only | Changed Source |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| pages | 65 / 35,702 | **65 / 35,878** | +176 | **52 / 29,979** | 52 | 13 | 0 | 4 |
+| pages | 65 / 35,702 | **65 / 35,878** | +176 | **52 / 30,095** | 52 | 13 | 0 | 4 |
 | components | 84 / 12,312 | **86 / 12,590** | +278 | **45 / 5,989** | 34 | 52 | 11 | 4 |
 | other | 5 / 486 | **5 / 486** | +0 | **6 / 790** | 2 | 3 | 4 | 0 |
-| **Total** | **154 / 48,500** | **156 / 48,954** | **+454** | **103 / 36,758** | **88** | **68** | **15** | **8** |
+| **Total** | **154 / 48,500** | **156 / 48,954** | **+454** | **103 / 36,874** | **88** | **68** | **15** | **8** |
 
 Source JSX net change: **+454 lines** across 8 changed JSX files, including **2 newly added JSX files**.
 Target now has **15 additional JSX files** compared with the previous audit.
@@ -33,7 +33,7 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 | `components/PaymentCompanionPairingCard.jsx` | 534 | 541 | +7 | +7 / -0 | 116 | Compare UI and behavior |
 | `components/PublicAppDownloads.jsx` | — | 49 | +49 | +49 / -0 | — | New dependency: inventory first |
 | `pages/AdminPage.jsx` | 2390 | 2403 | +13 | +13 / -0 | 2209 | Compare UI and behavior |
-| `pages/DeliverySuccessPage.jsx` | 906 | 1005 | +99 | +135 / -36 | 364 | Compare UI and behavior |
+| `pages/DeliverySuccessPage.jsx` | 906 | 1005 | +99 | +135 / -36 | 480 | Compare UI and behavior |
 | `pages/HomePage.jsx` | 401 | 404 | +3 | +3 / -0 | 377 | Compare UI and behavior |
 | `pages/PlatformContactPage.jsx` | 603 | 664 | +61 | +62 / -1 | 604 | Compare UI and behavior |
 
@@ -141,7 +141,7 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 | `pages/CashierReceiptPage.jsx` | pages | 405 | 405 | 367 | 367 | no | no |
 | `pages/CashierTableQrPage.jsx` | pages | 624 | 624 | 544 | 544 | no | no |
 | `pages/DeliveryPage.jsx` | pages | 1614 | 1614 | 1234 | 1269 | no | no |
-| `pages/DeliverySuccessPage.jsx` | pages | 906 | 1005 | 362 | 364 | yes | no |
+| `pages/DeliverySuccessPage.jsx` | pages | 906 | 1005 | 362 | 480 | yes | no |
 | `pages/HomePage.jsx` | pages | 401 | 404 | 377 | 377 | yes | no |
 | `pages/HybridBillingReportPage.jsx` | pages | 335 | 335 | 335 | 338 | no | no |
 | `pages/HybridBillingReviewPage.jsx` | pages | 561 | 561 | 558 | 563 | no | no |

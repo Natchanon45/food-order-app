@@ -130,3 +130,18 @@ acceptance of every remaining Source JSX workflow.
 The 23 Nov JSX source audit remains a pinned historical snapshot.
 After this feature commit the audit will be re-run to record exact
 Target JSX LOC without falsely changing the Source commit.
+
+
+## Post-commit JSX reconciliation
+
+- Delivery Success Source remains **1,005 JSX physical lines** at
+  `e60858c1`, unchanged during this port.
+- Target Delivery Success is now **480 JSX physical lines** in
+  `1f3a039e` (previous 364); this new module adds **+116 net lines**
+  to that page, plus a pure status helper and Source-derived scoped CSS.
+- Entire Firebase Target: **103 JSX files / 36,874 physical lines**,
+  while entire Source remains **156 / 48,954**.
+- Counts/paths and phase tracker updated in
+  `LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json` and
+  `LUKKAJA_TO_PENGUIN_PAGE_MATRIX.json`.
+- Exact JSX line difference is **not** a function-completion percentage.

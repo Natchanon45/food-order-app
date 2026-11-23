@@ -14,10 +14,10 @@
 
 | Metric | Source | Firebase target | Meaning |
 | --- | ---: | ---: | --- |
-| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 29,979** | 52 same-name, 13 Source-only; these are *files*, not route counts |
+| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,095** | 52 same-name, 13 Source-only; these are *files*, not route counts |
 | Direct component JSX | **86 / 12,590** | **45 / 5,989** | 34 same-name, 52 Source-only, 11 Target-only |
 | Other React-root JSX | **5 / 486** | **6 / 790** | Platform/Auth/runtime adapters differ by architecture |
-| **All included JSX** | **156 / 48,954** | **103 / 36,758** | Never treat raw line delta as unimplemented code or completion percentage |
+| **All included JSX** | **156 / 48,954** | **103 / 36,874** | Never treat raw line delta as unimplemented code or completion percentage |
 
 The 23 Nov Source contains **3 new commits** relative to the previously
 pinned `03d2aaee`, changing **8 React JSX files**, including **two new
@@ -201,6 +201,17 @@ Record at minimum for each page:
 Continue **P1.2a** by adapting read-only JSX/CSS from source `AdminTenantsPage.jsx` and `TenantControlPanel.jsx`, pinned to LUKKAJA `e84c8990`, using the authorized Firebase service reads. Source read-only; do not wire new create-owner, override/suspend, payment/Slip2Go, refund or M7 approval controls until proper Firebase adapter/permission tests. Preserve P1.1 Hosting release and accepted PENGUIN-specific badges; no `main` merge.
 
 **Phase 0 deliverables:** this plan; versioned JSON page ledger; a baseline-regression test. Documentation/scaffolding only; no production deployment is warranted until a source JSX / Firebase behavior slice is implemented and tested.
+
+## 2026-11-23 updated Target JSX pin after P3
+
+The Source baseline remains `e60858c1` with 156 JSX files / 48,954
+physical lines. After the P3 Delivery Success UI module, Target
+`1f3a039e` has **103 JSX files / 36,874 lines** (52 pages / 30,095;
+45 components / 5,989; 6 other / 790).
+The updated 23-Nov audit JSON has been regenerated from committed code,
+and the Source and Target paths still match the pinned Git snapshots.
+The +116 Target JSX lines here are a physical source count only, **not**
+a declaration that the full 1,005-line Source Success page is ported.
 
 ## 2026-11-23 P3 Delivery Success UI module continuation
 
