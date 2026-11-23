@@ -12,7 +12,7 @@
   "target": {
     "repository": "Natchanon45/food-order-app",
     "branch": "feature/react-firebase-port",
-    "commit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154",
+    "commit": "bd7a337429aaff869cb60d1dba728f0878be0599",
     "pageRoot": "react-app/src/pages/",
     "componentRoot": "react-app/src/components/"
   },
@@ -22,8 +22,8 @@
     "existingFilenameMatches": 52,
     "sourceOnlyPageJsx": 13,
     "sourceComponentJsx": 86,
-    "destinationComponentJsx": 45,
-    "sourceOnlyComponentJsx": 52
+    "destinationComponentJsx": 47,
+    "sourceOnlyComponentJsx": 50
   },
   "phaseSummaries": [
     {
@@ -112,7 +112,7 @@
         "targetLines": 890,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -135,7 +135,7 @@
         "targetLines": 397,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -155,10 +155,10 @@
       "release": "not_started",
       "inventoryCurrent": {
         "sourceLines": 664,
-        "targetLines": 604,
+        "targetLines": 623,
         "sourceChangedSincePreviousAudit": true,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       },
       "lkShopModuleStatus": "Firebase QR/device/inbox role rooms integrated; live native app FCM still unverified",
       "lkShopModuleEvidence": "docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md",
@@ -184,7 +184,7 @@
         "targetLines": 462,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -208,7 +208,7 @@
         "targetLines": 1569,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -231,7 +231,7 @@
         "targetLines": 436,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -254,7 +254,7 @@
         "targetLines": 210,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -274,10 +274,10 @@
       "release": "not_started",
       "inventoryCurrent": {
         "sourceLines": 404,
-        "targetLines": 377,
+        "targetLines": 380,
         "sourceChangedSincePreviousAudit": true,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       },
       "lkShopModuleStatus": "Firebase QR/device/inbox role rooms integrated; live native app FCM still unverified",
       "lkShopModuleEvidence": "docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md",
@@ -303,7 +303,7 @@
         "targetLines": 286,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -326,7 +326,7 @@
         "targetLines": 508,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -346,10 +346,10 @@
       "release": "not_started",
       "inventoryCurrent": {
         "sourceLines": 2403,
-        "targetLines": 2209,
+        "targetLines": 2216,
         "sourceChangedSincePreviousAudit": true,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       },
       "lkShopModuleStatus": "Firebase QR/device/inbox role rooms integrated; live native app FCM still unverified",
       "lkShopModuleEvidence": "docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md",
@@ -375,7 +375,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -398,7 +398,7 @@
         "targetLines": 152,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -421,7 +421,7 @@
         "targetLines": 592,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -444,7 +444,7 @@
         "targetLines": 63,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -467,7 +467,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -490,7 +490,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -513,7 +513,7 @@
         "targetLines": 1269,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -536,7 +536,7 @@
         "targetLines": 480,
         "sourceChangedSincePreviousAudit": true,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       },
       "auditEvidence": "docs/LUKKAJA_P3_DELIVERY_SUCCESS_SOURCE_PARITY_20261123.md",
       "unitContract": "p1_delivery_success_customer_state_7_pass",
@@ -562,7 +562,7 @@
         "targetLines": 220,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -585,7 +585,7 @@
         "targetLines": 243,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -608,7 +608,7 @@
         "targetLines": 162,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -631,7 +631,7 @@
         "targetLines": 32,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -654,7 +654,7 @@
         "targetLines": 30,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -677,7 +677,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -700,7 +700,7 @@
         "targetLines": 1369,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -723,7 +723,7 @@
         "targetLines": 367,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -746,7 +746,7 @@
         "targetLines": 544,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -769,7 +769,7 @@
         "targetLines": 1105,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -792,7 +792,7 @@
         "targetLines": 712,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -815,7 +815,7 @@
         "targetLines": 717,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -838,7 +838,7 @@
         "targetLines": 287,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -861,7 +861,7 @@
         "targetLines": 121,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -884,7 +884,7 @@
         "targetLines": 1314,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -907,7 +907,7 @@
         "targetLines": 281,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -930,7 +930,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -953,7 +953,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -976,7 +976,7 @@
         "targetLines": 1216,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -999,7 +999,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1022,7 +1022,7 @@
         "targetLines": 548,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1045,7 +1045,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1068,7 +1068,7 @@
         "targetLines": 354,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1091,7 +1091,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1114,7 +1114,7 @@
         "targetLines": 1274,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1137,7 +1137,7 @@
         "targetLines": 762,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1160,7 +1160,7 @@
         "targetLines": 684,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1183,7 +1183,7 @@
         "targetLines": 861,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1206,7 +1206,7 @@
         "targetLines": 319,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1229,7 +1229,7 @@
         "targetLines": 849,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1252,7 +1252,7 @@
         "targetLines": 164,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1275,7 +1275,7 @@
         "targetLines": 495,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1298,7 +1298,7 @@
         "targetLines": 950,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1321,7 +1321,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1344,7 +1344,7 @@
         "targetLines": 897,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1367,7 +1367,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1390,7 +1390,7 @@
         "targetLines": 463,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1413,7 +1413,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1436,7 +1436,7 @@
         "targetLines": 251,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1459,7 +1459,7 @@
         "targetLines": null,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1482,7 +1482,7 @@
         "targetLines": 190,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1505,7 +1505,7 @@
         "targetLines": 30,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1528,7 +1528,7 @@
         "targetLines": 40,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1551,7 +1551,7 @@
         "targetLines": 839,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1574,7 +1574,7 @@
         "targetLines": 338,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     },
     {
@@ -1597,7 +1597,7 @@
         "targetLines": 563,
         "sourceChangedSincePreviousAudit": false,
         "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
-        "targetCommit": "1f3a039e3e65c9c3562dac24136ce2f67fa80154"
+        "targetCommit": "bd7a337429aaff869cb60d1dba728f0878be0599"
       }
     }
   ],
@@ -1615,7 +1615,6 @@
     "DeliveryOrderHeading.jsx",
     "FormDynamicEnhancer.jsx",
     "GoPlatformBrandingRuntime.jsx",
-    "LKShopPairingPanel.jsx",
     "LalamoveCODReconciliationPanel.jsx",
     "LaravelPosNavigation.jsx",
     "M7CorrectionPanel.jsx",
@@ -1645,7 +1644,6 @@
     "PlatformFinanceBeneficiaryReviewPanel.jsx",
     "PlatformHybridManualSlipPanel.jsx",
     "PlatformM7OwnerPayeeCard.jsx",
-    "PublicAppDownloads.jsx",
     "PublicStorefrontOperationalGate.jsx",
     "ReactBootstrapReadyGate.jsx",
     "ReactPortErrorBoundary.jsx",

@@ -175,3 +175,16 @@ single-use device enrollment, scoped inbox and web management module**
 for Emulator-tested source-control readiness only. Do not mark native
 push production-ready. The legacy LUKKAJA APK cannot enroll into a
 PENGUIN role-room QR without a separate Flutter application port.
+
+
+## JSX counter reconciliation after feature Commit
+
+- Source: **156 JSX files / 48,954 physical lines** at `e60858c1`.
+- Target: **105 JSX files / 37,158 physical lines** at `bd7a3374`.
+  Includes 52 pages / 30,124 lines, 47 components / 6,244 lines,
+  six other JSX / 790 lines.
+- Current per-file inventory:
+  `docs/LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md` and
+  machine-readable `docs/LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json`.
+- No JSX LOC delta may be used as a claim of full functional parity,
+  financial settlement or native push delivery.

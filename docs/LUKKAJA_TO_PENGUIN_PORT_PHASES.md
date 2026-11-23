@@ -2,7 +2,7 @@
 
 > **LATEST SOURCE REFRESH — 23 NOV 2026 (authoritative for next slice):**
 > Source `cosmatch/lukkhaja@e60858c1` on `feature/lukkaja_bankalert_stripe`, Target
-> `Natchanon45/food-order-app@19460358` on `feature/react-firebase-port`.
+> `Natchanon45/food-order-app@bd7a3374` on `feature/react-firebase-port`.
 > New machine-readable full JSX inventory:
 > [23 Nov audit (Markdown)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md) /
 > [23 Nov audit (JSON)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json).
@@ -14,17 +14,17 @@
 
 | Metric | Source | Firebase target | Meaning |
 | --- | ---: | ---: | --- |
-| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,095** | 52 same-name, 13 Source-only; these are *files*, not route counts |
-| Direct component JSX | **86 / 12,590** | **45 / 5,989** | 34 same-name, 52 Source-only, 11 Target-only |
+| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,124** | 52 same-name, 13 Source-only; these are *files*, not route counts |
+| Direct component JSX | **86 / 12,590** | **47 / 6,244** | 34 same-name, 52 Source-only, 11 Target-only |
 | Other React-root JSX | **5 / 486** | **6 / 790** | Platform/Auth/runtime adapters differ by architecture |
-| **All included JSX** | **156 / 48,954** | **103 / 36,874** | Never treat raw line delta as unimplemented code or completion percentage |
+| **All included JSX** | **156 / 48,954** | **105 / 37,158** | Never treat raw line delta as unimplemented code or completion percentage |
 
 The 23 Nov Source contains **3 new commits** relative to the previously
 pinned `03d2aaee`, changing **8 React JSX files**, including **two new
 components** (`LKShopPairingPanel.jsx`, `PublicAppDownloads.jsx`),
 with **+454 net physical JSX lines**. No new Source page JSX file
 or `PortRoutes.jsx` change occurred in those three commits.
-Target meanwhile grew by **15 component JSX files** since its prior
+Target meanwhile grew by **17 component JSX files** since its prior
 audit commit `c42b2981`. These must be re-evaluated for reuse rather
 than copied/overwritten. See the audit JSON for all per-file LOC.
 
@@ -76,11 +76,11 @@ backfill occurs as part of refreshing the JSX plan.
 
 > **2026-11-22 source refresh:** The owner now requires `feature/lukkaja_bankalert_stripe` at `03d2aaee` instead of the historical source below. See [current JSX audit and continuation](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261122.md) and its JSON ledger. Historical phase evidence is retained; revalidate against the new source before acceptance or release.
 
-**Started:** 09/11/2026 (Asia/Bangkok)  
-**Phase 0:** initial GitHub snapshot and 65-page inventory **completed**; functionality migration **not yet started / not accepted**.  
-**Source (strictly read-only):** `cosmatch/lukkhaja` · `feature/react-golang-vite-tailwind-axios` · `e84c899028eb16c67401dcc05c5faed84bf48f63`  
-**Destination (only writable project):** `Natchanon45/food-order-app` · `feature/react-firebase-port` · baseline `d87fc3752efff126dc9846d7cbe844aa982840a2`  
-**Intended live URL (after a verified UI phase):** `https://penguin-food.web.app`  
+**Started:** 09/11/2026 (Asia/Bangkok)
+**Phase 0:** initial GitHub snapshot and 65-page inventory **completed**; functionality migration **not yet started / not accepted**.
+**Source (strictly read-only):** `cosmatch/lukkhaja` · `feature/react-golang-vite-tailwind-axios` · `e84c899028eb16c67401dcc05c5faed84bf48f63`
+**Destination (only writable project):** `Natchanon45/food-order-app` · `feature/react-firebase-port` · baseline `d87fc3752efff126dc9846d7cbe844aa982840a2`
+**Intended live URL (after a verified UI phase):** `https://penguin-food.web.app`
 **Machine-readable page ledger:** [LUKKAJA_TO_PENGUIN_PAGE_MATRIX.json](./LUKKAJA_TO_PENGUIN_PAGE_MATRIX.json)
 
 ## Non-negotiable contract
@@ -241,3 +241,18 @@ a declaration that the full 1,005-line Source Success page is ported.
   runtime gates remain OFF by default.
 - See `docs/LUKKAJA_P1_LK_SHOP_FCM_QR_PAIRING_FIREBASE_MODULE_20261123.md`
   for precise acceptance and further native/APNs/FCM blockers.
+
+
+## Final 2026-11-23 target snapshot after LK Shop Firebase role-room module
+
+After `bd7a3374`, Target includes 105 tracked JSX files / 37,158
+physical lines: 52 pages / 30,124 lines, 47 components / 6,244
+lines, 6 other root JSX / 790 lines. Source remains pinned to
+`e60858c1`, 156 files / 48,954 lines. The newly ported
+`LKShopPairingPanel.jsx` and `PublicAppDownloads.jsx` explain the
+two new Target JSX names, but their successful Browser/Emulator tests
+do not imply the old native Flutter LK Shop APK is compatible.
+
+The latest per-file audit and Page Matrix have been regenerated against
+the feature Commit, not against generated React bundle files. Runtime
+Firebase gates are still off and there was no Production deployment.
