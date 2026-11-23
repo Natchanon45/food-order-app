@@ -10,7 +10,7 @@
   "target": {
     "repository": "Natchanon45/food-order-app",
     "branch": "feature/react-firebase-port",
-    "commit": "609024898838e33b13ead8d926c5ef0a1b25f254",
+    "commit": "6f6863923baf592fdfcee8752c29f73d5747d9e1",
     "root": "react-app/src"
   },
   "priorSourceCommit": "03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd",
@@ -60,13 +60,13 @@
       "sourceChangedSincePrior": 4,
       "priorTargetFiles": 30,
       "priorTargetLines": 4213,
-      "targetFiles": 49,
-      "targetLines": 6440,
-      "targetAddedSincePrior": 19,
-      "targetChangedSincePrior": 20,
+      "targetFiles": 50,
+      "targetLines": 6565,
+      "targetAddedSincePrior": 20,
+      "targetChangedSincePrior": 22,
       "matchedPaths": 36,
       "sourceOnly": 50,
-      "targetOnly": 13,
+      "targetOnly": 14,
       "exactBlobMatches": 4
     },
     "other": {
@@ -93,7 +93,7 @@
     "sourceChangedFilesAllExtensions": 166,
     "sourceChangedJsxFiles": 8,
     "newSourceJsxFiles": 2,
-    "targetNewJsxFilesSincePrior": 19,
+    "targetNewJsxFilesSincePrior": 20,
     "sourceNonJsxChangesByFamily": {
       "apps/lk-shop": 87,
       "docs/mobile": 16,
@@ -2335,6 +2335,20 @@
     },
     {
       "group": "components",
+      "path": "components/TenantAccessEvidencePanel.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "sourceChangedSincePrior": false,
+      "newSourceFile": false,
+      "sourceDiffLines": null,
+      "priorTargetLines": null,
+      "targetLines": 99,
+      "targetChangedSincePrior": true,
+      "exactContentMatch": false,
+      "status": "target_only_preserve"
+    },
+    {
+      "group": "components",
       "path": "components/TenantControlPanel.jsx",
       "priorSourceLines": 611,
       "sourceLines": 611,
@@ -2342,8 +2356,8 @@
       "newSourceFile": false,
       "sourceDiffLines": null,
       "priorTargetLines": 591,
-      "targetLines": 591,
-      "targetChangedSincePrior": false,
+      "targetLines": 617,
+      "targetChangedSincePrior": true,
       "exactContentMatch": false,
       "status": "jsx_visual_and_firebase_behavior_review_required"
     },

@@ -263,3 +263,15 @@ using this diagnostic digest or TEST Stripe data is allowed.
 **This is a complete diagnostic Module, not real M7 settlement.** The
 absence of matching records means *unverified*, never a zero debt or
 permission grant. TEST local override fields are metadata only.
+
+
+## JSX inventory after P1.2e feature commit
+
+Source `e60858c1` is **156 JSX files / 48,954 physical lines**.
+Target `6f686392` is **108 JSX files / 37,618 physical lines**:
+52 pages / 30,263; 50 components / 6,565; six other / 790.
+Source `TenantControlPanel.jsx` remains 611 lines;
+Target `TenantControlPanel.jsx` is 617 lines and new
+`TenantAccessEvidencePanel.jsx` is 99 lines. This
+audit reflects committed tracked JSX paths, NOT a conversion
+percentage or acceptance of operational M7 settlement.

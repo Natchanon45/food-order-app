@@ -2,7 +2,7 @@
 
 > **LATEST SOURCE REFRESH — 23 NOV 2026 (authoritative for next slice):**
 > Source `cosmatch/lukkhaja@e60858c1` on `feature/lukkaja_bankalert_stripe`, Target
-> `Natchanon45/food-order-app@60902489` on `feature/react-firebase-port`.
+> `Natchanon45/food-order-app@6f686392` on `feature/react-firebase-port`.
 > New machine-readable full JSX inventory:
 > [23 Nov audit (Markdown)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md) /
 > [23 Nov audit (JSON)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json).
@@ -15,16 +15,16 @@
 | Metric | Source | Firebase target | Meaning |
 | --- | ---: | ---: | --- |
 | Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,263** | 52 same-name, 13 Source-only; these are *files*, not route counts |
-| Direct component JSX | **86 / 12,590** | **49 / 6,440** | 36 same-name, 50 Source-only, 13 Target-only |
+| Direct component JSX | **86 / 12,590** | **50 / 6,565** | 36 same-name, 50 Source-only, 14 Target-only |
 | Other React-root JSX | **5 / 486** | **6 / 790** | Platform/Auth/runtime adapters differ by architecture |
-| **All included JSX** | **156 / 48,954** | **107 / 37,493** | Never treat raw line delta as unimplemented code or completion percentage |
+| **All included JSX** | **156 / 48,954** | **108 / 37,618** | Never treat raw line delta as unimplemented code or completion percentage |
 
 The 23 Nov Source contains **3 new commits** relative to the previously
 pinned `03d2aaee`, changing **8 React JSX files**, including **two new
 components** (`LKShopPairingPanel.jsx`, `PublicAppDownloads.jsx`),
 with **+454 net physical JSX lines**. No new Source page JSX file
 or `PortRoutes.jsx` change occurred in those three commits.
-Target meanwhile grew by **19 JSX files** since its prior
+Target meanwhile grew by **20 JSX files** since its prior
 audit commit `c42b2981`. These must be re-evaluated for reuse rather
 than copied/overwritten. See the audit JSON for all per-file LOC.
 
@@ -452,3 +452,22 @@ The signed original Go policy, independently authenticated bank
 evidence, global bank reference claims and Service Credit ledger
 are still absent from Firebase. No operational access release
 was performed.
+
+
+## Final P1.2e JSX audit pinned to feature commit 6f686392
+
+LUKKAJA Source `e60858c1` remains **156 JSX / 48,954 lines**.
+PENGUIN Target `6f686392` now contains **108 JSX / 37,618 lines**:
+52 Pages / 30,263; 50 Components / 6,565; and six other
+React-root JSX / 790. The new `TenantAccessEvidencePanel.jsx` contributes
+99 JSX lines and the existing `TenantControlPanel.jsx` grows to
+617 lines. The original source `TenantControlPanel.jsx` remains 611 lines.
+All 65 Source page records and the source SHA remain unchanged.
+
+P1.2e is a completed **diagnostic access-evidence module**,
+not a verified financial settlement or M7 signed hold enforcement.
+Its local acceptance: **39/39** combined Emulator tests,
+**14/14** pure-policy tests, **3/3** browser/contract tests,
+responsive 320/390/768/1440, full React parity, 117 supported
+Callables with zero missing exports, and generated build PASS.
+No Production deploy, Source change or `main` merge.
