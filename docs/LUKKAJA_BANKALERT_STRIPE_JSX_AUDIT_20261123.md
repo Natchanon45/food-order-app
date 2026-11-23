@@ -1,7 +1,7 @@
 # LUKKAJA BankAlert Stripe → PENGUIN: refreshed JSX inventory (2026-11-23)
 
 **Source (read-only):** `cosmatch/lukkhaja` `feature/lukkaja_bankalert_stripe` `e60858c12b3e52a7ca6785e329d77004160e6657`
-**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `3b05210c6606537c54470834a8cbe106c982645b`
+**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `609024898838e33b13ead8d926c5ef0a1b25f254`
 **Previous Source audit:** `03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd`. **New Source commits:** 3.
 **Previous target audit:** `c42b2981b7fd8b6388faa377cc2afe5423078162`. These are counts at the pinned commits, not tests of JSX parity.
 
@@ -9,13 +9,13 @@
 
 | Group | Prior Source | New Source | Source Δ lines | Target current | Matched names | Source only | Target only | Changed Source |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| pages | 65 / 35,702 | **65 / 35,878** | +176 | **52 / 30,257** | 52 | 13 | 0 | 4 |
-| components | 84 / 12,312 | **86 / 12,590** | +278 | **48 / 6,274** | 36 | 50 | 12 | 4 |
+| pages | 65 / 35,702 | **65 / 35,878** | +176 | **52 / 30,263** | 52 | 13 | 0 | 4 |
+| components | 84 / 12,312 | **86 / 12,590** | +278 | **49 / 6,440** | 36 | 50 | 13 | 4 |
 | other | 5 / 486 | **5 / 486** | +0 | **6 / 790** | 2 | 3 | 4 | 0 |
-| **Total** | **154 / 48,500** | **156 / 48,954** | **+454** | **106 / 37,321** | **90** | **66** | **16** | **8** |
+| **Total** | **154 / 48,500** | **156 / 48,954** | **+454** | **107 / 37,493** | **90** | **66** | **17** | **8** |
 
 Source JSX net change: **+454 lines** across 8 changed JSX files, including **2 newly added JSX files**.
-Target now has **18 additional JSX files** compared with the previous audit.
+Target now has **19 additional JSX files** compared with the previous audit.
 Do not interpret source-only names, unmatched bodies or line difference as a confirmed unimplemented feature; route usage and Firebase actions require manual verification.
 
 ## Source commits included in this refresh
@@ -126,6 +126,7 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 - `components/PlatformPaymentHistory.jsx` — 98 lines
 - `components/PublicAppDownloads.jsx` — 33 lines
 - `components/TenantProvisionRecoveryNotice.jsx` — 30 lines
+- `components/TenantSubscriptionControl.jsx` — 166 lines
 
 ## Per-file current JSX LOC
 
@@ -135,7 +136,7 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 | `pages/AdminQrPage.jsx` | pages | 180 | 180 | 152 | 152 | no | no |
 | `pages/AdminSalesReportPage.jsx` | pages | 591 | 591 | 592 | 592 | no | no |
 | `pages/AdminStoreMasterPage.jsx` | pages | 364 | 364 | — | — | no | no |
-| `pages/AdminTenantsPage.jsx` | pages | 2275 | 2275 | 1553 | 1702 | no | no |
+| `pages/AdminTenantsPage.jsx` | pages | 2275 | 2275 | 1553 | 1708 | no | no |
 | `pages/AdminUsersPage.jsx` | pages | 435 | 435 | 431 | 436 | no | no |
 | `pages/CanonicalLaravelBridgePage.jsx` | pages | 41 | 41 | — | — | no | no |
 | `pages/CashierPage.jsx` | pages | 1581 | 1581 | 1362 | 1369 | no | no |
@@ -292,6 +293,7 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 | `components/TenantDeliveryManualReview.jsx` | components | — | — | 147 | 147 | no | no |
 | `components/TenantFinanceSourceEvidence.jsx` | components | — | — | 127 | 127 | no | no |
 | `components/TenantProvisionRecoveryNotice.jsx` | components | — | — | — | 30 | no | no |
+| `components/TenantSubscriptionControl.jsx` | components | — | — | — | 166 | no | no |
 | `components/UserMenu.jsx` | components | 266 | 266 | 264 | 264 | no | no |
 | `components/WaitingQueueNavigationBridge.jsx` | components | 32 | 32 | — | — | no | no |
 | `PortRoutes.jsx` | other | 19 | 19 | — | — | no | no |

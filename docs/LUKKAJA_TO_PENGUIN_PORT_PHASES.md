@@ -2,7 +2,7 @@
 
 > **LATEST SOURCE REFRESH — 23 NOV 2026 (authoritative for next slice):**
 > Source `cosmatch/lukkhaja@e60858c1` on `feature/lukkaja_bankalert_stripe`, Target
-> `Natchanon45/food-order-app@3b05210c` on `feature/react-firebase-port`.
+> `Natchanon45/food-order-app@60902489` on `feature/react-firebase-port`.
 > New machine-readable full JSX inventory:
 > [23 Nov audit (Markdown)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md) /
 > [23 Nov audit (JSON)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json).
@@ -14,17 +14,17 @@
 
 | Metric | Source | Firebase target | Meaning |
 | --- | ---: | ---: | --- |
-| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,257** | 52 same-name, 13 Source-only; these are *files*, not route counts |
-| Direct component JSX | **86 / 12,590** | **48 / 6,274** | 34 same-name, 52 Source-only, 11 Target-only |
+| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 30,263** | 52 same-name, 13 Source-only; these are *files*, not route counts |
+| Direct component JSX | **86 / 12,590** | **49 / 6,440** | 36 same-name, 50 Source-only, 13 Target-only |
 | Other React-root JSX | **5 / 486** | **6 / 790** | Platform/Auth/runtime adapters differ by architecture |
-| **All included JSX** | **156 / 48,954** | **106 / 37,321** | Never treat raw line delta as unimplemented code or completion percentage |
+| **All included JSX** | **156 / 48,954** | **107 / 37,493** | Never treat raw line delta as unimplemented code or completion percentage |
 
 The 23 Nov Source contains **3 new commits** relative to the previously
 pinned `03d2aaee`, changing **8 React JSX files**, including **two new
 components** (`LKShopPairingPanel.jsx`, `PublicAppDownloads.jsx`),
 with **+454 net physical JSX lines**. No new Source page JSX file
 or `PortRoutes.jsx` change occurred in those three commits.
-Target meanwhile grew by **18 JSX files** since its prior
+Target meanwhile grew by **19 JSX files** since its prior
 audit commit `c42b2981`. These must be re-evaluated for reuse rather
 than copied/overwritten. See the audit JSON for all per-file LOC.
 
@@ -385,3 +385,22 @@ responsive at 320/390/768/1440 px. The entire React parity chain,
 116 Function-Callable references (0 missing), generated-build
 contract and Vite build passed. This is a **local Module completion**,
 not signed-in live Production UAT or permission for financial settlement.
+
+## Final P1.2d JSX inventory pinned to feature commit 60902489
+
+Source `e60858c1` remains 156 JSX / 48,954 physical lines.
+Target `60902489` now comprises **107 JSX / 37,493 lines**:
+52 pages / 30,263, 49 components / 6,440, and six other /
+790 lines. `AdminTenantsPage.jsx` is 1,708 physical lines and
+the newly extracted `TenantSubscriptionControl.jsx` is 166
+lines. The 65-source-page scope and all latest per-file LOC are
+captured in the refreshed JSON ledger; no new Source route was
+inferred. The source files are never modified by this audit.
+
+P1.2d completed its **one full local module** with 28/28 combined
+Firebase Auth + Firestore Emulator, 11/11 pure policy and 8/8
+React browser/contract tests; full React parity and generated
+build contract passed. No Production deployment, no `main`
+merge, no financial provider settlement or M7 invoice activation.
+JSX physical lines are an inventory metric, never a completion
+percentage.

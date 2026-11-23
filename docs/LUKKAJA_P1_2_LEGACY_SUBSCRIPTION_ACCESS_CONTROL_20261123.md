@@ -178,3 +178,14 @@ Production credentials or real financial transfers were exercised.
   generated public assets not staged or deployed.
 - Static Node syntax and `git diff --check` pass. No Source edits,
   no Firebase Production deploy and no merge to main.
+
+## Latest source-vs-target JSX receipt
+
+Source `e60858c1` = **156 files / 48,954 JSX lines**.
+Target P1.2d feature commit `60902489` = **107 files /
+37,493 JSX lines**, broken down into 52 page JSX / 30,263,
+49 component JSX / 6,440 and six other JSX / 790 lines.
+The source `AdminTenantsPage.jsx` remains 2,275 lines;
+Target `AdminTenantsPage.jsx` is 1,708 lines plus the new
+166-line `TenantSubscriptionControl.jsx`. This is not evidence
+that finance/M7 SQL business workflows have been migrated.
