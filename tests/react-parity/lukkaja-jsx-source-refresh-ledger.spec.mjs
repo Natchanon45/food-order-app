@@ -23,20 +23,20 @@ test("Current pinned audit has complete group arithmetic and correctly scoped so
  assert.equal(ledger.target.repository,"Natchanon45/food-order-app");
  assert.equal(ledger.source.branch,"feature/lukkaja_bankalert_stripe");
  assert.equal(ledger.target.branch,"feature/react-firebase-port");
- assert.equal(ledger.priorSourceCommit,"e60858c12b3e52a7ca6785e329d77004160e6657");
- assert.equal(ledger.sourceCommits.length,1);
- assert.equal(ledger.sourceCommitsSincePrior,1);
+ assert.equal(ledger.priorSourceCommit,"03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd");
+ assert.equal(ledger.sourceCommits.length,4);
+ assert.equal(ledger.sourceCommitsSincePrior,4);
  const sums=(field)=>Object.values(ledger.groups).reduce((n,g)=>n+g[field],0);
  assert.equal(sums("sourceFiles"),156);
  assert.equal(sums("sourceLines"),48954);
  assert.equal(sums("targetFiles"),110);
  assert.equal(sums("targetLines"),37895);
- assert.equal(sums("sourceLines")-sums("priorSourceLines"),0);
- assert.equal(sums("sourceChangedSincePrior"),0);
- assert.equal(sums("newSourceFiles"),0);
- assert.equal(sums("targetAddedSincePrior"),1);
+ assert.equal(sums("sourceLines")-sums("priorSourceLines"),454);
+ assert.equal(sums("sourceChangedSincePrior"),8);
+ assert.equal(sums("newSourceFiles"),2);
+ assert.equal(sums("targetAddedSincePrior"),22);
  assert.equal(ledger.delta.sourceRouteFileChanged,false);
- assert.equal(ledger.delta.sourceCommittedApp,null);
+ assert.equal(ledger.delta.sourceCommittedApp,"apps/lk-shop");
 });
 test("The JSX file inventory matches tracked Target paths and current committed LOC",()=>{
  // The audit pins the source-code commit before the audit docs were committed.
@@ -96,13 +96,15 @@ test("All 65 source pages retain original phase, current per-file LOC and no inv
 });
 test("Source JSX changes are exhaustively indexed without copying mobile/Go/SQL into JSX",()=>{
  const changed=ledger.files.filter(x=>x.sourceChangedSincePrior);
- assert.equal(changed.length,0);
- assert.deepEqual(changed.filter(x=>x.newSourceFile).map(x=>x.path),[]);
+ assert.equal(changed.length,8);
+ assert.deepEqual(changed.filter(x=>x.newSourceFile).map(x=>x.path),[
+  "components/LKShopPairingPanel.jsx","components/PublicAppDownloads.jsx"
+ ]);
  const out=fs.readFileSync(report,"utf8");
- assert.match(out,/Source JSX net change: \*\*\+0 lines\*\*/);
+ assert.match(out,/Source JSX net change: \*\*\+454 lines\*\*/);
  assert.match(out,/LK Shop APK/);
- assert.equal(ledger.delta.sourceChangedJsxFiles,0);
- assert.equal(ledger.delta.sourceChangedFilesAllExtensions,3);
+ assert.equal(ledger.delta.sourceChangedJsxFiles,8);
+ assert.equal(ledger.delta.sourceChangedFilesAllExtensions,169);
  assert.ok(!ledger.files.some(x=>/\.dart$|\.go$|\.css$/.test(x.path)));
 });
 test("When Source checkout exists, snapshot exactly matches its HEAD and all changed JSX",{

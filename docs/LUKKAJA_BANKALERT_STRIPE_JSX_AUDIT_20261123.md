@@ -1,31 +1,42 @@
 # LUKKAJA BankAlert Stripe → PENGUIN: refreshed JSX inventory (2026-11-23)
 
 **Source (read-only):** `cosmatch/lukkhaja` `feature/lukkaja_bankalert_stripe` `180930919518bba1b8fca87c7738bd5024f56cfd`
-**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `08ab95c7a65ea2f57ea696505fcdda2500b69ae1`
-**Previous Source audit:** `e60858c12b3e52a7ca6785e329d77004160e6657`. **New Source commits:** 1.
-**Previous target audit:** `e91f0615747d3157526dded0bb99d445912ae8f3`. These are counts at the pinned commits, not tests of JSX parity.
+**Destination:** `Natchanon45/food-order-app` `feature/react-firebase-port` `05b9f5515857d64343c483225116cb4ff385b97e`
+**Previous Source audit:** `03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd`. **New Source commits:** 4.
+**Previous target audit:** `c42b2981b7fd8b6388faa377cc2afe5423078162`. These are counts at the pinned commits, not tests of JSX parity.
 
 ## Latest numbers
 
 | Group | Prior Source | New Source | Source Δ lines | Target current | Matched names | Source only | Target only | Changed Source |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| pages | 65 / 35,878 | **65 / 35,878** | +0 | **52 / 30,498** | 52 | 13 | 0 | 0 |
-| components | 86 / 12,590 | **86 / 12,590** | +0 | **52 / 6,607** | 36 | 50 | 16 | 0 |
+| pages | 65 / 35,702 | **65 / 35,878** | +176 | **52 / 30,498** | 52 | 13 | 0 | 4 |
+| components | 84 / 12,312 | **86 / 12,590** | +278 | **52 / 6,607** | 36 | 50 | 16 | 4 |
 | other | 5 / 486 | **5 / 486** | +0 | **6 / 790** | 2 | 3 | 4 | 0 |
-| **Total** | **156 / 48,954** | **156 / 48,954** | **+0** | **110 / 37,895** | **90** | **66** | **20** | **0** |
+| **Total** | **154 / 48,500** | **156 / 48,954** | **+454** | **110 / 37,895** | **90** | **66** | **20** | **8** |
 
-Source JSX net change: **+0 lines** across 0 changed JSX files, including **0 newly added JSX files**.
-Target now has **1 additional JSX files** compared with the previous audit.
+Source JSX net change: **+454 lines** across 8 changed JSX files, including **2 newly added JSX files**.
+Target now has **22 additional JSX files** compared with the previous audit.
 Do not interpret source-only names, unmatched bodies or line difference as a confirmed unimplemented feature; route usage and Firebase actions require manual verification.
 
 ## Source commits included in this refresh
 
 - `18093091` — fix(deploy): preserve LK Shop APK across frontend releases
+- `e60858c1` — fix(delivery): align success cards and polish customer icon actions
+- `7fbb6c88` — fix(delivery): present PromptPay verification in SweetAlert-style modal
+- `95ad6914` — feat(lk-shop): integrate staff notifications FCM and mobile payment UI
 
 ## Changed Source JSX since previous audit (exact file delta)
 
 | Source path | Previous LOC | Current LOC | Δ LOC | Added / removed lines | Target current LOC | Review |
 |---|---:|---:|---:|---:|---:|---|
+| `components/LKShopPairingPanel.jsx` | — | 221 | +221 | +221 / -0 | 222 | New dependency: inventory first |
+| `components/ParityFooter.jsx` | 25 | 26 | +1 | +1 / -0 | 25 | Compare UI and behavior |
+| `components/PaymentCompanionPairingCard.jsx` | 534 | 541 | +7 | +7 / -0 | 116 | Compare UI and behavior |
+| `components/PublicAppDownloads.jsx` | — | 49 | +49 | +49 / -0 | 33 | New dependency: inventory first |
+| `pages/AdminPage.jsx` | 2390 | 2403 | +13 | +13 / -0 | 2216 | Compare UI and behavior |
+| `pages/DeliverySuccessPage.jsx` | 906 | 1005 | +99 | +135 / -36 | 480 | Compare UI and behavior |
+| `pages/HomePage.jsx` | 401 | 404 | +3 | +3 / -0 | 380 | Compare UI and behavior |
+| `pages/PlatformContactPage.jsx` | 603 | 664 | +61 | +62 / -1 | 623 | Compare UI and behavior |
 
 ## Source-only JSX names (evaluate route/usage, not blindly copy)
 
@@ -98,35 +109,56 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 
 ## New JSX files in Firebase destination since previous audit
 
+- `components/BankalertStripeHistory.jsx` — 83 lines
+- `components/BankalertStripePlatformSettings.jsx` — 49 lines
+- `components/BankalertStripeWalletTopup.jsx` — 103 lines
+- `components/CompanionCashierReview.jsx` — 46 lines
+- `components/CompanionConfirmedQr.jsx` — 99 lines
+- `components/DynamicField.jsx` — 71 lines
+- `components/LKShopPairingPanel.jsx` — 222 lines
+- `components/M7FinanceEvidenceHistory.jsx` — 123 lines
+- `components/M7OperationalFinanceReadiness.jsx` — 108 lines
+- `components/M7SourceMigrationPreflight.jsx` — 228 lines
+- `components/M7StripeTestReservation.jsx` — 190 lines
+- `components/M7StripeTestShadowHistory.jsx` — 221 lines
+- `components/M7UatFinancialShadow.jsx` — 174 lines
+- `components/PaymentCompanionPairingCard.jsx` — 116 lines
+- `components/PlatformCardAccordionHeader.jsx` — 40 lines
+- `components/PlatformPaymentHistory.jsx` — 98 lines
+- `components/PublicAppDownloads.jsx` — 33 lines
+- `components/TenantAccessEvidencePanel.jsx` — 99 lines
 - `components/TenantDeletionRecoveryNotice.jsx` — 20 lines
+- `components/TenantMasterEditRecoveryNotice.jsx` — 22 lines
+- `components/TenantProvisionRecoveryNotice.jsx` — 30 lines
+- `components/TenantSubscriptionControl.jsx` — 166 lines
 
 ## Per-file current JSX LOC
 
 | File | Group | Old Source LOC | Source current LOC | Old Target LOC | Target current LOC | Changed Source | Exact JSX bytes |
 |---|---|---:|---:|---:|---:|---|---|
-| `pages/AdminPage.jsx` | pages | 2403 | 2403 | 2216 | 2216 | no | no |
+| `pages/AdminPage.jsx` | pages | 2390 | 2403 | 2196 | 2216 | yes | no |
 | `pages/AdminQrPage.jsx` | pages | 180 | 180 | 152 | 152 | no | no |
 | `pages/AdminSalesReportPage.jsx` | pages | 591 | 591 | 592 | 592 | no | no |
 | `pages/AdminStoreMasterPage.jsx` | pages | 364 | 364 | — | — | no | no |
-| `pages/AdminTenantsPage.jsx` | pages | 2275 | 2275 | 1839 | 1943 | no | no |
-| `pages/AdminUsersPage.jsx` | pages | 435 | 435 | 436 | 436 | no | no |
+| `pages/AdminTenantsPage.jsx` | pages | 2275 | 2275 | 1553 | 1943 | no | no |
+| `pages/AdminUsersPage.jsx` | pages | 435 | 435 | 431 | 436 | no | no |
 | `pages/CanonicalLaravelBridgePage.jsx` | pages | 41 | 41 | — | — | no | no |
-| `pages/CashierPage.jsx` | pages | 1581 | 1581 | 1369 | 1369 | no | no |
+| `pages/CashierPage.jsx` | pages | 1581 | 1581 | 1362 | 1369 | no | no |
 | `pages/CashierReceiptPage.jsx` | pages | 405 | 405 | 367 | 367 | no | no |
 | `pages/CashierTableQrPage.jsx` | pages | 624 | 624 | 544 | 544 | no | no |
-| `pages/DeliveryPage.jsx` | pages | 1614 | 1614 | 1269 | 1269 | no | no |
-| `pages/DeliverySuccessPage.jsx` | pages | 1005 | 1005 | 480 | 480 | no | no |
-| `pages/HomePage.jsx` | pages | 404 | 404 | 380 | 380 | no | no |
-| `pages/HybridBillingReportPage.jsx` | pages | 335 | 335 | 338 | 338 | no | no |
-| `pages/HybridBillingReviewPage.jsx` | pages | 561 | 561 | 563 | 563 | no | no |
-| `pages/KitchenPage.jsx` | pages | 681 | 681 | 712 | 712 | no | no |
+| `pages/DeliveryPage.jsx` | pages | 1614 | 1614 | 1234 | 1269 | no | no |
+| `pages/DeliverySuccessPage.jsx` | pages | 906 | 1005 | 362 | 480 | yes | no |
+| `pages/HomePage.jsx` | pages | 401 | 404 | 377 | 380 | yes | no |
+| `pages/HybridBillingReportPage.jsx` | pages | 335 | 335 | 335 | 338 | no | no |
+| `pages/HybridBillingReviewPage.jsx` | pages | 561 | 561 | 558 | 563 | no | no |
+| `pages/KitchenPage.jsx` | pages | 681 | 681 | 707 | 712 | no | no |
 | `pages/LaravelSessionPage.jsx` | pages | 72 | 72 | — | — | no | no |
 | `pages/LegalPage.jsx` | pages | 83 | 83 | 63 | 63 | no | no |
 | `pages/LoginPage.jsx` | pages | 266 | 266 | 286 | 286 | no | no |
-| `pages/PlatformContactPage.jsx` | pages | 664 | 664 | 623 | 623 | no | no |
-| `pages/PlatformOwnersPage.jsx` | pages | 371 | 371 | 397 | 397 | no | no |
-| `pages/PlatformPage.jsx` | pages | 764 | 764 | 890 | 890 | no | no |
-| `pages/PlatformPricingPage.jsx` | pages | 461 | 461 | 462 | 462 | no | no |
+| `pages/PlatformContactPage.jsx` | pages | 603 | 664 | 495 | 623 | yes | no |
+| `pages/PlatformOwnersPage.jsx` | pages | 371 | 371 | 386 | 397 | no | no |
+| `pages/PlatformPage.jsx` | pages | 764 | 764 | 882 | 890 | no | no |
+| `pages/PlatformPricingPage.jsx` | pages | 461 | 461 | 308 | 462 | no | no |
 | `pages/PortMissingRoute.jsx` | pages | 11 | 11 | — | — | no | no |
 | `pages/PosBackupPage.jsx` | pages | 90 | 90 | 30 | 30 | no | no |
 | `pages/PosCatalogMasterPage.jsx` | pages | 3 | 3 | — | — | no | no |
@@ -161,7 +193,7 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 | `pages/PublicRouteMissingPage.jsx` | pages | 32 | 32 | 32 | 32 | no | no |
 | `pages/QuickOrderPage.jsx` | pages | 1269 | 1269 | 1105 | 1105 | no | no |
 | `pages/RegisterPage.jsx` | pages | 554 | 554 | 508 | 508 | no | no |
-| `pages/RevenueShareReportPage.jsx` | pages | 927 | 927 | 839 | 839 | no | no |
+| `pages/RevenueShareReportPage.jsx` | pages | 927 | 927 | 834 | 839 | no | no |
 | `pages/SaasSetupPage.jsx` | pages | 152 | 152 | 210 | 210 | no | no |
 | `pages/StorefrontCompatibilityEntry.jsx` | pages | 29 | 29 | 30 | 30 | no | no |
 | `pages/TakeawayPage.jsx` | pages | 231 | 231 | 220 | 220 | no | no |
@@ -183,71 +215,71 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 | `components/AdminTablesMasterCard.jsx` | components | 166 | 166 | — | — | no | no |
 | `components/AppDeveloperPanel.jsx` | components | 83 | 83 | 86 | 86 | no | no |
 | `components/AppModal.jsx` | components | 55 | 55 | — | — | no | no |
-| `components/BankalertStripeHistory.jsx` | components | 60 | 60 | 83 | 83 | no | no |
-| `components/BankalertStripePlatformSettings.jsx` | components | 176 | 176 | 49 | 49 | no | no |
-| `components/BankalertStripeWalletTopup.jsx` | components | 345 | 345 | 103 | 103 | no | no |
+| `components/BankalertStripeHistory.jsx` | components | 60 | 60 | — | 83 | no | no |
+| `components/BankalertStripePlatformSettings.jsx` | components | 176 | 176 | — | 49 | no | no |
+| `components/BankalertStripeWalletTopup.jsx` | components | 345 | 345 | — | 103 | no | no |
 | `components/CashierOrderNotifier.jsx` | components | 369 | 369 | 218 | 218 | no | no |
-| `components/CompanionCashierReview.jsx` | components | — | — | 46 | 46 | no | no |
-| `components/CompanionConfirmedQr.jsx` | components | — | — | 99 | 99 | no | no |
+| `components/CompanionCashierReview.jsx` | components | — | — | — | 46 | no | no |
+| `components/CompanionConfirmedQr.jsx` | components | — | — | — | 99 | no | no |
 | `components/DeliveryCustomIcons.jsx` | components | 43 | 43 | 43 | 43 | no | yes |
 | `components/DeliveryHoursEditor.jsx` | components | 106 | 106 | 100 | 100 | no | no |
 | `components/DeliveryLocationPicker.jsx` | components | 213 | 213 | 213 | 213 | no | no |
 | `components/DeliveryOrderHeading.jsx` | components | 54 | 54 | — | — | no | no |
-| `components/DynamicField.jsx` | components | 70 | 70 | 71 | 71 | no | no |
+| `components/DynamicField.jsx` | components | 70 | 70 | — | 71 | no | no |
 | `components/FormDynamicEnhancer.jsx` | components | 159 | 159 | — | — | no | no |
 | `components/FormValidationUi.jsx` | components | 265 | 265 | 265 | 265 | no | no |
 | `components/GoPlatformBrandingRuntime.jsx` | components | 57 | 57 | — | — | no | no |
 | `components/HybridReviewDecisionPanel.jsx` | components | 100 | 100 | 100 | 100 | no | no |
 | `components/HybridTenantProofPanel.jsx` | components | 238 | 238 | 191 | 191 | no | no |
-| `components/LKShopPairingPanel.jsx` | components | 221 | 221 | 222 | 222 | no | no |
+| `components/LKShopPairingPanel.jsx` | components | — | 221 | — | 222 | yes | no |
 | `components/LalamoveCODReconciliationPanel.jsx` | components | 44 | 44 | — | — | no | no |
 | `components/LaravelPosNavigation.jsx` | components | 2 | 2 | — | — | no | no |
 | `components/LocaleSwitcher.jsx` | components | 55 | 55 | 53 | 53 | no | no |
 | `components/M7CorrectionPanel.jsx` | components | 132 | 132 | — | — | no | no |
-| `components/M7FinanceEvidenceHistory.jsx` | components | — | — | 123 | 123 | no | no |
+| `components/M7FinanceEvidenceHistory.jsx` | components | — | — | — | 123 | no | no |
 | `components/M7FinancePolicyPanel.jsx` | components | 246 | 246 | — | — | no | no |
 | `components/M7Gate3OperationalDetails.jsx` | components | 301 | 301 | — | — | no | no |
 | `components/M7HomeInvoiceNotice.jsx` | components | 23 | 23 | — | — | no | no |
 | `components/M7IssuedInvoiceList.jsx` | components | 655 | 655 | — | — | no | no |
 | `components/M7MerchantServicePaymentHistory.jsx` | components | 69 | 69 | — | — | no | no |
-| `components/M7OperationalFinanceReadiness.jsx` | components | — | — | 108 | 108 | no | no |
+| `components/M7OperationalFinanceReadiness.jsx` | components | — | — | — | 108 | no | no |
 | `components/M7OperationalOutageReviewItem.jsx` | components | 53 | 53 | — | — | no | no |
 | `components/M7PlatformManualReview.jsx` | components | 109 | 109 | — | — | no | no |
 | `components/M7PlatformPaymentHistory.jsx` | components | 144 | 144 | — | — | no | no |
 | `components/M7PolicyAcceptancePanels.jsx` | components | 241 | 241 | — | — | no | no |
 | `components/M7ReleaseGatePanel.jsx` | components | 105 | 105 | — | — | no | no |
-| `components/M7SourceMigrationPreflight.jsx` | components | — | — | 228 | 228 | no | no |
+| `components/M7SourceMigrationPreflight.jsx` | components | — | — | — | 228 | no | no |
 | `components/M7StripeInvoicePayment.jsx` | components | 190 | 190 | — | — | no | no |
 | `components/M7StripeSandboxTestPanel.jsx` | components | 106 | 106 | — | — | no | no |
-| `components/M7StripeTestReservation.jsx` | components | — | — | 190 | 190 | no | no |
-| `components/M7StripeTestShadowHistory.jsx` | components | — | — | 221 | 221 | no | no |
+| `components/M7StripeTestReservation.jsx` | components | — | — | — | 190 | no | no |
+| `components/M7StripeTestShadowHistory.jsx` | components | — | — | — | 221 | no | no |
 | `components/M7TenantExtendedReview.jsx` | components | 77 | 77 | — | — | no | no |
 | `components/M7TenantLegacyEnrollmentReview.jsx` | components | 180 | 180 | — | — | no | no |
 | `components/M7TenantOperationalIssuance.jsx` | components | 127 | 127 | — | — | no | no |
 | `components/M7TenantSourceEvidence.jsx` | components | 245 | 245 | — | — | no | no |
 | `components/M7TenantSuspensionGate.jsx` | components | 254 | 254 | — | — | no | no |
-| `components/M7UatFinancialShadow.jsx` | components | — | — | 174 | 174 | no | no |
+| `components/M7UatFinancialShadow.jsx` | components | — | — | — | 174 | no | no |
 | `components/MerchantServiceTerms.jsx` | components | 72 | 72 | 65 | 65 | no | no |
 | `components/OrderRevisionDisplay.jsx` | components | 53 | 53 | — | — | no | no |
 | `components/PageReadyOverlay.jsx` | components | 75 | 75 | 75 | 75 | no | no |
-| `components/ParityFooter.jsx` | components | 26 | 26 | 25 | 25 | no | no |
+| `components/ParityFooter.jsx` | components | 25 | 26 | 25 | 25 | yes | no |
 | `components/ParityLayout.jsx` | components | 15 | 15 | 15 | 15 | no | no |
-| `components/PaymentCompanionPairingCard.jsx` | components | 541 | 541 | 116 | 116 | no | no |
+| `components/PaymentCompanionPairingCard.jsx` | components | 534 | 541 | — | 116 | yes | no |
 | `components/PlatformBankEvidencePanel.jsx` | components | 100 | 100 | — | — | no | no |
 | `components/PlatformBankVerificationRequestPanel.jsx` | components | 104 | 104 | — | — | no | no |
 | `components/PlatformBillingScenarioPanel.jsx` | components | 351 | 351 | — | — | no | no |
 | `components/PlatformBrandingRuntime.jsx` | components | 4 | 4 | 129 | 129 | no | no |
-| `components/PlatformCardAccordionHeader.jsx` | components | 40 | 40 | 40 | 40 | no | no |
+| `components/PlatformCardAccordionHeader.jsx` | components | 40 | 40 | — | 40 | no | no |
 | `components/PlatformCollapsibleCard.jsx` | components | 27 | 27 | — | — | no | no |
 | `components/PlatformFinanceBeneficiaryDraftPanel.jsx` | components | 154 | 154 | — | — | no | no |
 | `components/PlatformFinanceBeneficiaryReviewPanel.jsx` | components | 111 | 111 | — | — | no | no |
 | `components/PlatformHybridManualSlipPanel.jsx` | components | 150 | 150 | — | — | no | no |
 | `components/PlatformM7OwnerPayeeCard.jsx` | components | 150 | 150 | — | — | no | no |
-| `components/PlatformPaymentHistory.jsx` | components | — | — | 98 | 98 | no | no |
+| `components/PlatformPaymentHistory.jsx` | components | — | — | — | 98 | no | no |
 | `components/PlatformReceiverBankSelect.jsx` | components | 156 | 156 | 156 | 156 | no | yes |
 | `components/PosNavigation.jsx` | components | 305 | 305 | 293 | 293 | no | no |
 | `components/PosUserProfile.jsx` | components | 13 | 13 | 13 | 13 | no | yes |
-| `components/PublicAppDownloads.jsx` | components | 49 | 49 | 33 | 33 | no | no |
+| `components/PublicAppDownloads.jsx` | components | — | 49 | — | 33 | yes | no |
 | `components/PublicStorefront.jsx` | components | 307 | 307 | 297 | 297 | no | no |
 | `components/PublicStorefrontOperationalGate.jsx` | components | 108 | 108 | — | — | no | no |
 | `components/ReactBootstrapReadyGate.jsx` | components | 27 | 27 | — | — | no | no |
@@ -260,15 +292,15 @@ Do not interpret source-only names, unmatched bodies or line difference as a con
 | `components/StripeConnectDeliveryCard.jsx` | components | 232 | 232 | — | — | no | no |
 | `components/SuperAdminNotificationBell.jsx` | components | 377 | 377 | — | — | no | no |
 | `components/TelegramOrderFocus.jsx` | components | 36 | 36 | — | — | no | no |
-| `components/TelegramSettingsPanel.jsx` | components | 246 | 246 | 270 | 270 | no | no |
-| `components/TenantAccessEvidencePanel.jsx` | components | — | — | 99 | 99 | no | no |
-| `components/TenantControlPanel.jsx` | components | 611 | 611 | 617 | 617 | no | no |
+| `components/TelegramSettingsPanel.jsx` | components | 246 | 246 | 243 | 270 | no | no |
+| `components/TenantAccessEvidencePanel.jsx` | components | — | — | — | 99 | no | no |
+| `components/TenantControlPanel.jsx` | components | 611 | 611 | 591 | 617 | no | no |
 | `components/TenantDeletionRecoveryNotice.jsx` | components | — | — | — | 20 | no | no |
 | `components/TenantDeliveryManualReview.jsx` | components | — | — | 147 | 147 | no | no |
 | `components/TenantFinanceSourceEvidence.jsx` | components | — | — | 127 | 127 | no | no |
-| `components/TenantMasterEditRecoveryNotice.jsx` | components | — | — | 22 | 22 | no | no |
-| `components/TenantProvisionRecoveryNotice.jsx` | components | — | — | 30 | 30 | no | no |
-| `components/TenantSubscriptionControl.jsx` | components | — | — | 166 | 166 | no | no |
+| `components/TenantMasterEditRecoveryNotice.jsx` | components | — | — | — | 22 | no | no |
+| `components/TenantProvisionRecoveryNotice.jsx` | components | — | — | — | 30 | no | no |
+| `components/TenantSubscriptionControl.jsx` | components | — | — | — | 166 | no | no |
 | `components/UserMenu.jsx` | components | 266 | 266 | 264 | 264 | no | no |
 | `components/WaitingQueueNavigationBridge.jsx` | components | 32 | 32 | — | — | no | no |
 | `PortRoutes.jsx` | other | 19 | 19 | — | — | no | no |

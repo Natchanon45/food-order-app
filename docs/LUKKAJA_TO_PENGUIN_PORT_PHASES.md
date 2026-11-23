@@ -603,3 +603,17 @@ than relying only on `where('tenantId')` queries.
 The stricter root-Tenant Browser update allowlist is
 verified against P1.2d/e/f contracts. **Final 66/66**
 combined Emulator and complete React parity pass.
+
+### JSX audit baseline after P1.2g hardening commit 05b9f551
+
+The regenerated JSX inventory compares the **latest Source**
+`18093091` with the retained **2026-11-22 historical Source
+baseline** `03d2aaee`, not only with the immediately preceding
+`e60858c1` Source commit. It therefore correctly finds
+**8 changed Source JSX files, 2 new Source JSX files and +454
+Source JSX lines**, despite there being no additional JSX
+changes in the latest standalone Source APK deployment commit.
+The Target source-code snapshot `05b9f551` has
+**110 JSX / 37,895 lines**, the same physical JSX counts
+as preceding P1.2g commits. All live source activity
+was read-only to this PENGUIN module.
