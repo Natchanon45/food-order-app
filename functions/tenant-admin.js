@@ -4,7 +4,8 @@ const { onboardingDates } = require("./tenant-onboarding-policy");
 const { readTenantFinanceEvidence } = require("./tenant-finance-source-evidence");
 const { getAuth } = require("firebase-admin/auth");
 const { randomUUID } = require("crypto");
-const { BUSINESS_TYPES, businessUnitsFor } = require("./revenue-share-policy");
+// Legacy master edits are routed to the transactional P1.2f engine.
+const tenantMasterEdit = require("./tenant-master-edit");
 
 function normalizeSlug(value = "") {
   return String(value)
@@ -51,8 +52,10 @@ exports.listTenants = onCall(
       const wallet = walletSnapshot.exists ? walletSnapshot.data() : {};
       return {
         ...tenant,
-        shopPhone: settings.shopPhone || tenant.shopPhone || "",
-        shopAddress: settings.shopAddress || tenant.shopAddress || "",
+        shopPhone: Object.hasOwn(settings, "shopPhone")
+          ? String(settings.shopPhone || "") : String(tenant.shopPhone || ""),
+        shopAddress: Object.hasOwn(settings, "shopAddress")
+          ? String(settings.shopAddress || "") : String(tenant.shopAddress || ""),
         lalamove: {
           accountMode: ["disabled", "fod_central", "partner"].includes(String(lalamove.accountMode || ""))
             ? String(lalamove.accountMode)
@@ -293,81 +296,10 @@ exports.updateTenantOwner = onCall(
   }
 );
 
-exports.updateTenant = onCall(
-  { region: "asia-southeast1" },
-  async request => {
-    await assertSuperAdmin(request.auth);
-
-    const tenantId = String(request.data?.tenantId || "").trim();
-    const name = String(request.data?.name || "").trim();
-    const slug = normalizeSlug(request.data?.slug || "");
-    const phone = String(request.data?.phone || "").trim();
-    const address = String(request.data?.address || "").trim();
-    const requestedBusinessType = request.data?.businessType;
-    if (requestedBusinessType !== undefined && !BUSINESS_TYPES.has(requestedBusinessType)) {
-      throw new HttpsError("invalid-argument", "Invalid master business type");
-    }
-    if (!tenantId) throw new HttpsError("invalid-argument", "Tenant ID is required");
-    validateTenant(name, slug);
-
-    const db = getFirestore();
-    const tenantRef = db.collection("tenants").doc(tenantId);
-    const tenantSnapshot = await tenantRef.get();
-    if (!tenantSnapshot.exists) throw new HttpsError("not-found", "Tenant not found");
-
-    const current = tenantSnapshot.data();
-    const oldSlug = String(current.slug || "").trim();
-    const slugRef = db.collection("tenantSlugs").doc(slug);
-    if (slug !== oldSlug) {
-      const existingSlug = await slugRef.get();
-      if (existingSlug.exists && existingSlug.data().tenantId !== tenantId) {
-        throw new HttpsError("already-exists", "This slug is already in use");
-      }
-    }
-
-    const batch = db.batch();
-    const masterBusinessChanged = requestedBusinessType !== undefined && requestedBusinessType !== current.businessType;
-    const masterFields = masterBusinessChanged ? { businessType: requestedBusinessType, businessUnits: businessUnitsFor(requestedBusinessType) } : {};
-    batch.set(tenantRef, {
-      ...masterFields,
-      name,
-      slug,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
-    batch.set(tenantRef.collection("settings").doc("store"), {
-      shopName: name,
-      shopPhone: phone,
-      shopAddress: address,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
-    batch.set(slugRef, {
-      tenantId,
-      slug,
-      name,
-      active: current.active !== false,
-      updatedAt: FieldValue.serverTimestamp()
-    }, { merge: true });
-    if (oldSlug && oldSlug !== slug) batch.delete(db.collection("tenantSlugs").doc(oldSlug));
-
-    const usersSnapshot = await db.collection("users").where("tenantId", "==", tenantId).get();
-    usersSnapshot.docs.forEach(userDoc => {
-      batch.set(userDoc.ref, {
-        ...(masterBusinessChanged ? { businessType: requestedBusinessType, businessUnits: businessUnitsFor(requestedBusinessType) } : {}),
-        tenantSlug: slug,
-        tenantName: name,
-        updatedAt: FieldValue.serverTimestamp()
-      }, { merge: true });
-      batch.set(tenantRef.collection("memberships").doc(userDoc.id), {
-        tenantSlug: slug,
-        tenantName: name,
-        updatedAt: FieldValue.serverTimestamp()
-      }, { merge: true });
-    });
-
-    await batch.commit();
-    return { ok: true, tenant: { id: tenantId, slug, name, active: current.active !== false } };
-  }
-);
+// Keep existing callable name for older clients, but require the same
+// strict operation UUID, original snapshot and CAS as the new endpoint.
+// Legacy unversioned batch edits MUST NOT bypass atomic slug ownership.
+exports.updateTenant = tenantMasterEdit.updateTenantMasterAtomic;
 
 exports.deleteTenant = onCall(
   { region: "asia-southeast1" },

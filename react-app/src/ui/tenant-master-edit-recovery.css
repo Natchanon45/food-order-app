@@ -1,0 +1,19 @@
+.tenant-admin-page .tenant-master-edit-recovery{
+ display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;min-width:0;
+ border:1px solid #e3c6a2;background:#fff8ed;color:#825525;
+ padding:14px;border-radius:11px;
+}
+.tenant-admin-page .tenant-master-edit-recovery>.bi{font-size:21px;flex:0 0 auto}
+.tenant-admin-page .tenant-master-edit-recovery>div{flex:1 1 225px;min-width:0}
+.tenant-admin-page .tenant-master-edit-recovery strong{font-size:13px}
+.tenant-admin-page .tenant-master-edit-recovery p{
+ margin:5px 0 0;font-size:11.5px;line-height:1.6;
+}
+.tenant-admin-page .tenant-master-edit-recovery>.btn{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:37px;background:#885d28;color:#fff;border-radius:10px;
+ padding:8px 12px;flex:0 1 auto;
+}
+@media(max-width:550px){
+ .tenant-admin-page .tenant-master-edit-recovery>.btn{width:100%}
+}

@@ -105,6 +105,8 @@ export const createActiveTenantWithOwner = payload => call("createActiveTenantWi
 export const getPlatformTenantProvisionStatus = payload => call("getPlatformTenantProvisionStatus", payload);
 export const getPlatformTenantSavedPaymentAccount = payload => call("getPlatformTenantSavedPaymentAccount", payload);
 export const getPlatformTenantHybridInvoiceEvidence = payload => call("getPlatformTenantHybridInvoiceEvidence", payload);
+export const updateTenantMasterAtomic = payload => call("updateTenantMasterAtomic", payload);
+export const getPlatformTenantMasterEditOperation = payload => call("getPlatformTenantMasterEditOperation", payload);
 export const updateTenant = payload => call("updateTenant", payload);
 export const deleteTenant = payload => call("deleteTenant", payload);
 export const getPlatformRevenueShareSummary = payload => call("getPlatformRevenueShareSummary", payload);

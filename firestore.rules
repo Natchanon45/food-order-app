@@ -379,7 +379,9 @@ service cloud.firestore {
           'm7FinanceAccessStatus', 'm7FinanceAccessReason',
           'm7AdminTestOverrideMode', 'm7AdminTestOverrideExpiresAt',
           'm7AdminTestOverrideAvailable', 'm7MaturedInvoiceHolds',
-          'm7InvoiceUnpaidCents'
+          'm7InvoiceUnpaidCents',
+          'name', 'slug', 'businessType', 'businessUnits',
+          'masterEditRevision', 'masterEditedBy'
         ]);
       match /menus/{menuId} { allow read: if tenantBusinessEnabled(tenantId, 'order_delivery') && (true); allow create, update, delete: if tenantBusinessEnabled(tenantId, 'order_delivery') && (tenantAdminRole(tenantId)); }
       match /settings/{settingId} { allow read: if true; allow create, update, delete: if (tenantAdminRole(tenantId) && settingId != 'lalamove' && settingId != 'lalamoveWallet') || (settingId == 'catalog-order' && tenantProductManagerRole(tenantId) && tenantPayloadMatches(tenantId)); }
@@ -526,6 +528,12 @@ service cloud.firestore {
       // Immutable Superadmin subscription command receipts are not editable
       // by any browser, including the same Superadmin. Admin SDK only.
       match /subscriptionAdminActions/{operationId} {
+        allow read, write: if false;
+      }
+      // Immutable atomic master-edit receipts are private to Admin SDK.
+      // Never allow browsers to forge an operation, rewrite a result or
+      // suppress a stale rename conflict.
+      match /masterEditOperations/{operationId} {
         allow read, write: if false;
       }
       match /memberships/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole() || tenantAdminRole(tenantId)); allow create, update, delete: if superAdminRole(); }

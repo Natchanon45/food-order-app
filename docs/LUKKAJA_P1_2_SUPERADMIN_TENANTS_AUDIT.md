@@ -144,3 +144,30 @@ access/test-override flags, including Superadmin clients.
 Source branch remains read-only and Production was not deployed.
 See `docs/LUKKAJA_P1_2_TENANT_ACCESS_EVIDENCE_TRIAGE_20261123.md`
 for the new contract, test coverage and original Go requirements.
+
+## 2026-11-23 P1.2f — atomic master edit and Slug rename
+
+The legacy Firebase `updateTenant` handler had a TOCTOU
+race: a Slug was checked before a separate `WriteBatch`
+that could overwrite another tenant's public Slug index.
+It is now an alias to the strict
+`updateTenantMasterAtomic` transaction with original
+name/Slug/contact/business/revision CAS, a globally unique
+new Slug, atomic old-Slug removal, Store Settings,
+user/membership mirrors, and immutable operation receipt.
+It never touches subscription signup dates, bank settings,
+Owner identity, Service Credit, invoices or M7 access.
+
+The existing Tenant edit UI now requires independent
+operation/status/canonical Tenant rereads before showing
+a success, and persists only the operation UUID if
+transport fails. Recovering a pending operation is
+read-only and never repeats the Slug rename.
+
+Firestore Browser writes cannot forge master name/Slug/
+business/revision and cannot access immutable master
+receipts. The separate Tenant DELETE feature is
+explicitly not part of this module and has its own
+data-retention requirements.
+
+See `docs/LUKKAJA_P1_2_ATOMIC_TENANT_MASTER_EDIT_20261123.md`.

@@ -274,7 +274,11 @@ requireAll("Waiting Queue seating transaction", waitingCore, [
 ]);
 
 requireAll("Admin tenant create/edit/share actions", tenants, [
-  "await updateTenant(payload)",
+  "await updateTenantMasterAtomic(payload)",
+  "getPlatformTenantMasterEditOperation({tenantId,operationId})",
+  "validateMasterEditWrite(",
+  "canonicalMasterMatches(canonical,saved.master)",
+  "readPendingMasterEdit(authState.user?.uid,editing.id)",
   "const created = await createActiveTenantWithOwner(payload)",
   "created?.tenantActivated !== true",
   "const canonical = await listTenants()",
@@ -299,6 +303,8 @@ requireAll("Admin tenant destructive/review actions", tenants, [
 for (const fn of [
   "createTenant",
   "updateTenant",
+  "updateTenantMasterAtomic",
+  "getPlatformTenantMasterEditOperation",
   "updateTenantRevenueShare",
   "reconcileRevenueShare",
   "deleteTenant",

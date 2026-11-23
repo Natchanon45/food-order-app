@@ -167,20 +167,23 @@ test("new signup and Super Admin billing copy is localized in every supported lo
 });
 
 
-test("Super Admin can change master business without rewriting signup and share choices", () => {
-  const ui = fs.readFileSync("react-app/src/pages/AdminTenantsPage.jsx", "utf8");
-  const backend = fs.readFileSync("functions/tenant-admin.js", "utf8");
-  const edit = backend.slice(backend.indexOf("exports.updateTenant ="), backend.indexOf("exports.deleteTenant ="));
-  assert.match(ui, /id="tenantMasterBusinessType"/);
-  assert.match(ui, /businessType: form.businessType/);
-  const sourceControl = fs.readFileSync("react-app/src/components/TenantControlPanel.jsx", "utf8");
-  assert.match(sourceControl, /const businessType = tenant.businessType/);
-  assert.match(sourceControl, /value=\{registrationType\}/);
-  assert.match(ui, /id="tenantNewBusinessType"/);
-  assert.match(edit, /BUSINESS_TYPES\.has\(requestedBusinessType\)/);
-  assert.match(edit, /businessUnitsFor\(requestedBusinessType\)/);
-  assert.doesNotMatch(edit, /signupBilling\s*:/);
-  assert.doesNotMatch(edit, /revenueShareBusinessType\s*:/);
+test("Super Admin atomic master edit changes business without rewriting signup or financial terms", () => {
+  const ui=fs.readFileSync("react-app/src/pages/AdminTenantsPage.jsx","utf8");
+  const backend=fs.readFileSync("functions/tenant-master-edit.js","utf8");
+  const policy=fs.readFileSync("functions/tenant-master-edit-policy.js","utf8");
+  const legacy=fs.readFileSync("functions/tenant-admin.js","utf8");
+  assert.match(ui,/id="tenantMasterBusinessType"/);
+  assert.match(ui,/businessType: form.businessType/);
+  const control=fs.readFileSync("react-app/src/components/TenantControlPanel.jsx","utf8");
+  assert.match(control,/const businessType = tenant.businessType/);
+  assert.match(control,/value=\{registrationType\}/);
+  assert.match(ui,/id="tenantNewBusinessType"/);
+  assert.match(policy,/new Set\(\["both","retail","restaurant_cafe"\]\)/);
+  assert.match(backend,/businessUnitsFor\(input.businessType\)/);
+  assert.match(backend,/tx.update\(tenantRef/);
+  assert.match(legacy,/exports.updateTenant = tenantMasterEdit.updateTenantMasterAtomic/);
+  assert.doesNotMatch(backend,/signupBilling\s*:/);
+  assert.doesNotMatch(backend,/revenueShareBusinessType\s*:/);
 });
 
 test("master business and selected scope control Retail POS commission eligibility", () => {

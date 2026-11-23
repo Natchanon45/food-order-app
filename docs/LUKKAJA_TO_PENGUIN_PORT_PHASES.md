@@ -471,3 +471,40 @@ Its local acceptance: **39/39** combined Emulator tests,
 responsive 320/390/768/1440, full React parity, 117 supported
 Callables with zero missing exports, and generated build PASS.
 No Production deploy, Source change or `main` merge.
+
+## 2026-11-23 P1.2f — complete Superadmin Master Edit / atomic Slug rename
+
+A practical edit Module follows P1.2e's read-only Access
+Evidence: Superadmin can now **safely update** the Tenant
+master Name, URL Slug, phone, address and business category
+through one atomic Firebase transaction, protecting the
+public Slug from cross-tenant collision under concurrency.
+
+The same transaction synchronizes Store Settings and
+all existing user/membership mirrors and creates one
+immutable operation receipt. Original activation,
+subscription/signup prices, Owner account identity,
+bank details, Revenue Share, M7 and Service Credit
+remain unchanged. A lost-response recovery panel
+requires exact operation + canonical Tenant proof
+before allowing another edit. The legacy Callable
+alias cannot bypass the new atomic contract.
+
+This Module intentionally does not touch live deletion,
+bank/credit settlement or Production; it has no effect
+on the separate P1.2f Source/LUKKAJA read-only checkout.
+See `docs/LUKKAJA_P1_2_ATOMIC_TENANT_MASTER_EDIT_20261123.md`
+for complete acceptance and remaining blockers.
+
+### P1.2f local acceptance
+
+The P1.2f atomic Tenant Master edit module passes
+**12/12** dedicated Firebase Auth/Firestore Emulator tests,
+**51/51** combined P1.2c/d/e/f Emulator regression,
+**8/8** pure policy tests and **8/8** Chrome contract/UI
+tests across 320/390/768/1440 widths.
+Callable contracts cover **119** references with **zero**
+missing exports; React build and generated hosting contract
+pass. Original signup, plans, Owner identity and financial
+statuses remain untouched. The module is **not** a
+financial settlement or deletion authority.

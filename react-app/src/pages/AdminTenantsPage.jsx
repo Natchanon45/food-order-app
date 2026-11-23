@@ -29,6 +29,12 @@ import {
   validateSubscriptionWrite, validateSubscriptionOperation,
   canonicalSubscriptionMatches, subscriptionUnknownError,
 } from "@/data/tenantSubscriptionRecovery.mjs";
+import {
+  readPendingMasterEdit, holdPendingMasterEdit, releasePendingMasterEdit,
+  masterSnapshot, validateMasterEditWrite, validateMasterEditOperation,
+  canonicalMasterMatches, masterUnknownError,
+} from "@/data/tenantMasterEditRecovery.mjs";
+import { TenantMasterEditRecoveryNotice } from "@/components/TenantMasterEditRecoveryNotice";
 import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummary } from "@/data/platformAdminNotifications";
 import {
   createActiveTenantWithOwner,
@@ -43,7 +49,8 @@ import {
   reviewRevenueSharePayment,
   reviewTenantLalamoveWalletTopup,
   unlockTenantRevenueShare,
-  updateTenant,
+  updateTenantMasterAtomic,
+  getPlatformTenantMasterEditOperation,
   updateTenantLalamoveApproval,
   updateTenantSubscription,
   getPlatformTenantSubscriptionOperation,
@@ -304,6 +311,7 @@ export function AdminTenantsPage() {
   const [subscriptionCheckBusy, setSubscriptionCheckBusy] = useState("");
   const [pendingProvisionId, setPendingProvisionId] = useState("");
   const [provisionChecking, setProvisionChecking] = useState(false);
+  const [masterEditChecking, setMasterEditChecking] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reviewStatus, setReviewStatus] = useState("pending");
@@ -515,6 +523,8 @@ export function AdminTenantsPage() {
   };
   const openEdit = tenant => {
     setEditing(tenant);
+    const saved=readPendingMasterEdit(authState.user?.uid,tenant.id);
+    setUncertainTenantWrites(current=>({...current,[tenant.id]:Boolean(saved)}));
     setForm({
       name: tenant.name || "",
       slug: tenant.slug || "",
@@ -523,7 +533,9 @@ export function AdminTenantsPage() {
       businessType: tenant.businessType || (tenant.businessUnits?.length === 1 ? (tenant.businessUnits[0] === "retail_pos" ? "retail" : "restaurant_cafe") : "both"),
     });
     setSlugEdited(true);
-    setStatus("");
+    setStatus(saved
+      ? "มีคำสั่งแก้ไขร้านที่ยังยืนยันผลไม่ครบ ห้ามบันทึกซ้ำ กรุณาตรวจสถานะคำสั่งเดิม"
+      : "");
     dialogRef.current?.showModal?.();
   };
 
@@ -592,6 +604,111 @@ export function AdminTenantsPage() {
     }
   };
 
+  const reconcileMasterEdit = async tenant => {
+    const uid=authState.user?.uid;
+    const op=readPendingMasterEdit(uid,tenant.id);
+    if(!op||masterEditChecking)return;
+    setMasterEditChecking(tenant.id);
+    try{
+      const checked=validateMasterEditOperation(
+        await getPlatformTenantMasterEditOperation({
+          tenantId:tenant.id,operationId:op,
+        }),tenant.id,op,
+      );
+      if(checked.status==="complete_current"){
+        const canonical=await listTenants();
+        if(!canonicalMasterMatches(canonical,checked.master))
+          throw new Error("MASTER_EDIT_RECONCILE_CANONICAL_MISMATCH");
+        setTenants(canonical);
+        releasePendingMasterEdit(uid,tenant.id,op);
+        setUncertainTenantWrites(current=>({...current,[tenant.id]:false}));
+        setStatus("");
+        showToast("ยืนยันแล้ว: ชื่อร้าน, Slug, ข้อมูลติดต่อ และข้อมูลพนักงานตรงกับ Firebase");
+        dialogRef.current?.close?.();
+        void loadSales();
+      }else if(checked.status==="complete_superseded"){
+        const canonical=await listTenants();
+        if(!canonical.some(row=>row.id===tenant.id))
+          throw new Error("MASTER_EDIT_RECONCILE_CANONICAL_MISMATCH");
+        setTenants(canonical);
+        releasePendingMasterEdit(uid,tenant.id,op);
+        setUncertainTenantWrites(current=>({...current,[tenant.id]:false}));
+        setStatus("");
+        showToast("คำสั่งเดิมบันทึกแล้ว แต่มีการแก้ไขที่ใหม่กว่า กรุณาตรวจข้อมูลร้านล่าสุด");
+        dialogRef.current?.close?.();
+      }else{
+        setStatus("ยังไม่สามารถยืนยันคำสั่งเดิมจากเซิร์ฟเวอร์ได้ กรุณาตรวจสอบกับผู้ดูแล ห้ามส่งคำสั่งใหม่");
+      }
+    }catch(error){
+      console.warn("MASTER_EDIT_RECOVERY_UNVERIFIED",error?.code||error?.message);
+      setStatus("ไม่สามารถยืนยันผลแก้ไขร้านจาก Firebase ได้ กรุณาตรวจสอบก่อนส่งคำสั่งซ้ำ");
+      showToast("ยังตรวจยืนยันคำสั่งแก้ไขร้านเดิมไม่ได้","error");
+    }finally{setMasterEditChecking("");}
+  };
+
+  const submitMasterEdit = async (tenant,fields) => {
+    const uid=authState.user?.uid,tenantId=String(tenant.id||"");
+    if(saving||uncertainTenantWrites[tenantId]||
+       readPendingMasterEdit(uid,tenantId)){
+      showToast("มีคำสั่งแก้ไขร้านที่ต้องตรวจผลก่อน ห้ามส่งรายการซ้ำ","error");
+      return;
+    }
+    if(fields.slug!==tenant.slug){
+      const confirmed=await sweetConfirm(
+        "ยืนยันเปลี่ยน URL ร้านเป็น /"+fields.slug+"? ลิงก์เดิม /"+
+         tenant.slug+" จะถูกยกเลิกหลังบันทึกสำเร็จ",
+        {title:"ยืนยันการเปลี่ยน Slug ร้านค้า",
+         confirmText:"เปลี่ยน Slug",cancelText:t("admin_tenants.common.cancel"),
+         type:"warning"},
+      );
+      if(!confirmed)return;
+    }
+    const operationId=crypto.randomUUID();
+    if(!holdPendingMasterEdit(uid,tenantId,operationId)){
+      setStatus("เบราว์เซอร์ไม่สามารถเก็บรหัสคำสั่งได้ เพื่อป้องกันเปลี่ยน Slug ซ้ำจึงยังไม่บันทึก");
+      return;
+    }
+    const payload={...fields,tenantId,operationId,...masterSnapshot(tenant)};
+    setUncertainTenantWrites(current=>({...current,[tenantId]:true}));
+    setSaving(true);
+    setStatus("");
+    try{
+      const saved=validateMasterEditWrite(
+        await updateTenantMasterAtomic(payload),payload,
+      );
+      const checked=validateMasterEditOperation(
+        await getPlatformTenantMasterEditOperation({tenantId,operationId}),
+        tenantId,operationId,
+      );
+      if(checked.status!=="complete_current"||
+         JSON.stringify(checked.master)!==JSON.stringify(saved.master))
+        throw new Error("MASTER_EDIT_WRITE_UNCONFIRMED");
+      const canonical=await listTenants();
+      if(!canonicalMasterMatches(canonical,saved.master))
+        throw new Error("MASTER_EDIT_WRITE_UNCONFIRMED");
+      setTenants(canonical);
+      releasePendingMasterEdit(uid,tenantId,operationId);
+      setUncertainTenantWrites(current=>({...current,[tenantId]:false}));
+      showToast(t("admin_tenants.tenant.updated"));
+      dialogRef.current?.close?.();
+      void loadSales();
+    }catch(error){
+      console.warn("MASTER_EDIT_COMMIT_UNVERIFIED",error?.code||error?.message);
+      const definite=error?.code==="functions/invalid-argument";
+      if(definite){
+        releasePendingMasterEdit(uid,tenantId,operationId);
+        setUncertainTenantWrites(current=>({...current,[tenantId]:false}));
+        setStatus("ข้อมูลร้านไม่ถูกต้อง กรุณาตรวจสอบชื่อ Slug ประเภทกิจการ และข้อมูลติดต่อ");
+      }else{
+        setUncertainTenantWrites(current=>({...current,[tenantId]:true}));
+        setStatus(masterUnknownError(error)
+          ?"ยังยืนยันผลการบันทึกจากเซิร์ฟเวอร์ไม่ได้ ให้ใช้ปุ่มตรวจคำสั่งเดิม ห้ามกดบันทึกซ้ำ"
+          :"มีคำสั่งที่ต้องตรวจสอบจาก Firebase ก่อนแก้ไขร้านอีกครั้ง ห้ามส่งคำสั่งใหม่");
+      }
+      showToast("ยังไม่สามารถยืนยันการบันทึกข้อมูลร้านได้","error");
+    }finally{setSaving(false);}
+  };
+
   const submitTenant = async event => {
     event.preventDefault();
     const writeKey = editing ? String(editing.id) : "__create__";
@@ -605,6 +722,10 @@ export function AdminTenantsPage() {
       businessType: form.businessType,
     };
     if (!payload.name || !payload.slug) return;
+    if (editing) {
+      await submitMasterEdit(editing,payload);
+      return;
+    }
     if (!editing && form.ownerPassword !== form.confirmPassword) {
       setStatus("รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน");
       return;
@@ -625,9 +746,7 @@ export function AdminTenantsPage() {
     setSaving(true);
     setStatus("");
     try {
-      if (editing) {
-        await updateTenant(payload);
-      } else {
+      {
         // The server reserves the tenant slug and creates Owner, membership
         // and the first free month as one confirmed logical operation.
         const created = await createActiveTenantWithOwner(payload);
@@ -1356,18 +1475,24 @@ export function AdminTenantsPage() {
               mode="modal" operationId={pendingProvisionId}
               checking={provisionChecking} busy={saving}
               onCheck={reconcileProvision} /> : null}
+            {editing && readPendingMasterEdit(authState.user?.uid,editing.id) ?
+              <TenantMasterEditRecoveryNotice tenantId={editing.id}
+                checking={masterEditChecking===editing.id}
+                onCheck={()=>reconcileMasterEdit(editing)}/> : null}
             {!editing ? <div className="tenant-new-step-title"><span>01</span><strong>ข้อมูลร้านค้า</strong><small>ข้อมูลสำหรับเปิดใช้งานร้านใหม่</small></div> : null}
             <div className="grid grid-2">
               <div className="field">
                 <label htmlFor="tenantName">{t("admin_tenants.tenant.fields.name")}</label>
-                <input className="input" id="tenantName" maxLength="120" required value={form.name} onChange={e => {
+                <input className="input" id="tenantName" disabled={saving || Boolean(editing && (uncertainTenantWrites[editing.id] ||
+                  readPendingMasterEdit(authState.user?.uid,editing.id)))} maxLength="120" required value={form.name} onChange={e => {
                   const name = e.target.value;
                   setForm(current => ({ ...current, name, ...(!slugEdited ? { slug: normalizeSlug(name) } : {}) }));
                 }} placeholder={t("admin_tenants.tenant.fields.name_placeholder")} />
               </div>
               <div className="field">
                 <label htmlFor="tenantSlug">{t("admin_tenants.tenant.fields.slug")}</label>
-                <input className="input" id="tenantSlug" maxLength="50" required value={form.slug} onChange={e => {
+                <input className="input" id="tenantSlug" disabled={saving || Boolean(editing && (uncertainTenantWrites[editing.id] ||
+                  readPendingMasterEdit(authState.user?.uid,editing.id)))} maxLength="50" required value={form.slug} onChange={e => {
                   setSlugEdited(true);
                   setForm(current => ({ ...current, slug: sanitizeSlug(e.target.value) }));
                 }} onBlur={() => setForm(current => ({ ...current, slug: normalizeSlug(current.slug) }))} placeholder={t("admin_tenants.tenant.fields.slug_placeholder")} />
@@ -1377,17 +1502,22 @@ export function AdminTenantsPage() {
             <div className="grid grid-2">
               <div className="field">
                 <label htmlFor="tenantPhone">{t("admin_tenants.tenant.fields.phone")}</label>
-                <input className="input" id="tenantPhone" type="tel" maxLength="30" value={form.phone} onChange={e => setForm(current => ({ ...current, phone: e.target.value }))} placeholder={t("admin_tenants.tenant.fields.phone_placeholder")} />
+                <input className="input" id="tenantPhone" disabled={saving || Boolean(editing && (uncertainTenantWrites[editing.id] ||
+                  readPendingMasterEdit(authState.user?.uid,editing.id)))} type="tel" maxLength="30" value={form.phone} onChange={e => setForm(current => ({ ...current, phone: e.target.value }))} placeholder={t("admin_tenants.tenant.fields.phone_placeholder")} />
               </div>
               <div className="field">
                 <label htmlFor="tenantAddress">{t("admin_tenants.tenant.fields.address")}</label>
-                <input className="input" id="tenantAddress" maxLength="300" value={form.address} onChange={e => setForm(current => ({ ...current, address: e.target.value }))} placeholder={t("admin_tenants.tenant.fields.address_placeholder")} />
+                <input className="input" id="tenantAddress" disabled={saving || Boolean(editing && (uncertainTenantWrites[editing.id] ||
+                  readPendingMasterEdit(authState.user?.uid,editing.id)))} maxLength="300" value={form.address} onChange={e => setForm(current => ({ ...current, address: e.target.value }))} placeholder={t("admin_tenants.tenant.fields.address_placeholder")} />
               </div>
             </div>
             {editing ? (
               <div className="field tenant-master-business-field">
                 <label htmlFor="tenantMasterBusinessType"><i className="bi bi-diagram-3" aria-hidden="true"></i> {t("admin_tenants.signup_billing.business")} (Master)</label>
-                <select className="input" id="tenantMasterBusinessType" value={form.businessType} onChange={e => setForm(current => ({ ...current, businessType: e.target.value }))}>
+                <select className="input" id="tenantMasterBusinessType"
+                  disabled={saving || Boolean(uncertainTenantWrites[editing.id] ||
+                    readPendingMasterEdit(authState.user?.uid,editing.id))}
+                  value={form.businessType} onChange={e => setForm(current => ({ ...current, businessType: e.target.value }))}>
                   {["restaurant_cafe", "retail", "both"].map(type => <option value={type} key={type}>{t(`admin_tenants.signup_billing.businesses.${type}`)}</option>)}
                 </select>
                 <small>{t("admin_tenants.signup_billing.title")} · {t("admin_tenants.signup_billing.business")}: {t(`admin_tenants.signup_billing.businesses.${editing.signupBilling?.businessType || editing.businessType || "both"}`)}</small>
@@ -1453,7 +1583,8 @@ export function AdminTenantsPage() {
             <button type="button" className="btn" onClick={() => dialogRef.current?.close?.()}>
               <i className="bi bi-x-circle" aria-hidden="true"></i><span>{t("admin_tenants.common.cancel")}</span>
             </button>
-            <button className="btn btn-primary" id="createTenantButton" type="submit" disabled={saving || Boolean(uncertainTenantWrites[editing ? String(editing.id) : "__create__"])}>
+            <button className="btn btn-primary" id="createTenantButton" type="submit" disabled={saving || Boolean(uncertainTenantWrites[editing ? String(editing.id) : "__create__"]) ||
+                Boolean(editing && readPendingMasterEdit(authState.user?.uid,editing.id))}>
               <i className="bi bi-floppy" aria-hidden="true"></i><span>{saving ? t("admin_tenants.tenant.saving") : editing ? t("admin_tenants.tenant.save_edit") : "สร้างร้านและเปิดใช้งาน"}</span>
             </button>
           </div>
