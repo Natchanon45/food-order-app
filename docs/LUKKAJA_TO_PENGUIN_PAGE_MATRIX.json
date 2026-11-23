@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-11-09",
+  "capturedAt": "2026-11-23",
   "purpose": "Read-only source UI inventory and destination migration acceptance tracker; presence does NOT imply parity.",
   "source": {
     "repository": "cosmatch/lukkhaja",
-    "branch": "feature/react-golang-vite-tailwind-axios",
-    "commit": "e84c899028eb16c67401dcc05c5faed84bf48f63",
+    "branch": "feature/lukkaja_bankalert_stripe",
+    "commit": "e60858c12b3e52a7ca6785e329d77004160e6657",
     "pageRoot": "resources/js/react-port/pages/",
     "componentRoot": "resources/js/react-port/components/"
   },
   "target": {
     "repository": "Natchanon45/food-order-app",
     "branch": "feature/react-firebase-port",
-    "commit": "d87fc3752efff126dc9846d7cbe844aa982840a2",
+    "commit": "1946035875ab2aadd381af87f92265eebb2bdacd",
     "pageRoot": "react-app/src/pages/",
     "componentRoot": "react-app/src/components/"
   },
@@ -21,9 +21,9 @@
     "destinationPageJsx": 52,
     "existingFilenameMatches": 52,
     "sourceOnlyPageJsx": 13,
-    "sourceComponentJsx": 70,
-    "destinationComponentJsx": 25,
-    "sourceOnlyComponentJsx": 45
+    "sourceComponentJsx": 86,
+    "destinationComponentJsx": 45,
+    "sourceOnlyComponentJsx": 52
   },
   "phaseSummaries": [
     {
@@ -106,7 +106,14 @@
       "auditEvidence": "docs/LUKKAJA_P1_1_PLATFORM_AUDIT.md",
       "actionInventoryEvidence": "docs/LUKKAJA_P1_1_PLATFORM_ACTIONS.md",
       "releaseCommit": "fb3d249f1a15cce1f24499dd2f5026f00f0abb97",
-      "releaseAsset": "react/assets/index-CoVwNJEQ.js"
+      "releaseAsset": "react/assets/index-CoVwNJEQ.js",
+      "inventoryCurrent": {
+        "sourceLines": 764,
+        "targetLines": 890,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P1-02",
@@ -122,7 +129,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 371,
+        "targetLines": 397,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P1-03",
@@ -138,7 +152,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 664,
+        "targetLines": 604,
+        "sourceChangedSincePreviousAudit": true,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P1-04",
@@ -154,7 +175,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 461,
+        "targetLines": 462,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P1-05",
@@ -171,7 +199,14 @@
       "browserVisual": "desktop_mobile_authenticated_emulator_browser_2_of_2_pass__source_pixel_comparison_pending",
       "firebaseEmulator": "onboarding_masked_account_and_single_cycle_signed_invoice_tests_pass__complete_m7_backend_pending",
       "release": "not_started",
-      "auditEvidence": "docs/LUKKAJA_P1_2_SUPERADMIN_TENANTS_AUDIT.md"
+      "auditEvidence": "docs/LUKKAJA_P1_2_SUPERADMIN_TENANTS_AUDIT.md",
+      "inventoryCurrent": {
+        "sourceLines": 2275,
+        "targetLines": 1569,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P1-06",
@@ -187,7 +222,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 435,
+        "targetLines": 436,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P1-07",
@@ -203,7 +245,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 152,
+        "targetLines": 210,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-01",
@@ -219,7 +268,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 404,
+        "targetLines": 377,
+        "sourceChangedSincePreviousAudit": true,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-02",
@@ -235,7 +291,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 266,
+        "targetLines": 286,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-03",
@@ -251,7 +314,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 554,
+        "targetLines": 508,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-04",
@@ -267,7 +337,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 2403,
+        "targetLines": 2209,
+        "sourceChangedSincePreviousAudit": true,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-05",
@@ -283,7 +360,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 364,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-06",
@@ -299,7 +383,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 180,
+        "targetLines": 152,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-07",
@@ -315,7 +406,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 591,
+        "targetLines": 592,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-08",
@@ -331,7 +429,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 83,
+        "targetLines": 63,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-09",
@@ -347,7 +452,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 72,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P2-10",
@@ -363,7 +475,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 41,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-01",
@@ -379,7 +498,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 1614,
+        "targetLines": 1269,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-02",
@@ -395,7 +521,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 1005,
+        "targetLines": 364,
+        "sourceChangedSincePreviousAudit": true,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-03",
@@ -411,7 +544,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 231,
+        "targetLines": 220,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-04",
@@ -427,7 +567,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 247,
+        "targetLines": 243,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-05",
@@ -443,7 +590,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 165,
+        "targetLines": 162,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-06",
@@ -459,7 +613,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 32,
+        "targetLines": 32,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-07",
@@ -475,7 +636,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 29,
+        "targetLines": 30,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P3-08",
@@ -491,7 +659,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 11,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-01",
@@ -507,7 +682,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 1581,
+        "targetLines": 1369,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-02",
@@ -523,7 +705,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 405,
+        "targetLines": 367,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-03",
@@ -539,7 +728,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 624,
+        "targetLines": 544,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-04",
@@ -555,7 +751,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 1269,
+        "targetLines": 1105,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-05",
@@ -571,7 +774,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 681,
+        "targetLines": 712,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-06",
@@ -587,7 +797,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 719,
+        "targetLines": 717,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-07",
@@ -603,7 +820,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 288,
+        "targetLines": 287,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P4-08",
@@ -619,7 +843,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 131,
+        "targetLines": 121,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-01",
@@ -635,7 +866,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 1445,
+        "targetLines": 1314,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-02",
@@ -651,7 +889,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 470,
+        "targetLines": 281,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-03",
@@ -667,7 +912,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 3,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-04",
@@ -683,7 +935,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 150,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-05",
@@ -699,7 +958,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 1290,
+        "targetLines": 1216,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-06",
@@ -715,7 +981,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 320,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-07",
@@ -731,7 +1004,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 563,
+        "targetLines": 548,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-08",
@@ -747,7 +1027,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 358,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-09",
@@ -763,7 +1050,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 479,
+        "targetLines": 354,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-10",
@@ -779,7 +1073,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 232,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-11",
@@ -795,7 +1096,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 1357,
+        "targetLines": 1274,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-12",
@@ -811,7 +1119,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 812,
+        "targetLines": 762,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-13",
@@ -827,7 +1142,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 728,
+        "targetLines": 684,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-14",
@@ -843,7 +1165,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 891,
+        "targetLines": 861,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-15",
@@ -859,7 +1188,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 346,
+        "targetLines": 319,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-16",
@@ -875,7 +1211,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 894,
+        "targetLines": 849,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-17",
@@ -891,7 +1234,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 189,
+        "targetLines": 164,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-18",
@@ -907,7 +1257,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 552,
+        "targetLines": 495,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-19",
@@ -923,7 +1280,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 984,
+        "targetLines": 950,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-20",
@@ -939,7 +1303,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 177,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-21",
@@ -955,7 +1326,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 914,
+        "targetLines": 897,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-22",
@@ -971,7 +1349,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 152,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-23",
@@ -987,7 +1372,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 460,
+        "targetLines": 463,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-24",
@@ -1003,7 +1395,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 179,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-25",
@@ -1019,7 +1418,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 408,
+        "targetLines": 251,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-26",
@@ -1035,7 +1441,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 221,
+        "targetLines": null,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-27",
@@ -1051,7 +1464,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 223,
+        "targetLines": 190,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-28",
@@ -1067,7 +1487,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 90,
+        "targetLines": 30,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P5-29",
@@ -1083,7 +1510,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 56,
+        "targetLines": 40,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P6-01",
@@ -1099,7 +1533,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 927,
+        "targetLines": 839,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P6-02",
@@ -1115,7 +1556,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 335,
+        "targetLines": 338,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     },
     {
       "id": "P6-03",
@@ -1131,7 +1579,14 @@
       "actionScenarioInventory": "pending",
       "browserVisual": "pending",
       "firebaseEmulator": "pending",
-      "release": "not_started"
+      "release": "not_started",
+      "inventoryCurrent": {
+        "sourceLines": 561,
+        "targetLines": 563,
+        "sourceChangedSincePreviousAudit": false,
+        "sourceCommit": "e60858c12b3e52a7ca6785e329d77004160e6657",
+        "targetCommit": "1946035875ab2aadd381af87f92265eebb2bdacd"
+      }
     }
   ],
   "sourceOnlyComponents": [
@@ -1145,7 +1600,10 @@
     "AdminStoreLocationMap.jsx",
     "AdminTablesMasterCard.jsx",
     "AppModal.jsx",
+    "DeliveryOrderHeading.jsx",
+    "FormDynamicEnhancer.jsx",
     "GoPlatformBrandingRuntime.jsx",
+    "LKShopPairingPanel.jsx",
     "LalamoveCODReconciliationPanel.jsx",
     "LaravelPosNavigation.jsx",
     "M7CorrectionPanel.jsx",
@@ -1153,32 +1611,36 @@
     "M7Gate3OperationalDetails.jsx",
     "M7HomeInvoiceNotice.jsx",
     "M7IssuedInvoiceList.jsx",
+    "M7MerchantServicePaymentHistory.jsx",
     "M7OperationalOutageReviewItem.jsx",
     "M7PlatformManualReview.jsx",
+    "M7PlatformPaymentHistory.jsx",
     "M7PolicyAcceptancePanels.jsx",
     "M7ReleaseGatePanel.jsx",
+    "M7StripeInvoicePayment.jsx",
+    "M7StripeSandboxTestPanel.jsx",
     "M7TenantExtendedReview.jsx",
     "M7TenantLegacyEnrollmentReview.jsx",
     "M7TenantOperationalIssuance.jsx",
     "M7TenantSourceEvidence.jsx",
     "M7TenantSuspensionGate.jsx",
-    "MerchantServiceTerms.jsx",
     "OrderRevisionDisplay.jsx",
     "PlatformBankEvidencePanel.jsx",
     "PlatformBankVerificationRequestPanel.jsx",
     "PlatformBillingScenarioPanel.jsx",
+    "PlatformCollapsibleCard.jsx",
     "PlatformFinanceBeneficiaryDraftPanel.jsx",
     "PlatformFinanceBeneficiaryReviewPanel.jsx",
     "PlatformHybridManualSlipPanel.jsx",
     "PlatformM7OwnerPayeeCard.jsx",
+    "PublicAppDownloads.jsx",
     "PublicStorefrontOperationalGate.jsx",
     "ReactBootstrapReadyGate.jsx",
     "ReactPortErrorBoundary.jsx",
     "SalesReportReadFailure.jsx",
+    "StripeConnectDeliveryCard.jsx",
     "SuperAdminNotificationBell.jsx",
     "TelegramOrderFocus.jsx",
-    "TelegramSettingsPanel.jsx",
-    "TenantControlPanel.jsx",
     "WaitingQueueNavigationBridge.jsx"
   ],
   "methodology": "Counts reflect direct JSX files under each specified pages/ and components/ directory; not distinct URLs or working end-to-end routes. Extra Master/Bridge pages may be helper-only. Source snapshots are pinned; refresh explicitly at phase boundaries. No JSX/DOM or business functionality is considered ported merely because a filename exists.",
@@ -1193,8 +1655,10 @@
   },
   "sourceEvolution": {
     "fromPriorPortSource": "f9a6ddcd655da5c8c12e023a28880c74246ef768",
-    "toCurrentSource": "e84c899028eb16c67401dcc05c5faed84bf48f63",
-    "aheadCommits": 432
+    "toCurrentSource": "e60858c12b3e52a7ca6785e329d77004160e6657",
+    "aheadCommits": 676,
+    "newSincePreviousJsxAudit": 3,
+    "previousJsxAuditSource": "03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd"
   },
   "latestVerifiedHosting": {
     "version": "0.4.305",
@@ -1205,5 +1669,33 @@
     "host": "https://penguin-food.web.app",
     "status": "hosting_live_verified__new_tenant_source_not_deployed",
     "backendDeploy": "14_scoped_functions_at_e42bc439__new_onecall_not_deployed"
-  }
+  },
+  "historicalBaseline": {
+    "source": {
+      "repository": "cosmatch/lukkhaja",
+      "branch": "feature/react-golang-vite-tailwind-axios",
+      "commit": "e84c899028eb16c67401dcc05c5faed84bf48f63",
+      "pageRoot": "resources/js/react-port/pages/",
+      "componentRoot": "resources/js/react-port/components/"
+    },
+    "target": {
+      "repository": "Natchanon45/food-order-app",
+      "branch": "feature/react-firebase-port",
+      "commit": "d87fc3752efff126dc9846d7cbe844aa982840a2",
+      "pageRoot": "react-app/src/pages/",
+      "componentRoot": "react-app/src/components/"
+    },
+    "counts": {
+      "sourcePageJsx": 65,
+      "destinationPageJsx": 52,
+      "existingFilenameMatches": 52,
+      "sourceOnlyPageJsx": 13,
+      "sourceComponentJsx": 70,
+      "destinationComponentJsx": 25,
+      "sourceOnlyComponentJsx": 45
+    },
+    "capturedAt": "2026-11-09"
+  },
+  "latestJsxAudit": "docs/LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md",
+  "latestJsxAuditJson": "docs/LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json"
 }

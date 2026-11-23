@@ -1,5 +1,79 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+> **LATEST SOURCE REFRESH — 23 NOV 2026 (authoritative for next slice):**
+> Source `cosmatch/lukkhaja@e60858c1` on `feature/lukkaja_bankalert_stripe`, Target
+> `Natchanon45/food-order-app@19460358` on `feature/react-firebase-port`.
+> New machine-readable full JSX inventory:
+> [23 Nov audit (Markdown)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md) /
+> [23 Nov audit (JSON)](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json).
+> The older 9/22 Nov sections below remain as *historical evidence*, not
+> current line counts or completion claims. The page matrix
+> [JSON](./LUKKAJA_TO_PENGUIN_PAGE_MATRIX.json) has been re-pinned.
+
+## Current JSX and source-change baseline (2026-11-23)
+
+| Metric | Source | Firebase target | Meaning |
+| --- | ---: | ---: | --- |
+| Direct page JSX | **65 files / 35,878 physical lines** | **52 / 29,979** | 52 same-name, 13 Source-only; these are *files*, not route counts |
+| Direct component JSX | **86 / 12,590** | **45 / 5,989** | 34 same-name, 52 Source-only, 11 Target-only |
+| Other React-root JSX | **5 / 486** | **6 / 790** | Platform/Auth/runtime adapters differ by architecture |
+| **All included JSX** | **156 / 48,954** | **103 / 36,758** | Never treat raw line delta as unimplemented code or completion percentage |
+
+The 23 Nov Source contains **3 new commits** relative to the previously
+pinned `03d2aaee`, changing **8 React JSX files**, including **two new
+components** (`LKShopPairingPanel.jsx`, `PublicAppDownloads.jsx`),
+with **+454 net physical JSX lines**. No new Source page JSX file
+or `PortRoutes.jsx` change occurred in those three commits.
+Target meanwhile grew by **15 component JSX files** since its prior
+audit commit `c42b2981`. These must be re-evaluated for reuse rather
+than copied/overwritten. See the audit JSON for all per-file LOC.
+
+**Scope delta / recommended module order after re-baselining:**
+
+```text
+P0  Refresh Source/Target Git refs + 156-vs-103 JSX inventory           [DONE 2026-11-23]
+│
+├── P3  Customer DeliverySuccessPage UI parity                    [NEW SOURCE DELTA]
+│       Paid/verification card, Stripe Sandbox badge toggle,
+│       PromptPay confirmation presentation, three mobile icon actions,
+│       matching source CSS and responsive layout
+│       Gate: never infer bank payment from badge/redirect
+│
+├── P1/P2  LK Shop web/FCM integration                             [NEW SOURCE DELTA]
+│         PlatformContactPage superadmin rooms + LKShopPairingPanel
+│         AdminPage shop rooms (admin/cashier/kitchen) and revoke
+│         HomePage public downloads + PublicAppDownloads
+│         PaymentCompanionPairingCard / ParityFooter changes
+│         Gate: scoped Firebase Functions/Auth, QR one-time use,
+│         role-room permissions, token revocation, APNs/FCM readiness
+│         Mobile Flutter apps/lk-shop tracked separately (NOT JSX)
+│
+├── P1–P6  Existing phase inventory and capability parity          [OPEN]
+│         Respect completed Firebase adapters, previous tests,
+│         source-only Master/Bridge files may not be real routes
+│
+└── P7  Whole-system desktop/mobile, Auth, emulator, provider
+        regression and explicit deployment sign-off                [OPEN]
+```
+
+New Source touched **6 CSS files, 8 Go files, 87 Flutter LK Shop files,
+22 Android companion files**, and supporting tests/docs (166 files total
+across all extensions). These are dependencies but must not be counted
+as JSX lines or migrated blindly. In particular, any new device
+pairing / notifications in the Source uses Go server endpoints:
+equivalent Firebase authentication and verified FCM device ownership
+would be needed before enabling that behavior.
+
+**Acceptance boundary:** the refresh updates inventory, per-page source
+revisions and priority, *not* the functional parity sign-off of
+all 65 page files. Number of verified pseudocode/action scenarios for
+new files is **pending behavior-by-behavior extraction**.
+Source is read-only, Target stays on its feature branch; no Firebase
+Production deploy, account billing release or Source-to-Firebase finance
+backfill occurs as part of refreshing the JSX plan.
+
+---
+
 > **2026-11-22 source refresh:** The owner now requires `feature/lukkaja_bankalert_stripe` at `03d2aaee` instead of the historical source below. See [current JSX audit and continuation](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261122.md) and its JSON ledger. Historical phase evidence is retained; revalidate against the new source before acceptance or release.
 
 **Started:** 09/11/2026 (Asia/Bangkok)  

@@ -19,6 +19,8 @@
     "sync:bootstrap-icons": "mkdir -p public/assets/vendor/bootstrap-icons/fonts public/assets/vendor/bootstrap-icons/icons && cp node_modules/bootstrap-icons/font/bootstrap-icons.min.css public/assets/vendor/bootstrap-icons/bootstrap-icons.min.css && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff* public/assets/vendor/bootstrap-icons/fonts/ && cp node_modules/bootstrap-icons/icons/bag.svg public/assets/vendor/bootstrap-icons/icons/bag.svg",
     "dev:react": "vite --config vite.react.config.js",
     "dev:react:hybrid-demo": "VITE_USE_FIREBASE_EMULATORS=true VITE_HYBRID_DEMO_PAYMENT_E2E=true vite --config vite.react.config.js --strictPort",
+    "audit:jsx-source-refresh": "python3 tools/refresh_lukkaja_jsx_audit.py --source ../lukkhaja_bankalert_stripe --update-page-matrix",
+    "test:jsx-source-refresh": "node --test tests/react-parity/lukkaja-jsx-source-refresh-ledger.spec.mjs",
     "test:react-dev-preview": "node --test tests/react-parity/react-dev-preview-base.spec.mjs",
     "build:react": "vite build --config vite.react.config.js",
     "preview:react": "vite preview --config vite.react.config.js",

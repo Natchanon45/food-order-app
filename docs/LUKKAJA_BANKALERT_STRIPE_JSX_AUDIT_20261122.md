@@ -1,5 +1,11 @@
 # LUKKAJA BankAlert Stripe → PENGUIN: JSX baseline (2026-11-22)
 
+> **Historical pinned snapshot.** Source has advanced to `e60858c1`
+> (23 November 2026). Use [the refreshed audit](./LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.md)
+> and [updated page matrix](./LUKKAJA_TO_PENGUIN_PAGE_MATRIX.json)
+> for current JSX counts and phase continuation; do not use the table below
+> as the latest Source or Target file inventory.
+
 Source: `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe` / `03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd` (read only).
 Target: `Natchanon45/food-order-app` / `feature/react-firebase-port` / `c42b2981b7fd8b6388faa377cc2afe5423078162` (before this port).
 Prior source `e84c899028eb16c67401dcc05c5faed84bf48f63` is an ancestor; 241 commits since baseline.
