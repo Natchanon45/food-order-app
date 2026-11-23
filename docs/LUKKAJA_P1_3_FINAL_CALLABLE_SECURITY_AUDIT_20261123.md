@@ -1,3 +1,5 @@
+> **2026-11-23 P1.3f follow-on:** Additional Chrome full React + Firebase Auth/Firestore/Functions/Storage Emulator signed Browser UAT now **PASS 1/1**, covering QA Superadmin Contact/Google saves, Owner/Cashier actual verification code redemption, role scoping and billing immutability. Offline Staging preflight correctly reports **BLOCKED** since `.firebaserc` has only Production default, no dedicated Staging project. [See P1.3f release matrix](./LUKKAJA_P1_3_STAGING_UAT_READINESS_20261123.md). Real external provider email/staging UAT remain OPEN.
+
 # P1.3 Final Security Audit — Firebase Callable Email Verification Gate
 
 **Audit date:** 2026-11-23 (Asia/Bangkok)

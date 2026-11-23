@@ -1,5 +1,20 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-23 P1.3f — Staging Provider UAT Readiness: signed Browser local evidence
+
+**Working repo:** `Natchanon45/food-order-app` `feature/react-firebase-port`; LUKKAJA Source `cosmatch/lukkhaja@8b108f1` read-only. **P1.3f locally accepted; real Staging and Production signoff remain BLOCKED.**
+
+Checked `.firebaserc`: only the existing Production `projects.default=chat-45754` is configured, **no staging alias**. New `tools/p13-staging-offline-preflight.mjs` refuses to declare staging-ready and exits 2 without remote access, email or deployment. Added optional, validated `VITE_FIREBASE_STAGE=staging` Web config that requires a separate, internally consistent Firebase project/credentials; missing or production/demo values fail closed. Existing Production build remains the default, unchanged.
+
+Real **Chrome + actual PENGUIN React + Firebase Auth/Firestore/Functions/Storage Emulators** signed Browser UAT (demo project only): Superadmin Contact/Google QA Firestore save+independent readback, LK Shop Pilot closed/no QR, Owner and Cashier first-login verification, user-click Auth Emulator `VERIFY_EMAIL` code redemption, forced ID token refresh, Owner access to Staff and Cashier denied Superadmin settings, no trial/expiry/unpaid invoice mutation. Test **1/1 PASS**; full React Parity **exit 0** and React Build/Hosting Contract **PASS** (`2026.11.09.535`, build artifacts discarded), repeatable with `npm run test:p13-local-browser-uat` (JDK21, loopback Firestore 8189 to preserve existing local port 8080). Offline stage boundary **6/6 PASS**. Collapsed Telegram settings now lazy mount only when opened, preventing needless Secret Manager calls; no external secret accesses during final browser test.
+
+**Release gates still OPEN:** dedicated approved Staging Firebase project/alias, Auth email templates/domains and real approved QA inbox, signed HTTP staging/browser UAT, Google/OAuth and native LK Shop device provider checks, public HTTP tax lookup review, coordinated Production release authorization. No real emails, external provider writes, staging/Production deployment, main merge or APK/IPA.
+
+[Detailed P1.3f readiness and QA matrix](./LUKKAJA_P1_3_STAGING_UAT_READINESS_20261123.md) · [P1.3e security audit](./LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md)
+
+---
+
+
 ## 2026-11-23 P1.3e — Final Managed Email Callable Security Audit
 
 **Target:** `Natchanon45/food-order-app` / `feature/react-firebase-port`; LUKKAJA Source `cosmatch/lukkhaja@8b108f1` strictly read-only.

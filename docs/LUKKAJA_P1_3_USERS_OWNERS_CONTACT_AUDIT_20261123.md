@@ -1,7 +1,7 @@
 # P1.3 — Users, Owners and Public Contact: source parity / Firebase boundary audit
 
 **Date:** 2026-11-23 (Asia/Bangkok)
-**Status:** P1.3a–d + **P1.3e common Callable email-verification gate implemented/tested locally**. All 144 Callable definitions in 45 modules now share a pre-handler guard. **Real provider email/HTTPS staging UAT, independent HTTP privacy/provider audits and Production signoff OPEN.**
+**Status:** P1.3a–e plus **P1.3f signed real React Browser UAT implemented and Emulator-tested locally**. All 144 Callable definitions in 45 modules share a pre-handler email-verification guard. **Actual Staging Provider email/HTTPS UAT, independent HTTP/provider audits and Production signoff OPEN.** Staging is not configured in checked-in `.firebaserc` (Production default only).
 **Source, strictly read-only:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe` @ `8b108f1278b7c59bd44c02133d659b8e6cd6fd3f`.
 **Destination only:** `Natchanon45/food-order-app` / `feature/react-firebase-port` (baseline `0bf16cd1`).
 
@@ -72,6 +72,8 @@ These are source/UI action families. They are **not** signed-off backend scenari
 **P1.3c COMPLETE IN LOCAL CODE + REGRESSION (not Production):** Existing unowned Tenant → Owner attach/rename uses strict UUID reservation/CAS, verified native Auth, tenant/slug/membership coherence and immutable billing digest; pristine placeholders start trial exactly once and activated ownerless Tenants keep financial and subscription history. Browser Recovery rechecks original receipt without duplicating Auth. See [P1.3c receipt](./LUKKAJA_P1_3_OWNER_ACCOUNT_LIFECYCLE_20261123.md).
 
 **P1.3d COMPLETE IN LOCAL CODE + EMULATOR/BROWSER (not Production):** Opt-in email verification for new Owner/Staff, explicit Firebase password setup invitation, verification page, refreshed native Auth token, Firestore/Storage private-access gate, legacy/public exemptions. **31/31** combined native Firebase Emulator; managed React/Chrome **3/3**; Owner/Staff invitation Browser **2/2**; full React parity and Vite build PASS. [P1.3d implementation and staged UAT checklist](./LUKKAJA_P1_3_MANAGED_EMAIL_INVITATION_20261123.md). The next release gates are actual provider-approved emails, signed staging browser UAT, Source Contact/Google/LK Shop provider test, and **Cloud Functions-wide authorization verification**. All require explicit user approval before Production.
+
+**P1.3f COMPLETE IN LOCAL EMULATOR ONLY:** Real signed Chrome login for Superadmin/Owner/Cashier, Contact+Google Firestore read-after-write, scoped LK Shop closed Pilot, exact `VERIFY_EMAIL` Auth Emulator one-time action and native token refresh, denied Cashier Superadmin page, stable billing. **1/1 signed Browser UAT PASS; 6/6 staging configuration and no-deploy guard PASS.** Offline preflight correctly reports **BLOCKED** because only the Production `.firebaserc` default is available. See [P1.3f staging readiness and release gates](./LUKKAJA_P1_3_STAGING_UAT_READINESS_20261123.md). No real Staging/Production UAT, email, deploy or financial-provider writes.
 
 **P1.3e COMPLETE LOCALLY (NOT STAGING OR PRODUCTION):** centralized Firebase Callable pre-handler managed verified-email gate, 144/45 static coverage, 16 representative protected operational/financial/identity Callables blocked before mutation, all existing Owner/Staff/Onboarding tests regressed. [Audit/acceptance](./LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md). Seven HTTP endpoints retain original webhook/device/public policies and require separate acceptance.
 

@@ -1,3 +1,15 @@
+## 2026-11-23 — Latest handoff: P1.3f Staging UAT Readiness (local signed Chrome PASS, live providers BLOCKED)
+
+- **Repository:** `Natchanon45/food-order-app`, **branch:** `feature/react-firebase-port`. **Source LUKKAJA READ-ONLY:** `cosmatch/lukkhaja` branch `feature/lukkaja_bankalert_stripe@8b108f1278b7c59bd44c02133d659b8e6cd6fd3f`. No main merge, Production deploy or APK/IPA.
+- P1.3a Contact Source JSX, b Staff Auth, c Owner Auth, d verification email/invitation, e 144-Callable email-auth guard, and **f local real signed React Browser UAT/readiness** implemented/tested. Actual real Staging email/provider UAT and Production **NOT signed off**.
+- `.firebaserc` contains Production `projects.default=chat-45754` and **no Staging project alias**. Offline `npm run audit:p13-staging-preflight` deliberately exits **2/BLOCKED** without remote calls; missing Staging alias and Web config. Do not change Production default or deploy by guess.
+- New strict `VITE_FIREBASE_STAGE=staging` config validates distinct project/auth domain, Storage bucket, API key, sender/appId. New demo-only Firestore Emulator port override `VITE_DEMO_FIRESTORE_EMULATOR_PORT` permits 8189 rather than occupied 8080. Collapsed Telegram settings lazy-mounted to avoid secret requests until expanded.
+- **Run offline test:** `npm run test:p13-staging-boundary` (6/6 PASS). **Run real LOCAL signed Browser:** `npm run test:p13-local-browser-uat` (1/1 PASS): Superadmin Contact/Google Firestore saved/readback, LK Shop disabled Pilot, Owner/Cashier first login redirect, real Auth Emulator `VERIFY_EMAIL` OOB creation/redemption, native token refresh, allowed Owner Staff page, disallowed Cashier Superadmin page, immutable Trial/expiry/unpaid billing. The runner uses literal `demo-penguin-hybrid`, loopback ports/JDK21, cleans Emulator temp config; no real email/Secret Manager.
+- Next **blocked staging requirements** (do NOT act without explicit approval): new authorized Staging Firebase project/alias, Web config/domain/QA inbox, actual provider mail/password reset, Google OAuth and LK Shop pairing, HTTP public tax lookup/privacy, signed HTTPS staging browser/role/finance UAT and coordinated rollback/deployment plan.
+- Details: `docs/LUKKAJA_P1_3_STAGING_UAT_READINESS_20261123.md`, `docs/LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md`, Phase Plan and Worklog. After closing/reviewing live gate, next Source module is P1.4 Pricing/SaaS Setup; can be developed locally independently while P1.3 release remains blocked.
+
+---
+
 ## 2026-11-23 — Latest handoff: P1.3e Final Managed Email Callable Security Audit complete LOCALLY
 
 - **Repository/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`. **Source LUKKAJA READ ONLY:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1278b7c59bd44c02133d659b8e6cd6fd3f`.

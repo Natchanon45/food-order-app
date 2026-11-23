@@ -552,7 +552,9 @@ export function PlatformContactPage() {
               </div>
             </div>
             <div id="platformContactTelegramPanel" className="platform-contact-collapsed-body" hidden={!expandedCards.telegram}>
-              <TelegramSettingsPanel scope="platform" hideHeading reloadPortalId="platformTelegramReloadSlot" />
+              {expandedCards.telegram && (
+                <TelegramSettingsPanel scope="platform" hideHeading reloadPortalId="platformTelegramReloadSlot" />
+              )}
             </div>
           </section>
           <aside className="card platform-telegram-preview-card" aria-labelledby="platformTelegramPreviewHeading"

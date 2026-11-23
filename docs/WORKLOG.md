@@ -1,3 +1,17 @@
+## 2026-11-23 — P1.3f Staging Provider UAT readiness: real signed local Chrome
+
+- **Destination:** `Natchanon45/food-order-app` / `feature/react-firebase-port`; Source LUKKAJA `cosmatch/lukkhaja@8b108f1` READ ONLY. Confirmed existing `.firebaserc.projects.default=chat-45754` points to Production and no independent Staging alias exists. **No live Staging, Production or external emails were used.**
+- Added `react-app/src/firebase/stagingConfig.mjs` + explicit `VITE_FIREBASE_STAGE=staging` validation requiring a separate Staging project, same-project Firebase Auth/storage/sender metadata, and no Prod/demo configuration fallback. Existing default Production and double-opted-in demo configs remain; wrong default Firebase App project fails closed.
+- Added `VITE_DEMO_FIRESTORE_EMULATOR_PORT` loopback override only for doubly opted-in demo to use **8189**, avoiding a preexisting Mac mini service on 8080; never disconnect/kill the existing service.
+- Added offline `tools/p13-staging-offline-preflight.mjs` (no network, no mutations) reporting **BLOCKED/exit 2** until independent Staging alias and Web config are available. New negative-config/runner security suite **6/6 PASS**.
+- Added `tools/p13-run-local-browser-uat.mjs` safe command `npm run test:p13-local-browser-uat`: explicitly demo project, uses local JDK21, starts Auth/Firestore/Functions/Storage Emulators + Chrome React Vite, blocks non-loopback Browser requests, refuses stage/prod context, clears temp config in finally; filtered logs exclude one-time email codes and no Secret Manager attempt occurred.
+- Real signed Browser `tests/firebase-emulator/p1-staging-readiness-real-browser.spec.mjs` **1/1 PASS**: Firebase login as Superadmin, canonical Contact+Google save/readback; LK Shop Pilot closed/no QR; Owner and Cashier redirected to `/verify-account`, click actual Firebase Auth Emulator verification, redeem OOB only in Emulator, refresh token and enter role homes; Owner real Staff Callable loads, Cashier cannot open Superadmin settings; original Trial/expiry/invoice money unchanged.
+- Updated `PlatformContactPage` Telegram collapse behavior to mount settings **only when expanded**, retaining Source JSX/card layout and eliminating unintended secret provider fetches on initial Contact load. No platform secret was requested in final local test.
+- **Full React Parity exit 0; React Build + generated Hosting Contract PASS** (`2026.11.09.535`); build-only artifacts restored/removed, no Hosting release. **Actual Staging QA and release remain BLOCKED** until separate project/alias, real provider email QA approval/domains/templates, signed deployment/browser UAT, independent Google/LK Shop hardware/HTTP reviews and coordinated Production release authorization. No Source write, real mail, Prod deploy, main merge or APK/IPA.
+- Detailed evidence `docs/LUKKAJA_P1_3_STAGING_UAT_READINESS_20261123.md`; next independent JSX module P1.4 Pricing/SaaS may proceed separately without representing P1.3 as Production-signed-off.
+
+---
+
 ## 2026-11-23 — P1.3e Final Security Audit: managed email on all Firebase Callables
 
 - Working repo `Natchanon45/food-order-app`, `feature/react-firebase-port`; Source LUKKAJA `cosmatch/lukkhaja@8b108f1` read-only. Found **144 `onCall` definitions in 45 Function modules** without a shared P1.3d managed email verification gate. Firebase Admin SDK bypasses Firestore/Storage rules; individual Callable business-role checks alone were not enough.
