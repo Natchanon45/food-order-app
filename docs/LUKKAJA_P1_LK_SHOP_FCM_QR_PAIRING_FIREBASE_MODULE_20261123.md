@@ -188,3 +188,16 @@ PENGUIN role-room QR without a separate Flutter application port.
   machine-readable `docs/LUKKAJA_BANKALERT_STRIPE_JSX_AUDIT_20261123.json`.
 - No JSX LOC delta may be used as a claim of full functional parity,
   financial settlement or native push delivery.
+
+## Superseded native-app port blocker — subsequent module, 2026-11-23
+
+The earlier statement **"native LK Shop was not yet ported"** applied
+to the Firebase web/backend-only milestone, prior to the native work.
+That source-code blocker is now resolved: Source Flutter was copied
+read-only into Target `apps/lk-shop` with distinct PENGUIN bundle
+identifiers, Firebase origin, secure key handling, inbox and deep-link
+guards; iOS simulator and Android debug app have both compiled.
+
+The earlier **real Firebase native registration/physical FCM/APNs UAT**
+and Production deployment blockers remain. Refer to
+`docs/LUKKAJA_P1_LK_SHOP_NATIVE_FIREBASE_MODULE_20261123.md`.

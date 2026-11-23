@@ -11,6 +11,29 @@ const active=()=>process.env[P.PILOT_KEY]==="1";
 const pushActive=()=>process.env[P.PUSH_KEY]==="1";
 const eventKey=(entry,purpose)=>P.hash(["lkshop","tenant",entry.tenantId,
  entry.orderId,entry.kind,entry.phase||"",purpose].join("|"));
+// A sha256 event key is an idempotency key, not a chronological inbox ID.
+// Assign an increasing per-device sequence in the SAME Firestore transaction
+// as the new notice. Flutter's persisted cursor must not miss later messages.
+async function createNotice(db,deviceRef,eventId,purpose,expectedScope,tenantId,body,kind,at){
+ const ref=deviceRef.collection("notices").doc(eventId);
+ return db.runTransaction(async tx=>{
+  const [device,existing]=await Promise.all([tx.get(deviceRef),tx.get(ref)]);
+  const row=device.data();
+  if(!device.exists||row.enabled!==true||row.scope!==expectedScope||
+    row.tenantId!==tenantId||row.purpose!==purpose||existing.exists)
+   return false;
+  const previous=row.lastNoticeSequence??0;
+  if(!Number.isSafeInteger(previous)||previous<0||previous>=Number.MAX_SAFE_INTEGER)
+   return false;
+  const sequence=previous+1;
+  tx.update(deviceRef,{lastNoticeSequence:sequence});
+  tx.create(ref,{
+   body,sequence,createdAtMs:at,purpose,
+   eventKind:kind,tenantId,createdAt:FieldValue.serverTimestamp(),
+  });
+  return true;
+ });
+}
 const kindLabels={
  cod_created:"มีออร์เดอร์ COD ใหม่ · ยังไม่ยืนยันรับเงิน",
  pending_slip:"มีสลิป Delivery รอแคชเชียร์ตรวจสอบ",
@@ -38,17 +61,8 @@ async function enqueue(db,entry,{pilot=active(),at=Date.now()}={}){
    const device=doc.data();
    if(device?.enabled!==true||device.scope!=="tenant"||
       device.tenantId!==entry.tenantId||device.purpose!==purpose)continue;
-   const notice=doc.ref.collection("notices").doc(eventKey(entry,purpose));
-   try{
-    await notice.create({
-     body:kindLabels[entry.kind],createdAtMs:at,purpose,
-     eventKind:entry.kind,tenantId:entry.tenantId,
-     createdAt:FieldValue.serverTimestamp(),
-    });queued++;
-   }catch(err){
-    if(err?.code===6||err?.code==="already-exists")continue;
-    throw err;
-   }
+   if(await createNotice(db,doc.ref,eventKey(entry,purpose),purpose,
+     "tenant",entry.tenantId,kindLabels[entry.kind],entry.kind,at))queued++;
   }
  }
  return {queued};
@@ -71,11 +85,13 @@ async function sendPush(db,deviceId,eventId,{pilot=active(),push=pushActive(),
  if(!notice||notice.purpose!==dev.purpose||notice.tenantId!==dev.tenantId)
   return {sent:false,reason:"NOTICE_NOT_OWNED"};
  try{
+  if(!Number.isSafeInteger(notice.sequence)||notice.sequence<1)
+    return {sent:false,reason:"NOTICE_SEQUENCE_INVALID"};
   await messaging.send({
    token:dev.fcmToken,
    notification:{title:"LK Shop",
     body:"คุณมีการแจ้งเตือนใหม่ เปิดแอปเพื่อดูรายละเอียด"},
-   data:{eventId:String(P.numericEventId(eventId))},
+   data:{eventId:String(notice.sequence)},
    android:{priority:"high",notification:{channelId:"lkshop_staff_alerts_v2"}},
    apns:{payload:{aps:{sound:"default"}}},
   });
@@ -104,19 +120,10 @@ async function enqueuePlatform(db,event,{pilot=active(),at=Date.now()}={}){
   const device=doc.data();
   if(device.enabled!==true||device.scope!=="platform"||
     device.purpose!=="superadmin_slip_manual")continue;
-  const ref=doc.ref.collection("notices").doc(
-   P.hash("lkshop-platform|"+event.id));
-  try{
-   await ref.create({
-    body:"มีรายการหลักฐานการชำระเงินที่ต้องตรวจสอบใน Superadmin",
-    createdAtMs:at,tenantId:"global",purpose:"superadmin_slip_manual",
-    eventKind:"financial_review",
-    createdAt:FieldValue.serverTimestamp(),
-   });queued++;
-  }catch(err){
-   if(err?.code===6||err?.code==="already-exists")continue;
-   throw err;
-  }
+  if(await createNotice(db,doc.ref,P.hash("lkshop-platform|"+event.id),
+    "superadmin_slip_manual","platform","global",
+    "มีรายการหลักฐานการชำระเงินที่ต้องตรวจสอบใน Superadmin",
+    "financial_review",at))queued++;
  }
  return {queued};
 }
@@ -163,4 +170,4 @@ exports.pushLKShopNotice=onDocumentCreated({
  document:"lkShopDevices/{deviceId}/notices/{eventId}",
  region:REGION,timeoutSeconds:20,
 },event=>sendPush(getFirestore(),event.params.deviceId,event.params.eventId));
-exports._privateForTests={enqueue,enqueuePlatform,sendPush,eventKey,kindLabels};
+exports._privateForTests={enqueue,enqueuePlatform,sendPush,eventKey,createNotice,kindLabels};

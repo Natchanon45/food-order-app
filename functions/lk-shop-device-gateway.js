@@ -49,6 +49,7 @@ async function enroll({db,input,now=Date.now(),pilot=enabled()}){
    roomKey:roomId,purpose:c.purpose,issuerUid:c.issuerUid,
    name:input.name.trim(),platform:input.platform,
    credentialHash:keyHash,fcmToken:input.fcmToken,enabled:true,
+   lastNoticeSequence:0,
    pairedAtMs:now,pairedAt:FieldValue.serverTimestamp(),lastSeen:null};
   tx.create(devRef,doc);
   tx.create(keyRef,{deviceId:id,createdAtMs:now});
@@ -140,12 +141,12 @@ async function inbox({db,credential,pilot=enabled()}){
  if(!pilot)throw fail(503,"LK_SHOP_PILOT_DISABLED");
  const auth=await deviceWithCredential({db,credential});
  const items=await auth.ref.collection("notices")
-  .orderBy("createdAtMs","desc").limit(60).get();
+  .orderBy("sequence","desc").limit(60).get();
  // All messages were generated server-side; never expose device token,
  // bank/slip payloads or client-provided URLs.
  return {role:auth.dev.purpose,notifications:items.docs.map(doc=>{
   const n=doc.data();
-  return {id:P.numericEventId(doc.id),
+  return {id:n.sequence,
    body:typeof n.body==="string"?n.body.slice(0,1700):"",
    target:P.safeTarget(auth.dev.scope,auth.dev.purpose),
    createdUTC:new Date(n.createdAtMs).toISOString()};

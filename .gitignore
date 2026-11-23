@@ -7,3 +7,25 @@ firestore-debug.log
 ui-debug.log
 tools/service-account.json
 firestore-structure.json
+
+# Native LK Shop (PENGUIN Firebase) — never commit provider configurations or keys
+apps/lk-shop/.dart_tool/
+apps/lk-shop/.flutter-plugins
+apps/lk-shop/.flutter-plugins-dependencies
+apps/lk-shop/build/
+apps/lk-shop/android/.gradle/
+apps/lk-shop/android/local.properties
+apps/lk-shop/android/key.properties
+apps/lk-shop/android/app/google-services.json
+apps/lk-shop/ios/Runner/GoogleService-Info.plist
+apps/lk-shop/ios/Flutter/Generated.xcconfig
+apps/lk-shop/ios/Flutter/flutter_export_environment.sh
+apps/lk-shop/ios/Pods/
+apps/lk-shop/ios/.symlinks/
+apps/lk-shop/ios/Podfile.lock
+apps/lk-shop/**/*.keystore
+apps/lk-shop/**/*.jks
+# Flutter-generated build output if invoked from repo root
+/build/
+# Per-build native Firebase app defines; never publish the locally registered native configuration
+apps/lk-shop/firebase-app-defines.json

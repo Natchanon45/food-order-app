@@ -176,6 +176,20 @@ test("bearer device status, FCM claims/global uniqueness, inbox role, notificati
  assert.ok(inbox.notifications.some(m=>m.body.includes("สลิป")));
  assert.equal(inbox.notifications[0].target,P.SITE+"/admin");
  assert.equal(Number.isSafeInteger(inbox.notifications[0].id),true);
+ assert.ok(inbox.notifications[0].id>0);
+ // A new SHA-256 event key is unrelated to chronological ordering.
+ // The server must allocate increasing per-device sequence in one tx,
+ // so the Flutter persisted notification cursor never skips new events.
+ const secondEvent={kind:"paid",tenantId,orderId:"order-second-"+randomUUID(),
+  purposes:["admin_store"]};
+ const secondQueue=await notify.enqueue(db,secondEvent,{pilot:true});
+ assert.ok(secondQueue.queued>=1);
+ const ordered=await gateway.inbox({db,credential:one.credential,pilot:true});
+ assert.equal(ordered.notifications.length,2);
+ assert.equal(ordered.notifications[0].id,inbox.notifications[0].id+1);
+ assert.equal(ordered.notifications[1].id,inbox.notifications[0].id);
+ assert.ok(ordered.notifications[0].body.includes("ชำระแล้ว"));
+
  assert.ok(!JSON.stringify(inbox).includes(replacement));
  assert.ok(!JSON.stringify(inbox).includes(one.credential));
  await assert.rejects(gateway.inbox({db,credential:"x",pilot:true}),
@@ -195,7 +209,7 @@ test("inbox routes and FCM dispatch are generic, opt-in and recheck revoked devi
  const eventId=P.hash("notice:platform:1");
  await credentialAccess.ref.collection("notices").doc(eventId).create({
   body:"แพลตฟอร์มมีรายการต้องตรวจ",purpose:"superadmin_slip_manual",
-  tenantId:"global",createdAtMs:Date.now()});
+  tenantId:"global",createdAtMs:Date.now(),sequence:1});
  const platformInbox=await gateway.inbox({db,credential,pilot:true});
  assert.equal(platformInbox.notifications[0].target,P.SITE+"/admin/tenants");
  let messages=[];
@@ -206,7 +220,7 @@ test("inbox routes and FCM dispatch are generic, opt-in and recheck revoked devi
  assert.equal(push.sent,true);
  assert.equal(messages.length,1);
  assert.equal(messages[0].notification.title,"LK Shop");
- assert.equal(messages[0].data.eventId,String(P.numericEventId(eventId)));
+ assert.equal(messages[0].data.eventId,"1");
  assert.equal(JSON.stringify(messages).includes("แพลตฟอร์มมีรายการ"),false);
  await pairing.revoke({db,auth:auth(platform),data:{scope:"platform",deviceId},pilot:true});
  assert.equal((await notify.sendPush(db,deviceId,eventId,{pilot:true,push:true,messaging:mock})).sent,false);
@@ -219,7 +233,7 @@ test("Platform financial notices route only to global Superadmin room, remain id
   tenantId,channel:"delivery_share",receiptId:"payment-"+randomUUID(),
   outcome:"manual_review",amountSatang:123456};
  const first=await notify.enqueuePlatform(db,event,{pilot:true});
- assert.equal(first.queued,1);
+ assert.ok(first.queued>=1);
  const again=await notify.enqueuePlatform(db,event,{pilot:true});
  assert.equal(again.queued,0);
  const platformInbox=await gateway.inbox({

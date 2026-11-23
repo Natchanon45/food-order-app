@@ -256,3 +256,33 @@ do not imply the old native Flutter LK Shop APK is compatible.
 The latest per-file audit and Page Matrix have been regenerated against
 the feature Commit, not against generated React bundle files. Runtime
 Firebase gates are still off and there was no Production deployment.
+
+## 2026-11-23 Native LK Shop single-module Firebase port
+
+The complete Flutter Source LK Shop code was ported read-only into
+`apps/lk-shop` with distinct Android/iOS identifiers
+`com.natchanon45.penguin.lkshop` /
+`com.natchanon45.penguin.lkShop`, Version `1.0.0+1`,
+PENGUIN-only QR/manual-code/REST/web link allowlists, device-secure
+credential handling, role inbox and FCM navigation. The Firebase
+backend's hash-random notification ID was corrected to a
+transactional per-device monotonic sequence, matching the Flutter
+notification cursor and FCM data ID. MockClient Flutter tests,
+native Flutter analyze, Android debug compilation and Firestore
+Emulator UAT are recorded in
+`docs/LUKKAJA_P1_LK_SHOP_NATIVE_FIREBASE_MODULE_20261123.md`.
+
+The new Android/iOS application registrations and real physical-device
+FCM/APNs validation are not supplied: **native Production push is
+still blocked** and default gate remains OFF. No Firebase deploy,
+payment change or Source modification was made in this module.
+
+### Local validation of the full native LK Shop code module
+
+24/24 native Flutter tests, static analysis, Android debug APK
+compilation and iOS simulator Runner.app compilation passed.
+The combined Firestore Emulator suite passed 88/88, React parity
+passed, 114 Callable references remain resolved, and generated
+React build contract passed. These are local/dev evidence only:
+provider FCM/APNs device proof and signed app distribution still
+require authorized external provisioning. No Production push sent.
