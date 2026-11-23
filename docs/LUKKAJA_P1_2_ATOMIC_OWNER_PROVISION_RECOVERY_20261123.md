@@ -148,3 +148,12 @@ gated. No Production deployment is authorized in this module.
 | React Vite bundle and generated hosting contract | **PASS** |
 | Original LUKKAJA Source branch | **READ ONLY** |
 | Live Firebase Production publish and real Auth email sign-in | **NOT PERFORMED** |
+
+
+## Post-commit JSX inventory
+
+Source `e60858c1`: 156 JSX files / 48,954 lines (AdminTenantsPage
+2,275 lines). Target `3b05210c`: **106 JSX files / 37,321 lines**
+(AdminTenantsPage 1,702 lines, new recovery component 30 lines).
+This replaces the earlier 105 / 37,158 count for latest Target only;
+other Source JSX and original billing/provider rules remain unchanged.

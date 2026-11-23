@@ -10,7 +10,7 @@
   "target": {
     "repository": "Natchanon45/food-order-app",
     "branch": "feature/react-firebase-port",
-    "commit": "045c8ddc6e123057d363546397049db0c1efc808",
+    "commit": "3b05210c6606537c54470834a8cbe106c982645b",
     "root": "react-app/src"
   },
   "priorSourceCommit": "03d2aaeeaf56f4c0d63a51d19bf7ebbcc63d62fd",
@@ -42,7 +42,7 @@
       "priorTargetFiles": 52,
       "priorTargetLines": 29601,
       "targetFiles": 52,
-      "targetLines": 30124,
+      "targetLines": 30257,
       "targetAddedSincePrior": 0,
       "targetChangedSincePrior": 15,
       "matchedPaths": 52,
@@ -60,13 +60,13 @@
       "sourceChangedSincePrior": 4,
       "priorTargetFiles": 30,
       "priorTargetLines": 4213,
-      "targetFiles": 47,
-      "targetLines": 6244,
-      "targetAddedSincePrior": 17,
-      "targetChangedSincePrior": 18,
+      "targetFiles": 48,
+      "targetLines": 6274,
+      "targetAddedSincePrior": 18,
+      "targetChangedSincePrior": 19,
       "matchedPaths": 36,
       "sourceOnly": 50,
-      "targetOnly": 11,
+      "targetOnly": 12,
       "exactBlobMatches": 4
     },
     "other": {
@@ -93,7 +93,7 @@
     "sourceChangedFilesAllExtensions": 166,
     "sourceChangedJsxFiles": 8,
     "newSourceJsxFiles": 2,
-    "targetNewJsxFilesSincePrior": 17,
+    "targetNewJsxFilesSincePrior": 18,
     "sourceNonJsxChangesByFamily": {
       "apps/lk-shop": 87,
       "docs/mobile": 16,
@@ -179,7 +179,7 @@
       "newSourceFile": false,
       "sourceDiffLines": null,
       "priorTargetLines": 1553,
-      "targetLines": 1569,
+      "targetLines": 1702,
       "targetChangedSincePrior": true,
       "exactContentMatch": false,
       "status": "jsx_visual_and_firebase_behavior_review_required"
@@ -2372,6 +2372,20 @@
       "priorTargetLines": 127,
       "targetLines": 127,
       "targetChangedSincePrior": false,
+      "exactContentMatch": false,
+      "status": "target_only_preserve"
+    },
+    {
+      "group": "components",
+      "path": "components/TenantProvisionRecoveryNotice.jsx",
+      "priorSourceLines": null,
+      "sourceLines": null,
+      "sourceChangedSincePrior": false,
+      "newSourceFile": false,
+      "sourceDiffLines": null,
+      "priorTargetLines": null,
+      "targetLines": 30,
+      "targetChangedSincePrior": true,
       "exactContentMatch": false,
       "status": "target_only_preserve"
     },
