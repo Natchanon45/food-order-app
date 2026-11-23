@@ -1,3 +1,15 @@
+## 2026-11-23 — P1.3b Staff Account Lifecycle: UUID, native Auth proof and safe recovery
+
+- Source LUKKAJA is **read only** at `8b108f1`; target PENGUIN is `feature/react-firebase-port`. Original Staff JSX layout retained while Firebase identity operations received durable owner/tenant-scoped UUID receipts, SHA-256 email reservations, per-staff edit locks, strict revision/CAS and server read-only status.
+- Strict `createTenantStaff` never reissues an Auth create for an existing operation/email claim; deterministic Auth UID and only definite rejection allow safe claim release. `updateTenantStaff` verifies native Auth before reserving an edit lock, updates the disabled state and confirms both Firestore mirrors; unknown partial results lock pending review. No email/SMS/invitation provider was called.
+- Client `AdminUsersPage` now stores only opaque UUID in sessionStorage, disables duplicate writes, shows a recovery notice after reload and requires both server-operation proof and fresh canonical staff listing. Form reset is synchronized before opening a second modal, avoiding old credentials in a new add dialog.
+- Firestore Rules deny browser reads/writes to staff Operations, Locks and email Reservations including Superadmin. Existing Staff list, role and scope UX preserved.
+- New tests: strict policy & session storage, actual React Browser lost-response/reload/edit/suspend, 4-width responsive UI, native Auth+Firestore Emulator concurrent and negative cases, browser direct-rule denial and original P1 onboarding regression. **Emulator 16/16 PASS**, **staff Node+Chrome 10/10 PASS**, **full React Parity EXIT 0**, **React Build + generated Hosting contract PASS** (`2026.11.09.535`). Build verification only; generated public assets were restored/removed before staging, with no Production deployment.
+- **Release boundary:** no APK/IPA, no `main` merge, no Production Firebase deploy, no live email delivery. P1.3c Owner identity lifecycle and P1.3d provider/browser UAT remain OPEN. Reserved partial Auth/Firestore results require operator review; no automated provider repair.
+- Full details: `docs/LUKKAJA_P1_3_STAFF_ACCOUNT_LIFECYCLE_20261123.md`.
+
+---
+
 ## 2026-11-23 — P1.3a Contact LK Shop Source parity; identity lifecycle audit
 
 - Read-only Source: `cosmatch/lukkhaja@8b108f1` / `feature/lukkaja_bankalert_stripe`; latest APK-copy commit has no JSX changes. Target: `food-order-app` / `feature/react-firebase-port` baseline `0bf16cd1`, initially clean and equal to GitHub.

@@ -1,3 +1,13 @@
+## 2026-11-23 — Latest handoff: P1.3b Staff identity lifecycle completed locally
+
+- Destination: `Natchanon45/food-order-app` / `feature/react-firebase-port`. Source `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1` is read-only and has not been changed by this port.
+- P1.3a Contact/LK Shop Source UI layout completed in `b53b18a1`. P1.3b now implements Staff Account UUID reservation, per-tenant/actor-only status, deterministic native Auth UID, email uniqueness claims, revision/CAS update locks, browser session recovery, and immutable terminal result proof.
+- Local tests: `npm run test:staff-operation` 10/10 PASS; Auth+Firestore Emulator suite including original P1 onboarding 16/16 PASS; full React parity and Vite build final receipts in `docs/WORKLOG.md`. No Production deploy or merge `main`.
+- Continue next complete Module **P1.3c Owner attach/rename identity lifecycle**. The old `createTenantOwner`/`updateTenantOwner` are still not guaranteed under lost Auth/Firestore results; preserve P1.2c transactional original first-activation dates and do not backdate trial or invent delivered email.
+- Then P1.3d provider-backed invitation and browser signed-in UAT. Never automatically clear a reserved ambiguous Staff command or claim email sent. See `docs/LUKKAJA_P1_3_STAFF_ACCOUNT_LIFECYCLE_20261123.md` and `docs/LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md` for exact proof and scope.
+
+---
+
 ## 2026-11-23 — Latest port handoff (supersedes October notes below)
 
 - Working destination repo: `Natchanon45/food-order-app` / `feature/react-firebase-port`. Read-only source: `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1` (APK script changes, zero JSX). Use the exact latest docs `docs/LUKKAJA_TO_PENGUIN_PORT_PHASES.md` and `docs/LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md`.

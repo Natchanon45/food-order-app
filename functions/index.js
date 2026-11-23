@@ -250,6 +250,7 @@ const staffAdmin = require("./staff-admin");
 exports.listTenantStaff = staffAdmin.listTenantStaff;
 exports.createTenantStaff = staffAdmin.createTenantStaff;
 exports.updateTenantStaff = staffAdmin.updateTenantStaff;
+exports.getTenantStaffOperationStatus = staffAdmin.getTenantStaffOperationStatus;
 
 const publicSignup = require("./public-signup");
 exports.requestTrialTenantSignup = publicSignup.requestTrialTenantSignup;

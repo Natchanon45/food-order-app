@@ -16,6 +16,7 @@ function normalizeUser(data = {}) {
     businessScope: BUSINESS_SCOPES.has(requestedScope) ? requestedScope : "order_delivery",
     active: data.active !== false,
     tenantId: String(data.tenantId || ""),
+    staffRevision: Number.isSafeInteger(data.staffRevision) && data.staffRevision >= 0 ? data.staffRevision : 0,
   };
 }
 
@@ -43,6 +44,7 @@ export async function createStaffUser(scopeOrPayload = {}, perhapsPayload = unde
     role: String(payload.role || ""),
     businessScope: String(payload.businessScope || "order_delivery"),
     active: payload.active !== false,
+    operationId: String(payload.operationId || ""),
   });
   return data;
 }
@@ -59,5 +61,11 @@ export async function updateStaffUser(scopeOrUid, uidOrPatch = {}, perhapsPatch 
     role: String(patch.role || ""),
     businessScope: String(patch.businessScope || "order_delivery"),
     active: patch.active !== false,
+    expectedRevision: patch.expectedRevision,
+    operationId: String(patch.operationId || ""),
   });
+}
+
+export async function getTenantStaffOperationStatus(expectedTenantId, operationId) {
+  return call("getTenantStaffOperationStatus", { expectedTenantId, operationId });
 }

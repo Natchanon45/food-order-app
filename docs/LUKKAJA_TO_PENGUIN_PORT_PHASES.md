@@ -1,5 +1,18 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-23 P1.3b — Staff Account Lifecycle (Firebase Auth + Firestore)
+
+Source `cosmatch/lukkhaja@8b108f1` remains strictly read-only; Target `Natchanon45/food-order-app` `feature/react-firebase-port` only. Preserve `AdminUsersPage` original JSX hierarchy, staff roles, scope, PENGUIN branding, and Source-aligned modal. The prior staff Callables did not provide immutable command status and treated an unknown Auth/Firestore response as a retryable failure.
+
+New contract: active canonical owner, tenant-scoped UUID, deterministic Auth user ID, email reservation, per-staff edit lock, revision CAS, and separate read-only status verification against native Auth and both Firestore staff records. Client session retains only UUID; an unconfirmed create/update blocks additional writes, including after reload. Do not release a reserved Auth user or claim the invite email was sent. Browser cannot read or forge any staff reservation/receipt documents.
+
+Local acceptance: **16/16** combined Auth+Firestore Emulator (including original onboarding regression), **10/10** Node+Chrome tests (the real React page models lost reply → reload → status → edit/suspend; recovery card tests 320/390/768/1440). Full `test:react-parity` and Vite build gates are recorded in current worklog. No Firebase Production deploy or `main` merge. P1.3c Owner lifecycle and P1.3d email/real sign-in remain OPEN.
+
+[Implementation + test receipt](./LUKKAJA_P1_3_STAFF_ACCOUNT_LIFECYCLE_20261123.md) | [P1.3 module audit](./LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md)
+
+---
+
+
 ## 2026-11-23 P1.3a — Users / Owners / Contact source parity, Contact LK Shop presentation
 
 **Current Source:** `cosmatch/lukkhaja@8b108f1` on `feature/lukkaja_bankalert_stripe` (read-only). Latest Source commit only changes APK build/copy files, not JSX; 23 Nov JSX inventory remains valid.

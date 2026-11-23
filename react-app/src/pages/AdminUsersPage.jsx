@@ -7,7 +7,11 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
-import { createStaffUser, listStaffUsers, updateStaffUser } from "@/data/adminStaff";
+import { createStaffUser, listStaffUsers, updateStaffUser,
+  getTenantStaffOperationStatus } from "@/data/adminStaff";
+import { readStaffPending, persistStaffPending, clearStaffPending,
+  verifiedStaffRow } from "@/data/staffOperationRecovery.mjs";
+import { StaffOperationRecoveryNotice } from "@/components/StaffOperationRecoveryNotice";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -90,8 +94,96 @@ export function AdminUsersPage() {
   const [formError, setFormError] = useState("");
   const [creating, setCreating] = useState(false);
   const [savingUid, setSavingUid] = useState("");
+  const [pendingOperationId, setPendingOperationId] = useState("");
+  const [pendingReadyTenantId, setPendingReadyTenantId] = useState("");
+  const [pendingStorageError, setPendingStorageError] = useState("");
+  const [pendingChecking, setPendingChecking] = useState(false);
+  const [pendingStatusText, setPendingStatusText] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const currentTenantId = String(tenantState.tenant?.id || "");
+  const operationLocked = pendingReadyTenantId !== currentTenantId ||
+    Boolean(pendingOperationId || pendingStorageError || pendingChecking);
+
+  useEffect(() => {
+    setPendingReadyTenantId("");
+    setPendingOperationId("");
+    setPendingStorageError("");
+    setPendingStatusText("");
+    if (!ownerId || !currentTenantId) return;
+    try {
+      setPendingOperationId(readStaffPending(window.sessionStorage, ownerId, currentTenantId));
+    } catch {
+      setPendingStorageError("ไม่สามารถเข้าถึงข้อมูลเซสชันอย่างปลอดภัยได้ กรุณาเปิดใช้งานพื้นที่จัดเก็บของเบราว์เซอร์ก่อนจัดการบัญชีพนักงาน");
+    }
+    setPendingReadyTenantId(currentTenantId);
+  }, [ownerId, currentTenantId]);
+
+  const beginStaffOperation = tenantId => {
+    if (operationLocked || tenantId !== activeTenantIdRef.current)
+      throw Error("STAFF_PREVIOUS_OPERATION_UNRESOLVED");
+    const operationId = crypto.randomUUID();
+    persistStaffPending(window.sessionStorage, ownerId, tenantId, operationId);
+    setPendingOperationId(operationId);
+    setPendingStatusText("");
+    return operationId;
+  };
+
+  const completeStaffOperation = async (tenantId, operationId) => {
+    const status = await getTenantStaffOperationStatus(tenantId, operationId);
+    if (status?.operationId !== operationId || status?.tenantId !== tenantId ||
+        !["create", "update"].includes(status?.kind) ||
+        status.status !== "complete_verified" || status.readOnly !== true)
+      throw Error("STAFF_OPERATION_NOT_VERIFIED");
+    const rows = await listStaffUsers(tenantId);
+    if (activeTenantIdRef.current !== tenantId || !verifiedStaffRow(status, rows))
+      throw Error("STAFF_CANONICAL_LIST_NOT_VERIFIED");
+    clearStaffPending(window.sessionStorage, ownerId, tenantId, operationId);
+    setPendingOperationId("");
+    setPendingStatusText("");
+    setUsers(rows);
+    setDrafts(Object.fromEntries(rows.map(user => [user.uid, {
+      displayName: user.displayName || "",
+      role: user.role || "admin",
+      businessScope: user.businessScope || "order_delivery",
+      active: user.active !== false,
+    }])));
+    setReadyTenantId(tenantId);
+    return rows;
+  };
+
+  const inspectPendingOperation = async () => {
+    const tenantId = currentTenantId, operationId = pendingOperationId;
+    if (!tenantId || !operationId || pendingChecking || pendingStorageError) return;
+    setPendingChecking(true);
+    setPendingStatusText("");
+    try {
+      const status = await getTenantStaffOperationStatus(tenantId, operationId);
+      if (status?.operationId !== operationId || status?.tenantId !== tenantId ||
+          status.readOnly !== true) throw Error("STAFF_OPERATION_STATUS_INVALID");
+      if (status.status === "complete_verified") {
+        await completeStaffOperation(tenantId, operationId);
+        showToast("ยืนยันผลการบันทึกบัญชีพนักงานจาก Firebase แล้ว");
+        return;
+      }
+      if (status.status === "failed_released" && status.mayRetryWithNewOperationId === true) {
+        clearStaffPending(window.sessionStorage, ownerId, tenantId, operationId);
+        setPendingOperationId("");
+        setPendingStatusText("");
+        showToast("คำสั่งเดิมถูกปฏิเสธและยกเลิกการจองแล้ว สามารถเริ่มคำสั่งใหม่ได้");
+        return;
+      }
+      setPendingStatusText(status.status === "not_found"
+        ? "ยังไม่พบหลักฐานคำสั่งเดิม แต่ยังไม่สามารถยืนยันว่าคำสั่งก่อนหน้าไม่มีผลได้"
+        : status.status === "pending_review"
+          ? "คำสั่งเดิมยังอยู่ระหว่างตรวจสอบ ห้ามส่งซ้ำ"
+          : "ข้อมูล Firebase Auth และ Firestore ยังยืนยันตรงกันไม่ได้ ต้องให้ผู้ดูแลตรวจสอบก่อน");
+    } catch {
+      setPendingStatusText("ไม่สามารถยืนยันสถานะจาก Firebase ได้ ระบบยังล็อกคำสั่งเดิมเพื่อป้องกันการบันทึกซ้ำ");
+    } finally {
+      setPendingChecking(false);
+    }
+  };
   // Counts use persisted staff status, not unsaved UI drafts.
   const enabledCount = users.filter(row => row.active === true).length;
   const suspendedCount = users.length - enabledCount;
@@ -143,8 +235,12 @@ export function AdminUsersPage() {
   const openCreate = () => {
     setForm(EMPTY_FORM);
     setFormError("");
-    dialogRef.current?.showModal?.();
-    requestAnimationFrame(() => document.getElementById("displayName")?.focus());
+    // Show only after React flushes the blank controlled values. An immediate
+    // second creation must never briefly reuse the prior account credentials.
+    requestAnimationFrame(() => {
+      dialogRef.current?.showModal?.();
+      document.getElementById("displayName")?.focus();
+    });
   };
 
   const closeCreate = () => {
@@ -157,9 +253,15 @@ export function AdminUsersPage() {
   const submitCreate = async event => {
     event.preventDefault();
     if (profile?.role !== "owner" || tenantState.status !== "ready" || loadError ||
-        loading || readyTenantId !== tenantState.tenant?.id || creating) return;
+        loading || readyTenantId !== tenantState.tenant?.id || creating || operationLocked) return;
     setFormError("");
-    if (form.password.length < 8) {
+    if (form.displayName.trim().length < 2 || form.displayName.trim().length > 100 ||
+        form.email.trim().length > 160 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setFormError(t("admin_users.messages.invalid_data"));
+      return;
+    }
+    if (form.password.length < 8 || form.password.length > 128) {
       setFormError(t("admin_users.validation.password_min"));
       return;
     }
@@ -169,19 +271,27 @@ export function AdminUsersPage() {
     }
 
     setCreating(true);
+    let reservedOperationId = "";
     try {
-      await createStaffUser(tenantState.tenant.id, {
-        displayName: form.displayName,
-        email: form.email,
+      const tenantId = currentTenantId;
+      const operationId = beginStaffOperation(tenantId);
+      reservedOperationId = operationId;
+      const result = await createStaffUser(tenantId, {
+        displayName: form.displayName.trim(),
+        email: form.email.trim().toLowerCase(),
         password: form.password,
         role: form.role,
         businessScope: form.businessScope,
         active: form.active,
+        operationId,
       });
+      if (result?.ok !== true || result?.operationId !== operationId ||
+          result?.pendingIndependentVerification !== true)
+        throw Error("STAFF_OPERATION_ACK_UNCONFIRMED");
+      await completeStaffOperation(tenantId, operationId);
       dialogRef.current?.close?.();
       setForm(EMPTY_FORM);
       showToast(t("admin_users.messages.created"));
-      await load();
     } catch (error) {
       console.error("ADMIN_USERS_CREATE_FAILED", error);
       const code = String(error?.code || error?.message || "");
@@ -191,6 +301,12 @@ export function AdminUsersPage() {
         code.includes("invalid-argument") || code === "STAFF_PASSWORD_LENGTH_INVALID")
         message = t("admin_users.messages.invalid_data");
       else if (error?.response?.status === 403 || code.includes("permission-denied")) message = t("admin_users.messages.forbidden");
+      if (reservedOperationId) {
+        // Recovery is outside the modal. Close the form without deleting the
+        // opaque UUID so the operator can inspect the original operation.
+        dialogRef.current?.close?.();
+        message = "ยังยืนยันผลสร้างบัญชีไม่ได้ ให้ใช้ปุ่มตรวจสถานะคำสั่งเดิมก่อน ห้ามกดสร้างซ้ำ";
+      }
       setFormError(message);
       showToast(message, "error");
     } finally {
@@ -207,22 +323,38 @@ export function AdminUsersPage() {
 
   const saveUser = async user => {
     if (!user?.uid || String(user.uid) === ownerId || savingUid || loadError || loading ||
-        readyTenantId !== tenantState.tenant?.id || profile?.role !== "owner") return;
+        readyTenantId !== tenantState.tenant?.id || profile?.role !== "owner" ||
+        operationLocked) return;
     const draft = drafts[user.uid] || {};
+    if (String(draft.displayName || "").trim().length < 2 ||
+        String(draft.displayName || "").trim().length > 100 ||
+        !Number.isSafeInteger(user.staffRevision) || user.staffRevision < 0) {
+      showToast(t("admin_users.messages.invalid_data"), "error");
+      return;
+    }
     setSavingUid(user.uid);
     try {
-      await updateStaffUser(tenantState.tenant.id, user.uid, {
-        email: user.email,
-        displayName: draft.displayName,
+      const tenantId = currentTenantId;
+      const operationId = beginStaffOperation(tenantId);
+      const result = await updateStaffUser(tenantId, user.uid, {
+        displayName: draft.displayName.trim(),
         role: draft.role,
         businessScope: draft.businessScope,
         active: draft.active,
+        expectedRevision: user.staffRevision,
+        operationId,
       });
+      if (result?.ok !== true || result?.operationId !== operationId ||
+          result?.pendingIndependentVerification !== true)
+        throw Error("STAFF_OPERATION_ACK_UNCONFIRMED");
+      await completeStaffOperation(tenantId, operationId);
       showToast(t("admin_users.messages.saved"));
-      await load();
     } catch (error) {
       console.error("ADMIN_USERS_SAVE_FAILED", error);
-      showToast(t("admin_users.messages.save_failed"), "error");
+      showToast(pendingOperationId ||
+        String(error?.message || "").startsWith("STAFF_")
+        ? "ยังยืนยันผลแก้ไขบัญชีไม่ได้ ให้ตรวจสถานะคำสั่งเดิมก่อนส่งซ้ำ"
+        : t("admin_users.messages.save_failed"), "error");
     } finally {
       setSavingUid("");
     }
@@ -252,13 +384,16 @@ export function AdminUsersPage() {
       </header>
 
       <main className="container">
+        <StaffOperationRecoveryNotice pendingOperationId={pendingOperationId}
+          checking={pendingChecking} onCheck={inspectPendingOperation}
+          storageError={pendingStorageError} statusText={pendingStatusText} />
         <section className="hero staff-hero">
           <div>
             <span className="staff-hero-kicker"><i className="bi bi-people" aria-hidden="true"></i> {t("admin_users.hero.kicker")}</span>
             <h1>{t("admin_users.hero.title")}</h1>
             <p>{t("admin_users.hero.description")}</p>
           </div>
-          <button className="btn staff-create-trigger" id="openCreateUserModal" type="button" disabled={Boolean(loadError) || loading} onClick={openCreate}>
+          <button className="btn staff-create-trigger" id="openCreateUserModal" type="button" disabled={Boolean(loadError) || loading || operationLocked} onClick={openCreate}>
             <i className="bi bi-person-plus" aria-hidden="true"></i><span>{t("admin_users.hero.add")}</span>
           </button>
         </section>
@@ -358,7 +493,7 @@ export function AdminUsersPage() {
                           <span className="staff-user-switch-knob" aria-hidden="true"></span>
                         </button>
                       </div>
-                      <button className="btn btn-primary btn-sm staff-user-save" type="button" data-mobile-save-user={user.uid} disabled={isSelf || savingUid === user.uid || Boolean(loadError) || loading} onClick={() => saveUser(user)}>
+                      <button className="btn btn-primary btn-sm staff-user-save" type="button" data-mobile-save-user={user.uid} disabled={isSelf || savingUid === user.uid || Boolean(loadError) || loading || operationLocked} onClick={() => saveUser(user)}>
                         <i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i>
                         <span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span>
                       </button>
@@ -390,7 +525,7 @@ export function AdminUsersPage() {
                             onChange={e => patchDraft(user.uid, { active: e.target.checked })} />
                           <span>{draft.active !== false ? ui.enabled : ui.suspended}</span>
                         </label></td>
-                        <td><button className="btn btn-primary btn-sm user-save-button" type="button" data-save-user={user.uid} disabled={String(user.uid) === ownerId || savingUid === user.uid || Boolean(loadError) || loading} onClick={() => saveUser(user)}><i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i><span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span></button></td>
+                        <td><button className="btn btn-primary btn-sm user-save-button" type="button" data-save-user={user.uid} disabled={String(user.uid) === ownerId || savingUid === user.uid || Boolean(loadError) || loading || operationLocked} onClick={() => saveUser(user)}><i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i><span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span></button></td>
                       </tr>
                     );
                   }) : <tr><td colSpan="6"><div className="empty staff-empty"><i className="bi bi-search" aria-hidden="true"></i><span>{search || statusFilter !== "all" ? ui.emptySearch : t("admin_users.list.empty")}</span></div></td></tr>}
@@ -425,7 +560,7 @@ export function AdminUsersPage() {
           </div>
           <footer className="staff-dialog-footer">
             <button className="btn staff-cancel-button" id="cancelCreateUserModal" type="button" disabled={creating} onClick={closeCreate}><i className="bi bi-x-circle" aria-hidden="true"></i><span>{t("admin_users.dialog.cancel")}</span></button>
-            <button className="btn btn-primary user-form-action" id="createUserButton" type="submit" disabled={creating}><i className={"bi " + (creating ? "bi-hourglass-split" : "bi-person-plus")} aria-hidden="true"></i><span>{t(creating ? "admin_users.dialog.creating" : "admin_users.dialog.create")}</span></button>
+            <button className="btn btn-primary user-form-action" id="createUserButton" type="submit" disabled={creating || operationLocked}><i className={"bi " + (creating ? "bi-hourglass-split" : "bi-person-plus")} aria-hidden="true"></i><span>{t(creating ? "admin_users.dialog.creating" : "admin_users.dialog.create")}</span></button>
           </footer>
         </form>
       </dialog>

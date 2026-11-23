@@ -93,8 +93,9 @@ requireAll("Revenue share storage/callable", revenueShareData, [
 ]);
 
 requireAll("Admin Users actions", adminUsersPage, [
-  "await createStaffUser(tenantState.tenant.id, {",
-  "await updateStaffUser(tenantState.tenant.id, user.uid, {",
+  "await createStaffUser(tenantId, {",
+  "await updateStaffUser(tenantId, user.uid, {",
+  "await completeStaffOperation(tenantId, operationId)",
   'if (profile.role !== "owner") return <Navigate',
 ]);
 requireAll("Admin Users callable mappings", adminStaff, [
@@ -103,8 +104,11 @@ requireAll("Admin Users callable mappings", adminStaff, [
   'call("updateTenantStaff"',
 ]);
 requireAll("Admin Users server role guard", staffAdminFunction, [
-  'const STAFF_MANAGER_ROLES = new Set(["owner", "super_admin"])' ,
-  'throw new HttpsError("permission-denied", "Staff management permission required")',
+  'profile.role!=="owner"',
+  'profile.tenantId!==expectedTenantId',
+  'tenant.ownerUid!==uid',
+  'native.disabled===true',
+  'throw fail("permission-denied","Canonical active tenant Owner required")',
 ]);
 
 requireAll("Quick Order write actions", quickOrderPage, [
