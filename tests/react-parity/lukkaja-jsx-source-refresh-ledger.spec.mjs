@@ -39,7 +39,15 @@ test("Current pinned audit has complete group arithmetic and correctly scoped so
  assert.equal(ledger.delta.sourceCommittedApp,"apps/lk-shop");
 });
 test("The JSX file inventory matches tracked Target paths and current committed LOC",()=>{
- assert.equal(cmd(process.cwd(),"rev-parse","HEAD"),ledger.target.commit);
+ // The audit pins the source-code commit before the audit docs were committed.
+ // Later documentation-only commits must not invalidate accurate JSX counts;
+ // real JSX changes MUST trigger a new audit before acceptance.
+ assert.doesNotThrow(()=>cmd(process.cwd(),"merge-base","--is-ancestor",
+  ledger.target.commit,"HEAD"));
+ const jsxChanges=cmd(process.cwd(),"diff","--name-only",
+  ledger.target.commit+"..HEAD","--",ledger.target.root)
+  .split("\n").filter(Boolean).filter(file=>file.endsWith(".jsx"));
+ assert.deepEqual(jsxChanges,[],"React JSX has changed since the pinned snapshot");
  const files=cmd(process.cwd(),"ls-files","--",ledger.target.root)
    .split("\n").filter(x=>x.endsWith(".jsx"));
  const scope=files.filter(x=>{
