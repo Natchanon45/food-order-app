@@ -1,5 +1,20 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-23 P1.3a — Users / Owners / Contact source parity, Contact LK Shop presentation
+
+**Current Source:** `cosmatch/lukkhaja@8b108f1` on `feature/lukkaja_bankalert_stripe` (read-only). Latest Source commit only changes APK build/copy files, not JSX; 23 Nov JSX inventory remains valid.
+**Target:** `feature/react-firebase-port` (baseline `0bf16cd1`), no Production deploy or `main` merge.
+
+P1.3's three target JSX pages were source-diffed: Owners and Staff already mirror Source hierarchy with Firebase service adapters; Contact was missing the new LK Shop right-hand demo/preview and two-column responsive structure. This P1.3a slice restores Source card markup and 198 lines of Source-scoped CSS, preserving PENGUIN labels, Firebase LKShopPairingPanel, collapsed default and native APK/FCM gating.
+Target Contact now 665 lines, Source 664; Owners Target/Source 397/371, Users 436/435. These are physical lines, not a completion percentage.
+
+Validation on Mac mini: `npm run test:lk-shop-firebase` 12/12 PASS, including 320/390/768/1440 responsive Chrome; `npm run test:react-parity` EXIT 0; `npm run build:react` and generated hosting contract PASS. Build was verification only, NOT a deploy; generated public assets were not staged as a release.
+
+**P1.3 still OPEN:** source-faithful UI does not prove safe owner/staff Auth lifecycle. Legacy `createTenantOwner` and `createTenantStaff` do not have P1.2c-style immutable operation and ambiguous provider recovery. Real account invitation/email verification was not demonstrated. Need isolated Emulator concurrent create/update/disable and signed browser UAT before P1.3 and Production can be marked accepted. Follow [P1.3 audit](./LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md).
+
+---
+
+
 > **LATEST SOURCE REFRESH — 23 NOV 2026 (authoritative for next slice):**
 > Source `cosmatch/lukkhaja@18093091` on `feature/lukkaja_bankalert_stripe`, Target
 > `Natchanon45/food-order-app@08ab95c7` on `feature/react-firebase-port`.

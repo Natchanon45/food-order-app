@@ -64,7 +64,7 @@
     "test:tenant-subscription-control": "node --test --test-concurrency=1 tests/react-parity/p1-tenant-subscription-policy.spec.mjs tests/react-parity/p1-tenant-subscription-control.spec.mjs",
     "test:tenant-provision-recovery": "node --test --test-concurrency=1 tests/react-parity/p1-tenant-provision-recovery.spec.mjs",
     "test:lk-shop-native": "node --test tests/react-parity/p1-lk-shop-native-contract.spec.mjs",
-    "test:lk-shop-firebase": "node --test --test-concurrency=1 tests/react-parity/p1-lk-shop-firebase-policy.spec.mjs tests/react-parity/p1-lk-shop-pairing-browser.spec.mjs",
+    "test:lk-shop-firebase": "node --test --test-concurrency=1 tests/react-parity/p1-lk-shop-firebase-policy.spec.mjs tests/react-parity/p1-lk-shop-pairing-browser.spec.mjs tests/react-parity/p1-contact-card-port.spec.mjs tests/react-parity/p1-contact-lk-shop-layout-browser.spec.mjs",
     "test:delivery-success-source-ui": "node --test --test-concurrency=1 tests/react-parity/p1-delivery-success-customer-state.spec.mjs tests/react-parity/p1-delivery-success-customer-browser.spec.mjs",
     "test:delivery-success-parity-browser": "playwright test tests/react-parity/delivery-success-parity.spec.mjs",
     "test:react-callables": "node tools/react-callable-contract.mjs",

@@ -1,3 +1,14 @@
+## 2026-11-23 — P1.3a Contact LK Shop Source parity; identity lifecycle audit
+
+- Read-only Source: `cosmatch/lukkhaja@8b108f1` / `feature/lukkaja_bankalert_stripe`; latest APK-copy commit has no JSX changes. Target: `food-order-app` / `feature/react-firebase-port` baseline `0bf16cd1`, initially clean and equal to GitHub.
+- Compared three P1.3 JSX pages; Owners/Staff are already Source-shaped. Fixed Contact's missing LK Shop two-card settings/preview grid and imported Source CSS suffix; retained Firebase device pairing, platform scope, collapsed default, branding and blocked Native APK.
+- Changes: Contact JSX, card-collapse CSS, Contact/LK Shop contracts, a new four-width Chrome responsive regression, npm LK Shop test registration, and P1.3 audit/phase documentation.
+- Tests: `npm run test:lk-shop-firebase` PASS **12/12**; full `npm run test:react-parity` **EXIT 0**; `npm run build:react` **PASS**, generated build contract **PASS** (existing 2026.11.09.535). Build verification only; no version bump or Production deployment.
+- **Not accepted**: owner/staff Auth+Firestore idempotence, ambiguous status and independent read-only recovery, real invitation/email delivery or owner/superadmin browser sign-off. P1.3b/c/d remain; no Production Functions, Rules, Hosting or `main` merge.
+- See `docs/LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md` for 22 UI action families, 7 pseudocode contracts, restrictions and handoff.
+
+---
+
 ## 2026-10-25 — Owner-approved Revenue Share screen preserved; add anniversary-cycle label only
 
 - Owner explicitly requires keeping **exact** existing `/reports/revenue-share` design from penguin-food.web.app screenshots (green hero, period tabs, store/POS + Delivery tiles, threshold progress, equation, Lalamove/Wallet, history and slip upload). Do not replace it with synthetic `/reports/hybrid-billing` or redesign.

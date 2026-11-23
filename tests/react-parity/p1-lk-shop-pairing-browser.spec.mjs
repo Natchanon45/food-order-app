@@ -130,7 +130,7 @@ test("Admin, Platform and Home mount a Source-consistent LK Shop module without 
  const hosting=await readFile("firebase.json","utf8");
  assert.match(admin,/tenantLKShopSettingsGroup/);
  assert.match(admin,/LKShopPairingPanel key=\{tenant\?\.id\} scope="tenant"/);
- assert.match(platform,/platformLKShopPanel/);
+ assert.match(platform,/platformContactLKShopPanel/);
  assert.match(platform,/LKShopPairingPanel scope="platform"/);
  assert.match(home,/<PublicAppDownloads\s*\/>/);
  assert.match(download,/disabled aria-disabled="true"/);

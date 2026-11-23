@@ -598,23 +598,65 @@ export function PlatformContactPage() {
           </aside>
         </div>
 
-        <section className="card platform-contact-toggle-host"
-          data-expanded={expandedCards.lkShop} aria-labelledby="platformLKShopHeading">
-          <ContactCornerToggle expanded={expandedCards.lkShop}
-            onToggle={()=>toggleCard("lkShop")} controls="platformLKShopPanel"
-            label="LK Shop • ห้องแจ้งเตือนส่วนกลาง" />
-          <div className="platform-telegram-settings-heading">
-            <span className="platform-contact-heading-icon platform-contact-heading-icon-telegram"
-              aria-hidden="true"><i className="bi bi-phone"/></span>
-            <div className="platform-contact-heading-copy">
-              <h2 id="platformLKShopHeading">LK Shop • ห้องแจ้งเตือนส่วนกลาง</h2>
-              <p>สร้าง QR สำหรับ Superadmin โดยไม่ปะปนกับห้องของร้านค้า</p>
+        <div className="platform-lk-shop-layout">
+          <section className="card platform-lk-shop-settings-card platform-contact-toggle-host"
+            data-expanded={expandedCards.lkShop} aria-labelledby="platformLKShopHeading">
+            <ContactCornerToggle expanded={expandedCards.lkShop} onToggle={() => toggleCard("lkShop")}
+              controls="platformContactLKShopPanel" label="การแจ้งเตือน LK Shop" />
+            <div className="section-title">
+              <div className="platform-contact-heading-group">
+                <span className="platform-contact-heading-icon platform-contact-heading-icon-lk-shop" aria-hidden="true">
+                  <i className="bi bi-shop" />
+                </span>
+                <div className="platform-contact-heading-copy">
+                  <h2 id="platformLKShopHeading">การแจ้งเตือนผ่าน LK Shop</h2>
+                  <p>เลือกห้องและจับคู่อุปกรณ์เพื่อรับการแจ้งเตือนของระบบ</p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div id="platformLKShopPanel" hidden={!expandedCards.lkShop}>
-            {expandedCards.lkShop&&<LKShopPairingPanel scope="platform" embedded notify={showToast}/>}
-          </div>
-        </section>
+            <div id="platformContactLKShopPanel" className="platform-contact-collapsed-body"
+              hidden={!expandedCards.lkShop}>
+              {expandedCards.lkShop && <LKShopPairingPanel scope="platform" embedded notify={showToast} />}
+            </div>
+          </section>
+
+          <aside className="card platform-lk-shop-preview-card"
+            aria-labelledby="platformLKShopPreviewHeading" data-expanded={expandedCards.lkShop}>
+            <div className="section-title">
+              <div className="platform-contact-heading-group">
+                <span className="platform-contact-heading-icon platform-contact-heading-icon-preview" aria-hidden="true">
+                  <i className="bi bi-bell" />
+                </span>
+                <div className="platform-contact-heading-copy">
+                  <h2 id="platformLKShopPreviewHeading">ตัวอย่างการแจ้งเตือน LK Shop</h2>
+                  <p>ตัวอย่างข้อความแจ้งเตือนที่แสดงในแอป</p>
+                </div>
+              </div>
+            </div>
+            <div className="platform-contact-preview-body" hidden={!expandedCards.lkShop}>
+              <div className="platform-lk-shop-demo" aria-label="ตัวอย่างการแจ้งเตือน LK Shop ไม่ใช่ข้อมูลจริง">
+                <div className="platform-lk-shop-demo-header">
+                  <span className="platform-lk-shop-demo-app-icon" aria-hidden="true"><i className="bi bi-shop" /></span>
+                  <span className="platform-lk-shop-demo-app-name">LK Shop</span>
+                  <span className="platform-lk-shop-demo-time">ตอนนี้</span>
+                </div>
+                <div className="platform-lk-shop-demo-message">
+                  <span className="platform-lk-shop-demo-room"><i className="bi bi-shield-check" aria-hidden="true" /> ห้องแจ้งเตือนส่วนกลาง</span>
+                  <strong>มีรายการรอตรวจสอบการชำระเงิน</strong>
+                  <p>มีหลักฐานการโอนเงินรอให้ Super Admin ตรวจสอบในระบบ PENGUIN</p>
+                  <div className="platform-lk-shop-demo-reference">เลขที่บิล: B261117-00021</div>
+                </div>
+                <div className="platform-lk-shop-demo-action" aria-hidden="true">
+                  <i className="bi bi-box-arrow-up-right" /> เปิดดูรายละเอียดใน PENGUIN
+                </div>
+              </div>
+              <p className="platform-telegram-demo-note">
+                <i className="bi bi-info-circle" aria-hidden="true" />
+                ข้อความเป็นตัวอย่างเท่านั้น ไม่ใช่การแจ้งเตือนจริง
+              </p>
+            </div>
+          </aside>
+        </div>
       </main>
 
       <ParityFooter />

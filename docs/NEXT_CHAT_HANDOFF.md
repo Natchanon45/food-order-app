@@ -1,3 +1,13 @@
+## 2026-11-23 — Latest port handoff (supersedes October notes below)
+
+- Working destination repo: `Natchanon45/food-order-app` / `feature/react-firebase-port`. Read-only source: `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1` (APK script changes, zero JSX). Use the exact latest docs `docs/LUKKAJA_TO_PENGUIN_PORT_PHASES.md` and `docs/LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md`.
+- P1.2g safe draft deletion completed local code+emulator; no Production release.
+- P1.3a updates Contact LK Shop settings/preview cards + Source CSS to match LUKKAJA while retaining Firebase endpoint/scope/Native APK gate; Chrome 320/390/768/1440 and policy tests 12/12 PASS, full React parity EXIT 0, React build contract PASS.
+- **P1.3 not complete.** Next: staff user create/edit/suspend idempotency and ambiguity recovery; then owner assignment/rename operation verification; then email provider and signed browser UAT. Do NOT claim actual invitation sent or enable Firebase Production by extrapolating from Source. No merge to `main` or Firebase deploy until approved.
+- The Mac mini target's branch, HEAD, working tree should be rechecked on every continuation. Generated `public/**` files created solely by a local verification build are not a Hosting release.
+
+---
+
 ## 2026-10-25 — Owner-approved Revenue Share screen preserved; add anniversary-cycle label only
 
 - Owner explicitly requires keeping **exact** existing `/reports/revenue-share` design from penguin-food.web.app screenshots (green hero, period tabs, store/POS + Delivery tiles, threshold progress, equation, Lalamove/Wallet, history and slip upload). Do not replace it with synthetic `/reports/hybrid-billing` or redesign.
