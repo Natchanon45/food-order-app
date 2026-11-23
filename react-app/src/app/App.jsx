@@ -7,6 +7,8 @@ import { auth } from "@/firebase/client";
 import { HomePage } from "@/pages/HomePage";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { LoginPage } from "@/pages/LoginPage";
+import { AccountEmailVerificationPage } from "@/pages/AccountEmailVerificationPage";
+import { accountEmailGuardPath, managedEmailVerificationPending } from "@/auth/accountEmailPolicy.mjs";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { PlatformPage } from "@/pages/PlatformPage";
 import { AdminPage } from "@/pages/AdminPage";
@@ -157,13 +159,25 @@ function RevenueShareSuspensionGuard({ children }) {
   return children;
 }
 
+function ManagedEmailGuard({ children }) {
+  const { status, user, profile } = useAuth();
+  const { pathname } = useLocation();
+  if (status === "ready" && managedEmailVerificationPending(profile,user)
+      && accountEmailGuardPath(pathname)) {
+    return <Navigate to="/verify-account" replace />;
+  }
+  return children;
+}
+
 export default function App() {
   return (
+    <ManagedEmailGuard>
     <RevenueShareSuspensionGuard>
       <MasterBusinessGuard>
       <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/verify-account" element={<AccountEmailVerificationPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/platform" element={<PlatformPage />} />
       <Route path="/admin" element={<AdminPage />} />
@@ -230,5 +244,6 @@ export default function App() {
       </Routes>
       </MasterBusinessGuard>
     </RevenueShareSuspensionGuard>
+    </ManagedEmailGuard>
   );
 }

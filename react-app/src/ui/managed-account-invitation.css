@@ -1,0 +1,8 @@
+.managed-invite-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;min-width:0}
+.managed-invite-button{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;min-height:38px;border:1px solid #bfd8ca;border-radius:11px;padding:7px 11px;background:#f5faf7;color:#1d6243;font-size:12px;font-weight:750;cursor:pointer;white-space:normal;text-align:center}
+.managed-invite-button:disabled{opacity:.5;cursor:not-allowed}
+.managed-invite-button:hover:not(:disabled){background:#e6f4eb}
+.managed-invite-staff-mobile{display:flex;justify-content:flex-end;margin:9px 0 2px}
+.managed-invite-staff-desktop{display:flex;justify-content:flex-end;align-items:center;gap:7px;flex-wrap:wrap}
+.managed-invite-owner{margin:0}
+@media(max-width:600px){.managed-invite-owner,.managed-invite-owner .managed-invite-button,.managed-invite-staff-mobile .managed-invite-button{width:100%}}

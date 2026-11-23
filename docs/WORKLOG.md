@@ -1,3 +1,15 @@
+## 2026-11-23 — P1.3d Managed Account email verification and operator-triggered invitation
+
+- **Repository/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`; Source LUKKAJA `cosmatch/lukkhaja@8b108f1` read-only. New Owner/Staff profiles receive opt-in `emailVerificationRequired:true`; existing users with no marker are not forced into a retroactive verification.
+- `/verify-account`: signed-in Owner/Staff requests their own Firebase verification link on button click, checks native Auth via `reload` and forced ID-token refresh, then returns to role home. Login/AuthProvider/TenantProvider and App gate unverified new managed accounts; Firestore Rules allow only own profile for verification and restrict tenant-private data; Storage Rules restrict protected assets. Public storefront data/customer context retained.
+- Owner and Staff pages expose explicit **send setup invitation** buttons only for canonical accounts; Firebase Auth `sendPasswordResetEmail` OOB template and URL `/login`. No automatic email on create/reload; no reset bearer token/password returned and no claim of actual inbox delivery.
+- Native provider nuance: Firebase Auth Emulator sets the recipient's `emailVerified:true` after redeeming a valid password reset action. P1.3d trusts the **native** Firebase verification state, not an editable Firestore/browser flag. This exact action remains to be tested against approved live/staging provider templates.
+- **Tests PASS:** combined Firebase Auth+Firestore+Storage Emulator incl P1.2 Owner/Staff/onboarding **31/31**; managed React+Chrome **3/3**; actual Owner/Staff pages invitation and lost-response regression **2/2**; full `npm run test:react-parity` EXIT 0; `npm run build:react` and generated Hosting contract PASS (`2026.11.09.535`). Build-only `public/**` changes/assets cleaned, not deployed.
+- **OPEN release blockers:** real email templates/sender, authorized domains, QA inbox delivery, signed browser UAT with Provider, and **Cloud Functions-wide Auth email verification gate audit**. Native Admin SDK Callable handlers are not automatically restricted by Firestore/Storage rules. Do not describe P1.3d as certified across all privileged Callables. No real email sends, Production Firebase update, `main` merge, APK/IPA.
+- Full detail: `docs/LUKKAJA_P1_3_MANAGED_EMAIL_INVITATION_20261123.md`. Next phase after reviewed release gates: P1.4 Pricing / SaaS Setup parity.
+
+---
+
 ## 2026-11-23 — P1.3c Owner Account Lifecycle; first-trial and legacy-finance integrity
 
 - Destination `Natchanon45/food-order-app` branch `feature/react-firebase-port`; Source LUKKAJA `cosmatch/lukkhaja@8b108f1` read-only. Original Owners JSX modal, search/status card actions preserved; Cloud Functions remain PENGUIN Firebase only.

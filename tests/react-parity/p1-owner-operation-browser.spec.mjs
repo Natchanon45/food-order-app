@@ -24,6 +24,10 @@ test("Owner add lost-response → durable lock → reload → status proof → r
   export const PageReadyOverlay=()=> <div data-loading>Loading</div>;
   export const ParityFooter=()=>null;
   export const UserMenu=()=>null;`);
+  await write("invitation.js",`export async function requestManagedAccountSetupEmail(email){
+   window.__ownerMock.invites.push(email);
+   return {providerAccepted:true,deliveryConfirmed:false,containsPassword:false};
+  }`);
   await write("service.js",`
    const persist=()=>localStorage.setItem("p13c_mock_backend",JSON.stringify(window.__ownerMock));
    export async function listTenants(){
@@ -78,12 +82,13 @@ test("Owner add lost-response → durable lock → reload → status proof → r
    import{MemoryRouter}from"react-router-dom";
    import{PlatformOwnersPage}from"@/pages/PlatformOwnersPage";
    window.__ownerMock=JSON.parse(localStorage.getItem("p13c_mock_backend")||
-    '{"tenants":[{"id":"p13c-shop","name":"Test Demo Shop","slug":"test-demo-shop","active":false,"onboardingRequired":true,"ownerRevision":0}],"ops":{},"calls":[],"statusReads":0,"listReads":0,"loseReply":false}');
+    '{"tenants":[{"id":"p13c-shop","name":"Test Demo Shop","slug":"test-demo-shop","active":false,"onboardingRequired":true,"ownerRevision":0}],"ops":{},"calls":[],"statusReads":0,"listReads":0,"loseReply":false,"invites":[]}');
    createRoot(document.getElementById("root")).render(
     <MemoryRouter initialEntries={["/platform/owners"]}><PlatformOwnersPage/></MemoryRouter>);`);
   const alias=[
    ["@/auth/AuthProvider","auth.js"],["@/i18n/I18nProvider","i18n.js"],
    ["@/hooks/useParityPage","parity.js"],["@/data/platformTenantService","service.js"],
+   ["@/auth/managedAccountInvitation","invitation.js"],
    ...["DynamicField","LocaleSwitcher","PageReadyOverlay","ParityFooter","UserMenu"]
      .map(name=>["@/components/"+name,"components.jsx"]),
   ].map(([find,name])=>({find,replacement:resolve(dir,name)}));
@@ -125,6 +130,12 @@ test("Owner add lost-response → durable lock → reload → status proof → r
     assert.equal(await page.locator("[data-owner-operation-recovery]").count(),0);
     assert.equal((await page.evaluate(()=>window.__ownerMock.calls)).length,1,
       "lost create response must never trigger a duplicate Auth create");
+    assert.equal((await page.evaluate(()=>window.__ownerMock.invites)).length,0,
+      "Owner creation never sends an invitation automatically");
+    await page.locator("[data-owner-invite]").click();
+    await page.waitForFunction(()=>window.__ownerMock.invites.length===1);
+    assert.equal((await page.evaluate(()=>window.__ownerMock.invites[0])),
+      "newowner@example.test");
     await page.locator('[data-owner-action="edit"]').click();
     await page.locator("#ownerDisplayName").fill("Owner Renamed");
     await page.locator("#ownerSubmitButton").click();

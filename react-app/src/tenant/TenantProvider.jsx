@@ -3,6 +3,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase/client";
 import { useAuth } from "@/auth/AuthProvider";
 import { tenantAccessDecision, tenantAccessError } from "@/auth/tenantAccess";
+import { managedEmailVerificationPending } from "@/auth/accountEmailPolicy.mjs";
 
 const Ctx = createContext(null);
 const KEY = "food_order_active_tenant";
@@ -32,7 +33,8 @@ export function TenantProvider({ children }) {
       setState({ status: "error", tenant: null, error: auth.error });
       return () => { alive = false; };
     }
-    if (!profile || profile.role === "super_admin") {
+    if (!profile || profile.role === "super_admin" ||
+        managedEmailVerificationPending(profile,auth.user)) {
       persist(null);
       setState({ status: "ready", tenant: null, error: null });
       return () => { alive = false; };

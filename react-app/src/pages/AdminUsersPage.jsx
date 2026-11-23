@@ -12,6 +12,8 @@ import { createStaffUser, listStaffUsers, updateStaffUser,
 import { readStaffPending, persistStaffPending, clearStaffPending,
   verifiedStaffRow } from "@/data/staffOperationRecovery.mjs";
 import { StaffOperationRecoveryNotice } from "@/components/StaffOperationRecoveryNotice";
+import { requestManagedAccountSetupEmail } from "@/auth/managedAccountInvitation";
+import "@/ui/managed-account-invitation.css";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
@@ -94,6 +96,7 @@ export function AdminUsersPage() {
   const [formError, setFormError] = useState("");
   const [creating, setCreating] = useState(false);
   const [savingUid, setSavingUid] = useState("");
+  const [invitingUid,setInvitingUid] = useState("");
   const [pendingOperationId, setPendingOperationId] = useState("");
   const [pendingReadyTenantId, setPendingReadyTenantId] = useState("");
   const [pendingStorageError, setPendingStorageError] = useState("");
@@ -321,6 +324,24 @@ export function AdminUsersPage() {
     }));
   };
 
+  const inviteStaff = async user => {
+    if(profile?.role!=="owner"||!user?.uid||String(user.uid)===ownerId||
+       !user.email||invitingUid||operationLocked||savingUid||loadError||loading||
+       readyTenantId!==tenantState.tenant?.id)return;
+    setInvitingUid(user.uid);
+    try {
+      const answer=await requestManagedAccountSetupEmail(user.email);
+      if(answer?.providerAccepted!==true||answer?.deliveryConfirmed!==false)
+        throw Error("MANAGED_INVITATION_NOT_CONFIRMED");
+      showToast("Firebase รับคำขอส่งลิงก์ตั้งรหัสผ่านแล้ว แต่ยังไม่ยืนยันว่าถึงกล่องจดหมาย");
+    } catch(error) {
+      const code=String(error?.code||error?.message||"");
+      showToast(code.includes("too-many-requests")
+        ? "มีคำขออีเมลมากเกินไป กรุณาลองภายหลัง"
+        : "ไม่สามารถขอส่งลิงก์เชิญผ่าน Firebase ได้ กรุณาตรวจสอบการตั้งค่า Email Template","error");
+    } finally {setInvitingUid("");}
+  };
+
   const saveUser = async user => {
     if (!user?.uid || String(user.uid) === ownerId || savingUid || loadError || loading ||
         readyTenantId !== tenantState.tenant?.id || profile?.role !== "owner" ||
@@ -498,6 +519,17 @@ export function AdminUsersPage() {
                         <span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span>
                       </button>
                     </div>
+                    {!isSelf&&user.email ? (
+                      <div className="managed-invite-staff-mobile">
+                        <button type="button" className="managed-invite-button"
+                          data-mobile-staff-invite={user.uid}
+                          disabled={operationLocked||Boolean(invitingUid)||Boolean(savingUid)||loading||Boolean(loadError)}
+                          onClick={() => inviteStaff(user)}>
+                          <i className="bi bi-envelope-paper" aria-hidden="true"/>
+                          <span>{invitingUid===user.uid?"กำลังขอส่ง":"ส่งคำเชิญตั้งรหัสผ่าน"}</span>
+                        </button>
+                      </div>
+                    ) : null}
                   </article>
                 );
               }) : <div className="empty staff-empty"><i className="bi bi-search" aria-hidden="true"></i><span>{search || statusFilter !== "all" ? ui.emptySearch : t("admin_users.list.empty")}</span></div>}
@@ -525,7 +557,18 @@ export function AdminUsersPage() {
                             onChange={e => patchDraft(user.uid, { active: e.target.checked })} />
                           <span>{draft.active !== false ? ui.enabled : ui.suspended}</span>
                         </label></td>
-                        <td><button className="btn btn-primary btn-sm user-save-button" type="button" data-save-user={user.uid} disabled={String(user.uid) === ownerId || savingUid === user.uid || Boolean(loadError) || loading || operationLocked} onClick={() => saveUser(user)}><i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i><span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span></button></td>
+                        <td><div className="managed-invite-staff-desktop">
+                          {String(user.uid)!==ownerId&&user.email ? (
+                            <button type="button" className="managed-invite-button"
+                              data-staff-invite={user.uid}
+                              disabled={operationLocked||Boolean(invitingUid)||Boolean(savingUid)||loading||Boolean(loadError)}
+                              onClick={() => inviteStaff(user)}>
+                              <i className="bi bi-envelope-paper" aria-hidden="true"/>
+                              <span>{invitingUid===user.uid?"กำลังขอส่ง":"ส่งคำเชิญ"}</span>
+                            </button>
+                          ) : null}
+                          <button className="btn btn-primary btn-sm user-save-button" type="button" data-save-user={user.uid} disabled={String(user.uid) === ownerId || savingUid === user.uid || Boolean(loadError) || loading || operationLocked} onClick={() => saveUser(user)}><i className={"bi " + (savingUid === user.uid ? "bi-hourglass-split" : "bi-floppy")} aria-hidden="true"></i><span>{t(savingUid === user.uid ? "admin_users.actions.saving" : "admin_users.actions.save")}</span></button>
+                        </div></td>
                       </tr>
                     );
                   }) : <tr><td colSpan="6"><div className="empty staff-empty"><i className="bi bi-search" aria-hidden="true"></i><span>{search || statusFilter !== "all" ? ui.emptySearch : t("admin_users.list.empty")}</span></div></td></tr>}

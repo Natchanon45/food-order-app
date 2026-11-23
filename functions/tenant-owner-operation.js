@@ -183,7 +183,7 @@ async function create({db,nativeAuth,identity,data}){
    const profile={uid:ownerUid,email:input.email,
     displayName:input.displayName,role:"owner",active:true,
     tenantId:input.tenantId,tenantSlug:t.slug,tenantName:t.name,
-    createdAt:now,updatedAt:now};
+    createdAt:now,updatedAt:now,emailVerificationRequired:true};
    tx.create(account,profile);
    tx.create(member,profile);
    tx.update(tenant,{...start,ownerUid,ownerEmail:input.email,

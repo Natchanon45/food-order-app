@@ -9,7 +9,18 @@ service cloud.firestore {
         && request.auth.token.get('customerContext', false) == true
         && request.auth.token.get('customerGoogle', false) == true;
     }
-    function signedIn() { return authenticated() && !customerContext(); }
+    // P1.3d: newly Admin-provisioned Owner/Staff must first verify their own
+    // native Firebase Auth email. Legacy profiles without this opt-in marker
+    // retain current access; public self-signup can verify before profile exists.
+    function provisionedEmailAllowed() {
+      return !exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+             .get('emailVerificationRequired', false) != true
+        || request.auth.token.get('email_verified', false) == true;
+    }
+    function signedIn() {
+      return authenticated() && !customerContext() && provisionedEmailAllowed();
+    }
     function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function hasRole(roles) { return signedIn() && profile().active == true && profile().role in roles; }
     function adminRole() { return hasRole(['owner', 'admin', 'super_admin']); }
@@ -298,7 +309,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /users/{userId} { allow read: if signedIn() && (request.auth.uid == userId || superAdminRole()); allow create, update, delete: if superAdminRole(); }
+    // An unverified account can read only its own profile to display the
+    // verification gate; this is NOT tenant data or mutation permission.
+    match /users/{userId} {
+      allow read: if (authenticated() && !customerContext() &&
+        request.auth.uid == userId) || superAdminRole();
+      allow create, update, delete: if superAdminRole();
+    }
     // The canonical slug is an authority for store activation.
     // All writes MUST flow through server transactions; even a Superadmin
     // browser cannot mark a tenant active or change membership here.

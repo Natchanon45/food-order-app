@@ -71,6 +71,11 @@ test("Superadmin-only tenant and owner provisioning is inaccessible until the Ow
     error => ["already-exists","failed-precondition"].includes(error.code),
   );
 
+  // Provisioned Owner must verify their real native email before managing staff.
+  assert.equal((await adminAuth.getUser(owner.ownerUid)).emailVerified,false);
+  assert.equal((await db.collection("users").doc(owner.ownerUid).get())
+    .data().emailVerificationRequired,true);
+  await adminAuth.updateUser(owner.ownerUid,{emailVerified:true});
   const ownerAuth = { auth: { uid: owner.ownerUid } };
   const staff = await staffCalls.listTenantStaff.run({
     ...ownerAuth, data: { expectedTenantId: tenantId },

@@ -616,7 +616,10 @@ assert(
   &&firestoreRules.includes("function customerContext()")
   &&firestoreRules.includes("request.auth.token.get('customerContext', false) == true")
   &&storageRules.includes("function customerContext()")
-  &&storageRules.includes("return authenticated() && !customerContext();"),
+  &&storageRules.includes("return authenticated() && !customerContext() && provisionedEmailAllowed();")
+  &&storageRules.includes("function provisionedEmailAllowed()")
+  &&firestoreRules.includes("function provisionedEmailAllowed()")
+  &&firestoreRules.includes("return authenticated() && !customerContext() && provisionedEmailAllowed();"),
   "React Delivery customer context must remain isolated from staff identity and privileges"
 );
 assert(

@@ -34,6 +34,8 @@ async function authorized(db,auth,expectedTenantId,nativeAuth){
  }
  if(native.uid!==uid||native.disabled===true)
    throw fail("permission-denied","Owner Auth identity disabled");
+ if(profile.emailVerificationRequired===true&&native.emailVerified!==true)
+   throw fail("permission-denied","Owner email verification required");
  return {uid,tenant:{id:expectedTenantId,slug:String(tenant.slug||""),
   name:String(tenant.name||"")}};
 }
@@ -115,7 +117,8 @@ async function create({db,nativeAuth,identity,data}){
  const payload={...after,tenantId,tenantSlug:caller.tenant.slug,
   tenantName:caller.tenant.name,staffScope:"restaurant",
   businessUnit:policy.unit(after.businessScope),source:after.businessScope,
-  createdBy:caller.uid,createdAt:now,updatedAt:now};
+  createdBy:caller.uid,createdAt:now,updatedAt:now,
+  emailVerificationRequired:true};
  try{
   await db.runTransaction(async tx=>{
    const [op,claim,user,membership]=await Promise.all([

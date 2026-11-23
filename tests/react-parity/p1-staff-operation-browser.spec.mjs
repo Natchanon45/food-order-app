@@ -31,6 +31,10 @@ test("Admin Users real React page recovers lost create reply after reload and sa
    export const ParityFooter=()=>null;
    export const UserMenu=()=>null;
    export const DynamicField=({children})=><div>{children}</div>;`);
+  await file("invitation.js",`export async function requestManagedAccountSetupEmail(email){
+    window.__mock.invites.push(email);
+    return {providerAccepted:true,deliveryConfirmed:false,containsPassword:false};
+   }`);
   await file("staff.js",`
    const persist=()=>localStorage.setItem("p13b_mock_backend",JSON.stringify(window.__mock));
    const tenantId="demo-tenant";
@@ -80,7 +84,7 @@ test("Admin Users real React page recovers lost create reply after reload and sa
    import{MemoryRouter}from"react-router-dom";
    import{AdminUsersPage}from"@/pages/AdminUsersPage";
    window.__mock=JSON.parse(localStorage.getItem("p13b_mock_backend")||
-    '{"staff":[],"ops":{},"calls":[],"listReads":0,"statusReads":0,"simulateTimeout":false}');
+    '{"staff":[],"ops":{},"calls":[],"listReads":0,"statusReads":0,"simulateTimeout":false,"invites":[]}');
    createRoot(document.getElementById("root")).render(
     <MemoryRouter initialEntries={["/admin/users"]}><AdminUsersPage/></MemoryRouter>);`);
   const alias=[
@@ -89,6 +93,7 @@ test("Admin Users real React page recovers lost create reply after reload and sa
    ["@/i18n/I18nProvider","i18n.js"],
    ["@/hooks/useParityPage","parity.js"],
    ["@/data/adminStaff","staff.js"],
+   ["@/auth/managedAccountInvitation","invitation.js"],
    ...["LocaleSwitcher","PageReadyOverlay","ParityFooter","UserMenu","DynamicField"]
       .map(name=>["@/components/"+name,"components.jsx"]),
   ].map(([find,name])=>({find,replacement:resolve(dir,name)}));
@@ -130,6 +135,13 @@ test("Admin Users real React page recovers lost create reply after reload and sa
     await page.locator("#userDialog").waitFor({state:"hidden"});
     await page.locator("#openCreateUserModal:not([disabled])").waitFor();
     assert.equal(await page.locator("[data-staff-operation-recovery]").count(),0);
+    assert.equal((await page.evaluate(()=>window.__mock.invites)).length,0,
+      "Staff creation must not send an invitation on its own");
+    await page.locator(width<700?
+      '[data-mobile-staff-invite="demo-staff-1"]':
+      '[data-staff-invite="demo-staff-1"]').click();
+    await page.waitForFunction(()=>window.__mock.invites.length===1);
+    assert.equal((await page.evaluate(()=>window.__mock.invites[0])),"first@example.test");
     await page.evaluate(()=>{window.__mock.simulateTimeout=true;});
     await add("Second Person","second@example.test");
     await page.locator("[data-staff-operation-recovery]").waitFor({timeout:6000});

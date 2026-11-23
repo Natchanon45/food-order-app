@@ -9,6 +9,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { auth, db, functions } from "@/firebase/client";
 import { tenantAccessDecision, tenantAccessError } from "@/auth/tenantAccess";
+import { managedEmailVerificationPending } from "@/auth/accountEmailPolicy.mjs";
 
 export const ROLE_HOME = Object.freeze({
   super_admin: "/platform",
@@ -56,6 +57,11 @@ export async function loadProfile(user) {
   const profile = { uid: user.uid, email: user.email || "", ...snapshot.data() };
   if (profile.active === false || !STAFF_ROLES.includes(profile.role)) {
     throw new Error("ACCOUNT_NOT_ALLOWED");
+  }
+  // First sign-in needs the profile only: Firestore Rules deliberately deny
+  // tenant reads while a newly provisioned account is email-unverified.
+  if (managedEmailVerificationPending(profile,user)) {
+    return {...profile,emailVerificationPending:true};
   }
   if (profile.role !== "super_admin") {
     if (!profile.tenantId) throw new Error("TENANT_REQUIRED");

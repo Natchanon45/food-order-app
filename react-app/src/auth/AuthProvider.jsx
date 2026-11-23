@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onIdTokenChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebase/client";
 
@@ -73,7 +73,7 @@ export function AuthProvider({ children }) {
       }
     };
 
-    const stop = onAuthStateChanged(
+    const stop = onIdTokenChanged(
       auth,
       user => {
         initialResolved = true;

@@ -1,3 +1,15 @@
+## 2026-11-23 — Latest handoff: P1.3d managed email verification and invitation local implementation
+
+- **Working repo/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`. **Source strictly read only:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1`. Confirm local/remote HEAD, tree and Source pin before next work.
+- P1.3a Contact/LK Shop JSX presentation, P1.3b Staff Auth/Firestore lifecycle, P1.3c Owner attach/rename identity, and P1.3d managed email verification/invitation now **implemented and Emulator/browser-tested locally**. P1.3 is **NOT Production-signed-off**.
+- New managed Owner/Staff identities have `emailVerificationRequired:true`, initial native Auth `emailVerified:false`; `/verify-account` provides user-click Firebase verification; Owner/Staff list pages provide operator-click Firebase reset/setup invitations. No automatic email or bearer links in API/UI. Actual Firebase Auth Emulator redeem of password-reset OOB action results in native verified email; app relies on native Auth token, not a Firestore boolean.
+- Opt-in Firestore and Storage private staff business gates and early App/TenantProvider/Role login gates protect new unverified accounts. Public storefront data remains public, and legacy accounts without the marker remain unchanged.
+- **Tests:** combined Auth+Firestore+Storage Emulator **31/31 PASS**; managed React+Chrome **3/3 PASS**; Owner/Staff invitation+recovery Browser **2/2 PASS**; full React Parity EXIT 0; Vite React Build & Hosting contract PASS. Build-only output restored/removed; no deployment.
+- **NEXT release blockers:** audit **all privileged Cloud Functions entrypoints** for native managed-email verification (Admin SDK bypasses Rules); test authorized nonproduction Firebase email templates/domains and QA inbox, perform signed browser Superadmin/Owner/Staff + Contact/Google/LK Shop UAT; coordinate React/Functions/Firestore/Storage Hosting deployment only when user authorizes. Do not send real emails, touch Production, merge `main` or build APK/IPA without approval.
+- Audit: `docs/LUKKAJA_P1_3_MANAGED_EMAIL_INVITATION_20261123.md`. Phase plan: `docs/LUKKAJA_TO_PENGUIN_PORT_PHASES.md`. Then consider P1.4 Pricing/SaaS modules once P1.3 release gates are accepted.
+
+---
+
 ## 2026-11-23 — Latest handoff: P1.3c Owner Account Lifecycle passed locally
 
 - **Repository/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`. **Source reference read-only:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1`.

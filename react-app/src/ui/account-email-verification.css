@@ -1,0 +1,19 @@
+.verify-email-shell{min-height:100dvh;display:grid;place-items:center;padding:24px;background:linear-gradient(155deg,#e6f5ec 0%,#f6faf7 48%,#eff3fc 100%);color:#163b2a}
+.verify-email-card{width:min(100%,540px);padding:clamp(22px,4vw,40px);border:1px solid #d9e9df;border-radius:24px;background:#fff;box-shadow:0 18px 55px rgba(22,59,42,.1)}
+.verify-email-symbol{display:grid;place-items:center;width:64px;height:64px;border-radius:18px;background:#e3f5e9;color:#147446;font-size:29px;margin-bottom:22px}
+.verify-email-eyebrow{display:flex;align-items:center;gap:7px;color:#157146;font-size:12px;font-weight:800;margin-bottom:9px}
+.verify-email-card h1{font-size:clamp(22px,5vw,28px);font-weight:850;line-height:1.32;margin:0 0 11px}
+.verify-email-card p{font-size:14px;line-height:1.7;color:#486456;margin:0 0 19px}
+.verify-email-address{display:grid;gap:6px;background:#f4faf6;border:1px solid #dbeee1;border-radius:14px;padding:14px 16px;margin:19px 0}
+.verify-email-address span{display:flex;align-items:center;gap:7px;font-size:12px;color:#567365}
+.verify-email-address strong{font-size:15px;overflow-wrap:anywhere}
+.verify-email-card .verify-email-help{font-size:13px}
+.verify-email-notice,.verify-email-error{border-radius:11px;padding:12px;margin:12px 0;font-size:13px;line-height:1.55}
+.verify-email-notice{background:#eaf6ee;color:#15643a;border:1px solid #c5e6d0}
+.verify-email-error{background:#fff0ef;color:#9b3328;border:1px solid #f2c9c5}
+.verify-email-actions{display:flex;gap:10px;flex-wrap:wrap}
+.verify-email-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;flex:1 1 190px;min-height:45px;border-radius:12px;white-space:normal}
+.verify-email-check{border:1px solid #cbdcd1;color:#18563a;background:#f8fcf9}
+.verify-email-logout{margin:20px 0 0;padding:7px 0;background:transparent;border:0;color:#526459;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.verify-email-actions button:disabled,.verify-email-logout:disabled{opacity:.6;cursor:not-allowed}
+@media(max-width:520px){.verify-email-shell{padding:14px}.verify-email-card{border-radius:18px;padding:24px 19px}.verify-email-actions .btn{flex-basis:100%}}

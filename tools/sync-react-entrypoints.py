@@ -20,6 +20,7 @@ TARGETS = [
     "public/pos/receipt/index.html",
     "public/pos/tax-invoice/index.html",
     "public/login/index.html",
+    "public/verify-account/index.html",
     "public/register/index.html",
     "public/pos/index.html",
     "public/pos/sales/index.html",

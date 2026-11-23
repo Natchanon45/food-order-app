@@ -132,6 +132,7 @@ exports.createActiveTenantWithOwner = onCall(
         uid: createdAuth.uid, email: input.ownerEmail, displayName: input.ownerName,
         role: "owner", active: true, tenantId, tenantSlug: input.slug,
         tenantName: input.name, createdAt: started, updatedAt: started,
+        emailVerificationRequired:true,
       };
       await db.runTransaction(async tx => {
         const [op, slug, issuer] = await Promise.all([

@@ -1,5 +1,20 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-23 P1.3d — Managed Owner/Staff Email Verification and Invitation
+
+**Target:** `Natchanon45/food-order-app` on `feature/react-firebase-port`; Source `cosmatch/lukkhaja@8b108f1` read-only. The public self-registration already used Firebase email verification; managed Owner and Staff created by privileged operators lacked verified-email onboarding.
+
+Implemented **opt-in** `emailVerificationRequired:true` for newly provisioned Owner/Staff native Auth identities, a responsive `/verify-account` page with user-click Firebase `sendEmailVerification`, explicit Owner/Staff operator-click Firebase password-reset invitation, forced native ID-token refresh, and Firestore/Storage private-access restrictions. Public storefront/customer contexts remain intentionally separate and legacy users with no opt-in marker remain unaffected. **No email sends on account creation**. Firebase password-reset OOB action completion can cause native Auth `emailVerified:true` (observed in Emulator); trust the native verification bit, never the browser.
+
+**Local acceptance:** Auth+Firestore+Storage Emulator including P1 onboarding, Owner and Staff regressions **31/31 PASS**; managed React/Chrome **3/3 PASS** (320/390/768/1440), Owner/Staff browser invitation **2/2 PASS**; full React parity EXIT 0; React Build and generated Hosting Contract PASS (build `2026.11.09.535`). Build-only `public/**` assets were discarded, not staged or deployed.
+
+**P1.3 NOT Production-signed-off:** actual email template/auth-domain setup, authorized QA inbox delivery, signed browser UAT for Superadmin/Owner/Staff, platform Contact/Google/LK Shop real-provider UAT, and a **Cloud Functions-wide email-verification authorization audit** remain. Firestore/Storage rules do not restrict Admin SDK Cloud Function calls automatically. No Production send/deploy, `main` merge or APK/IPA build. Future release must coordinate React Hosting, Functions, Firestore/Storage Rules and authorized email domains.
+
+[Full P1.3d implementation + release checklist](./LUKKAJA_P1_3_MANAGED_EMAIL_INVITATION_20261123.md) · [Module matrix](./LUKKAJA_P1_3_USERS_OWNERS_CONTACT_AUDIT_20261123.md)
+
+---
+
+
 ## 2026-11-23 P1.3c — Owner Account Lifecycle (existing Tenant attach/rename)
 
 **Target:** `Natchanon45/food-order-app` / `feature/react-firebase-port`; Source `cosmatch/lukkhaja@8b108f1` strictly read only. Preserve LUKKAJA PlatformOwnersPage JSX hierarchy and keep PENGUIN Firebase Auth/Firestore identity operations.

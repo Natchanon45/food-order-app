@@ -58,6 +58,7 @@ const REACT_ROUTE_MAP = Object.freeze({
   "/platform": "/platform",
   "/admin/tenants": "/admin/tenants",
   "/platform/owners": "/platform/owners",
+  "/verify-account": "/verify-account",
   "/platform/contact": "/platform/contact",
   "/platform/pricing": "/platform/pricing",
   "/super-admin/saas-setup": "/super-admin/saas-setup",
@@ -170,6 +171,10 @@ export function LoginPage() {
     setBusy(true);
     try {
       const profile = await authenticateStaff(email.trim().toLowerCase(), password);
+      if(profile.emailVerificationPending===true){
+        location.replace("/verify-account");
+        return;
+      }
       const requestedNext = new URLSearchParams(location.search).get("next") || "";
       const fallback = scopedRoleHome(profile);
       const safeRequestedNext = safeNextPath(requestedNext, "");

@@ -13,8 +13,17 @@ service firebase.storage {
         && request.auth.token.get('customerGoogle', false) == true;
     }
 
+    // P1.3d: newly provisioned staff/owner cannot read tenant private
+    // evidence or upload business assets until Firebase verifies their email.
+    // Legacy accounts without this explicit marker remain unaffected.
+    function provisionedEmailAllowed() {
+      let profilePath = /databases/(default)/documents/users/$(request.auth.uid);
+      return !firestore.exists(profilePath)
+        || firestore.get(profilePath).data.get('emailVerificationRequired', false) != true
+        || request.auth.token.get('email_verified', false) == true;
+    }
     function signedIn() {
-      return authenticated() && !customerContext();
+      return authenticated() && !customerContext() && provisionedEmailAllowed();
     }
 
     function staffProfile() {

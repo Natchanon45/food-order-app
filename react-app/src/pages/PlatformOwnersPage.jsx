@@ -12,6 +12,8 @@ import { createTenantOwner, listTenants, updateTenantOwner,
 import { readOwnerOperation, holdOwnerOperation, releaseOwnerOperation,
   verifyOwnerOperation, canonicalOwnerMatches } from "@/data/ownerAccountRecovery.mjs";
 import { OwnerOperationRecoveryNotice } from "@/components/OwnerOperationRecoveryNotice";
+import { requestManagedAccountSetupEmail } from "@/auth/managedAccountInvitation";
+import "@/ui/managed-account-invitation.css";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
@@ -54,6 +56,7 @@ export function PlatformOwnersPage() {
   const [planCode, setPlanCode] = useState("monthly");
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [invitingTenantId,setInvitingTenantId] = useState("");
   // Unknown Auth/Firestore outcome is a durable per-Superadmin + Tenant
   // operation receipt. Only independent server proof can release this lock.
   const [pendingOwners, setPendingOwners] = useState({});
@@ -180,6 +183,23 @@ export function PlatformOwnersPage() {
   const ownerCount = tenants.filter(item => item.ownerUid).length;
   const pendingOwnerCount = Math.max(0, tenants.length - ownerCount);
   const inactiveCount = tenants.filter(item => item.active === false).length;
+
+  const inviteOwner = async tenant => {
+    if(profile?.role!=="super_admin"||!tenant?.ownerUid||!tenant.ownerEmail||
+       loading||loadError||isOwnerLocked(tenant.id)||invitingTenantId)return;
+    setInvitingTenantId(tenant.id);
+    try {
+      const answer=await requestManagedAccountSetupEmail(tenant.ownerEmail);
+      if(answer?.providerAccepted!==true||answer?.deliveryConfirmed!==false)
+        throw Error("MANAGED_INVITATION_NOT_CONFIRMED");
+      showToast("Firebase รับคำขอส่งลิงก์ตั้งรหัสผ่านแล้ว แต่ยังไม่ยืนยันว่าถึงกล่องจดหมาย");
+    } catch(error) {
+      const code=String(error?.code||error?.message||"");
+      showToast(code.includes("too-many-requests")
+        ? "มีคำขออีเมลมากเกินไป กรุณาลองภายหลัง"
+        : "ไม่สามารถขอส่งลิงก์เชิญผ่าน Firebase ได้ กรุณาตรวจสอบการตั้งค่า Email Template","error");
+    } finally {setInvitingTenantId("");}
+  };
 
   const openModal = (tenant, nextMode) => {
     if (isOwnerLocked(tenant.id)) return;
@@ -417,9 +437,20 @@ export function PlatformOwnersPage() {
                       <i className={`bi ${tenant.ownerUid ? "bi-shield-check" : "bi-exclamation-circle"}`} aria-hidden="true"></i>
                       {tenant.ownerUid ? t("platform_owners.tenant.ready_help") : t("platform_owners.tenant.pending_help")}
                     </span>
-                    {tenant.ownerUid
-                      ? <button className="btn platform-owner-action" type="button" data-owner-action="edit" data-tenant-id={tenant.id} disabled={isOwnerLocked(tenant.id)} onClick={() => openModal(tenant, "edit")}><i className="bi bi-pencil-square app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.edit_owner")}</span></button>
-                      : <button className="btn btn-primary platform-owner-action" type="button" data-owner-action="create" data-tenant-id={tenant.id} disabled={isOwnerLocked(tenant.id)} onClick={() => openModal(tenant, "create")}><i className="bi bi-person-plus app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.create_owner")}</span></button>}
+                    <div className="managed-invite-actions managed-invite-owner">
+                      {tenant.ownerUid ? (
+                        <button type="button" className="managed-invite-button"
+                          data-owner-invite={tenant.id} onClick={() => inviteOwner(tenant)}
+                          disabled={isOwnerLocked(tenant.id)||Boolean(invitingTenantId)||!tenant.ownerEmail}
+                          title="ส่งคำขอตั้งรหัสผ่านผ่าน Firebase เฉพาะเมื่อกดปุ่ม">
+                          <i className="bi bi-envelope-paper" aria-hidden="true"/>
+                          <span>{invitingTenantId===tenant.id?"กำลังขอส่ง":"ส่งคำเชิญตั้งรหัสผ่าน"}</span>
+                        </button>
+                      ) : null}
+                      {tenant.ownerUid
+                        ? <button className="btn platform-owner-action" type="button" data-owner-action="edit" data-tenant-id={tenant.id} disabled={isOwnerLocked(tenant.id)} onClick={() => openModal(tenant, "edit")}><i className="bi bi-pencil-square app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.edit_owner")}</span></button>
+                        : <button className="btn btn-primary platform-owner-action" type="button" data-owner-action="create" data-tenant-id={tenant.id} disabled={isOwnerLocked(tenant.id)} onClick={() => openModal(tenant, "create")}><i className="bi bi-person-plus app-icon" aria-hidden="true"></i><span>{t("platform_owners.tenant.create_owner")}</span></button>}
+                    </div>
                   </footer>
                 </article>
               )) : <div className="platform-owner-empty-state"><i className="bi bi-search" aria-hidden="true"></i><strong>{t("platform_owners.list.empty")}</strong><span>{t("platform_owners.list.empty_help")}</span></div>}
