@@ -2,7 +2,7 @@
 // M7 operational arithmetic UAT SHADOW. Never an operational money writer.
 // The Source manifest is operator-provided, untrusted, and stays in memory.
 // All Firestore records are private diagnostics with immutable NOT-PAID flags.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const policy=require("./m7-uat-operational-ledger-policy");
 const contract=require("./m7-source-migration-contract");

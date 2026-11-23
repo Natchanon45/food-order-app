@@ -1,3 +1,15 @@
+## 2026-11-23 — P1.3e Final Security Audit: managed email on all Firebase Callables
+
+- Working repo `Natchanon45/food-order-app`, `feature/react-firebase-port`; Source LUKKAJA `cosmatch/lukkhaja@8b108f1` read-only. Found **144 `onCall` definitions in 45 Function modules** without a shared P1.3d managed email verification gate. Firebase Admin SDK bypasses Firestore/Storage rules; individual Callable business-role checks alone were not enough.
+- Added `functions/managed-email-callable.js` and imported it in every v2 Callable module. For managed users with `users/{uid}.emailVerificationRequired:true` but `email_verified!==true`, reject BEFORE the original handler; on failed profile read fail closed. Verified Firebase ID tokens skip extra profile reads; legacy/public/customer identities without the new marker preserve original downstream authorization behavior. Original onRequest/webhook exports unchanged.
+- Audited 7 HTTP `onRequest` endpoints (LK Shop device gateway, Android companion device/notice, Lalamove signed webhook, Stripe TEST wallet and M7 TEST webhooks, public tax-buyer lookup). HTTP callers are device keys/provider signatures/public APIs, not signed Firebase Callables. Tax lookup public CORS/debug/privacy and rate-limit security remain independently OPEN.
+- Regression changes: isolated financial/Lalamove tests mocking native HTTPS now also mock the new wrapper import. Actual security pre-handler and financial non-mutation tested separately with the real Firebase Admin SDK against **16 representative privileged Callables**; old synthetic Owner test now supplies a verified provider token after native Auth verification.
+- **Tests:** Node guard/static/HTTP audit **6/6 PASS**; native callable gating Emulator **3/3 PASS**; full Firebase Auth+Firestore+Storage Emulator including Owner/Staff/P1 onboarding **34/34 PASS**, plus signed Firebase Client SDK HTTPS Functions Emulator **1/1 PASS**; isolated financial/Lalamove suite **51/51 PASS**; `npm run test:react-parity` **EXIT 0**; all `functions/*.js` syntax PASS; `npm run build:react` + generated Hosting Contract PASS (`2026.11.09.535`). Build-only `public/**` outputs cleared.
+- **Open release gates:** Real Firebase HTTPS signed token and QA email delivery/staging Browser UAT, tax buyer lookup public-API review, provider/device signing tests, coordinated Functions+Rules+Storage+Hosting deployment approval. No real email, no Production deployment, no `main` merge, no APK/IPA, no Source write.
+- Full report `docs/LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md`; next blocked stage `P1.3 Staging Provider UAT`, separate next Source port feature after explicit approval `P1.4 Pricing/SaaS Setup`.
+
+---
+
 ## 2026-11-23 — P1.3d Managed Account email verification and operator-triggered invitation
 
 - **Repository/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`; Source LUKKAJA `cosmatch/lukkhaja@8b108f1` read-only. New Owner/Staff profiles receive opt-in `emailVerificationRequired:true`; existing users with no marker are not forced into a retroactive verification.

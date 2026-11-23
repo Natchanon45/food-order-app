@@ -2,7 +2,7 @@
 // Actual Firebase Hybrid issued-invoice READ module; not a M7 Source cash
 // confirmation. Use the same read-only Firestore transaction for the page,
 // linked payment attempt and immutable reviewer event.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore}=require("firebase-admin/firestore");
 const policy=require("./hybrid-issued-invoice-status-policy");
 const opts={region:"asia-southeast1",timeoutSeconds:60,

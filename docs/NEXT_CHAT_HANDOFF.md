@@ -1,3 +1,15 @@
+## 2026-11-23 — Latest handoff: P1.3e Final Managed Email Callable Security Audit complete LOCALLY
+
+- **Repository/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`. **Source LUKKAJA READ ONLY:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1278b7c59bd44c02133d659b8e6cd6fd3f`.
+- P1.3a Contact UI, b Staff identity, c Owner identity, d email verification/invitations, and **e native Callable pre-handler security gate** all implemented/tested locally. **P1.3 is NOT Production-signed-off.**
+- New `functions/managed-email-callable.js`; **all 144 `onCall` definitions across 45 modules** now use this drop-in Firebase HTTPS v2 wrapper. For signed-in Owner/Staff with an explicit `emailVerificationRequired:true` profile marker, a non-verified native Firebase ID token is rejected before any handler/finance write. Unknown canonical lookup fails closed; legacy/anonymous/customer identities preserve original per-Callable policy. Original native `onRequest` still exported unchanged.
+- Seven non-Callable HTTP handlers preserve existing device credential/signature/public trust boundaries; particularly `lookupTaxBuyer` is **public GET with CORS/debug** and merits separate privacy/rate-limit assessment. No claim that the Firebase Callable guard controls these HTTP endpoints, background triggers, or external provider systems.
+- **Local evidence:** Node guard/static 6/6 PASS; representative protected Callable/financial mutation Emulator 3/3 PASS; combined Firebase Auth+Firestore+Storage Emulator 34/34 PASS; signed HTTPS Callable via local Firebase Functions Emulator 1/1 PASS; isolated Lalamove/finance 51/51 PASS; entire React parity EXIT 0; Functions syntax PASS; React Build + generated Hosting contract PASS; build-only assets removed, no Production deploy.
+- **Next stage (approval needed):** signed-in QA Superadmin/Owner/Staff Browser UAT against approved staging Firebase Project, real provider email templates/inbox, live HTTPS signed-ID-token checks, device/provider tests and public tax lookup review. Do NOT send real email, deploy Production, merge main, build APK/IPA or modify Source without explicit approval. Continue independently to P1.4 Pricing/SaaS only when user switches Module.
+- See detailed `docs/LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md`, `docs/LUKKAJA_TO_PENGUIN_PORT_PHASES.md`, `docs/WORKLOG.md` and previous P1.3d email audit.
+
+---
+
 ## 2026-11-23 — Latest handoff: P1.3d managed email verification and invitation local implementation
 
 - **Working repo/branch:** `Natchanon45/food-order-app` / `feature/react-firebase-port`. **Source strictly read only:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe@8b108f1`. Confirm local/remote HEAD, tree and Source pin before next work.

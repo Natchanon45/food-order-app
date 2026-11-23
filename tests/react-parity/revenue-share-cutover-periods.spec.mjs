@@ -55,6 +55,9 @@ function serverAt(day, orders = []) {
     "./delivery-threshold-schedule": require("../../functions/delivery-threshold-schedule.js"),
     "./billing-anniversary": anniversaries,
   };
+  // This isolated business-logic harness stubs Firebase HTTPS; security is
+  // separately verified against the actual wrapped Callables in Emulator.
+  dependencies["./managed-email-callable"] = dependencies["firebase-functions/v2/https"];
   const m = { exports: {} };
   const hooks = "\nmodule.exports.__revenueSetting = revenueSetting;" +
     "\nmodule.exports.__periodFromData = periodFromData;" +

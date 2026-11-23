@@ -1,5 +1,5 @@
 "use strict";
-const {onCall,onRequest,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,onRequest,HttpsError}=require("./managed-email-callable");
 const {getFirestore}=require("firebase-admin/firestore");
 const {randomBytes,randomUUID}=require("node:crypto");
 const policy=require("./payment-companion-policy");

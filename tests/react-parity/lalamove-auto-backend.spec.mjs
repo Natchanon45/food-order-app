@@ -62,6 +62,9 @@ function harness(initial, onGet) {
       data: { orderId: "ll-111", status, driverId: "driver-test", shareLink: "https://share.sandbox.lalamove.com/example" },
     }) };
   };
+  // This isolated business-logic harness stubs Firebase HTTPS; security is
+  // separately verified against the actual wrapped Callables in Emulator.
+  mocks["./managed-email-callable"] = mocks["firebase-functions/v2/https"];
   const source = fs.readFileSync("functions/lalamove-dispatch.js", "utf8");
   const module = { exports: {} };
   const execute = new Function("require", "fetch", "module", "exports", source);

@@ -24,6 +24,9 @@ function fixture(role="super_admin",active=true){
  "./revenue-share-policy":require("../../functions/revenue-share-policy.js"),
  "./slip-verification":{inspectSlip:()=>{throw Error("unexpected provider call")}}
  };
+  // This isolated business-logic harness stubs Firebase HTTPS; security is
+  // separately verified against the actual wrapped Callables in Emulator.
+  deps["./managed-email-callable"] = deps["firebase-functions/v2/https"];
  const m={exports:{}};
  new Function("module","exports","require",source)(m,m.exports,key=>{assert.ok(key in deps,key);return deps[key]});
  return m.exports.getPlatformRevenueSharePaymentHistory;

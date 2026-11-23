@@ -1,4 +1,4 @@
-const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("./managed-email-callable");
 const { walletTopupManualReviewAllowed } = require("./finance-manual-review-policy");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");

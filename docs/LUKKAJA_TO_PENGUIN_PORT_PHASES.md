@@ -1,5 +1,22 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-23 P1.3e — Final Managed Email Callable Security Audit
+
+**Target:** `Natchanon45/food-order-app` / `feature/react-firebase-port`; LUKKAJA Source `cosmatch/lukkhaja@8b108f1` strictly read-only.
+
+**Found and closed locally:** P1.3d Firestore/Storage verified-email rules do not govern trusted Admin SDK Cloud Functions. All **144 Firebase v2 Callable definitions in 45 modules** now import `functions/managed-email-callable.js`, which checks the native `email_verified` token, consults the canonical profile for marked unverified Owner/Staff and **rejects before any original handler**. Legacy users without marker, anonymous/public requests, and customer storefront channels continue downstream existing authorization policies. Firestore lookup errors fail closed. A verified token avoids an extra lookup.
+
+**Separate HTTP surface:** 7 onRequest handlers in six modules are NOT Callable; Stripe/Lalamove/device signatures/credentials remain intact, while the public tax-buyer lookup requires distinct privacy/rate-limit review. Native HTTP webhook handlers and triggers are not signed user Callables and are not given synthetic Owner email requirements.
+
+**Local evidence:** Central guard Node policy/surface tests **6/6 PASS**; representative privileged financial/identity Callable Emulator **3/3 PASS** across 16 real modules, original Tenant finance unchanged; combined Firebase Auth+Firestore+Storage suite **34/34 PASS**; signed Firebase Auth HTTPS Callable via local Functions Emulator **1/1 PASS** including P1.3b/c/d; isolated Lalamove/Revenue Share/Hybrid regression harness **51/51 PASS**; entire React parity **EXIT 0**; Functions syntax and Vite generated Hosting Build contract **PASS**. Build-only files were not staged or deployed.
+
+**P1.3 Production signoff BLOCKED:** Real Firebase Auth HTTPS token and email-provider staging QA, authorized signed Browser UAT, HTTP public tax lookup review, LK Shop/device provider testing and coordinated release approvals remain. Do not send real emails, deploy Functions/Rules/Hosting, merge `main` or build APK/IPA without authorization.
+
+[Full P1.3e security audit + staging UAT matrix](./LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md) · [P1.3d email implementation](./LUKKAJA_P1_3_MANAGED_EMAIL_INVITATION_20261123.md)
+
+---
+
+
 ## 2026-11-23 P1.3d — Managed Owner/Staff Email Verification and Invitation
 
 **Target:** `Natchanon45/food-order-app` on `feature/react-firebase-port`; Source `cosmatch/lukkhaja@8b108f1` read-only. The public self-registration already used Firebase email verification; managed Owner and Staff created by privileged operators lacked verified-email onboarding.

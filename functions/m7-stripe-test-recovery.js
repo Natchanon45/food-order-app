@@ -2,7 +2,7 @@
 // Explicit Superadmin-only recovery for a previously sent, ambiguous TEST
 // Checkout POST. Scan/read first; bind only an independently re-read SINGLE
 // open unpaid session, transactionally. No Stripe POST, new attempt or Paid.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const {randomUUID}=require("node:crypto");
 const {validInvoiceId}=require("./hybrid-billing-payment-policy");

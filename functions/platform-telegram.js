@@ -3,7 +3,7 @@
 // Platform-only Telegram settings. The bot token is encrypted with an AES-GCM
 // key stored in Firebase Secret Manager, never sent to the browser or logs.
 // Only authenticated active super_admin can read metadata, rotate or test.
-const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("./managed-email-callable");
 const { defineSecret } = require("firebase-functions/params");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { createCipheriv, createDecipheriv, randomBytes } = require("node:crypto");

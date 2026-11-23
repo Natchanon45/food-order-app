@@ -1,5 +1,5 @@
 "use strict";
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore}=require("firebase-admin/firestore");
 const shadow=require("./m7-stripe-test-shadow-policy");
 const policy=require("./m7-stripe-test-reservation-policy");

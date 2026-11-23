@@ -2,7 +2,7 @@
 // Superadmin-only reconciliation of a potentially ambiguous one-call
 // shop+owner operation. Read only: never retries Auth, releases a slug,
 // extends a subscription, adjusts money or activates a tenant.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore}=require("firebase-admin/firestore");
 const {getAuth}=require("firebase-admin/auth");
 const OP=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;

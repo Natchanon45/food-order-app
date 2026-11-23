@@ -1,6 +1,6 @@
 "use strict";
 
-const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("./managed-email-callable");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const { calculateCycle, dateKey, normalizeSettings } = require("./hybrid-billing-core");
 const { tenantAnchorDate, cycleFromMonth } = require("./billing-anniversary");

@@ -1,7 +1,7 @@
 "use strict";
 // P1.2g actual hard deletion of an EMPTY, never-activated, unowned
 // placeholder only. No recursiveDelete, no finance/Owner/active removal.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,Timestamp}=require("firebase-admin/firestore");
 const p=require("./tenant-safe-deletion-policy");
 const opts={region:"asia-southeast1",timeoutSeconds:60,memory:"512MiB"};

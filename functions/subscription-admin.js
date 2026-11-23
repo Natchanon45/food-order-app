@@ -1,4 +1,4 @@
-const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("./managed-email-callable");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");

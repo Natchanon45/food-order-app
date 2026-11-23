@@ -1,5 +1,5 @@
 "use strict";
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const P=require("./lk-shop-policy");
 const REGION="asia-southeast1";

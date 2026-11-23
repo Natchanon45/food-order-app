@@ -2,7 +2,7 @@
 // Real Stripe TEST checkout against a dedicated UAT project and immutable
 // Invoice reservation. The signed webhook posts to a SHADOW TEST ledger only.
 // No production-finance or wallet writer is imported here.
-const {onCall,onRequest,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,onRequest,HttpsError}=require("./managed-email-callable");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const reservation=require("./m7-stripe-test-reservation");
 const invoicePolicy=require("./m7-stripe-test-reservation-policy");

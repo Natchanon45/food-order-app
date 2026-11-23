@@ -76,7 +76,10 @@ test("Superadmin-only tenant and owner provisioning is inaccessible until the Ow
   assert.equal((await db.collection("users").doc(owner.ownerUid).get())
     .data().emailVerificationRequired,true);
   await adminAuth.updateUser(owner.ownerUid,{emailVerified:true});
-  const ownerAuth = { auth: { uid: owner.ownerUid } };
+  // Synthetic Callable context must include the same fresh, signed
+  // email_verified claim that the Firebase Client SDK supplies after refresh.
+  const ownerAuth = { auth: { uid: owner.ownerUid,
+    token: { email_verified: true } } };
   const staff = await staffCalls.listTenantStaff.run({
     ...ownerAuth, data: { expectedTenantId: tenantId },
   });

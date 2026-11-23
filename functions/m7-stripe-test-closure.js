@@ -2,7 +2,7 @@
 // Superadmin-only independent Stripe TEST expiry closure. One recorded
 // provider-expired, unpaid, NO-INTENT Session after cooldown may be closed
 // for a NEW non-chargeable quote only. No provider writes or real Paid.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const {randomUUID}=require("node:crypto");
 const {validInvoiceId}=require("./hybrid-billing-payment-policy");

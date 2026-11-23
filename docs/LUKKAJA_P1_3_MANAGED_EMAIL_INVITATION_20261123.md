@@ -1,3 +1,5 @@
+> **2026-11-23 P1.3e audit update:** The full 144-v2-Callable pre-handler verified-email gap described below is now closed **locally** by `functions/managed-email-callable.js`, with 34/34 combined Firebase Emulator, 1/1 real signed-HTTPS local Functions Emulator, 6/6 static/guard tests and full React Parity passing. HTTP/webhooks and real signed staging Firebase HTTPS/email provider UAT remain **NOT CERTIFIED**. See [final Callable security audit](./LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md). The original P1.3d historical release findings below remain as written.
+
 # P1.3d — Managed Account Email Verification and Invitation
 
 **Development date:** 2026-11-23 (Asia/Bangkok)

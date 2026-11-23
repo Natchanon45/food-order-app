@@ -1,5 +1,5 @@
 "use strict";
-const {onCall,onRequest,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,onRequest,HttpsError}=require("./managed-email-callable");
 const {defineSecret}=require("firebase-functions/params");
 const {getFirestore}=require("firebase-admin/firestore");
 const {createHash}=require("node:crypto");

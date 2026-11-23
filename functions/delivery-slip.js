@@ -1,5 +1,5 @@
 const { thresholdForCycle, readThresholdHistory } = require("./delivery-threshold-schedule");
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, HttpsError } = require("./managed-email-callable");
 const { createHash } = require("node:crypto");
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");

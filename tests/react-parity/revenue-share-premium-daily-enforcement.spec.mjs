@@ -112,6 +112,9 @@ function fixture(now = "2026-10-11", options = {}) {
     "./delivery-threshold-schedule": require("../../functions/delivery-threshold-schedule.js"),
     "./billing-anniversary": require("../../functions/billing-anniversary.js"),
   };
+  // This isolated business-logic harness stubs Firebase HTTPS; security is
+  // separately verified against the actual wrapped Callables in Emulator.
+  deps["./managed-email-callable"] = deps["firebase-functions/v2/https"];
   const moduleObject = { exports: {} };
   new Function("module", "exports", "require", "Date",
     source + "\nmodule.exports.__setting = revenueSetting;"

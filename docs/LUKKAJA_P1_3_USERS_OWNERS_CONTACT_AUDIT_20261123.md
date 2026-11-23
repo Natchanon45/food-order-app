@@ -1,7 +1,7 @@
 # P1.3 — Users, Owners and Public Contact: source parity / Firebase boundary audit
 
 **Date:** 2026-11-23 (Asia/Bangkok)
-**Status:** **P1.3a Contact UI, P1.3b Staff Auth, P1.3c Owner Auth and P1.3d managed email verification/invitation implemented and Emulator/browser-tested locally**; real provider delivery, all Cloud Functions authorization audit, signed UAT and Production deployment **OPEN**.
+**Status:** P1.3a–d + **P1.3e common Callable email-verification gate implemented/tested locally**. All 144 Callable definitions in 45 modules now share a pre-handler guard. **Real provider email/HTTPS staging UAT, independent HTTP privacy/provider audits and Production signoff OPEN.**
 **Source, strictly read-only:** `cosmatch/lukkhaja` / `feature/lukkaja_bankalert_stripe` @ `8b108f1278b7c59bd44c02133d659b8e6cd6fd3f`.
 **Destination only:** `Natchanon45/food-order-app` / `feature/react-firebase-port` (baseline `0bf16cd1`).
 
@@ -60,6 +60,7 @@ These are source/UI action families. They are **not** signed-off backend scenari
 | Firebase Auth/Firestore create/edit/suspend across tenants | P1.3b Emulator combined 16/16 PASS; protected private receipt/lock collections |
 | Owner/staff ambiguous Auth provisioning recovery | Staff P1.3b + Owner P1.3c both completed locally; combined Emulator 25/25 PASS |
 | Actual email delivery, verification/invitation | Verification + reset invitation **IMPLEMENTED, Auth Emulator PASS**; live email delivery and template/provider configuration **NOT TESTED** |
+| Final native Cloud Functions email verification security boundary | **P1.3e local gate and tests PASS:** 144 Callable definitions / 45 modules, 34/34 combined Emulator, 6/6 contract; signed HTTPS staging NOT TESTED |
 | Mobile native LK Shop package/FCM end-to-end | BLOCKED; UI does not assert installed APK readiness |
 | Owner manual browser acceptance on live PENGUIN | NOT PERFORMED |
 | Production Firebase Functions/Rules/Hosting deployment | NOT AUTHORIZED, NOT PERFORMED |
@@ -71,5 +72,7 @@ These are source/UI action families. They are **not** signed-off backend scenari
 **P1.3c COMPLETE IN LOCAL CODE + REGRESSION (not Production):** Existing unowned Tenant → Owner attach/rename uses strict UUID reservation/CAS, verified native Auth, tenant/slug/membership coherence and immutable billing digest; pristine placeholders start trial exactly once and activated ownerless Tenants keep financial and subscription history. Browser Recovery rechecks original receipt without duplicating Auth. See [P1.3c receipt](./LUKKAJA_P1_3_OWNER_ACCOUNT_LIFECYCLE_20261123.md).
 
 **P1.3d COMPLETE IN LOCAL CODE + EMULATOR/BROWSER (not Production):** Opt-in email verification for new Owner/Staff, explicit Firebase password setup invitation, verification page, refreshed native Auth token, Firestore/Storage private-access gate, legacy/public exemptions. **31/31** combined native Firebase Emulator; managed React/Chrome **3/3**; Owner/Staff invitation Browser **2/2**; full React parity and Vite build PASS. [P1.3d implementation and staged UAT checklist](./LUKKAJA_P1_3_MANAGED_EMAIL_INVITATION_20261123.md). The next release gates are actual provider-approved emails, signed staging browser UAT, Source Contact/Google/LK Shop provider test, and **Cloud Functions-wide authorization verification**. All require explicit user approval before Production.
+
+**P1.3e COMPLETE LOCALLY (NOT STAGING OR PRODUCTION):** centralized Firebase Callable pre-handler managed verified-email gate, 144/45 static coverage, 16 representative protected operational/financial/identity Callables blocked before mutation, all existing Owner/Staff/Onboarding tests regressed. [Audit/acceptance](./LUKKAJA_P1_3_FINAL_CALLABLE_SECURITY_AUDIT_20261123.md). Seven HTTP endpoints retain original webhook/device/public policies and require separate acceptance.
 
 **Safety:** no live Firebase deploy, no `main` merge, no Source mutation, no Auth or bank/finance writes were made by this UI slice. The Source still uses its own Go backend and LK Shop native APK; PENGUIN never claims those contracts are active.

@@ -41,6 +41,9 @@ function load(services = {}) {
       },
     },
   };
+  // This isolated business-logic harness stubs Firebase HTTPS; security is
+  // separately verified against the actual wrapped Callables in Emulator.
+  modules["./managed-email-callable"] = modules["firebase-functions/v2/https"];
   const mod = { exports: {} };
   new Function("module", "exports", "require", src)(mod, mod.exports, key => {
     if (!(key in modules)) throw Error("Unexpected dependency " + key);

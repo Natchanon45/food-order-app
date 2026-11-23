@@ -1,7 +1,7 @@
 "use strict";
 // P1.3b: Firebase Auth + Firestore are NOT one transaction. Never retry an
 // ambiguous Auth mutation; a durable server reservation owns the pending work.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getAuth}=require("firebase-admin/auth");
 const {getFirestore,Timestamp}=require("firebase-admin/firestore");
 const policy=require("./staff-operation-policy");

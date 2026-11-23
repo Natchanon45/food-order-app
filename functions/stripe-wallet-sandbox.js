@@ -1,5 +1,5 @@
 "use strict";
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, HttpsError } = require("./managed-email-callable");
 const { defineSecret } = require("firebase-functions/params");
 const { getFirestore } = require("firebase-admin/firestore");
 const { configurationReady, accountVerified, promptPayEnabled } = require("./stripe-wallet-sandbox-policy");

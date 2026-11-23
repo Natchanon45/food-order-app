@@ -2,7 +2,7 @@
 // Server-read-only UAT source-to-Firebase M7 finance gap inspection.
 // Explicitly NOT operational cash posting, Service Credit, payment
 // verification, invoice mutation or tenant suspension/recovery.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore}=require("firebase-admin/firestore");
 const {actor}=require("./m7-stripe-test-shadow-history")._privateForTests;
 const {ingressGate}=require("./m7-stripe-test-shadow-policy");

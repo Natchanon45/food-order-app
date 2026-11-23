@@ -1,7 +1,7 @@
 "use strict";
 // P1.3c — Existing Tenant Owner attach and rename. All cross-provider
 // uncertainty keeps the reservation; never delete/recreate an unknown Auth UID.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,Timestamp}=require("firebase-admin/firestore");
 const {getAuth}=require("firebase-admin/auth");
 const {onboardingDates}=require("./tenant-onboarding-policy");

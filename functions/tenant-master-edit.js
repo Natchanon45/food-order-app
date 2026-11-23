@@ -2,7 +2,7 @@
 // Source-style Superadmin master edit with an ATOMIC public slug rename.
 // A lost response is reconciled by operation UUID and canonical reread;
 // neither replay nor simultaneous editors can hijack another shop's slug.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,Timestamp}=require("firebase-admin/firestore");
 const {businessUnitsFor}=require("./revenue-share-policy");
 const policy=require("./tenant-master-edit-policy");

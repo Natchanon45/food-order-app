@@ -2,7 +2,7 @@
 // M7 SOURCE MIGRATION module (UAT staging only). This is NOT a database
 // migration runner and is incapable of booking cash, applying credit or
 // releasing a store. Raw source rows are never persisted in Firestore.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const {actor}=require("./m7-stripe-test-shadow-history")._privateForTests;
 const contract=require("./m7-source-migration-contract");

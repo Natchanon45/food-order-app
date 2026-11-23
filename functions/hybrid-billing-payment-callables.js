@@ -3,7 +3,7 @@
 // Phase 7: registered definitions remain PRIVATE, not imported by bootstrap.
 // This entire payment write surface is hard-locked at the server boundary.
 // Only a separately reviewed source-code release can enable it.
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, HttpsError } = require("./managed-email-callable");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { inspectSlip } = require("./slip-verification");

@@ -1,7 +1,7 @@
 "use strict";
 // Public QR-mode is an opt-in shadow of the source confirmed-order flow.
 // It cannot approve money, admit kitchen, allocate a rider or settle invoices.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const {getStorage}=require("firebase-admin/storage");
 const {createHash}=require("node:crypto");

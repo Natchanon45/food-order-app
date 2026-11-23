@@ -1,4 +1,4 @@
-const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("./managed-email-callable");
 const { readThresholdHistory, appendThresholdVersion, validCents } = require("./delivery-threshold-schedule");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const {

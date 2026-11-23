@@ -286,6 +286,9 @@ test("Only central Delivery excess is charged regardless of stale tenant legacy 
     "./billing-anniversary": require("../../functions/billing-anniversary.js"),
     "./finance-manual-review-policy": require("../../functions/finance-manual-review-policy.js"),
   };
+  // This isolated business-logic harness stubs Firebase HTTPS; security is
+  // separately verified against the actual wrapped Callables in Emulator.
+  dependencies["./managed-email-callable"] = dependencies["firebase-functions/v2/https"];
   const loaded = { exports: {} };
   const server = fs.readFileSync("functions/revenue-share.js", "utf8");
   new Function("module", "exports", "require", server +

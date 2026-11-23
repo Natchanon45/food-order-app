@@ -1,6 +1,6 @@
 "use strict";
 // Superadmin-only Firestore evidence read. NO access/financial mutations.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {getFirestore}=require("firebase-admin/firestore");
 const policy=require("./tenant-access-evidence-policy");
 const options={region:"asia-southeast1",timeoutSeconds:30};

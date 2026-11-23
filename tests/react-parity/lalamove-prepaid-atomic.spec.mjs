@@ -122,6 +122,9 @@ function harness({ balance = 100, mode = "fod_central", placeStatus = 201, final
     },
     "./lalamove-order-lifecycle": nodeRequire("../../functions/lalamove-order-lifecycle.js"),
   };
+  // This isolated business-logic harness stubs Firebase HTTPS; security is
+  // separately verified against the actual wrapped Callables in Emulator.
+  mocks["./managed-email-callable"] = mocks["firebase-functions/v2/https"];
   const module = { exports: {} };
   new Function("require", "fetch", "module", "exports", source)(
     name => mocks[name] || nodeRequire(name), fakeFetch, module, module.exports,

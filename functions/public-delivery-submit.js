@@ -1,6 +1,6 @@
 "use strict";
 
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, HttpsError } = require("./managed-email-callable");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { randomBytes, createHash } = require("node:crypto");
 const qr = require("./payment-companion-qr-policy");

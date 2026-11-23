@@ -1,5 +1,5 @@
 const { thresholdForCycle } = require("./delivery-threshold-schedule");
-const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("./managed-email-callable");
 const { revenueShareManualReviewAllowed } = require("./finance-manual-review-policy");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");

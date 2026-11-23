@@ -1,7 +1,7 @@
 "use strict";
 // One-call, fail-closed tenant/owner provisioning. Auth cannot participate in
 // a Firestore transaction, so reserve operation+slug first and compensate Auth.
-const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("./managed-email-callable");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const { randomUUID, createHash } = require("node:crypto");

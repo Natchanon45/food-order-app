@@ -2,7 +2,7 @@
 // Merchant-owned Telegram settings are server-only and encrypted at rest.
 // Read/write always resolves tenant from authenticated staff profile, never
 // from a caller-controlled tenant ID or the current browser route.
-const {onCall,HttpsError}=require("firebase-functions/v2/https");
+const {onCall,HttpsError}=require("./managed-email-callable");
 const {defineSecret}=require("firebase-functions/params");
 const {getFirestore,FieldValue}=require("firebase-admin/firestore");
 const {randomUUID}=require("node:crypto");
