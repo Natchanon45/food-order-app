@@ -1,0 +1,256 @@
+/* Exact public/staff Home CSS copied from React source and bundled lazily with HomePage. */
+
+/* Laravel React shell takes the place of source #root without changing UI. */
+body.staff-home #root {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 100dvh;
+  flex-direction: column;
+  width: 100%;
+}
+body.staff-home #root > main { flex: 1; }
+
+/* The shared Vite entry also bundles other page Hero styles. Restore the
+   pinned SOURCE staff dashboard alignment without changing any other Hero. */
+body.staff-home #staffDashboard > .staff-hero {
+  align-items: flex-start;
+  justify-content: center;
+  /* The pinned SOURCE spaces these lines only with h1 margin.
+     Prevent a flex gap from other CSS merged into LUKKAJA. */
+  gap: 0;
+  text-align: left;
+}
+
+body.staff-home #staffDashboard > .staff-hero > h1 {
+  align-self: flex-start;
+  margin: 0 0 9px;
+  text-align: left;
+}
+
+body.staff-home #staffDashboard > .staff-hero > p {
+  align-self: flex-start;
+  margin: 0;
+  text-align: left;
+}
+
+/* Match SOURCE's smaller title/description spacing on narrow screens. */
+@media (max-width: 760px) {
+  body.staff-home #staffDashboard > .staff-hero > h1 {
+    margin-bottom: 7px;
+  }
+}
+
+/* Audited M7 invoices surface directly to the signed-in merchant owner.
+   This notice is not a forecast and does not change account access. */
+.m7-home-invoice-notice,
+.m7-home-invoice-unavailable {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  margin: 0 0 14px;
+  border: 1px solid #d8e8df;
+  border-radius: 12px;
+  background: #f3faf5;
+  color: #174d32;
+  line-height: 1.55;
+  text-decoration: none;
+}
+.m7-home-invoice-notice strong { font-size: .95rem; }
+.m7-home-invoice-notice span { font-size: .84rem; }
+.m7-home-invoice-unavailable {
+  border-color: #eadabf;
+  background: #fffaee;
+  color: #795617;
+  font-size: .87rem;
+}
+.m7-home-invoice-notice:focus-visible,
+.m7-home-invoice-unavailable:focus-visible {
+  outline: 3px solid #28764e;
+  outline-offset: 2px;
+}
+
+
+/* Standalone public Android UAT app distribution, before store publication. */
+#publicLanding .lk-app-downloads {
+  margin-top: 18px;
+  padding: clamp(16px, 2vw, 24px);
+  border: 1px solid #dce9e0;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 9px 24px rgba(19, 65, 39, .035);
+}
+.lk-app-downloads-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 19px;
+}
+.lk-app-downloads-heading-icon {
+  display: grid;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 14px;
+  background: #e6f6ec;
+  color: #087b45;
+  font-size: 23px;
+}
+.lk-app-downloads-heading-copy { min-width: 0; }
+.lk-app-downloads-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: #087842;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .085em;
+}
+#publicLanding .lk-app-downloads h2 {
+  margin: 0 0 5px;
+  color: #163b2a;
+  font-size: clamp(18px, 2vw, 21px);
+  line-height: 1.25;
+}
+.lk-app-downloads-heading-copy > p,
+.lk-app-downloads-product-copy > p {
+  margin: 0;
+  color: #61756a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.lk-app-downloads-product {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px;
+  border: 1px solid #dceae0;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #f3fbf6, #fbfdfb);
+}
+.lk-app-downloads-product-main {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.lk-app-downloads-product-icon {
+  display: grid;
+  flex: 0 0 49px;
+  width: 49px;
+  height: 49px;
+  place-items: center;
+  border-radius: 13px;
+  color: #fff;
+  background: linear-gradient(145deg, #10834e, #0d5939);
+  font-size: 22px;
+}
+.lk-app-downloads-product-copy { min-width: 0; }
+.lk-app-downloads-product-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+  color: #173b28;
+  font-size: 16px;
+  font-weight: 800;
+}
+.lk-app-downloads-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border: 1px solid #c7dfcf;
+  border-radius: 20px;
+  background: #e9f5ec;
+  color: #276443;
+  font-size: 11px;
+  font-weight: 700;
+}
+.lk-app-downloads-apk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  min-height: 43px;
+  padding: 10px 16px;
+  border: 1px solid #087a42;
+  border-radius: 12px;
+  background: #087e46;
+  color: #fff !important;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none !important;
+  box-shadow: 0 4px 9px rgba(14, 118, 68, .14);
+  transition: background .15s, transform .15s;
+}
+.lk-app-downloads-apk-button:hover {
+  background: #075d38;
+  transform: translateY(-1px);
+}
+.lk-app-downloads-apk-button:focus-visible {
+  outline: 3px solid #45b980;
+  outline-offset: 3px;
+}
+.lk-app-downloads-store-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.lk-app-downloads-store-caption {
+  color: #546e5d;
+  font-size: 12px;
+  font-weight: 650;
+}
+.lk-app-downloads-store-buttons { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lk-app-downloads-store-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 148px;
+  padding: 8px 12px;
+  border: 1px solid #dce4df;
+  border-radius: 11px;
+  background: #f4f6f4;
+  color: #77827a;
+  cursor: default;
+  user-select: none;
+}
+.lk-app-downloads-store-button > i { font-size: 20px; }
+.lk-app-downloads-store-button > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.lk-app-downloads-store-button small { font-size: 10px; }
+.lk-app-downloads-store-button strong { font-size: 13px; }
+.lk-app-downloads-note {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 14px 0 0;
+  color: #778277;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.lk-app-downloads-note i { flex: 0 0 auto; }
+@media (max-width: 720px) {
+  .lk-app-downloads-product { flex-direction: column; align-items: stretch; }
+  .lk-app-downloads-apk-button { width: 100%; }
+  .lk-app-downloads-store-row { align-items: flex-start; }
+}
+@media (max-width: 420px) {
+  .lk-app-downloads-product-main { align-items: flex-start; }
+  .lk-app-downloads-product-icon { flex-basis: 43px; width: 43px; height: 43px; }
+  .lk-app-downloads-heading-icon { flex-basis: 42px; width: 42px; height: 42px; }
+  .lk-app-downloads-store-buttons { width: 100%; }
+  .lk-app-downloads-store-button { min-width: 0; flex: 1 1 120px; }
+}

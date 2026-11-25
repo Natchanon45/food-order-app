@@ -101,7 +101,7 @@ export function HomePage() {
   const stylesReady = useParityPage({
     bodyClass: staff ? "staff-home" : "",
     title: t("home.meta.title"),
-    styles: ["home-dashboard.css", "public-contact.css", "public-utility-actions.css", "home-page.css"],
+    styles: ["home-dashboard.css", "public-contact.css", "public-utility-actions.css", "home-page.css", "home-source-wrapper.css"],
     attributes: staff ? { "data-roles": profile?.role || "" } : {},
   });
 
