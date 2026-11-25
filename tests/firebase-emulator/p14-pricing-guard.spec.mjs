@@ -150,3 +150,24 @@ test("read-only preview remains consistent with Firebase price calculation and n
  assert.equal(noVat.monthly.vat,0);
  assert.equal(noVat.annual.payable,6620);
 });
+
+test("real Firestore report consumers retain the old cap until each shop starts its new cycle",async()=>{
+ const revenue=require("./revenue-share");
+ const effectiveOn=datePlus(-5);
+ // Isolated demo fixture representing an already-effective historical announcement.
+ await ref.set({...config,deliveryThresholdVersions:[{effectiveOn,thresholdCents:1500000,baselineThresholdCents:1000000}]});
+ for(const [suffix,anchor,threshold,due] of [["old",datePlus(-10),10000,100],["new",datePlus(-1),15000,0]]){
+  const id="p14-cycle-"+suffix+"-"+randomUUID(),uid=id+"-owner";
+  const tr=db.collection("tenants").doc(id);
+  await tr.set({active:true,businessType:"restaurant_cafe",billingMode:"subscription",billingCycleAnchorAt:anchor+"T00:00:00+07:00"});
+  await db.collection("users").doc(uid).set({role:"owner",active:true,tenantId:id});
+  await tr.collection("orders").doc("fixture").set({orderType:"delivery",status:"delivered",paymentStatus:"paid",paidAt:new Date(datePlus(-1)+"T12:00:00+07:00"),subtotalAmount:12000,deliveryFee:40,totalAmount:12040});
+  const access=await revenue.getTenantRevenueShareAccess.run(user(uid));
+  assert.equal(access.deliveryThreshold,threshold);
+  const result=await revenue.getTenantRevenueShareSummary.run({...user(uid),data:{period:"daily",date:datePlus(-1)}});
+  assert.equal(result.summary.revenueShareDeliveryThreshold,threshold);
+  assert.equal(result.summary.platformAmountDue,due);
+ }
+ assert.equal((await pricing.getPublicSubscriptionPricing.run({data:{}})).config.deliveryThreshold,15000);
+ assert.equal((await pricing.getSubscriptionPricing.run(user(adminUid))).config.deliveryThreshold,10000);
+});

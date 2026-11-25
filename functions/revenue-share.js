@@ -768,7 +768,9 @@ exports.listTenantRevenueSharePayments = onCall({ region: REGION }, async reques
   return { items: snapshot.docs.map(doc => paymentPayload(doc, tenant)) };
 });
 
-exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSeconds: 60, memory: "512MiB" }, async request => {
+// Preserve the existing deployed Vision secret binding during the threshold rollout.
+// No key value is read by this declaration; the verifier retains its existing configuration path.
+exports.submitTenantRevenueSharePayment = onCall({ region: REGION, timeoutSeconds: 60, memory: "512MiB", secrets: ["GOOGLE_VISION_API_KEY"] }, async request => {
   const { profile, tenantRef, tenant } = await assertTenantAdmin(request.auth);
   const setting = revenueSetting(tenant, await loadPricing(getFirestore()));
   if (!setting.enabled) throw new HttpsError("failed-precondition", "Revenue share is disabled");
