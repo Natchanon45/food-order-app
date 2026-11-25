@@ -459,11 +459,13 @@ export function AdminUsersPage() {
               )}
             </div>
           </div>
-          {loadError ? <div className="upload-error" role="alert">{loadError}</div> : null}
+          {loadError ? <div className="upload-error" role="alert">{loadError}
+            <button className="btn btn-sm" type="button" disabled={loading} onClick={load}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> {t("shared.actions.retry")}</button>
+          </div> : null}
 
           <div className="user-mobile-list" id="userMobileRows">
             {loading ? <div className="empty">{t("shared.state.loading")}</div>
-              : visibleUsers.length ? visibleUsers.map(user => {
+              : loadError ? null : visibleUsers.length ? visibleUsers.map(user => {
                 const draft = drafts[user.uid] || {};
                 const isSelf = String(user.uid) === ownerId;
                 const isActive = draft.active !== false;
@@ -540,7 +542,7 @@ export function AdminUsersPage() {
               <thead><tr><th>{t("admin_users.list.columns.name")}</th><th>{t("admin_users.list.columns.email")}</th><th>{t("admin_users.list.columns.role")}</th><th>{t("admin_users.list.columns.scope")}</th><th>{t("admin_users.list.columns.active")}</th><th></th></tr></thead>
               <tbody id="userRows">
                 {loading ? <tr><td colSpan="6"><div className="empty">{t("shared.state.loading")}</div></td></tr>
-                  : visibleUsers.length ? visibleUsers.map(user => {
+                  : loadError ? null : visibleUsers.length ? visibleUsers.map(user => {
                     const draft = drafts[user.uid] || {};
                     return (
                       <tr key={user.uid} className={user.active ? "" : "is-suspended"}>

@@ -154,6 +154,7 @@ export function PlatformOwnersPage() {
       setTenants(await listTenants());
     } catch (error) {
       console.error("PLATFORM_OWNERS_LOAD_FAILED", error);
+      setTenants([]);
       setLoadError(t("platform_owners.list.load_failed"));
     } finally {
       setLoading(false);
@@ -400,7 +401,7 @@ export function PlatformOwnersPage() {
 
           <div id="ownerList" className="platform-owner-grid">
             {loading ? <div className="platform-owner-empty-state"><i className="bi bi-arrow-repeat" aria-hidden="true"></i><strong>{t("platform_owners.list.loading")}</strong></div>
-              : loadError ? <div className="upload-error">{loadError}</div>
+              : loadError ? <div className="upload-error" role="alert">{loadError} <button className="btn btn-sm" type="button" onClick={load}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> {t("shared.actions.retry")}</button></div>
               : filtered.length ? filtered.map(tenant => (
                 <article className={`platform-owner-card${tenant.ownerUid ? " has-owner" : " needs-owner"}${tenant.active === false ? " is-inactive" : ""}`} key={tenant.id}>
                   <header className="platform-owner-card-head">

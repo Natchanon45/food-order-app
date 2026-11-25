@@ -74,7 +74,13 @@ export function RevenueShareReportPage() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
-  const [access, setAccess] = useState(null);
+  const [accessResult, setAccessResult] = useState(null);
+  const actorScope=JSON.stringify([tenant?.id||"",profile?.uid||profile?.id||"",profile?.role||""]);
+  const activeScopeRef=useRef(actorScope);
+  activeScopeRef.current=actorScope;
+  const access=accessResult?.scope===actorScope?accessResult.data:null;
+  const reportRequestRef=useRef(0);
+  const [reportReadyScope,setReportReadyScope]=useState("");
   const [report, setReport] = useState({
     period: null, summary: {}, billingPeriod: null, billingSummary: null,
     wallet: {}, lalamoveFailures: [],
@@ -136,9 +142,11 @@ export function RevenueShareReportPage() {
   }), [period, date, month, year, startDate, endDate]);
 
   const loadAccess = useCallback(async () => {
+    const scope=actorScope;
     try {
       const next = await getRevenueShareAccess();
-      setAccess(next);
+      if(activeScopeRef.current!==scope)return null;
+      setAccessResult({scope,data:next});
       // Apply the billing preference only on the first load for each shop.
       // Clicking Refresh MUST preserve the user's Daily/Monthly/Yearly/Custom filter.
       if (initializedFilterTenantRef.current !== String(tenant?.id || "")) {
@@ -152,25 +160,32 @@ export function RevenueShareReportPage() {
       if (next.enabled !== true) setError(t("revenue_share_report.explanation.disabled"));
       return next;
     } catch (loadError) {
+      if(activeScopeRef.current!==scope)return null;
+      setAccessResult(null);
       console.error("REVENUE_SHARE_ACCESS_FAILED", loadError);
       setError(t("revenue_share_report.states.load_failed"));
       return null;
     }
-  }, [t, tenant?.id]);
+  }, [t, tenant?.id,actorScope]);
 
   const loadHistory = useCallback(async () => {
+    const scope=actorScope;
     try {
-      setPayments(await listRevenueSharePayments());
+      const rows=await listRevenueSharePayments();
+      if(activeScopeRef.current===scope)setPayments(rows);
     } catch (loadError) {
       console.error("REVENUE_SHARE_HISTORY_FAILED", loadError);
-      setPayments(null);
+      if(activeScopeRef.current===scope)setPayments(null);
     } finally {
-      setInitialHistoryReady(true);
+      if(activeScopeRef.current===scope)setInitialHistoryReady(true);
     }
-  }, []);
+  }, [actorScope]);
 
+  const reportScope=JSON.stringify([actorScope,periodPayload,access?.billingCycle||""]);
   const loadReport = useCallback(async () => {
     if (!access?.enabled) return;
+    const requestId=++reportRequestRef.current,scope=actorScope;
+    setReportReadyScope("");
     setLoading(true);
     setError("");
     try {
@@ -186,6 +201,7 @@ export function RevenueShareReportPage() {
             })
           : Promise.resolve(null),
       ]);
+      if(requestId!==reportRequestRef.current||activeScopeRef.current!==scope)return;
       setReport({
         period: data.period || null,
         summary: data.summary || {},
@@ -194,20 +210,24 @@ export function RevenueShareReportPage() {
         wallet: data.wallet || {},
         lalamoveFailures: Array.isArray(data.lalamoveFailures) ? data.lalamoveFailures : [],
       });
+      setReportReadyScope(reportScope);
     } catch (loadError) {
+      if(requestId!==reportRequestRef.current||activeScopeRef.current!==scope)return;
+      setReportReadyScope("");
       console.error("REVENUE_SHARE_REPORT_FAILED", loadError);
       setError(t("revenue_share_report.states.load_failed"));
     } finally {
-      setLoading(false);
-      setInitialReportReady(true);
+      if(requestId===reportRequestRef.current&&activeScopeRef.current===scope){setLoading(false);setInitialReportReady(true);}
     }
-  }, [access?.enabled, access?.billingCycle, periodPayload, t]);
+  }, [access?.enabled, access?.billingCycle, periodPayload, t,actorScope,reportScope]);
 
   useEffect(() => {
     if (!tenant?.id || !["owner", "admin"].includes(profile?.role)) return undefined;
     let alive = true;
     setLoading(true);
     setInitialAccessReady(false);
+    setReportReadyScope("");
+    setPayments([]);
     setInitialHistoryReady(false);
     setInitialReportReady(false);
     loadAccess()
@@ -221,11 +241,12 @@ export function RevenueShareReportPage() {
         }
       });
     loadHistory();
-    return () => { alive = false; };
+    return () => { alive = false;reportRequestRef.current+=1; };
   }, [tenant?.id, profile?.role, loadAccess, loadHistory]);
 
   useEffect(() => {
     if (access?.enabled) loadReport();
+    return()=>{reportRequestRef.current+=1;};
   }, [access?.enabled, loadReport]);
 
   useEffect(() => () => {
@@ -271,8 +292,9 @@ export function RevenueShareReportPage() {
   const paymentSharePayable = cycleMatches && period === "monthly" && billingCycle === "monthly"
     ? Math.round(Math.max(0, Number(report.billingSummary?.deliveryShareAmount || 0)) * 100) / 100
     : platformSharePayable;
-  const noAmountDue = !loading && billingSummaryReady && paymentSharePayable <= 0;
-  const canSubmit = access?.enabled === true && !loading && billingSummaryReady
+  const reportConfirmed=access?.enabled===true && reportReadyScope===reportScope;
+  const noAmountDue = reportConfirmed && !loading && billingSummaryReady && paymentSharePayable <= 0;
+  const canSubmit = reportConfirmed && access?.enabled === true && !loading && billingSummaryReady
     && !noAmountDue && cycleMatches && !uploading;
   const paymentUnavailableMessage = !cycleMatches
     ? t("revenue_share_report.payment.cycle_mismatch", { cycle: cycleLabel })
@@ -542,6 +564,10 @@ export function RevenueShareReportPage() {
           </button>
         </section>
 
+        {!reportConfirmed ? <section className="card" role={loading?"status":"alert"} style={{padding:16}}>
+          {loading?t("revenue_share_report.states.loading"):error||t("revenue_share_report.states.load_failed")}
+        </section>:null}
+        <div hidden={!reportConfirmed} style={{display:reportConfirmed?"contents":"none"}} data-revenue-report-confirmed={reportConfirmed}>
         <section className="card report-channel-overview" aria-labelledby="reportChannelsTitle">
           <div className="report-section-heading">
             <div>
@@ -729,6 +755,7 @@ export function RevenueShareReportPage() {
 
         </details>
 
+        </div>
         <details className="report-history-disclosure" open={Boolean(payments?.length)}>
           <summary><i className="bi bi-clock-history" aria-hidden="true"></i><span>{t("revenue_share_report.payment.history_title")} {payments?.length ? "(" + payments.length + ")" : ""}</span><i className="bi bi-chevron-down" aria-hidden="true"></i></summary>
         <section className="card report-history-card" aria-labelledby="reportHistoryTitle">

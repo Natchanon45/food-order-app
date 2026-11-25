@@ -267,7 +267,10 @@ export function HybridBillingReviewPage() {
           </button>
         </section>
         {error ? <p role="alert" className="card hybrid-report-status error">{error}</p> : null}
-        {selectedId && selected ? (
+        {selectedId && loadingDetails && !detailsReady ? (
+          <p role="status" className="card hybrid-report-status">{label("กำลังโหลดรายการ…","Loading records…",thai)}</p>
+        ):null}
+        {selectedId && selected && detailsReady ? (
           <section className="hybrid-report-metrics" aria-label={title}>
             {[
               [label("ร้านค้า", "Store", thai),
@@ -285,11 +288,8 @@ export function HybridBillingReviewPage() {
             ))}
           </section>
         ) : null}
-        {selectedId ? (
+        {selectedId && detailsReady ? (
           <>
-            {loadingDetails ? <p role="status" className="card hybrid-report-status">
-              {label("กำลังโหลดรายการ…", "Loading records…", thai)}
-            </p> : null}
             <section className="card hybrid-report-details">
               <h2>{label("รายการบิลที่ออกแล้ว", "Issued invoices", thai)}</h2>
               <div className="hybrid-report-table-scroll">

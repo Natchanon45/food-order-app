@@ -12,6 +12,8 @@ import { useTenant } from "@/tenant/TenantProvider";
 import { STAFF_ROLES } from "@/auth/authFlow";
 import { db, functions } from "@/firebase/client";
 import { useI18n } from "@/i18n/I18nProvider";
+import { loadPublicSubscriptionPricing, formatSubscriptionMoney } from "@/data/subscriptionPricing";
+import { listOwnIssuedHybridInvoices } from "@/data/hybridIssuedInvoiceStatusClient";
 import { useParityPage } from "@/hooks/useParityPage";
 
 const roleAliases = new Set(["owner", "admin", "cashier", "kitchen", "manager"]);
@@ -89,6 +91,39 @@ export function HomePage() {
   const [revenueShareEnabled, setRevenueShareEnabled] = useState(null);
   const [resolvedShopName, setResolvedShopName] = useState("");
   const [publicContact, setPublicContact] = useState(null);
+  const [publicPricing,setPublicPricing]=useState(null);
+  const [invoiceNotice,setInvoiceNotice]=useState(null);
+  const invoiceScope=tenant?.id&&["owner","admin"].includes(profile?.role)&&profile?.active!==false
+    ? JSON.stringify([tenant.id,profile.uid||profile.id||"",profile.role]) : "";
+  const visibleInvoiceNotice=invoiceNotice?.scope===invoiceScope?invoiceNotice:null;
+
+  useEffect(()=>{
+    if(authState.status==="loading"||staff)return;
+    let alive=true;
+    loadPublicSubscriptionPricing().then(result=>{
+      if(alive)setPublicPricing(result.source==="remote"?result.pricing:null);
+    }).catch(()=>{if(alive)setPublicPricing(null);});
+    return()=>{alive=false;};
+  },[authState.status,staff]);
+
+  useEffect(()=>{
+    setInvoiceNotice(null);
+    if(!invoiceScope)return;
+    let alive=true,busy=false;
+    const refresh=async()=>{
+      if(busy)return;
+      busy=true;
+      try{
+        const page=await listOwnIssuedHybridInvoices({expectedTenantId:tenant.id,pageSize:30});
+        const outstanding=page.items.filter(row=>row.paymentStatus!=="recorded_paid");
+        if(alive)setInvoiceNotice({scope:invoiceScope,count:outstanding.length,hasMore:page.hasMore});
+      }catch{if(alive)setInvoiceNotice({scope:invoiceScope,unavailable:true});}
+      finally{busy=false;}
+    };
+    void refresh();
+    const timer=window.setInterval(refresh,60000);
+    return()=>{alive=false;window.clearInterval(timer);};
+  },[invoiceScope,tenant?.id]);
 
   const stylesReady = useParityPage({
     bodyClass: staff ? "staff-home" : "",
@@ -161,12 +196,13 @@ export function HomePage() {
     [resolvedShopName, tenant, profile, t],
   );
 
+  if(authState.status==="error")return <PageReadyOverlay error title="ไม่สามารถตรวจสอบสิทธิ์กับ PENGUIN ได้" onRetry={()=>window.location.reload()} />;
+  if(staff&&tenantState.status==="error")return <PageReadyOverlay error title="ไม่สามารถโหลดข้อมูลร้านค้าได้" onRetry={()=>window.location.reload()} />;
   if (
     authState.status === "loading"
     || !stylesReady
     || profile?.role === "super_admin"
     || (staff && tenantState.status === "loading")
-    || (staff && ["owner", "admin"].includes(profile?.role) && revenueShareEnabled === null)
   ) {
     return (
       <PageReadyOverlay
@@ -244,7 +280,7 @@ export function HomePage() {
               <article className="public-plan">
                 <span className="public-plan-badge"><i className="bi bi-gem" aria-hidden="true"></i>{t("home.public.pricing.badges.full_system")}</span>
                 <h3>{t("home.public.pricing.plans.premium.name")}</h3>
-                <p className="public-plan-price">590฿<small>{t("home.public.pricing.month_suffix")}</small></p>
+                <p className="public-plan-price">{publicPricing?.monthly?.payable!=null?formatSubscriptionMoney(publicPricing.monthly.payable)+"฿":"—"}<small>{t("home.public.pricing.month_suffix")}</small></p>
                 <p>{t("home.public.pricing.plans.premium.description")}</p>
                 <ul>
                   <li><i className="bi bi-check-circle" aria-hidden="true"></i><span>{t("home.public.pricing.plans.premium.features.retail_pos_staff")}</span></li>
@@ -321,6 +357,15 @@ export function HomePage() {
             <p>{profile.role === "owner" ? shopName : t("home.staff.hero_description")}</p>
           </section>
 
+          {visibleInvoiceNotice&&(visibleInvoiceNotice.unavailable||visibleInvoiceNotice.count>0||visibleInvoiceNotice.hasMore)?(
+            <section className="card" data-home-issued-invoice-notice role="status" style={{marginBottom:16,padding:16}}>
+              <h2 style={{fontSize:18,marginTop:0}}><i className="bi bi-receipt" aria-hidden="true"/> ทะเบียนใบแจ้งหนี้</h2>
+              <p>{visibleInvoiceNotice.unavailable?"ยังไม่สามารถอ่านสถานะใบแจ้งหนี้ได้ กรุณาตรวจสอบในรายงาน":
+                visibleInvoiceNotice.count>0?`พบ ${visibleInvoiceNotice.count} รายการที่ยังต้องตรวจสอบหรือดำเนินการ${visibleInvoiceNotice.hasMore?" จากรายการที่โหลด":""}`:
+                "มีใบแจ้งหนี้เพิ่มเติม กรุณาตรวจสอบในรายงาน"}</p>
+              <Link className="btn btn-sm" to="/reports/hybrid-billing"><i className="bi bi-list-ul" aria-hidden="true"/> ดูทะเบียนใบแจ้งหนี้</Link>
+            </section>
+          ):null}
           {masterRestaurantEnabled ? <section className="dashboard-section dashboard-section-order-delivery" aria-labelledby="frontServiceTitle">
             <div className="dashboard-section-head">
               <h2 id="frontServiceTitle">Order / Delivery</h2>

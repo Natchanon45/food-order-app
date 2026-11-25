@@ -75,11 +75,11 @@ export function SaasSetupPage() {
   };
 
   useEffect(() => {
-    if (profile?.role !== "super_admin") return undefined;
+    if (authState.status !== "ready" || profile?.role !== "super_admin") return undefined;
     setInitialReady(false);
     refreshSummary();
     return undefined;
-  }, [profile?.role]);
+  }, [authState.status, profile?.role]);
 
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
     return <PageReadyOverlay context="PENGUIN" title={globalT("shared.state.loading")} message={globalT("shared.state.please_wait")} />;
@@ -142,7 +142,7 @@ export function SaasSetupPage() {
             </button>
           </div>
           <div id="migrationLog" role="status" className="menu-category" style={{ marginTop: 12 }}>
-            {t("runtime.state.inspection_only")}
+            {t(stateKey)}
           </div>
         </section>
       </main>

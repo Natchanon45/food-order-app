@@ -1,3 +1,9 @@
+## 2026-11-26 — P3.7 Merchant account and billing web polish
+
+Source read-only @7e47e85f; target from 4825e8d0. Home Premium monthly pricing now uses the confirmed public Firebase configuration, with no fabricated fallback quote; scoped read-only issued invoice notice, bounded first page, periodic refresh. Preserve existing managed Owner/Staff invitation and revision/recovery safeguards, add retry on failed reads. Hybrid Review shows metrics and ledger only for confirmed selected scope, retaining Source bank evidence disclaimer and financial lock. Revenue Share guards result by tenant/actor/period and request generation, suppresses stale/failed amount and submission; historical payment and M7 sections remain visible independently. SaaS Setup shows real inspection state, remains read-only. No live bank or payment release, no migration enablement. Targeted regression and build checked; full browser and live-provider acceptance remain outstanding. Strict 15/65 (23.1%). Next: POS pages and remaining thin wrappers, retain existing Firebase backend. No deploy/main merge.
+
+---
+
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
 ## 2026-11-26 — P3.4.6 Delivery bank evidence preflight (Demo only)
