@@ -4,6 +4,8 @@ const { onCall, HttpsError } = require("./managed-email-callable");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { randomBytes, createHash } = require("node:crypto");
 const qr = require("./payment-companion-qr-policy");
+const { proofBoundToOrder, proofValidForOrder } = require("./delivery-slip-policy");
+const { allowManualReview } = require("./finance-manual-review-policy");
 const { getDeliveryOpeningStatus } = require("./delivery-opening-hours");
 
 const REGION = "asia-southeast1";
@@ -69,6 +71,22 @@ function validateSubmission(data) {
     throw new HttpsError("invalid-argument", "DELIVERY_QR_ORDER_INVALID");
   }
   return { tenantId, id, order };
+}
+
+// The legacy slip-first rail still requires a real server-issued proof.
+// A public browser status or uploaded path is never sufficient evidence.
+function authorizedSlipStatus(tenantId, id, order, proof, now = Date.now()) {
+  if (!proof || proof.tenantId !== tenantId || proof.orderId !== id ||
+      proof.status !== order.slipCheckStatus) return null;
+  const pending = {...order, orderType:"delivery", paymentStatus:"pending_verification"};
+  const checkedAt = proof.checkedAt?.toMillis?.() || Number(proof.checkedAtMillis || 0);
+  if (!checkedAt || now < checkedAt || now - checkedAt > 15 * 60 * 1000) return null;
+  if (proofValidForOrder(pending, proof, now)) return "matched";
+  if (proof.status === "manual_review" && proof.providerAttempted === true &&
+      proof.manualReviewEligible === true && proofBoundToOrder(pending, proof) &&
+      allowManualReview({provider:"slip2go", status:"manual_review", proof:proof.manualReviewEvidence}))
+    return "manual_review";
+  return null;
 }
 
 async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
@@ -149,6 +167,13 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
         };
       }catch(err){throw new HttpsError("failed-precondition",String(err.message||"DELIVERY_QR_UNCONFIRMED"));}
     }
+    let authorizedStatus = "";
+    if (!authoritativeQr) {
+      const proofSnap = await transaction.get(tenantRef.collection("deliverySlipChecks").doc(id));
+      authorizedStatus = authorizedSlipStatus(tenantId, id, order, proofSnap.data());
+      if (!proofSnap.exists || !authorizedStatus)
+        throw new HttpsError("failed-precondition", "DELIVERY_SLIP_PROOF_NOT_CONFIRMED");
+    }
     const safeOrder = Object.fromEntries(
       Object.entries(order).filter(([key]) => ALLOWED_FIELDS.has(key))
     );
@@ -157,6 +182,9 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     delete safeOrder.slipVerificationStatus;
     delete safeOrder.paymentStatus;
     delete safeOrder.status;
+    delete safeOrder.slipCheckStatus;
+    delete safeOrder.paymentReviewRequired;
+    delete safeOrder.paymentSlipUrl;
     transaction.create(orderRef, {
       ...safeOrder,
       id, tenantId, shopId: tenantId, orderType: "delivery",
@@ -165,7 +193,10 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
       ...(authoritativeQr||{}),
       ...(authoritativeQr?{slipCheckStatus:"",paymentReviewRequired:false,paymentSlipPath:""}:
         capability?{customerCorrectionCapabilityDigest:capabilityHash,
-          paymentCorrectionRevision:0}:{}),
+          paymentCorrectionRevision:0,
+          slipCheckStatus:authorizedStatus,
+          paymentReviewRequired:authorizedStatus==="manual_review",
+          paymentSlipUrl:""}:{}),
       paymentStatus: order.paymentMethod === "promptpay" ? "pending_verification" : "unpaid",
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     });
@@ -185,4 +216,4 @@ exports.submitPublicDeliveryOrder = onCall(
 );
 
 // Export pure helpers for regression tests without touching a live tenant.
-exports.__test = { validateSubmission, createDeliveryOrderWithGuard, ALLOWED_FIELDS };
+exports.__test = { validateSubmission, createDeliveryOrderWithGuard, authorizedSlipStatus, ALLOWED_FIELDS };

@@ -142,3 +142,48 @@ test("P3.4 real anonymous Chrome customer original bill correction, Firebase Sto
   await rm(dir,{recursive:true,force:true});
  }
 });
+
+test("P3.4 real public callable refuses missing or forged checkout evidence and keeps technical fallback unpaid", {timeout:30000},async()=>{
+ const shop=db.collection("tenants").doc(tenantId+"-intake");
+ const id="p34-intake-"+nonce;
+ const ref=shop.collection("orders").doc(id);
+ const proofRef=shop.collection("deliverySlipChecks").doc(id);
+ await shop.set({active:true,businessType:"restaurant_cafe",subscriptionStatus:"active"});
+ await shop.collection("settings").doc("store").set({deliveryPromptPayEnabled:true});
+ const order={id,orderType:"delivery",status:"pending",paymentStatus:"paid",
+  recipientName:"Demo",recipientPhone:"0800000000",deliveryAddress:"Demo only",
+  deliveryProvider:"self",deliveryLatitude:13.75,deliveryLongitude:100.5,
+  paymentMethod:"promptpay",slipCheckStatus:"manual_review",paymentReviewRequired:false,
+  paymentSlipPath:"tenants/"+shop.id+"/payment-slips/"+id+"/demo.png",
+  items:[{menuId:"demo-menu",name:"Demo",price:120,qty:1}],
+  subtotalAmount:120,deliveryFee:30,totalAmount:150};
+ const call=async payload=>{
+  const response=await fetch("http://127.0.0.1:5001/demo-penguin-hybrid/asia-southeast1/submitPublicDeliveryOrder",
+   {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:{tenantId:shop.id,order:payload}})});
+  return {status:response.status,body:await response.json()};
+ };
+ const missing=await call(order);
+ assert.equal(missing.body.error?.message,"DELIVERY_SLIP_PROOF_NOT_CONFIRMED");
+ assert.equal((await ref.get()).exists,false);
+ // Synthetic provider record exclusively in the isolated demo Emulator.
+ const proof={tenantId:shop.id,orderId:id,status:"manual_review",provider:"slip2go",
+  slipPath:order.paymentSlipPath,amountCents:15000,foodCents:12000,feeCents:3000,
+  itemsSignature:JSON.stringify([{id:"demo-menu",qty:1,priceCents:12000}]),
+  checkedAt:FieldValue.serverTimestamp(),providerAttempted:true,manualReviewEligible:true,
+  manualReviewEvidence:{provider:"slip2go",status:"manual_review",reason:"slip2go_unavailable",fallbackAllowed:true}};
+ await proofRef.set({...proof,amountCents:14900});
+ assert.equal((await call(order)).body.error?.message,"DELIVERY_SLIP_PROOF_NOT_CONFIRMED");
+ assert.equal((await ref.get()).exists,false);
+ await proofRef.set(proof);
+ assert.equal((await call({...order,slipCheckStatus:"matched"})).body.error?.message,"DELIVERY_SLIP_PROOF_NOT_CONFIRMED");
+ assert.equal((await ref.get()).exists,false);
+ const accepted=await call(order);
+ assert.equal(accepted.status,200,JSON.stringify(accepted.body));
+ const saved=(await ref.get()).data();
+ assert.equal(saved.paymentStatus,"pending_verification");
+ assert.equal(saved.paymentReviewRequired,true);
+ assert.equal(saved.slipCheckStatus,"manual_review");
+ assert.equal(saved.kitchenReleasedAt,undefined);
+ assert.match(accepted.body.result.paymentCorrectionCapability,/^[a-f0-9]{64}$/);
+ assert.ok(!JSON.stringify(saved).includes(accepted.body.result.paymentCorrectionCapability));
+});

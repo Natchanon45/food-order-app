@@ -1,3 +1,13 @@
+## 2026-11-26 — P3.4 legacy Delivery checkout evidence gate
+
+Source READ ONLY cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7e47e85f; Target Natchanon45/food-order-app feature/react-firebase-port starting 46680b65. Legacy slip-first public checkout now re-reads the protected deliverySlipChecks document in the same Firestore transaction as order creation. A browser status, storage path or review flag alone cannot create an order. Exact tenant/order/slip/cart/fee/total, status and a fresh server receipt (15 minutes) are required; technical fallback must satisfy the existing finance-manual-review policy. Browser-provided payment URL and review flag are discarded; stored review flag is server-derived, payment remains pending_verification. The existing confirmed-order 5m QR pilot and globally disabled COD remain separate. No new paid authority.
+
+QA: 36/36 targeted Node contract and delivery regression cases PASS; 2/2 actual isolated Firebase Auth/Firestore/Functions/Storage Emulator cases PASS, including real anonymous Chrome correction and public callable with synthetic demo-only provider proof. Full serial React Parity **881/881 PASS, Exit 0**. Web build not rerun because this slice changes only Cloud Functions and tests (no React or hosting inputs). Live providers not called. This is an incremental backend hardening, not Notification-first parity; the two Delivery pages remain pending, overall 15/65=23.1% accepted/dispositioned, 50/65=76.9% pending. See docs/LUKKAJA_P3_4_DELIVERY_EVIDENCE_GATE_20261126.md.
+
+Next: implement canonical Firebase notification-first order creation with current server-validated catalog, promotions and fee/receiver binding, signed observation matching, correction/review routing and authorized Staging provider tests. Do not enable Stripe LIVE, COD or real Lalamove dispatch from this slice. No Source changes, main merge, Production deploy or mobile build.
+
+---
+
 ## 2026-11-26 — P3.4 Source original Delivery slip, customer correction and review UI
 
 - Source latest READ ONLY 7e47e85f; target feature/react-firebase-port baseline 4c1d112c. Ported on-select Firebase Storage image upload with authentic observed byte callback/9s animation, immutable proof order-path and no duplicate checkout upload, Source checkout review and read-only original cart.

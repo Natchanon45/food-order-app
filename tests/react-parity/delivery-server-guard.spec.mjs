@@ -24,7 +24,16 @@ function payload(method = "promptpay") {
     } : {}),
   } };
 }
-function fakeFirestore({ hours = {}, businessType = "both", tenantExists = true, storeExists = true, orderExists = false } = {}) {
+function matchedProof() {
+  return {
+    tenantId, orderId, status:"matched", provider:"slip2go", transRef:"TX-TEST",
+    slipPath:payload().order.paymentSlipPath,
+    amountCents:13500, foodCents:10000, feeCents:3500,
+    itemsSignature:JSON.stringify([{id:"menu-id",qty:1,priceCents:10000}]),
+    checkedAtMillis:Date.now()-1000,
+  };
+}
+function fakeFirestore({ hours = {}, businessType = "both", tenantExists = true, storeExists = true, orderExists = false, proof = matchedProof() } = {}) {
   const state = { writes: [], reads: [], docs: {}, beforeCommit: null };
   const tenant = { path: "tenants/" + tenantId };
   const make = (path) => ({ path, collection(name) { return { doc(id) { return make(path + "/" + name + "/" + id); } }; } });
@@ -37,6 +46,7 @@ function fakeFirestore({ hours = {}, businessType = "both", tenantExists = true,
           state.reads.push(ref.path);
           if(ref.path.endsWith("/settings/store"))return { exists: storeExists, data: () => hours };
           if(ref.path.endsWith("/orders/" + orderId))return { exists: orderExists };
+          if(ref.path.endsWith("/deliverySlipChecks/" + orderId))return {exists:Boolean(proof),data:()=>proof};
           if(ref.path === tenant.path)return { exists: tenantExists, data: () => ({ businessType }) };
           throw Error("UNEXPECTED_READ " + ref.path);
         },
@@ -90,12 +100,41 @@ test("open store creates only server-controlled delivery metadata", async () => 
     "tenants/" + tenantId,
     "tenants/" + tenantId + "/settings/store",
     "tenants/" + tenantId + "/orders/" + orderId,
+    "tenants/" + tenantId + "/deliverySlipChecks/" + orderId,
   ]);
   assert.equal(state.writes.length, 1);
   assert.equal(state.writes[0].data.orderType, "delivery");
   assert.equal(state.writes[0].data.paymentStatus, "pending_verification");
   assert.equal(state.writes[0].data.id, orderId);
   assert.equal(state.writes[0].data.tenantId, tenantId);
+});
+test("legacy public checkout rejects missing, stale, mismatched or forged server slip evidence", async () => {
+  for (const proof of [
+    null, {...matchedProof(),tenantId:"wrong-tenant"}, {...matchedProof(),orderId:"wrong-order"},
+    {...matchedProof(),slipPath:"wrong-slip"}, {...matchedProof(),amountCents:13400},
+    {...matchedProof(),checkedAtMillis:Date.now()-16*60000},
+    {...matchedProof(),transRef:""}, {...matchedProof(),status:"manual_review"},
+  ]) {
+    const {db,state}=fakeFirestore({proof});
+    await assert.rejects(backend.createDeliveryOrderWithGuard(db,tenantId,orderId,payload().order),
+      errorCode("DELIVERY_SLIP_PROOF_NOT_CONFIRMED"));
+    assert.equal(state.writes.length,0);
+  }
+});
+test("technical review uses only server evidence, never the browser flag", async () => {
+  const order={...payload().order,slipCheckStatus:"manual_review",paymentReviewRequired:false,paymentSlipUrl:"https://invalid.example/forged"};
+  const proof={...matchedProof(),status:"manual_review",providerAttempted:true,manualReviewEligible:true,
+    manualReviewEvidence:{provider:"slip2go",status:"manual_review",reason:"slip2go_unavailable",fallbackAllowed:true}};
+  const {db,state}=fakeFirestore({proof});
+  await backend.createDeliveryOrderWithGuard(db,tenantId,orderId,order);
+  assert.equal(state.writes[0].data.slipCheckStatus,"manual_review");
+  assert.equal(state.writes[0].data.paymentReviewRequired,true);
+  assert.equal(state.writes[0].data.paymentStatus,"pending_verification");
+  assert.equal(state.writes[0].data.paymentSlipUrl,"");
+  for(const invalid of [{...proof,providerAttempted:false},{...proof,manualReviewEligible:false},
+      {...proof,manualReviewEvidence:{...proof.manualReviewEvidence,reason:"slip2go_config_invalid"}}]){
+    assert.equal(backend.authorizedSlipStatus(tenantId,orderId,order,invalid),null);
+  }
 });
 test("closed store blocks server writes and preserves existing orders", async () => {
   for (const reason of [
