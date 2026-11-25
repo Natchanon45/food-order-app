@@ -1679,12 +1679,14 @@ assert(
   "Kitchen must preserve the original active-Lalamove lock for local order cancellation",
 );
 assert(
-  kitchenPage.includes("if (isTakeaway(order))")
-  && kitchenPage.includes('status: "cancelled"')
-  && kitchenPage.includes("subtotalAmount: 0")
-  && kitchenPage.includes("deliveryFee: 0")
-  && kitchenPage.includes("totalAmount: 0"),
-  "Kitchen takeaway cancellation must use the Laravel-parity status/totals update path",
+  kitchenPage.includes('runKitchenAction(order,"cancel_order")')
+  &&kitchenPage.includes('runKitchenAction(order,"cancel_item",{index:itemIndex})')
+  &&!kitchenPage.includes('await updateOrder(order.id, {')
+  &&!kitchenPage.includes('totalAmount: 0,')
+  &&functionsIndex.includes("exports.kitchenApplyOrderAction = operationalOrders.kitchenApplyOrderAction;")
+  &&operationalOrdersFunctions.includes("exports.kitchenApplyOrderAction=onCall")
+  &&operationalOrdersFunctions.includes("kitchenActionAudit"),
+  "Kitchen cancellation is signed, audited and preserves paid financial evidence, never browser-zeroes sale"
 );
 assert(
   kitchenItemEditorCss.includes('.kitchen-item-actions .btn[data-cancel-item],')
@@ -1697,14 +1699,15 @@ assert(
 );
 assert(
   kitchenPage.includes("function canServeItem(order, item)")
-  &&kitchenPage.includes('data-serve-item={order.id}')
-  &&kitchenPage.includes('kitchen-serve-item-action')
-  &&kitchenPage.includes('const serveItem = async (order, itemIndex) =>')
-  &&kitchenPage.includes('served: true, servedAt: now')
-  &&kitchenPage.includes('patch.status = paid ? "paid" : "served"')
-  &&kitchenPage.includes("await settleTableSession(tenant.id, order.id)")
+  &&kitchenPage.includes("data-serve-item={order.id}")
+  &&kitchenPage.includes("kitchen-serve-item-action")
+  &&kitchenPage.includes("const serveItem = async (order,index) =>")
+  &&kitchenPage.includes('runKitchenAction(order,"serve_item",{index})')
+  &&operationalOrdersFunctions.includes("items[itemIndex]={...items[itemIndex],served:true,servedAt:now}")
+  &&operationalOrdersFunctions.includes('patch.status=paid?"paid":"served"')
+  &&kitchenPage.includes("await settleTableSession(tenant.id,order.id)")
   &&kitchenItemEditorCss.includes(".kitchen-serve-item-action"),
-  "React Kitchen must restore per-item serving for table/Walk-in orders and settle a paid table after the final served item"
+  "Kitchen signed served-item transaction preserves original payment status, and separate Table settlement follows confirmed serve"
 );
 assert(
   !cashierPage.includes("tableSettlementRepairRef")

@@ -1,5 +1,14 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P3.2 Kitchen latest JSX and signed Firebase status/financial audit
+
+Local Kitchen source parity is complete: P3.2 Source delivery header, revised item/net/discount display, Courier reservation lock, authorized Telegram order focus, responsive action layout and immutable signed Kitchen transitions. The Firebase Backend now requires exact current Tenant/role, expected status/payment/revision, canonical menu price, idempotent action audit, and preserves paid funds while flagging revised amounts for manual finance review. Deferred Walk-in already-signed APIs remain. COD stays user-disabled. Pure tests 8/8, signed Firebase/Chrome 1/1. Complete npm run test:react-parity **PASS Exit 0**; npm run build:react and generated Hosting Contract **PASS Exit 0** (2026.11.09.535, bundle /react/assets/index-D2gHJ-Qo.js). Generated public assets and Emulator temp config cleaned. Report in P3.2 Kitchen Source Port document.
+
+Master pinned 65 Source JSX: **11/65 (16.9%) accepted or dispositioned locally**, **54/65 (83.1%) remaining**. Old Target presence 52/65 is not completion. Live bank/Stripe/LINE/courier Staging and Production remain separate unverified gates.
+
+---
+
+
 ## 2026-11-25 — P3.1 Cashier latest Source JSX with signed Firebase transitions
 
 **P3.1 local core complete:** Source 7bf9d159 Cashier bill/recipient/status, courier action and cancellation guard, re-quote consent, historical pricing, Telegram focus and prepaid Takeaway handover ported to existing Firebase. Three new signed Server Callables implement cash-only physical receipt with immutable audit and idempotent retries, already-paid Takeaway pickup and eligible never-started cancellation. Bank/LINE/Stripe/COD cannot be manually inferred as paid. Pure Source policy **8/8 PASS**, signed Firebase Auth+Firestore+Functions Chrome with 9 seeded orders/three signed roles/four widths **1/1 PASS**. Complete serial React Parity EXIT 0 and React Build/Hosting Contract EXIT 0 (2026.11.09.535, index-CbPKGrba.js); final receipts in Worklog. See P3.1 Cashier report.

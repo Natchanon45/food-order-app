@@ -1036,3 +1036,169 @@ exports.cashierCancelOrderSafely=onCall({region:REGION,timeoutSeconds:30},async 
   return {item:{...order,...patch},alreadyCancelled:false};
  });
 });
+
+// P3.2 Canonical Kitchen item/status transitions. All financial evidence and
+// original cashier-confirmed cash remain unchanged, even on paid cancellations.
+// Signed immutable audit + expected revision protect concurrent Cashier/Kitchen.
+const kitchenPolicy=require("./kitchen-order-policy");
+const KITCHEN_SIGNED_ROLES=new Set(["owner","admin","kitchen"]);
+exports.kitchenApplyOrderAction=onCall({region:REGION,timeoutSeconds:45},async request=>{
+ const {db,tenantId,uid,profile}=await callerContext(request,KITCHEN_SIGNED_ROLES);
+ const id=text(request.data?.orderId,128);
+ const action=text(request.data?.action,32);
+ const operationId=text(request.data?.operationId,128);
+ const revision=request.data?.expectedRevision;
+ const expectedStatus=text(request.data?.expectedStatus,40);
+ const expectedPaymentStatus=text(request.data?.expectedPaymentStatus,40);
+ if(!kitchenPolicy.VALID_ID.test(id)||
+   !["status","serve_item","cancel_item","edit_item","cancel_order"].includes(action)||
+   !kitchenPolicy.VALID_ID.test(operationId)||operationId.length<8||
+   !Number.isSafeInteger(revision)||revision<0)
+   invalid("KITCHEN_ACTION_REQUEST_INVALID");
+ const payload=request.data||{};
+ const itemIndex=payload.index;
+ const next=payload.status;
+ const requestedMenuId=text(payload.menuId,128);
+ const qty=payload.qty;
+ const note=text(payload.note,200);
+ if(["edit_item","cancel_item","serve_item"].includes(action)&&
+   (!Number.isSafeInteger(itemIndex)||itemIndex<0||itemIndex>=100))
+   invalid("KITCHEN_ITEM_INDEX_INVALID");
+ if(action==="edit_item"&&(
+   !kitchenPolicy.VALID_ID.test(requestedMenuId)||
+   !Number.isSafeInteger(qty)||qty<1||qty>999))
+   invalid("KITCHEN_EDIT_ITEM_INVALID");
+ if(action==="status"&& !["accepted","cooking","ready","served"].includes(next))
+   invalid("KITCHEN_NEXT_STATUS_INVALID");
+ const tenantRef=db.collection("tenants").doc(tenantId);
+ const ref=tenantRef.collection("orders").doc(id);
+ const auditRef=tenantRef.collection("kitchenActionAudit").doc(operationId);
+ const menuRef=action==="edit_item"?tenantRef.collection("menus").doc(requestedMenuId):null;
+ return db.runTransaction(async tx=>{
+  const [snap,audit,menu,tenantSnap]=await Promise.all([
+   tx.get(ref),tx.get(auditRef),menuRef?tx.get(menuRef):Promise.resolve(null),
+   tx.get(tenantRef)
+  ]);
+  if(!tenantSnap.exists)missing("KITCHEN_TENANT_NOT_FOUND");
+  const tenant=tenantSnap.data()||{};
+  if(tenant.active===false||tenant.operationalSuspended===true||
+    tenant.subscriptionStatus==="suspended"||
+    tenant.subscriptionStatus==="expired"||
+    tenant.status==="suspended"||
+    (Array.isArray(tenant.businessUnits)&&
+      !tenant.businessUnits.includes("order_delivery")))
+    conflict("KITCHEN_TENANT_NOT_ACTIVE");
+  if(!snap.exists)missing("KITCHEN_ORDER_NOT_FOUND");
+  const order={id,...snap.data()};
+  if(audit.exists){
+   const old=audit.data();
+   if(old.uid!==uid||old.action!==action||old.orderId!==id||
+     old.expectedRevision!==revision)conflict("KITCHEN_OPERATION_ID_REUSED");
+   if(Number(order.kitchenRevision||0)<revision+1)
+     conflict("KITCHEN_ACTION_REPLAY_NOT_CONFIRMED");
+   return {item:order,alreadyRecorded:true};
+  }
+  if(Number(order.kitchenRevision||0)!==revision)
+   conflict("KITCHEN_ORDER_REVISION_CHANGED");
+  if(String(order.status||"")!==expectedStatus||
+    String(order.paymentStatus||"")!==expectedPaymentStatus)
+   conflict("KITCHEN_ORDER_PAYMENT_OR_STATUS_CHANGED");
+  if(!kitchenPolicy.eligible(order,action))
+   conflict("KITCHEN_ORDER_LOCKED_OR_PAYMENT_UNVERIFIED");
+  const now=new Date().toISOString();
+  const patch={kitchenRevision:revision+1,kitchenUpdatedByUid:uid,
+    kitchenAdjustedAt:now,updatedAt:FieldValue.serverTimestamp()};
+  const oldTotal=Number(order.totalAmount||0);
+  const items=Array.isArray(order.items)?order.items.map(x=>({...x})):[];
+  const paid=kitchenPolicy.isPaid(order);
+  if(action==="status"){
+   if(!kitchenPolicy.validateStatus(order,next))
+     conflict("KITCHEN_STATUS_OUT_OF_SEQUENCE_OR_COURIER_LOCKED");
+   patch.status=next;
+   if(next==="served"){
+    patch.items=items.map(item=>item.cancelled?item:{
+      ...item,served:true,servedAt:item.servedAt||now});
+    patch.lastServedItemAt=now;
+    patch.servedAt=now;
+    if(paid){patch.status="paid";patch.completedAt=now;}
+   }
+   if(order.orderType==="takeaway"&&next==="ready")patch.pickupStatus="ready";
+   if(order.orderType==="takeaway"&&next==="served")patch.pickupStatus="served";
+  }else if(action==="serve_item"){
+   if(!kitchenPolicy.itemEligible(order,itemIndex,action))
+     conflict("KITCHEN_ITEM_NOT_READY");
+   items[itemIndex]={...items[itemIndex],served:true,servedAt:now};
+   patch.items=items;patch.lastServedItemAt=now;
+   if(kitchenPolicy.activeItems({...order,items}).every(x=>x.served)){
+    patch.status=paid?"paid":"served";patch.servedAt=now;
+    if(paid)patch.completedAt=now;
+   }
+  }else if(action==="cancel_order"){
+   patch.status="cancelled";patch.cancelledAt=now;
+   patch.cancelledByUid=uid;patch.cancellationSource="kitchen";
+   patch.cancellationReason="kitchen_cancelled";
+   if(paid)patch.kitchenFinanceReviewRequired=true;
+   // The originally paid value MUST remain in the canonical receipt.
+  }else{
+   if(!kitchenPolicy.itemEligible(order,itemIndex,action))
+     conflict("KITCHEN_ITEM_LOCKED");
+   if(action==="cancel_item"){
+    items[itemIndex]={...items[itemIndex],cancelled:true,cancelledAt:now,
+      cancelledByUid:uid};
+   }else{
+    const selected=items[itemIndex];
+    if(!menu?.exists)conflict("KITCHEN_MENU_NOT_FOUND");
+    const data=menu.data();
+    if(!text(data.name,240))conflict("KITCHEN_MENU_NAME_REQUIRED");
+    if(data.active===false||data.isActive===false||
+      data.is_active===false)conflict("KITCHEN_MENU_INACTIVE");
+    const price=Number(data.price);
+    if(kitchenPolicy.nextFinancials({orderType:"table"},[
+     {qty,price}]).subtotalAmount<0)conflict("KITCHEN_MENU_PRICE_INVALID");
+    const changed=selected.menuId!==requestedMenuId||
+      Number(selected.qty)!==qty||Number(selected.price)!==price;
+    if(changed&&!note)conflict("KITCHEN_EDIT_NOTE_REQUIRED");
+    items[itemIndex]={
+     ...selected,originalQty:selected.originalQty??selected.qty,
+     originalName:selected.originalName||selected.name,
+     originalPrice:selected.originalPrice??selected.price,
+     originalLineTotal:selected.originalLineTotal??
+       Math.round(Number(selected.qty||0)*Number(selected.price||0)*100)/100,
+     menuId:requestedMenuId,name:text(data.name,240),price,qty,note,
+     replacedFromName:requestedMenuId!==selected.menuId
+       ?(selected.replacedFromName||selected.name):selected.replacedFromName||"",
+     updatedByKitchenAt:now,
+     ...(selected.served?{served:false,servedAt:null}:{}),
+    };
+    if(selected.served&&order.status==="ready")patch.status="cooking";
+   }
+   patch.items=items;
+   const revised=kitchenPolicy.nextFinancials(order,items);
+   if(paid){
+    patch.kitchenRevisedTotals=revised;
+    patch.kitchenFinanceReviewRequired=true;
+    // Do not rewrite paid total, paidAt, bank evidence, share, discount ledger.
+   }else{
+    patch.originalTotalAmount=order.originalTotalAmount??oldTotal;
+    Object.assign(patch,revised);
+   }
+   if(kitchenPolicy.activeItems({...order,items}).length===0){
+    patch.status="cancelled";patch.cancelledAt=now;
+    patch.cancelledByUid=uid;patch.cancellationSource="kitchen";
+    if(paid)patch.kitchenFinanceReviewRequired=true;
+   }
+  }
+  // No state transition here modifies paymentStatus, paidAt, refund or bank
+  // match. An admin/cashier reconciliation remains a separate workflow.
+  tx.update(ref,patch);
+  tx.create(auditRef,{tenantId,orderId:id,uid,role:profile.role,action,
+   operationId,expectedRevision:revision,newRevision:revision+1,
+   oldTotalAmount:oldTotal,
+   ...(patch.kitchenRevisedTotals?{proposedTotalAmount:patch.kitchenRevisedTotals.totalAmount}:{}),
+   ...(action==="cancel_order"||action==="cancel_item"||action==="edit_item"?
+      {requiresFinanceReview:paid}:{}),
+   ...(Number.isSafeInteger(itemIndex)?{itemIndex}:{}),
+   createdAt:FieldValue.serverTimestamp()});
+  return {item:{...order,...patch},alreadyRecorded:false};
+ });
+});

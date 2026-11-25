@@ -352,6 +352,7 @@ exports.cancelReviewedPaidWalkIn = operationalOrders.cancelReviewedPaidWalkIn;
 exports.cashierRecordCashReceipt = operationalOrders.cashierRecordCashReceipt;
 exports.cashierPickupAction = operationalOrders.cashierPickupAction;
 exports.cashierCancelOrderSafely = operationalOrders.cashierCancelOrderSafely;
+exports.kitchenApplyOrderAction = operationalOrders.kitchenApplyOrderAction;
 
 // Superadmin-only encrypted Telegram bot settings and explicit test delivery.
 const platformTelegram = require("./platform-telegram");

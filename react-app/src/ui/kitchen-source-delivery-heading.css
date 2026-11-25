@@ -1,0 +1,74 @@
+/* Shared delivery header: use the card width, not the desktop viewport.
+   Leave all other order types and their operational controls untouched. */
+body.kitchen-page .delivery-staff-heading {
+  display:grid;grid-template-columns:max-content minmax(0,1fr) minmax(0,36%);
+  align-items:start;gap:clamp(5px,1.4vw,12px);min-width:0;margin-bottom:12px;
+  container-type:inline-size;
+}
+.delivery-staff-heading .delivery-staff-bill-column,
+.delivery-staff-heading .delivery-staff-states {
+  display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0;
+}
+.delivery-staff-heading .delivery-staff-bill {
+  display:grid;gap:3px;justify-items:center;align-content:center;
+  box-sizing:border-box;padding:9px 10px;min-height:52px;max-width:none;
+  background:#10713b;color:#fff;border-radius:12px;
+  box-shadow:0 3px 9px #0c60301c;text-align:center;line-height:1.25;
+}
+.delivery-staff-heading .delivery-staff-bill small {color:#fff;font-size:11px;font-weight:600}
+.delivery-staff-heading .delivery-staff-bill strong {
+  font-size:clamp(11px,3.1cqi,14px);font-weight:800;white-space:nowrap;
+  font-variant-numeric:tabular-nums;line-height:1.35;
+}
+.delivery-staff-heading .delivery-staff-recipient {
+  min-width:0;text-align:center;padding:5px 0;align-self:start;
+}
+.delivery-staff-heading .delivery-staff-recipient h2 {
+  font-size:clamp(12px,3.6cqi,17px);line-height:1.35;margin:0 0 5px;
+  font-weight:750;color:#124831;overflow-wrap:anywhere;white-space:normal;
+}
+.delivery-staff-heading .delivery-staff-recipient time {
+  display:block;font-size:clamp(10px,2.75cqi,13px);line-height:1.35;color:#536d5c;
+  font-variant-numeric:tabular-nums;overflow-wrap:normal;
+}
+.delivery-staff-heading .delivery-staff-order-status,
+.delivery-staff-heading .delivery-staff-payment-status,
+.delivery-staff-heading .delivery-staff-overdue {
+  display:block;box-sizing:border-box;text-align:center;line-height:1.35;
+  overflow-wrap:anywhere;border-radius:9px;
+}
+.delivery-staff-heading .delivery-staff-order-status {
+  padding:6px 8px;background:#e4f3e9;color:#176239;font-weight:750;
+  font-size:clamp(12px,3.4cqi,16px);
+}
+.delivery-staff-heading .delivery-staff-payment-status {
+  padding:5px 7px;font-size:clamp(10px,2.65cqi,12px);font-weight:400;
+  color:#21653c;background:#e8f4ec;border:1px solid #d0e6d7;
+}
+.delivery-staff-heading .delivery-staff-order-status,
+.delivery-staff-heading .delivery-staff-payment-status {
+  border-radius:999px;white-space:nowrap;overflow-wrap:normal;
+}
+.delivery-staff-heading .delivery-staff-status-label {
+  display:inline-block;white-space:nowrap;overflow-wrap:normal;
+  font-size:inherit;font-weight:inherit;line-height:inherit;
+}
+.delivery-staff-heading .delivery-staff-payment-status.is-pending,
+.delivery-staff-heading .delivery-staff-overdue {
+  background:#fff2db;color:#895400;border:1px solid #f1ddbb;
+}
+.delivery-staff-heading .delivery-staff-overdue {
+  font-size:clamp(10px,2.65cqi,12px);padding:4px 3px;font-weight:650;
+}
+body.kitchen-page .delivery-staff-payment-detail {
+  margin:0 0 9px;font-size:12px;line-height:1.4;overflow-wrap:anywhere;
+}
+body.kitchen-page .delivery-staff-payment-detail .badge {
+  white-space:normal;max-width:100%;text-align:left;line-height:1.45;
+}
+@container (max-width:340px) {
+  .delivery-staff-heading .delivery-staff-bill {padding:7px 6px;min-height:46px}
+  .delivery-staff-heading .delivery-staff-bill small {font-size:10px}
+  .delivery-staff-heading .delivery-staff-order-status {padding:6px 4px}
+  .delivery-staff-heading .delivery-staff-payment-status {padding:5px 4px}
+}

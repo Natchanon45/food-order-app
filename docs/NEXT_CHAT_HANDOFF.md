@@ -1,3 +1,17 @@
+## 2026-11-25 — P3.2 Kitchen latest Source completed locally
+
+- Source READ ONLY: cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159. Target: Natchanon45/food-order-app feature/react-firebase-port; starting da96f048.
+- Kitchen JSX ported Source delivery bill/recipient/payment/status responsive header, original item/net and delivery discount, safe action buttons and Telegram order focus.
+- Kitchen Table/Takeaway/Delivery status, item edit, cancel item/order now through signed kitchenApplyOrderAction with canonical Tenant role, current order, payment/status/revision CAS, real menu price, immutable kitchenActionAudit and stable operation IDs. Paid receipt remains unchanged on edited/cancelled items; kitchenRevisedTotals/kitchenFinanceReviewRequired explicitly demand manual reconciliation. No automatic refund or paid claim.
+- Client Kitchen role now cannot directly update Firestore order via rules. Page-opening table settlement and courier repair removed; bounded status refresh retained. Existing deferred Walk-in and paid Walk-in reviewed cancellation retained.
+- COD user-disabled; provider reserved-before-POST blocks Kitchen edits and cancellation even without actual courier ID.
+- Verified pure Source policy 8/8 PASS; signed local Firebase Auth/Firestore/Functions Chrome 1/1 PASS across Kitchen, Owner, foreign Kitchen and Cashier, real menu price, paid ledger, cross-tenant, idempotency, 320/390/768/1440. Complete npm run test:react-parity **PASS Exit 0**; npm run build:react and generated Hosting Contract **PASS Exit 0** (2026.11.09.535, bundle /react/assets/index-D2gHJ-Qo.js). Generated public assets and Emulator temp config cleaned.
+- Master strict audit **11/65 (16.9%) accepted/dispositioned**, **54/65 (83.1%) still pending**, Cashier/Kitchen/Queue 6, Delivery/Public 6, POS 29, Superadmin/Billing 5, Merchant/General 5, wrappers 3. 52/65 similarly named files = presence, not acceptance.
+- NEXT P3.3 Delivery/Public ordering, including source parallel kitchen/cashier delivery admission, slip gate, Lalamove/Stripe/BankAlert actual-provider safety. No main merge, Production, APK/IPA or Source edits.
+- Report: docs/LUKKAJA_P3_2_KITCHEN_SOURCE_PORT_20261125.md.
+
+---
+
 ## 2026-11-25 — P3.1 Cashier complete locally; Master JSX coverage 15.4%
 
 - Source READ ONLY: cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159. Target: Natchanon45/food-order-app feature/react-firebase-port, initial f83c25f8.

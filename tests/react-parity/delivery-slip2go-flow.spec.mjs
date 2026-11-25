@@ -231,7 +231,11 @@ test("server blocks unapproved staff payment changes while a Delivery slip needs
   assert.match(rules, /function deliveryPaymentReviewFieldsUnchanged\(\)/);
   const scoped = rules.split("match /tenants/{tenantId} {")[1];
   const orderRule = scoped?.split("match /orders/{orderId} {")[1]?.split("}")[0] || "";
-  assert.match(orderRule, /tenantKitchenRole\(tenantId\)/);
+  // P3.2: Kitchen staff can no longer update orders directly at all.
+  // Every item/status transition uses a signed, audited transaction.
+  assert.doesNotMatch(orderRule, /tenantKitchenRole\(tenantId\)/);
+  assert.match(fs.readFileSync("functions/operational-orders.js","utf8"),
+    /exports\.kitchenApplyOrderAction=onCall/);
   assert.match(orderRule, /tenantCashierRole\(tenantId\)/);
   assert.match(orderRule, /tenantAdminRole\(tenantId\)/);
   assert.match(rules, /resource\.data\.get\('paymentMethod', ''\) == 'promptpay'/);

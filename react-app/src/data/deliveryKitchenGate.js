@@ -3,7 +3,8 @@ export function deliveryKitchenAdmitted(order = {}) {
   if (String(order.orderType || '').toLowerCase() !== 'delivery') return true;
   const method = String(order.paymentMethod || '').toLowerCase();
   const status = String(order.paymentStatus || '').toLowerCase();
-  if (method === 'cod') return true;
+  // COD remains user-disabled; a historical COD order is never admitted by default.
+  if (method === 'cod') return false;
   if (method === 'promptpay')return status === 'paid' || (
     status === 'pending_verification' &&
     order.paymentQrMode === 'confirmed_order_5m' &&

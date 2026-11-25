@@ -21,6 +21,7 @@ const accepted=new Map([
  ["LoginPage.jsx","P2.3 login role/next policy"],
  ["AdminSalesReportPage.jsx","P2.4 complete sales history and receipt UI"],
  ["CashierPage.jsx","P3.1 signed Cashier cash/pickup/cancel, Source courier/receipt/Telegram UI; bank/LINE/Stripe live provider settlement gated"],
+ ["KitchenPage.jsx","P3.2 signed Kitchen item/status/paid-adjustment audit, Source delivery header/courier lock; external finance review and live provider gated"],
 ]);
 const disposition=new Map([
  ["AdminStoreMasterPage.jsx","Source-only extract not routed: integrated into AdminPage P2.2; no duplicate route"],

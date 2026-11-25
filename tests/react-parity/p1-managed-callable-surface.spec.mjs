@@ -72,7 +72,7 @@ test("every exported v2 Callable definition uses a single shared pre-handler Aut
    name+" may import an unguarded onCall");
  }
  assert.equal(modules,46,"audit all 46 Callable modules including new Platform Receiver");
- assert.equal(definitions,149,"audit all 149 Callables including three trusted Cashier transition functions");
+ assert.equal(definitions,150,"audit all 150 shared managed Callables including signed Kitchen transitions");
  const source=readFileSync(new URL("managed-email-callable.js",root),"utf8");
  assert.match(source,/await assertManagedEmailVerified\(request\);\s*return handler\(request,\.\.\.rest\)/);
  assert.match(source,/request.auth\?\.token\?\.email_verified === true/);

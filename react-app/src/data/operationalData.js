@@ -23,6 +23,7 @@ const cancelLalamoveCallable = httpsCallable(functions, "cancelTenantLalamoveDis
 const cashierCashReceiptCallable = httpsCallable(functions, "cashierRecordCashReceipt");
 const cashierPickupCallable = httpsCallable(functions, "cashierPickupAction");
 const cashierCancelCallable = httpsCallable(functions, "cashierCancelOrderSafely");
+const kitchenActionCallable = httpsCallable(functions, "kitchenApplyOrderAction");
 
 function requireTenantId(value) {
   const id = String(value || "").trim();
@@ -368,6 +369,10 @@ export function cashierPickupAction(tenantId, orderId, action) {
 }
 export function cashierCancelOrderSafely(tenantId, orderId) {
   return dispatchCall(cashierCancelCallable, tenantId, orderId);
+}
+
+export function kitchenApplyOrderAction(tenantId, orderId, action, options = {}) {
+  return dispatchCall(kitchenActionCallable, tenantId, orderId, { action,...options });
 }
 
 export async function saveQuickOrderHeldBill(tenantId, bill) {

@@ -1,3 +1,14 @@
+## 2026-11-25 — P3.2 Kitchen Source parity and Firebase audited status transitions
+
+- Pinned READ ONLY Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159, Target food-order-app feature/react-firebase-port starting da96f048.
+- Ported bill/payment/status delivery header, edited item/net display, coupon delivery totals, responsive Kitchen edit/delete/status buttons and authorized Telegram order focus.
+- Implemented signed kitchenApplyOrderAction with same-Tenant role/current order, payment/status/revision concurrency guard, real menu read, order status progression, served item, cancel item/full order, per-operation kitchenActionAudit and repeat-safe operation IDs. Paid total/paidAt/paymentStatus kept immutable, proposed kitchenRevisedTotals flagged for manual reconciliation. Lalamove reservation/uncertain hold blocks kitchen edits/cancel; COD disabled.
+- Removed Kitchen page-opening auto repairs, enforced Kitchen-only staff cannot directly write order from browser. Deferred Walk-in/paid review preexisting Firebase Callables remain unchanged.
+- Local QA P3.2 pure policy **8/8 PASS**, signed Auth+Firestore+Functions+Storage/Chrome Emulator **1/1 PASS** using nine mixed fixtures, 4 signed identities, four viewport widths, canonical price, replay/stale reject, paid ledger, courier lock and direct Firestore denial. Existing Foundation, Kitchen Lock, P0, Delivery Gate PASS. Complete npm run test:react-parity **PASS Exit 0**; npm run build:react and generated Hosting Contract **PASS Exit 0** (2026.11.09.535, bundle /react/assets/index-D2gHJ-Qo.js). Generated public assets and Emulator temp config cleaned.
+- Master Source audit advanced to **11/65 = 16.9%**, formal pending **54/65 = 83.1%**, existing Target filename overlap 52/65 still not feature parity. Live finance/provider/manual refund validation is a separate Staging gate. No Production/main merge/APK/IPA.
+
+---
+
 ## 2026-11-25 — P3.1 Cashier latest Source and three signed Firebase transactions
 
 - Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159 READ ONLY, Target Natchanon45/food-order-app feature/react-firebase-port starting f83c25f8.
