@@ -81,7 +81,7 @@ test("admin panel mounts tenant Telegram while platform settings keep separate c
  const admin=await readFile("react-app/src/pages/AdminPage.jsx","utf8");
  const panel=await readFile("react-app/src/components/TelegramSettingsPanel.jsx","utf8");
  const rules=await readFile("firestore.rules","utf8");
- assert.match(admin,/<TelegramSettingsPanel key=\{tenant\?\.id\} scope="tenant" hideHeading \/>/);
+ assert.match(admin,/<TelegramSettingsPanel key=\{tenant\?\.id\} scope="tenant" onActiveCountChange=\{setTelegramActiveCount\} \/>/);
  assert.match(panel,/getTenantTelegramSettings/);assert.match(panel,/getPlatformTelegramSettings/);
  assert.match(panel,/expectedRevision:current.revision/);
  assert.match(rules,/match \/telegramChannels\/\{channelId\} \{ allow read, write: if false/);

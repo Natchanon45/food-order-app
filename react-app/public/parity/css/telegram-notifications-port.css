@@ -72,3 +72,30 @@ body.admin-vr-page [data-admin-card-key="store"] > .admin-card-body > #storeSett
   justify-content: center !important;
   margin-top: 12px;
 }
+
+/* DynamicField is opt-in for Telegram Bot Token + Chat ID only.
+   The fieldset legend, toggles and validator remain unchanged. */
+.lukkaja-telegram-input-grid .lukkaja-telegram-dynamic-field {
+  min-width:0;
+  --lk-field-height:44px;
+}
+.lukkaja-telegram-input-grid .lukkaja-telegram-dynamic-field .lk-dynamic-control > input {
+  box-sizing:border-box;
+  height:44px;
+  min-height:44px;
+  padding:18px 12px 3px;
+  border:1px solid #cadcd0;
+  border-radius:9px;
+  font-size:13px;
+  font-weight:500;
+}
+.lukkaja-telegram-input-grid .lukkaja-telegram-dynamic-field .lk-dynamic-caption {
+  font-weight:400;
+}
+.lukkaja-telegram-input-grid .lukkaja-telegram-dynamic-field .lk-dynamic-help {
+  display:flex;
+  margin:5px 0 0;
+  font-size:11px;
+  font-weight:400;
+  line-height:1.45;
+}

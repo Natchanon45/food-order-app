@@ -68,30 +68,115 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
  if(!isOwner||!SettingsGroup)return null;
  const active=data?.devices.filter(d=>d.enabled).length??0,recipient=data?.receiver||{};
  return <div id="paymentCompanionPilot" className="payment-companion-pilot" data-payment-companion-pilot>
- <SettingsGroup id="paymentCompanionSettingsGroup" icon="phone" title="รับแจ้งเงินเข้า Android" description="รับแจ้งเตือนจาก LINE หรือแอปธนาคาร เพื่อประกอบการตรวจสอบยอดเงิน" status={!data?"ยังไม่ยืนยัน":data.enabled?active+" อุปกรณ์":"ยังไม่เปิดใช้"} statusTone={data?.enabled?"ready":"neutral"}>
+ <SettingsGroup id="paymentCompanionSettingsGroup" icon="phone" title="รับแจ้งเงินเข้า Android" description="ตั้งค่าบัญชีรับเงิน การจับคู่อุปกรณ์ และเงื่อนไขปล่อยครัวอัตโนมัติ" status={!data?"ยังไม่ยืนยัน":data.enabled?active+" อุปกรณ์":"ยังไม่เปิดใช้"} statusTone={data?.enabled?"ready":"neutral"}>
   <div className="payment-companion-body">
-   <div className="payment-companion-intro"><span className="payment-companion-intro-icon"><i className="bi bi-shield-check" aria-hidden="true"/></span><div><strong>เชื่อมอุปกรณ์รับแจ้งเงินเข้า</strong><p>ใช้ข้อมูลแจ้งเตือนยอดและเวลาเพื่อเสนอรายการที่อาจตรงกันเท่านั้น ไม่ใช่หลักฐานที่ธนาคารรับรอง ไม่เปลี่ยนสถานะ Paid และไม่ปล่อยครัวอัตโนมัติ</p></div><span className="payment-companion-pilot-tag">ทดสอบ</span></div>
+   <div className="payment-companion-intro"><span className="payment-companion-intro-icon"><i className="bi bi-shield-check" aria-hidden="true"/></span><div><strong>เชื่อมอุปกรณ์รับแจ้งเงินเข้า</strong><p>ใช้ข้อมูลแจ้งเตือนยอดและเวลาเพื่อเสนอรายการที่อาจตรงกันเท่านั้น ไม่ใช่หลักฐานที่ธนาคารรับรอง ไม่เปลี่ยนสถานะ Paid และไม่ปล่อยครัวอัตโนมัติ</p></div><span className="payment-companion-pilot-tag">ตั้งค่า</span></div>
    {error&&<div role="alert" className="payment-companion-error">{error}</div>}
    <button className="btn btn-sm payment-companion-refresh" type="button" disabled={busy} onClick={reload}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรชข้อมูล</button>
    {!data?<div className="payment-companion-empty" role="status">ยังไม่ยืนยันข้อมูลจากระบบ</div>:<>
    {!data.enabled&&<div className="payment-companion-empty" role="status">ยังไม่เปิดรับข้อมูล BankAlert สำหรับร้านนี้</div>}
    {/* Source now displays activity/metrics separately in the owner-only
         PaymentCompanionObserverCard. Setup retains device/receiver actions. */}
-   <section className="payment-companion-panel"><div className="payment-companion-section-heading"><div className="payment-companion-section-title"><i className="bi bi-phone" aria-hidden="true"/><div><strong>อุปกรณ์ที่เชื่อมต่อ</strong><small>สูงสุด 3 อุปกรณ์ที่เปิดใช้งาน</small></div></div></div>
-    <div className="payment-companion-form"><div className="payment-companion-form-controls"><DynamicField id="paymentCompanionLabel" label="ชื่ออุปกรณ์" value={label}><input id="paymentCompanionLabel" className="input" value={label} maxLength={100} onChange={e=>setLabel(e.target.value)} disabled={busy||!data.enabled}/></DynamicField><button className="btn btn-primary payment-companion-primary-button" type="button" disabled={busy||!data.enabled||active>=3||!label.trim()} onClick={pair}><i className="bi bi-key" aria-hidden="true"/> สร้างรหัสจับคู่</button></div></div>
+     <section className="payment-companion-panel payment-companion-match-panel" data-companion-bank-settings aria-label="ตั้งค่าบัญชีรับเงินสำหรับปล่อยครัว">
+      <div className="payment-companion-section-heading">
+       <div className="payment-companion-section-title">
+        <i className="bi bi-bank" aria-hidden="true"/>
+        <div><strong>บัญชีรับเงินและการปล่อยครัวอัตโนมัติ</strong>
+         <small>ตรวจสอบยอดและบัญชีรับเงินจากการตั้งค่าร้าน · การปล่อยครัวขึ้นอยู่กับสิทธิ์ UAT</small></div>
+       </div>
+       <span className="payment-companion-count">{recipient.enabled?"เปิดใช้งาน":"ยังไม่เปิดใช้งาน"}</span>
+      </div>
+      <p className="payment-companion-footnote" role="status">
+       <i className="bi bi-shield-exclamation" aria-hidden="true"/>
+       ข้อมูลแจ้งเงินเข้าใช้ประกอบการตรวจสอบเท่านั้น ยังไม่ใช่หลักฐานยืนยันจากธนาคาร
+       การปล่อยครัวเป็นการตัดสินใจของร้าน ไม่ได้หมายถึงธนาคารยืนยันยอดหรือเปลี่ยนเป็นชำระแล้ว และยังไม่เรียกผู้จัดส่ง
+      </p>
+      <section className="payment-companion-bank-receiver-card" data-companion-bank-receiver
+       aria-labelledby="paymentCompanionReceiverTitle">
+       <div className="payment-companion-receiver-heading">
+        <div className="payment-companion-receiver-heading-main">
+         <span className="payment-companion-receiver-heading-icon" aria-hidden="true"><i className="bi bi-bank"/></span>
+         <div className="payment-companion-receiver-heading-copy">
+          <h4 id="paymentCompanionReceiverTitle">ผูกบัญชีรับเงินสำหรับปล่อยครัวอัตโนมัติ</h4>
+          <p>ใช้ข้อมูลรับชำระเงินที่ร้านบันทึกไว้ ไม่ต้องกรอกหมายเลขบัญชีซ้ำ</p>
+         </div>
+        </div>
+        <span className={"payment-companion-receiver-state"+
+         (recipient.requiresReconfirmation?" is-warning":recipient.enabled?" is-active":" is-inactive")}>
+         <i className={"bi "+(recipient.requiresReconfirmation?"bi-exclamation-circle":
+          recipient.enabled?"bi-check-circle":"bi-clock-history")} aria-hidden="true"/>
+         {recipient.requiresReconfirmation?"รอยืนยันใหม่":recipient.enabled?"ยืนยันบัญชีรับเงินแล้ว":"ยังไม่เปิดใช้งาน"}
+        </span>
+       </div>
+
+       <div className="payment-companion-receiver-accounts" role="group" aria-label="ข้อมูลบัญชีรับเงินจากการตั้งค่าร้าน">
+        <div className="payment-companion-receiver-account">
+         <span className="payment-companion-receiver-account-icon" aria-hidden="true"><i className="bi bi-bank2"/></span>
+         <div className="payment-companion-receiver-account-info">
+          <span className="payment-companion-receiver-account-label">บัญชีธนาคารที่รับเงิน</span>
+          <strong>{recipient.bankName||"ยังไม่กำหนดธนาคาร"}</strong>
+          <span className="payment-companion-receiver-account-number">
+           <i className="bi bi-credit-card-2-front" aria-hidden="true"/>
+           {recipient.accountLast4?"•••• "+recipient.accountLast4:"ยังไม่มีเลขบัญชีรับเงิน"}
+          </span>
+         </div>
+        </div>
+        <div className="payment-companion-receiver-account is-promptpay">
+         <span className="payment-companion-receiver-account-icon" aria-hidden="true"><i className="bi bi-qr-code"/></span>
+         <div className="payment-companion-receiver-account-info">
+          <span className="payment-companion-receiver-account-label">พร้อมเพย์ของร้าน</span>
+          <strong>{recipient.promptPayLast4?"•••• "+recipient.promptPayLast4:"ยังไม่มีข้อมูลพร้อมเพย์"}</strong>
+          <span className="payment-companion-receiver-account-number">
+           <i className="bi bi-link-45deg" aria-hidden="true"/>
+           ข้อมูลจากการชำระเงินของร้าน
+          </span>
+         </div>
+        </div>
+       </div>
+
+       <div className="payment-companion-receiver-explanation">
+        <i className="bi bi-info-circle" aria-hidden="true"/>
+        <span>หมายเลขพร้อมเพย์และบัญชีธนาคารเป็นคนละข้อมูล เลขท้ายจึงไม่จำเป็นต้องเหมือนกัน
+         หากร้านยืนยันว่าเชื่อมกับบัญชีรับเงินเดียวกัน</span>
+       </div>
+
+       <div className="payment-companion-receiver-actions">
+        {!recipient.enabled||recipient.requiresReconfirmation?
+         <button type="button" className="btn btn-primary payment-companion-receiver-action is-primary"
+          disabled={busy||!data?.enabled||!recipient.storePaymentReady}
+          onClick={()=>confirmReceiver(true)}>
+          <i className={"bi "+(busy?"bi-arrow-repeat":"bi-shield-check")} aria-hidden="true"/>
+          {busy?"กำลังบันทึก…":"ยืนยันบัญชีรับเงิน"}
+         </button>:null}
+        {recipient.linked?
+         <button type="button" className="btn payment-companion-receiver-action is-secondary"
+          disabled={busy||!data} onClick={()=>confirmReceiver(false)}>
+          <i className="bi bi-pause-circle" aria-hidden="true"/> ปิดการผูกบัญชี
+         </button>:null}
+       </div>
+
+       <div className={"payment-companion-receiver-feedback"+(error?" is-error":recipient.enabled?" is-success":" is-neutral")} role="status" aria-live="polite">
+        <i className="bi bi-info-circle" aria-hidden="true"/>
+        <span>{!data?"ยังไม่สามารถยืนยันข้อมูลบัญชีจากระบบ":!data.enabled?"ยังไม่เปิดระบบรับแจ้งเงินเข้าของร้านบน Firebase":recipient.requiresReconfirmation?"มีการแก้ไขบัญชีรับเงิน กรุณายืนยันใหม่":recipient.enabled?"ยืนยันบัญชีรับเงินแล้ว · ยังไม่บันทึก Paid":recipient.storePaymentReady?"เจ้าของร้านต้องยืนยันความสัมพันธ์บัญชีธนาคารกับพร้อมเพย์ก่อน":"ข้อมูลการชำระเงินของร้านยังไม่ครบ กรุณาตรวจที่หัวข้อการชำระเงิน"}</span>
+       </div>
+      </section>
+     </section>
+
+   <section className="payment-companion-panel"><div className="payment-companion-section-heading"><div className="payment-companion-section-title"><i className="bi bi-phone" aria-hidden="true"/><div><strong>อุปกรณ์ที่เชื่อมต่อ</strong><small>จัดการอุปกรณ์และรหัสสำหรับรับแจ้งเงินเข้า</small></div></div><span className="payment-companion-count">{active}/3 อุปกรณ์</span></div>
+    <div className="payment-companion-download">
+     <span className="payment-companion-download-icon" aria-hidden="true"><i className="bi bi-android2"/></span>
+     <div className="payment-companion-download-copy"><strong>ติดตั้งแอป PG Connect</strong>
+      <small>ดาวน์โหลดแอป แล้วนำเฉพาะรหัสที่สร้างจากเว็บไปกรอก</small>
+      <small className="payment-companion-download-warning">PG Connect รุ่นปัจจุบันรองรับเฉพาะการจับคู่ส่วนกลาง ยังไม่รองรับการรับแจ้งเงินเข้าของร้าน</small>
+     </div>
+     <button type="button" className="btn btn-primary payment-companion-download-btn" disabled><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด Android APK</button>
+    </div>
+    <div className="payment-companion-form"><div className="payment-companion-form-controls"><DynamicField id="paymentCompanionLabel" label="ชื่ออุปกรณ์" value={label} className="payment-companion-dynamic-field" description="ตั้งชื่อเพื่อแยกอุปกรณ์ เช่น Android ร้านค้า (รหัสจับคู่จะแสดงเพียงครั้งเดียว)"><input id="paymentCompanionLabel" className="input" value={label} maxLength={100} onChange={e=>setLabel(e.target.value)} disabled={busy||!data.enabled}/></DynamicField><button className="btn btn-primary payment-companion-primary-button" type="button" disabled={busy||!data.enabled||active>=3||!label.trim()} onClick={pair}><i className="bi bi-key" aria-hidden="true"/> สร้างรหัสจับคู่</button></div></div>
     {token&&<div className="payment-companion-token"><strong>รหัสจับคู่ (แสดงครั้งเดียว)</strong><small>Server: https://penguin-food.web.app</small><div className="payment-companion-token-controls"><input className="input" aria-label="รหัสจับคู่" readOnly type={visible?"text":"password"} value={token}/><button className="btn btn-sm" type="button" onClick={()=>setVisible(v=>!v)}>{visible?"ซ่อน":"แสดง"}</button><button className="btn btn-sm" type="button" onClick={async()=>{try{await navigator.clipboard.writeText(token);notify("คัดลอกรหัสแล้ว");}catch{notify("คัดลอกไม่สำเร็จ","error");}}}>คัดลอก</button><button className="btn btn-sm" type="button" onClick={()=>{setToken("");setVisible(false);}}>ปิด</button></div></div>}
-    <p className="payment-companion-footnote">ยังไม่มี APK เฉพาะ PENGUIN ที่ผ่าน UAT และยังไม่เปิดรับข้อความดิบที่อาจมีข้อมูลส่วนตัว</p>
+
     {data.devices.length?<ul className="payment-companion-device-list">{data.devices.map(d=><li key={d.id} className="payment-companion-device"><span className="payment-companion-device-icon"><i className="bi bi-phone" aria-hidden="true"/></span><div className="payment-companion-device-info"><strong>{d.label}</strong><small>รับข้อมูลล่าสุด: {date(d.lastSeenUTC)}</small></div><span className={"payment-companion-device-state "+(d.enabled?"is-active":"")}>{d.enabled?"เปิดสิทธิ์":"ยกเลิกแล้ว"}</span><button className="btn btn-sm payment-companion-revoke" disabled={busy} type="button" onClick={()=>change(d,d.enabled?"revoke":"archive")}>{d.enabled?"ยกเลิกสิทธิ์":"ลบคีย์"}</button></li>)}</ul>:<div className="payment-companion-empty">ยังไม่มีอุปกรณ์</div>}
    </section>
-   <section className="payment-companion-panel"><div className="payment-companion-section-title"><i className="bi bi-intersect" aria-hidden="true"/><div><strong>รายการที่อาจตรงกับคำสั่งซื้อ</strong><small>ยอดตรง บัญชีเลขท้ายตรง และโอนก่อนสร้างออเดอร์ภายใน 15 นาที</small></div></div><p className="payment-companion-footnote">บัญชีที่ร้านบันทึกไว้: {recipient.bankName||"ยังไม่ตั้งค่า"} {recipient.accountLast4?"•••• "+recipient.accountLast4:""} · PromptPay {recipient.promptPayLast4?"•••• "+recipient.promptPayLast4:"ยังไม่ตั้งค่า"} · เลขท้ายสองบัญชีไม่จำเป็นต้องตรงกัน</p>
-    <div className="payment-companion-receiver-confirmation">
-     <strong>{recipient.requiresReconfirmation?"ข้อมูลการตั้งค่าร้านเปลี่ยนแล้ว ต้องยืนยันใหม่":recipient.enabled?"ยืนยันบัญชีรับเงินแล้ว":"ยังไม่ยืนยันบัญชีรับเงิน"}</strong>
-     <small>ใช้ข้อมูลจากการตั้งค่าร้าน ไม่ต้องกรอกบัญชีซ้ำ เมื่อมีการบันทึกข้อมูลร้านใหม่ ต้องยืนยันอีกครั้งเพื่อไม่ให้ใช้ข้อมูลเก่า</small>
-     <div className="payment-companion-receiver-buttons">
-      {!recipient.enabled&&<button type="button" className="btn btn-primary btn-sm" disabled={busy||!data.enabled||!recipient.storePaymentReady} onClick={()=>confirmReceiver(true)}><i className="bi bi-shield-check" aria-hidden="true"/> ยืนยันบัญชีรับเงิน</button>}
-      {recipient.linked&&<button type="button" className="btn btn-sm" disabled={busy} onClick={()=>confirmReceiver(false)}><i className="bi bi-pause-circle" aria-hidden="true"/> ปิดการผูกบัญชี</button>}
-     </div>
-    </div>
+   {data.enabled&&<section className="payment-companion-panel"><div className="payment-companion-section-title"><i className="bi bi-intersect" aria-hidden="true"/><div><strong>รายการที่อาจตรงกับคำสั่งซื้อ</strong><small>ข้อมูลตรวจสอบเบื้องต้น</small></div></div>
     {data.autoKitchenAvailable&&recipient.enabled&&<div className="payment-companion-receiver-confirmation">
       <strong>การส่งเข้าครัวจาก BankAlert · UAT เท่านั้น</strong>
       <small>ข้อมูลแจ้งเงินเข้าไม่ได้รับรองโดยธนาคาร อาจมีความผิดพลาด ร้านต้องยอมรับความเสี่ยงอย่างชัดเจน ออเดอร์ยังไม่ใช่ Paid และไม่เรียก Lalamove จนกว่าจะตรวจรับเงินจริง</small>
@@ -104,7 +189,7 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
     </div>}
     {data.matchStatus!=="advisory"||!recipient.storePaymentReady?<div className="payment-companion-empty">ยังยืนยันข้อมูลสำหรับเสนอการจับคู่ไม่ได้</div>:data.matches.length?<ul className="payment-companion-notice-list">{data.matches.map(m=><li key={m.orderId} className="payment-companion-notice"><div className="payment-companion-notice-info"><strong>{money(m.amountSatang)} บาท</strong><small>ออเดอร์ {m.orderId}</small><small>{date(m.orderTimeUTC)} · {m.hasSlip?"มีสลิป":"ยังไม่มีสลิป"}</small></div><span className="payment-companion-unverified">{states[m.status]||"ยังไม่ยืนยัน"}</span></li>)}</ul>:<div className="payment-companion-empty">ไม่พบออเดอร์ PromptPay ที่รอตรวจสอบในช่วงล่าสุด</div>}
     <p className="payment-companion-footnote">แคชเชียร์บันทึกการตรวจเบื้องต้นได้ แต่การอนุมัติชำระยังใช้ขั้นตอน Superadmin เดิม ระบบยังไม่อนุมัติการชำระหรือปล่อยครัวจากข้อมูลนี้</p>
-   </section>
+   </section>}
    </>}
   </div>
  </SettingsGroup></div>;

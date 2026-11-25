@@ -15,9 +15,9 @@ const ROOMS={
   ["admin_store","ห้องแอดมินร้าน",
     "ความเคลื่อนไหวของร้าน การชำระเงินและรายการที่ต้องติดตาม"],
   ["cashier_delivery","ห้องแคชเชียร์",
-    "คำสั่งซื้อ Delivery และสลิปที่รอแคชเชียร์ตรวจสอบ"],
+    "ออเดอร์ใหม่ การรับชำระเงิน และรายการที่รอแคชเชียร์ตรวจสอบ"],
   ["kitchen_delivery","ห้องครัว",
-    "คำสั่งซื้อที่พร้อมให้ครัวดำเนินการ"],
+    "รายการอาหารใหม่และคำสั่งซื้อที่พร้อมส่งให้ครัวดำเนินการ"],
  ],
 };
 const HASH=/^[a-f0-9]{64}$/;
@@ -158,82 +158,145 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
    else setError(errorText(caught));
   }finally{setBusy(false);}
  };
- return <section className={"lk-shop-panel"+(embedded?" is-embedded":" card")}
-  id={scope==="platform"?"platformLKShopPairing":"adminLKShopPairing"}
-  data-lk-shop-scope={scope}>
-  {!embedded&&<header className="lk-shop-panel-heading">
-   <i className="bi bi-bell-fill" aria-hidden="true"/>
-   <div><h3>PG Notify • ห้องแจ้งเตือน</h3>
-    <p>แยกอุปกรณ์ตามห้องและบทบาทเพื่อไม่ส่งการแจ้งเตือนข้ามทีม</p>
-   </div>
-  </header>}
-  <p className="lk-shop-pilot-note" role="note">
-   PG Notify สำหรับ Firebase อยู่ระหว่าง UAT เปิดคู่ขนานกับ Telegram
-   และแอปจาก Source รุ่นเดิมยังจับคู่กับโดเมน PENGUIN ไม่ได้
-   กรุณาอย่านำ QR นี้ไปใช้กับ APK ของ LUKKAJA
-  </p>
-  {apk&&<p><a className="btn btn-sm" href={apk.path} download={apk.path.split("/").pop()}><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด PG Notify (UAT)</a></p>}
-  <p role="status">{pushServerConfigured?"เซิร์ฟเวอร์ Push เปิดใช้งานแล้ว · ทดสอบที่อุปกรณ์หลังจับคู่":"เซิร์ฟเวอร์ Push ยังไม่พร้อมหรือยังตรวจสอบไม่ได้"}</p>
-  {error&&<p role="alert" className="lk-shop-error">{error}</p>}
-  {loading?<p role="status">กำลังอ่านสถานะ PG Notify จากเซิร์ฟเวอร์…</p>:
-   disabled?<p role="status">ระบบจับคู่ PG Notify ของ Firebase ยังไม่ได้เปิดทดสอบ</p>:<>
-    <fieldset className="lk-shop-rooms" disabled={busy}>
-     <legend>{scope==="platform"?"ห้องแจ้งเตือนส่วนกลาง":"เลือกห้องสำหรับ QR นี้ *"}</legend>
-     <div className="lk-shop-room-grid">
-      {roomOptions.map(([key,label,description])=>
-       <label className={"lk-shop-room"+(purpose===key?" is-selected":"")} key={key}>
-        <input type="radio" name={"lk-shop-room-"+scope}
-         checked={purpose===key} value={key}
-         onChange={()=>{setPurpose(key);setQr(null);}}/>
-        <span><strong>{label}</strong><small>{description}</small></span>
-       </label>)}
-     </div>
-    </fieldset>
-    <div className="lk-shop-controls">
-     <button type="button" className="btn btn-primary" onClick={issue}
-      disabled={busy||!purpose}><i className="bi bi-qr-code" aria-hidden="true"/>
-       {busy?"กำลังสร้าง…":"สร้าง QR สำหรับห้องที่เลือก"}</button>
-     <button type="button" className="btn" onClick={()=>void reload()}
-      disabled={busy}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรช</button>
+ const platform=scope==="platform";
+ const options=roomOptions.map(([key])=>key);
+ const roles=Object.fromEntries(roomOptions.map(([key,label])=>[key,label]));
+ const roomDescriptions=Object.fromEntries(roomOptions.map(([key,,description])=>[key,description]));
+ const colors={bg:"#f3f9f5",border:"#d5e7da",text:"#153e2b"};
+  return <section className={`lk-shop-pairing-panel lk-shop-panel${embedded?" is-embedded":" card"}`} id={platform?"platformLKShopPairing":"adminLKShopPairing"} data-lk-shop-scope={scope}
+    style={embedded?{padding:0,margin:0,border:0,background:"transparent",boxShadow:"none"}:
+      {padding:16,margin:"12px 0",border:"1px solid #d5e7da",borderRadius:16,background:"#ffffff"}}>
+    {!embedded?<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+      <span style={{background:"#e2f2e9",color:"#117c46",borderRadius:12,padding:12}}>
+        <i className="bi bi-bell-fill" aria-hidden="true"/></span>
+      <div style={{minWidth:0,flex:1}}>
+        <h3 style={{fontSize:17,margin:0,fontWeight:800}}>PG Notify • ห้องแจ้งเตือน</h3>
+        <p style={{margin:"5px 0 0",fontSize:12,color:"#587264",lineHeight:1.5}}>
+          {platform?"รับแจ้งเตือนการเงินและรายการสำคัญของระบบ":"เลือกห้องก่อนสร้าง QR เพื่อให้แต่ละทีมได้รับเฉพาะข้อความที่เกี่ยวข้อง"}
+        </p>
+      </div>
+    </div>:null}
+    <div role="note" style={{padding:10,background:"#f6f8f7",color:"#53685b",fontSize:12,borderRadius:10,lineHeight:1.6,marginBottom:12}}>
+      ระบบแจ้งเตือนผ่าน PG Notify จะเปิดใช้คู่ขนานกับ Telegram ระหว่างทดสอบ ไม่ยกเลิกช่องทางเดิมจนยืนยันว่า Push ส่งถึงอุปกรณ์ครบทุกบทบาท
     </div>
-    {qr&&<div className="lk-shop-qr" role="status">
-     <strong>สแกนด้วยแอป PG Notify สำหรับ PENGUIN • {roomOptions.find(x=>x[0]===qr.purpose)?.[1]}</strong>
-     <img src={qr.image} width={240} height={240} alt={"QR จับคู่อุปกรณ์ห้อง "+qr.purpose}/>
-     <span>รหัสใช้ได้ครั้งเดียว • เหลือ {String(Math.floor(remaining/60)).padStart(2,"0")}:
-      {String(remaining%60).padStart(2,"0")} นาที</span>
-     <div className="lk-shop-qr-buttons">
-      <button className="btn" type="button" onClick={copyCode} disabled={!remaining}>
-       <i className="bi bi-clipboard" aria-hidden="true"/> คัดลอกรหัสสำหรับ Emulator</button>
-      <button className="btn" type="button" onClick={()=>setQr(null)}>
-       <i className="bi bi-x-circle" aria-hidden="true"/> ปิด QR</button>
-     </div>
-     <small>ห้ามส่งรูป QR หรือรหัสให้ผู้อื่น • รหัสแสดงเฉพาะในเบราว์เซอร์นี้</small>
-    </div>}
-    <div className="lk-shop-device-head">
-     <strong>สมาชิกห้องแจ้งเตือน ({devices.length} อุปกรณ์)</strong>
-     <small>สูงสุด 10 อุปกรณ์ต่อห้อง</small>
-    </div>
-    {devices.length===0?<p className="lk-shop-empty">ยังไม่มีอุปกรณ์ที่เชื่อมต่อ</p>:
-    <div className="lk-shop-device-groups">
-     {roomOptions.map(([room,label])=>{
-      const members=devices.filter(d=>d.role===room);
-      return <section className="lk-shop-device-room" key={room} data-room={room}>
-       <strong>{label} ({members.length})</strong>
-       {members.length===0?<small>ยังไม่มีอุปกรณ์ในห้องนี้</small>:members.map(d=>
-        <div className="lk-shop-device" key={d.id}>
-         <i className={"bi "+(d.platform==="ios"?"bi-apple":"bi-android2")} aria-hidden="true"/>
-         <div><strong>{d.name}</strong>
-          <small>{d.pushReady?"ลงทะเบียน Token สำหรับ Push แล้ว":"จับคู่แล้ว • ยังไม่ได้เปิด Push บนโทรศัพท์"}</small>
-         </div>
-         {pushServerConfigured&&d.pushReady&&<button type="button" className="btn btn-sm" disabled={busy} onClick={()=>void testPush(d)} aria-label={"ส่ง Push ทดสอบ "+d.name}><i className="bi bi-bell" aria-hidden="true"/> ส่งทดสอบ</button>}
-         <button type="button" className="btn btn-sm" onClick={()=>void revoke(d)} disabled={busy}
-          aria-label={"ยกเลิกการจับคู่ "+d.name}>
-          <i className="bi bi-link-45deg" aria-hidden="true"/> ยกเลิกการจับคู่
-         </button>
+    {apk&&<a className="btn btn-sm" href={apk.path} download={apk.path.split("/").pop()} style={{marginBottom:12}}><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด PG Notify (.apk)</a>}
+    <div role="status" style={{fontSize:12,color:"#53685b",marginBottom:12}}>{pushServerConfigured?"เซิร์ฟเวอร์ Push เปิดใช้งานแล้ว · ทดสอบที่อุปกรณ์หลังจับคู่":"เซิร์ฟเวอร์ Push ยังไม่พร้อมหรือยังตรวจสอบไม่ได้"}</div>
+    {error&&<p role="alert" className="lk-shop-error">{error}</p>}
+    {loading?<p role="status">กำลังอ่านสถานะ PG Notify จากเซิร์ฟเวอร์…</p>:disabled?<div role="status" style={{padding:12,color:"#935b10",background:"#fff5e5",borderRadius:10}}>
+      ระบบจับคู่ PG Notify ของ Firebase ยังไม่ได้เปิดทดสอบ</div>:<>
+      {platform?(
+        <div className="lk-shop-platform-room" role="group" aria-label={roles.superadmin_slip_manual}>
+          <span className="lk-shop-platform-room-icon" aria-hidden="true">
+            <i className="bi bi-shield-check" />
+          </span>
+          <div className="lk-shop-platform-room-copy">
+            <strong>{roles.superadmin_slip_manual}</strong>
+            <small>{roomDescriptions.superadmin_slip_manual}</small>
+          </div>
+          <span className="lk-shop-platform-room-status">
+            <i className="bi bi-check-circle" aria-hidden="true" /> ห้องประจำระบบ
+          </span>
+        </div>
+      ):(
+        <fieldset style={{border:0,padding:0,margin:"0 0 14px",minWidth:0}}>
+          <legend style={{fontWeight:800,fontSize:13,color:colors.text,marginBottom:9}}>
+            เลือกห้องสำหรับ QR นี้ *
+          </legend>
+          <div className="lk-shop-room-picker" style={{display:"grid",
+            gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,210px),1fr))",gap:9}}>
+            {options.map(role=><label key={role} className="lk-shop-room-option"
+              style={{display:"flex",alignItems:"flex-start",gap:10,padding:"13px 12px",borderRadius:12,cursor:busy?"wait":"pointer",
+                border:"1px solid "+(purpose===role?"#159554":"#d8e8de"),
+                background:purpose===role?"#eaf7ee":"#fff",minWidth:0}}>
+              <input type="radio" name="tenantLKShopRoom" value={role}
+                checked={purpose===role} disabled={busy}
+                onChange={()=>{setPurpose(role);setQr(null);}}
+                // Explicit dimensions isolate this radio from the site's global input{width:100%;min-height:46px}.
+                style={{appearance:"auto",accentColor:"#16834a",width:20,minWidth:20,maxWidth:20,
+                  height:20,minHeight:20,maxHeight:20,padding:0,margin:"2px 0 0",flex:"0 0 20px"}}/>
+              <span style={{minWidth:0,flex:"1 1 auto",display:"grid",gap:4}}>
+                <strong style={{fontSize:13,color:colors.text}}>{roles[role]}</strong>
+                <small style={{fontSize:11,color:"#607566",lineHeight:1.5}}>{roomDescriptions[role]}</small>
+              </span>
+            </label>)}
+          </div>
+        </fieldset>
+      )}
+      <div className={platform?"lk-shop-pairing-actions lk-shop-pairing-actions--platform":"lk-shop-pairing-actions"}
+        style={platform?undefined:{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:9,flexWrap:"wrap",marginBottom:14}}>
+        {platform?(
+          <>
+            <button type="button" className="btn lk-shop-pairing-refresh" onClick={()=>void reload()} disabled={busy}>
+              <i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรช
+            </button>
+            <button type="button" className="btn btn-primary lk-shop-pairing-create" onClick={issue} disabled={busy||!purpose}>
+              <i className="bi bi-qr-code" aria-hidden="true"/> {busy?"กำลังสร้าง…":"สร้าง QR"}
+            </button>
+          </>
+        ):(
+          <>
+            <button type="button" className="btn lk-shop-pairing-refresh" onClick={()=>void reload()} disabled={busy}>
+              <i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรช
+            </button>
+            <button type="button" className="btn btn-primary lk-shop-pairing-create" onClick={issue} disabled={busy||!purpose}>
+              <i className="bi bi-qr-code" aria-hidden="true"/> {busy?"กำลังสร้าง…":"สร้าง QR สำหรับห้องที่เลือก"}
+            </button>
+          </>
+        )}
+      </div>
+      {qr?<div className="lk-shop-qr" role="status" style={{border:"1px solid #d5e7da",background:colors.bg,borderRadius:14,padding:16,
+        display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginBottom:14}}>
+        <strong style={{color:colors.text}}>สแกนด้วย PG Notify • {roles[purpose]}</strong>
+        <img src={qr.image} width={216} height={216} alt={"QR จับคู่ PG Notify สำหรับสิทธิ์ "+roles[purpose]} style={{maxWidth:"100%",height:"auto"}}/>
+        <span style={{color:remaining<=20?"#b34c26":"#256747",fontWeight:700,fontSize:13}}>
+          ใช้ได้ครั้งเดียว • เหลือ {String(Math.floor(remaining/60)).padStart(2,"0")}:{String(remaining%60).padStart(2,"0")} นาที
+        </span>
+        <button type="button" className="btn lk-shop-pair-code-action"
+          data-lk-shop-copy-code={platform?"platform":"tenant"}
+          onClick={copyCode} disabled={remaining<=0}>
+          <i className="bi bi-clipboard" aria-hidden="true"/>
+          <span>คัดลอกรหัสจับคู่ (64 ตัวอักษร)</span>
+        </button>
+        <small style={{textAlign:"center",maxWidth:340,color:"#6b7f72"}}>
+          หากใช้ Emulator ไม่มีกล้อง ให้คัดลอกรหัสแล้ววางใน PG Notify ภายใน 5 นาที
+          ห้ามส่งรหัสหรือรูป QR ให้บุคคลอื่น
+        </small>
+        <button type="button" className="btn" onClick={()=>{setQr(null);void reload();}}>
+          <i className="bi bi-x-circle" aria-hidden="true"/> ปิด QR
+        </button>
+      </div>:null}
+      <div style={{fontSize:13,fontWeight:800,color:colors.text,marginBottom:8}}>
+        สมาชิกห้องแจ้งเตือน ({devices.length} อุปกรณ์)
+      </div>
+      {devices.length===0?<div style={{color:"#647b6c",fontSize:13}}>ยังไม่มีอุปกรณ์ที่เชื่อมต่อ</div>:
+      <div style={{display:"grid",gap:12}}>
+        {options.map(room=>{
+          const members=devices.filter(device=>device.role===room);
+          return <div key={room} style={{padding:10,borderRadius:12,border:"1px solid #e2eee6",background:"#fbfdfb"}}>
+            <strong style={{display:"block",fontSize:13,color:colors.text,marginBottom:7}}>
+              {roles[room]} ({members.length})
+            </strong>
+            <div style={{display:"grid",gap:8}}>
+            {members.length===0?<span style={{fontSize:12,color:"#718478"}}>ยังไม่มีอุปกรณ์ในห้องนี้</span>:null}
+            {members.map(device=><div className="lk-shop-device" key={device.id}
+          style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",border:"1px solid #e0eee5",
+            borderRadius:12,padding:10}}>
+          <i className={"bi "+(device.platform==="ios"?"bi-apple":"bi-android2")}
+            aria-hidden="true" style={{color:"#14804a"}}/>
+          <div style={{minWidth:0,flex:"1 1 155px"}}>
+            <strong style={{display:"block",color:colors.text}}>{device.name}</strong>
+            <small style={{color:"#6b7d70"}}>{device.pushReady?"ลงทะเบียน Token สำหรับ Push แล้ว":"เชื่อมต่อแล้ว • รอเปิดแจ้งเตือนบนโทรศัพท์"}</small>
+          </div>
+          {pushServerConfigured&&device.pushReady&&<button type="button" className="btn btn-sm" disabled={busy} onClick={()=>void testPush(device)} aria-label={"ส่ง Push ทดสอบ "+device.name}><i className="bi bi-bell" aria-hidden="true"/> ส่งทดสอบ</button>}
+          <button type="button" className="btn btn-sm" onClick={()=>revoke(device)} disabled={busy} aria-label={"ยกเลิกการจับคู่ "+device.name}
+            style={{color:"#ae2d2d",border:"1px solid #edc7c7"}}>
+            <i className="bi bi-link-45deg" aria-hidden="true"/> ยกเลิกการจับคู่
+          </button>
         </div>)}
-      </section>;
-     })}
-    </div>}
-   </>}
- </section>;
+            </div>
+          </div>;
+        })}
+      </div>}
+    </>}
+  </section>;
 }

@@ -108,7 +108,8 @@ test("Source PG Notify room picker, QR, device revoke, platform isolation, mobil
     await platform.goto(url+"?platform=1");
     const panel=platform.locator("#platformLKShopPairing");
     await panel.getByText("ห้องแจ้งเตือนส่วนกลาง",{exact:true}).first().waitFor();
-    assert.equal(await panel.locator('input[type="radio"]').count(),1);
+    assert.equal(await panel.locator('input[type="radio"]').count(),0);
+    assert.equal(await panel.locator('.lk-shop-platform-room').count(),1);
     assert.equal(await panel.locator('input[value="cashier_delivery"]').count(),0);
     await panel.getByRole("button",{name:/สร้าง QR/}).click();
     await panel.locator(".lk-shop-qr img").waitFor();
