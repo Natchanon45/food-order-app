@@ -40,7 +40,7 @@ function proofValidForOrder(order = {}, proof = {}, now = Date.now()) {
 }
 
 function kitchenAdmitted(order = {}) {
-  return order.orderType === "delivery"
+  return Boolean(order) && order.orderType === "delivery"
     && (order.paymentMethod === "cod" || order.paymentStatus === "paid" ||
       (order.paymentMethod==="promptpay"&&
        order.paymentStatus==="pending_verification"&&

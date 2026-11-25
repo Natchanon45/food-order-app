@@ -15,7 +15,7 @@ export function accountEmailHome(profile={}){
 }
 export function accountEmailGuardPath(path){
  const pathname=String(path||"").split(/[?#]/,1)[0];
- if(pathname==="/"||pathname==="/react")return true;
+ if(pathname==="/"||pathname==="/react"||pathname==="/session"||pathname==="/home")return true;
  if(["/waiting-queue/customer","/waiting-queue/display","/pos/customer-display",
   "/pos/login","/pos/forbidden"].includes(pathname))return false;
  return /^\/(?:admin|platform|super-admin|cashier|kitchen|pos|reports|waiting-queue)(?:\/|$)/.test(pathname);

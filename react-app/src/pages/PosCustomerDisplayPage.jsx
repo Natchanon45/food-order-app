@@ -185,6 +185,7 @@ export function PosCustomerDisplayPage() {
               </div>
             </div>
           </section>
+          <div id="displayThanks" className="paid-state display-thanks" hidden={snapshot?.status === "paid"}>{t("pos_customer_display.payment.thanks")}</div>
           <div id="paidState" className="paid-state" hidden={snapshot?.status !== "paid"}>{t("pos_customer_display.payment.thanks")}</div>
         </section>
       </main>

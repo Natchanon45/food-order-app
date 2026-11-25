@@ -67,13 +67,18 @@ function StorefrontAliasRedirect({ target }) {
 }
 
 function NotFound() {
-  return (
-    <main className="container">
-      <section className="card empty">
-        <strong>404</strong>
-      </section>
-    </main>
-  );
+  return <PublicRouteMissingPage title="ไม่พบหน้าที่ต้องการ" detail="กรุณาตรวจสอบลิงก์หรือกลับหน้าแรก" />;
+}
+function SessionCompatibility() {
+  const {status,profile}=useAuth();
+  const tenancy=useTenant();
+  if(status==="loading"||tenancy.status==="loading")return <PageReadyOverlay/>;
+  if(status==="error"||tenancy.status==="error")return <PageReadyOverlay error title="ตรวจสอบสิทธิ์ไม่สำเร็จ" onRetry={()=>location.reload()}/>;
+  return <Navigate to={profile ? "/" : "/login"} replace/>;
+}
+function LocalRouteAlias({target}) {
+  const {search,hash}=useLocation();
+  return <Navigate to={target+search+hash} replace/>;
 }
 
 function tenantProtectedPath(pathname) {
@@ -189,11 +194,14 @@ export default function App() {
       <PosSessionScope>
       <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/home" element={<LocalRouteAlias target="/" />} />
+      <Route path="/session" element={<SessionCompatibility />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/verify-account" element={<AccountEmailVerificationPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/platform" element={<PlatformPage />} />
       <Route path="/admin" element={<AdminPage />} />
+      <Route path="/admin/store-settings" element={<LocalRouteAlias target="/admin" />} />
       <Route path="/admin/users" element={<AdminUsersPage />} />
       <Route path="/admin/sales-report" element={<AdminSalesReportPage />} />
       <Route path="/admin/qr" element={<AdminQrPage />} />
@@ -216,14 +224,19 @@ export default function App() {
       <Route path="/terms" element={<LegalPage type="terms" />} />
       <Route path="/verify" element={<VerifyPage />} />
       <Route path="/delivery" element={<PublicRouteMissingPage />} />
+      <Route path="/delivery/:slug" element={<StorefrontAliasRedirect target="delivery" />} />
+      <Route path="/delivery/:slug/success" element={<StorefrontAliasRedirect target="delivery/success" />} />
       <Route path="/delivery/success" element={<PublicRouteMissingPage />} />
       <Route path="/takeaway" element={<StorefrontCompatibilityEntry target="takeaway" allowStoredTenant />} />
+      <Route path="/takeaway/:slug" element={<StorefrontAliasRedirect target="takeaway" />} />
       <Route path="/order" element={<PublicRouteMissingPage />} />
+      <Route path="/order/:slug" element={<StorefrontAliasRedirect target="order" />} />
       <Route path="/pos/login" element={<Navigate to="/login?next=/pos/" replace />} />
       <Route path="/pos/forbidden" element={<PosForbiddenPage />} />
       <Route path="/pos" element={<PosPage />} />
       <Route path="/pos/catalog" element={<PosCatalogPage />} />
       <Route path="/pos/products" element={<PosProductsPage />} />
+      <Route path="/pos/categories" element={<PosProductsPage categoriesOnly />} />
       <Route path="/pos/customer-display" element={<PosCustomerDisplayPage />} />
       <Route path="/pos/receipt" element={<PosReceiptPage />} />
       <Route path="/pos/tax-invoice" element={<PosTaxInvoicePage />} />

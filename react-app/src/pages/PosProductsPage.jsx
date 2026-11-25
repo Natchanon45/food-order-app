@@ -105,7 +105,7 @@ function loadZxing() {
   return zxingLoader;
 }
 
-export function PosProductsPage() {
+export function PosProductsPage({categoriesOnly=false}) {
   const authState = useAuth();
   const tenantState = useTenant();
   const { profile, user: authUser } = authState;
@@ -900,6 +900,11 @@ export function PosProductsPage() {
     || Boolean(redirectTarget)
     || (Boolean(profile && tenant) && !rolesReady)
     || Boolean(tenant?.id && profile && rolesReady && canView && !initialReady);
+  useEffect(()=>{
+    if(!categoriesOnly||!initialReady||!stylesReady||workspaceReadError||redirectTarget)return;
+    const frame=requestAnimationFrame(()=>document.getElementById("productCategoryManager")?.scrollIntoView({block:"start"}));
+    return()=>cancelAnimationFrame(frame);
+  },[categoriesOnly,initialReady,stylesReady,workspaceReadError,redirectTarget]);
   if(workspaceReadError)return <PageReadyOverlay error title="ไม่สามารถโหลดข้อมูล POS ได้" message="กรุณาลองใหม่เพื่อยืนยันข้อมูลร้านค้าและสิทธิ์การใช้งาน" onRetry={()=>location.reload()}/>;
   if (needsReady) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
@@ -919,7 +924,7 @@ export function PosProductsPage() {
         </div>
       </header>
 
-      <main data-pos-management className="management-container">
+      <main data-pos-management data-pos-categories-route={categoriesOnly?"true":undefined} className="management-container">
         <section className="products-visual-hero">
           <div className="products-hero-copy">
             <span className="products-hero-kicker"><i className="bi bi-box-seam-fill" aria-hidden="true"></i>{tr("visual.eyebrow")}</span>

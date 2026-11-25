@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 const projectId = "demo-penguin-hybrid";
 const required = {
   FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
-  FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+  FIRESTORE_EMULATOR_HOST: process.env.WEB_DEMO_ISOLATED_PORT === "8189" ? "127.0.0.1:8189" : "127.0.0.1:8080",
   FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
   FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
 };

@@ -108,7 +108,7 @@ function scopedRoleHome(profile = {}) {
 const AVAILABLE_AUTH_NEXT_ROUTES=new Set([
   ...Object.keys(REACT_ROUTE_MAP),
   "/admin/revenue-share","/reports/hybrid-billing","/platform/hybrid-invoices",
-  "/cashier/customer-display","/pos/catalog","/pos/products",
+  "/cashier/customer-display","/pos/catalog","/pos/products","/pos/categories",
   "/pos/customer-display","/pos/receipt","/pos/tax-invoice",
   "/pos/sales","/pos/tax-invoices","/pos/returns","/pos/shifts",
   "/pos/stock-movements","/pos/stock-counts","/pos/purchases",

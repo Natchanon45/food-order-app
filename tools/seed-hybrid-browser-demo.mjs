@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 const PROJECT = "demo-penguin-hybrid";
 const hosts = {
   FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
-  FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+  FIRESTORE_EMULATOR_HOST: process.env.WEB_DEMO_ISOLATED_PORT === "8189" ? "127.0.0.1:8189" : "127.0.0.1:8080",
   FIREBASE_STORAGE_EMULATOR_HOST: "127.0.0.1:9199",
   FIREBASE_FUNCTIONS_EMULATOR_HOST: "127.0.0.1:5001",
 };
@@ -80,6 +80,32 @@ try {
       amount: 590, status: "issued", version: "hybrid-invoice-v1",
       signature: "a".repeat(64),
       createdAt: FieldValue.serverTimestamp(),
+    });
+  }
+  // Optional full-web fixture, isolated loopback project only. Preserve
+  // existing test orders and stock on repeat runs. No real payment receiver.
+  if(process.env.WEB_DEMO_ISOLATED_PORT==="8189"){
+    const shop=db.collection("tenants").doc(tenantId);
+    const createOnce=async(ref,row)=>{if(!(await ref.get()).exists)await ref.create(row);};
+    await shop.set({businessType:"both",businessUnits:["retail_pos","order_delivery"]},{merge:true});
+    await db.collection("users").doc(owner.uid).set({businessScope:"both",businessUnits:["retail_pos","order_delivery"]},{merge:true});
+    await createOnce(shop.collection("settings").doc("store"),{
+      shopName:"PENGUIN Demo",deliveryManualStatus:{mode:"open"},deliveryPromptPayEnabled:false,
+      deliveryCodEnabled:false,deliveryProvider:"self",categoryOrder:["อาหารทดสอบ"],
+    });
+    await createOnce(shop.collection("menus").doc("demo-meal"),{
+      id:"demo-meal",name:"อาหารทดสอบ",price:65,active:true,category:"อาหารทดสอบ",
+    });
+    await createOnce(shop.collection("tables").doc("T01"),{
+      id:"T01",tenantId,shopId:tenantId,code:"T01",name:"โต๊ะ 1",active:true,status:"available",orderToken:"",orderIds:[],currentRound:0,
+    });
+    await createOnce(shop.collection("categories").doc("demo-category"),{
+      id:"demo-category",tenantId,shopId:tenantId,name:"สินค้าทดสอบ",active:true,sortOrder:1,
+    });
+    await createOnce(shop.collection("products").doc("demo-product"),{
+      id:"demo-product",tenantId,shopId:tenantId,name:"สินค้าทดสอบ",category:"สินค้าทดสอบ",
+      categoryId:"demo-category",price:50,cost:20,stock:100,unit:"ชิ้น",active:true,showOnPos:true,sortOrder:1,
+      barcode:"DEMO0001",updatedAt:new Date().toISOString(),
     });
   }
   // This prints ONLY fixed synthetic emulator credentials; never any API key.
