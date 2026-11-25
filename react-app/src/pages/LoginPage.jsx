@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { authenticateStaff, ROLE_HOME } from "@/auth/authFlow";
 import { mayNavigateToCanonicalPage } from "@/auth/merchantLoginRouting.mjs";
 import { clearRetailPosSession, prepareRetailPosSession } from "@/auth/retailPosSession";
+import { DynamicField, DynamicFieldGroup } from "@/components/DynamicField";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ParityFooter } from "@/components/ParityFooter";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
@@ -156,7 +157,7 @@ export function LoginPage() {
   const stylesReady = useParityPage({
     bodyClass: "login-page",
     title: t("auth.login.title"),
-    styles: ["login-page.css"],
+    styles: ["login-page.css", "login-source-layout.css"],
   });
 
   useEffect(() => {
@@ -239,44 +240,62 @@ export function LoginPage() {
             spellCheck="false"
             onSubmit={submit}
           >
-            <label>
-              <span className="login-field-title">{t("auth.login.email")}</span>
-              <span className={`login-input-wrap${email ? " is-filled" : ""}`} data-validation-feedback-host>
-                <i className="bi bi-envelope app-icon login-field-icon" aria-hidden="true"></i>
+            <DynamicFieldGroup legend={t("auth.login.form_section")} icon="bi bi-shield-lock">
+              <DynamicField
+                id="email"
+                label={t("auth.login.email")}
+                icon="bi bi-envelope"
+                value={email}
+              >
                 <input
                   id="email"
                   name="fod-login-email"
                   type="email"
                   autoComplete="off"
                   maxLength="100"
+                  placeholder=" "
                   required
                   autoFocus
                   value={email}
                   onChange={event => setEmail(event.target.value)}
                 />
-              </span>
-            </label>
+              </DynamicField>
 
-            <label>
-              <span className="login-field-title">{t("auth.login.password")}</span>
-              <span className={`login-input-wrap login-password-wrap${password ? " is-filled" : ""}`} data-validation-feedback-host>
-                <i className="fi fi-rr-key app-icon login-field-icon login-key-reference-icon" aria-hidden="true"></i>
+              <DynamicField
+                id="password"
+                label={t("auth.login.password")}
+                icon="fi fi-rr-key login-key-reference-icon"
+                value={password}
+                className="login-password-wrap"
+                trailing={
+                  <button
+                    id="togglePasswordBtn"
+                    className="login-password-visibility"
+                    type="button"
+                    aria-controls="password"
+                    aria-pressed={showPassword}
+                    aria-label={t(showPassword ? "auth.login.hide_password" : "auth.login.show_password")}
+                    title={t(showPassword ? "auth.login.hide_password" : "auth.login.show_password")}
+                    onClick={() => setShowPassword(value => !value)}
+                  >
+                    <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true"></i>
+                  </button>
+                }
+              >
                 <input
                   id="password"
                   name="fod-login-secret"
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   maxLength="100"
+                  placeholder=" "
                   required
                   minLength="6"
                   value={password}
                   onChange={event => setPassword(event.target.value)}
                 />
-                <button id="togglePasswordBtn" type="button" onClick={() => setShowPassword(value => !value)}>
-                  {t(showPassword ? "auth.login.hide_password" : "auth.login.show_password")}
-                </button>
-              </span>
-            </label>
+              </DynamicField>
+            </DynamicFieldGroup>
 
             <p id="loginError" className="login-error" hidden={!error}>{error}</p>
             <button id="loginButton" className="btn btn-pay login-submit" type="submit" disabled={busy}>

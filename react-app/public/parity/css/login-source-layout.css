@@ -1,0 +1,50 @@
+/* Original source PENGUIN React login-page.css compiled for Laravel Hosting. */
+
+/* Laravel's isolated React mount should maintain original #root layout. */
+body.login-page #root {
+  width: 100%;
+  min-width: 0;
+}
+body.login-page #root .login-shell {
+  margin: 0 auto;
+}
+
+/* SOURCE login-page.css uses #159447 for .btn-pay. The shared app.css
+   declares .btn with a gray background, which can override that class when
+   styles are combined by Vite. Scope the source color to this login control
+   without changing button enable/submit logic or other application buttons. */
+body.login-page .login-form #loginButton.btn-pay {
+  background-color: #159447;
+  color: #fff;
+}
+
+body.login-page .login-form #loginButton.btn-pay:hover:not(:disabled) {
+  background-color: #0d6f34;
+}
+
+
+/* The Go mount has an intrinsic 360px mobile root. Center the wider
+   login shell within the viewport without altering the app's root markup. */
+/* Larger than the intrinsic-content-sized legacy card on Desktop,
+   while using almost the full viewport on Mobile without horizontal overflow. */
+body.login-page .login-shell {
+  box-sizing: border-box;
+  width: min(470px, calc(100vw - 24px));
+  max-width: 100%;
+}
+body.login-page .login-card {
+  width: 100%;
+  padding: 25px 24px;
+}
+@media (max-width: 520px) {
+  body.login-page .login-shell {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  body.login-page .login-card {
+    padding: 20px 17px;
+  }
+}

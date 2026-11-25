@@ -926,6 +926,7 @@
     "auth": {
       "login": {
         "title": "เข้าสู่ระบบ",
+        "form_section": "ข้อมูลเข้าสู่ระบบ",
         "staff_title": "เข้าสู่ระบบพนักงาน",
         "email": "อีเมล",
         "password": "รหัสผ่าน",
@@ -7577,6 +7578,7 @@
     "auth": {
       "login": {
         "title": "Sign in",
+        "form_section": "Account details",
         "staff_title": "Staff sign in",
         "email": "Email",
         "password": "Password",
@@ -13953,6 +13955,7 @@
     "auth": {
       "login": {
         "title": "အကောင့်ဝင်ရန်",
+        "form_section": "အကောင့်အချက်အလက်",
         "staff_title": "ဝန်ထမ်း အကောင့်ဝင်ရန်",
         "email": "အီးမေးလ်",
         "password": "စကားဝှက်",
@@ -20329,6 +20332,7 @@
     "auth": {
       "login": {
         "title": "ເຂົ້າລະບົບ",
+        "form_section": "ຂໍ້ມູນບັນຊີ",
         "staff_title": "ເຂົ້າລະບົບພະນັກງານ",
         "email": "ອີເມວ",
         "password": "ລະຫັດຜ່ານ",
@@ -26705,6 +26709,7 @@
     "auth": {
       "login": {
         "title": "ចូលប្រព័ន្ធ",
+        "form_section": "ព័ត៌មានគណនី",
         "staff_title": "ចូលប្រព័ន្ធបុគ្គលិក",
         "email": "អ៊ីមែល",
         "password": "ពាក្យសម្ងាត់",

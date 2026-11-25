@@ -1795,6 +1795,14 @@ assert(
 assert(quickOrderPage.includes('disabled={serviceType !== "dine_in" || Boolean(appendToId)}')&&quickOrderPage.includes('{ display: "none" }'),"Quick Order takeaway mode must hide/disable table selection");
 assert(read("react-app/src/pages/HomePage.jsx").includes("publicLanding"),"real home page missing");
 assert(read("react-app/src/pages/LoginPage.jsx").includes("loginForm"),"real login page missing");
+const loginSourceForm=read("react-app/src/pages/LoginPage.jsx");
+assert(loginSourceForm.includes('<DynamicFieldGroup legend={t("auth.login.form_section")} icon="bi bi-shield-lock">')
+ && loginSourceForm.includes('className="login-password-visibility"')
+ && loginSourceForm.includes('aria-controls="password"')
+ && loginSourceForm.includes('"login-source-layout.css"')
+ && read("react-app/public/parity/css/login-source-layout.css").includes("width: min(470px, calc(100vw - 24px))")
+ && ["th","en","my","lo","km"].every(locale=>dict[locale]?.auth?.login?.form_section),
+ "Login must retain Source dynamic fields, password eye toggle, responsive shell and localized legend");
 assert(read("react-app/src/pages/RegisterPage.jsx").includes("registerForm"),"real register page missing");
 assert(fs.existsSync(path.join(root,"public/react/index.html")),"React build output missing");
 const built=read("public/react/index.html");
