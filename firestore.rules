@@ -398,6 +398,9 @@ service cloud.firestore {
     match /stripeWalletSandboxIntentClaims/{path=**} { allow read, write: if false; }
     match /stripeWalletSandboxControl/{path=**} { allow read, write: if false; }
     match /paymentCompanionTenants/{path=**} { allow read, write: if false; }
+    match /deliveryDemoBankEvidence/{path=**} { allow read, write: if false; }
+    match /deliveryDemoBankKeys/{path=**} { allow read, write: if false; }
+    match /deliveryDemoBankReferenceClaims/{path=**} { allow read, write: if false; }
     match /paymentCompanionDeviceKeys/{path=**} { allow read, write: if false; }
     match /paymentCompanionSlipHashes/{path=**} { allow read, write: if false; }
     // LK Shop native devices are bearer-capability scoped. App/browser clients

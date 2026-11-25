@@ -412,6 +412,8 @@ exports.recordPaymentCompanionCashierReview = paymentCompanion.recordPaymentComp
 const deliveryNotificationMatch = require("./delivery-notification-match");
 exports.getDeliveryNotificationMatch = deliveryNotificationMatch.getDeliveryNotificationMatch;
 exports.recordDeliveryNotificationObservation = deliveryNotificationMatch.recordDeliveryNotificationObservation;
+const deliveryBankReconcile = require("./delivery-bank-reconcile");
+exports.recordDeliveryDemoBankEvidencePreflight = deliveryBankReconcile.recordDeliveryDemoBankEvidencePreflight;
 exports.setCompanionAutoKitchenConsent = paymentCompanion.setCompanionAutoKitchenConsent;
 
 const companionQR = require("./payment-companion-qr");

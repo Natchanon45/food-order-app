@@ -241,3 +241,57 @@ test("P3.4 notification-first demo creates only canonical unpaid order without s
  assert.equal((await submit()).body.error?.message,"DELIVERY_ORDER_ALREADY_EXISTS");
  assert.equal((await ref.get()).data().paymentStatus,"pending_verification");
 });
+
+test("P3.4 demo bank evidence transaction records one receipt and global reference without payment mutation", {timeout:30000},async()=>{
+ const {generateKeyPairSync,sign}=await import("node:crypto");
+ const {VERSION,PROVIDER,bytes,accountFingerprint}=require("./delivery-bank-reconcile-policy");
+ const {__test:{record}}=require("./delivery-bank-reconcile");
+ const {receiverRevision,receiverState}=require("./payment-companion-receiver");
+ const {fingerprint,flags}=require("./delivery-notification-match-policy");
+ const {digest}=require("./payment-companion-policy");
+ const tenantId="p34-notify-bank-"+nonce,orderId="p34-bank-order-"+nonce;
+ const tenant=db.collection("tenants").doc(tenantId),root=db.collection("paymentCompanionTenants").doc(tenantId);
+ const settings=tenant.collection("settings").doc("store"),orderRef=tenant.collection("orders").doc(orderId);
+ const now=Date.now(),created=now-120000,iso=ms=>new Date(ms).toISOString();
+ await tenant.set({active:true,businessType:"restaurant_cafe",subscriptionStatus:"active"});
+ await settings.set({bankName:"SCB",bankAccountName:"DEMO ONLY",bankAccountNumber:"0000000000",promptPayId:"0800000000"});
+ const store=await settings.get(),revision=receiverRevision(store);
+ const link={enabled:true,revision,bankCode:"scb",accountLast4:"0000",confirmedAtMs:created-1000};
+ const deviceId="demo-bank-device-"+nonce,eventId=digest("demo-event-"+nonce),notificationId=digest(deviceId+":"+eventId);
+ const notice={id:notificationId,eventId,deviceId,source:"line_scb_connect",receiverRevision:revision,receiverSuffix:"X-0000",
+  verificationStatus:"unverified",amountSatang:15000,bankMs:created+10000,observedMs:created+11000,receivedMs:created+12000};
+ const observationFingerprint=fingerprint(notice);
+ const audit={tenantId,orderId,notificationId,amountSatang:15000,receiverRevision:revision,observationFingerprint,status:"recorded_unverified",...flags};
+ const order={tenantId,orderType:"delivery",bankTransferReviewFlow:"notification_first",paymentMethod:"promptpay",
+  paymentStatus:"pending_verification",status:"pending",totalAmount:150,paymentReceiverRevision:revision,
+  paymentRecipientId:"0800000000",createdAt:new Date(created)};
+ const {publicKey,privateKey}=generateKeyPairSync("ed25519"),keyId="demo-bank-key";
+ const payload={tenantId,orderId,notificationId,receiverRevision:revision,accountFingerprint:accountFingerprint(store,receiverState(store,link,true)),
+  transactionReference:"demo-bank-reference-"+nonce,amountSatang:15000,currency:"THB",direction:"credit",postingStatus:"posted",postedAt:iso(notice.bankMs)};
+ const envelope={version:VERSION,providerId:PROVIDER,keyId,payload};
+ envelope.signatureBase64=sign(null,bytes(envelope),privateKey).toString("base64");
+ const evidenceId=digest("demo-bank-evidence-"+nonce),referenceHash=digest(payload.transactionReference);
+ const receiptRef=root.collection("notificationFirstBankPreflights").doc(orderId);
+ const referenceRef=db.collection("deliveryDemoBankReferenceClaims").doc(referenceHash);
+ // Synthetic server-owned fixtures exclusively under this isolated demo runner.
+ await Promise.all([orderRef.set(order),root.set({receiver:link}),root.collection("devices").doc(deviceId).set({enabled:true}),
+  root.collection("notices").doc(notificationId).set(notice),root.collection("notificationFirstReviews").doc(orderId).set(audit),
+  root.collection("reviewClaims").doc(notificationId).set({orderId,notificationId,flow:"notification_first"}),
+  root.collection("notificationFirstObservationClaims").doc(observationFingerprint).set({orderId,notificationId}),
+  db.collection("deliveryDemoBankEvidence").doc(evidenceId).set({tenantId,orderId,environment:"demo",envelope}),
+  db.collection("deliveryDemoBankKeys").doc("registry").set({providers:{[PROVIDER]:{[keyId]:{
+   enabled:true,publicKeyPem:publicKey.export({type:"spki",format:"pem"}),
+   fingerprintSha256:createHash("sha256").update(publicKey.export({type:"spki",format:"der"})).digest("hex"),
+   validFrom:iso(created-60000),validUntil:iso(now+3600000),revokedAt:null,registeredBy:"demo-registrar",reviewedBy:"demo-reviewer"}}}})]);
+ const context={tenantId,tenant,root,uid:"demo-test-actor",role:"cashier"};
+ const run=()=>db.runTransaction(tx=>record(db,tx,context,{orderId,evidenceId}));
+ const results=await Promise.all([run(),run()]);
+ assert.equal(results.filter(r=>r.alreadyRecorded===false).length,1);
+ assert.equal(results.filter(r=>r.alreadyRecorded===true).length,1);
+ for(const r of results){assert.equal(r.paymentVerified,false);assert.equal(r.settlementAllowed,false);}
+ assert.equal((await receiptRef.get()).data().status,"demo_evidence_preflight_passed");
+ assert.equal((await referenceRef.get()).data().orderId,orderId);
+ assert.equal((await orderRef.get()).data().paymentStatus,"pending_verification");
+ assert.equal((await orderRef.get()).data().kitchenReleasedAt,undefined);
+ assert.equal((await db.collection("platformSlipUsedReferences").doc(referenceHash).get()).exists,false);
+});

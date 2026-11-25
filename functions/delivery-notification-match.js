@@ -94,3 +94,5 @@ exports.recordDeliveryNotificationObservation=onCall(opts,async request=>{
   return {recorded:true,alreadyRecorded:false,...flags};
  });
 });
+
+exports.__internal={context};
