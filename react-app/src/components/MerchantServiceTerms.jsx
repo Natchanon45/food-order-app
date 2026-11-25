@@ -6,7 +6,7 @@ const money = (value, locale) =>
 
 /**
  * Owner-supplied service conditions, displayed without claiming settlement,
- * suspensions or Slip2Go entitlements are currently automated.
+ * suspensions or receipt-check entitlements are currently automated.
  * Display amounts must be supplied by an authoritative pricing/report read.
  */
 export function MerchantServiceTerms({
@@ -17,7 +17,7 @@ export function MerchantServiceTerms({
   context = "registration",
 }) {
   const th = locale.toLowerCase().startsWith("th");
-  const validPricing = pricing?.storageReady === true;
+  const validPricing = pricing?.storageReady === true || pricing?.source === "remote";
   const config = validPricing ? pricing.config : null;
   const monthly = validPricing ? pricing.pricing?.monthly?.payable : null;
   const annual = validPricing ? pricing.pricing?.annual?.payable : null;
@@ -27,6 +27,8 @@ export function MerchantServiceTerms({
   const rateText = money(rate, locale);
   const monthlyText = money(monthly, locale);
   const annualText = money(annual, locale);
+  const quotaText=Number.isSafeInteger(config?.monthlySlipQuota)
+    ? money(config.monthlySlipQuota,locale) : "—";
   const isReport = context === "report";
 
   return (
@@ -49,16 +51,16 @@ export function MerchantServiceTerms({
           ? <>ช่วงทดลองใช้ฟรี ยอดสินค้า Delivery ที่ชำระแล้วไม่เกิน <strong>{thresholdText} บาท/รอบ</strong> ยังไม่มีส่วนแบ่ง เมื่อยอดเกินจึงคำนวณ <strong>{rateText}% เฉพาะส่วนที่เกินเพดาน</strong> ไม่คิดย้อนหลังจากยอดที่ได้รับยกเว้น</>
           : <>During trial, paid Delivery merchandise up to <strong>{thresholdText} THB/cycle</strong> has no share. Above the threshold, <strong>{rateText}% applies only to excess</strong>, never retroactively to the exempt amount.</>}</li>
         <li>{th
-          ? <>เงื่อนไขแพ็กเกจกำหนดตรวจสลิป Slip2Go ฟรี <strong>100 รายการต่อรอบบิล</strong> และเมื่อยอด Delivery <strong>ถึง {thresholdText} บาท</strong> จะได้สิทธิ์ไม่จำกัดรายการในรอบนั้น</>
-          : <>Package terms provide <strong>100 free Slip2Go checks per cycle</strong>, becoming unlimited for the cycle when Delivery sales <strong>reach {thresholdText} THB</strong>.</>}</li>
+          ? <>เงื่อนไขแพ็กเกจกำหนดตรวจสลิปผ่านระบบฟรี <strong>{quotaText} รายการต่อรอบบิล</strong> และเมื่อยอด Delivery <strong>ถึง {thresholdText} บาท</strong> จะได้สิทธิ์ไม่จำกัดรายการในรอบนั้น</>
+          : <>Package terms provide <strong>{quotaText} system receipt checks per cycle</strong>, becoming unlimited for the cycle when Delivery sales <strong>reach {thresholdText} THB</strong>.</>}</li>
         <li>{th
           ? "เมื่อมีส่วนแบ่งที่ต้องชำระ กำหนดสรุปยอดรายวันและระงับการใช้งานในวันถัดจากวันครบกำหนดที่ยังไม่ชำระ ตามเงื่อนไขการเรียกเก็บที่ประกาศ"
           : "Once share is payable, the stated policy calls for daily billing and suspension the day after an unpaid due date."}</li>
       </ul>
       <p className="merchant-service-terms-status">
         {th
-          ? "หมายเหตุ: รายงานยอดส่วนแบ่งเป็นข้อมูลตรวจสอบเบื้องต้น ระบบเรียกเก็บเงินจริง การระงับอัตโนมัติ และการบังคับใช้โควตา Slip2Go ยังต้องยืนยันความพร้อมของบริการ ไม่ถือว่าเปิดใช้งานเพียงเพราะแสดงเงื่อนไขนี้"
-          : "Note: Revenue Share reporting is provisional. Live settlement, automatic suspension and Slip2Go quota enforcement are not confirmed active merely by displaying these terms."}
+          ? "หมายเหตุ: รายงานยอดส่วนแบ่งเป็นข้อมูลตรวจสอบเบื้องต้น ระบบเรียกเก็บเงินจริง การระงับอัตโนมัติ และการบังคับใช้โควตาตรวจสลิปผ่านระบบ ยังต้องยืนยันความพร้อมของบริการ ไม่ถือว่าเปิดใช้งานเพียงเพราะแสดงเงื่อนไขนี้"
+          : "Note: Revenue Share reporting is provisional. Live settlement, automatic suspension and system receipt verification quota enforcement are not confirmed active merely by displaying these terms."}
       </p>
     </section>
   );

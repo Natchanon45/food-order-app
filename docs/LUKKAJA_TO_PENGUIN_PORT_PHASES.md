@@ -1,5 +1,12 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P2.3 Merchant Onboarding / Auth from latest Source
+
+**Module P2.3 local scope COMPLETE after final full QA:** Pinned read-only Source `feature/react-golang-vite-tailwind-axios@7bf9d159`. Register/Login retain canonical Firebase Premium monthly/yearly (Source Go revenue_share option is unavailable in Firebase, not faked). Restored Source Merchant Service Terms with confirmed public price and dynamic receipt quota; unconfirmed pricing blocks signup. Reserved native Firebase pending Signup **before sending email**, released previous same-uid pending Slug atomically, blocked duplicate/restored/suspended staff enrollment, and added strict Auth email/current reservation checks in activation transaction. Native email link return activates once only after actual `emailVerified` token refresh; cross-browser pending email sign-in recovers without creating a second Signup. Login `next` now follows the Source role matrix and actual routed pages, empty business units deny all. **6/6 demo Auth+Firestore**, **5/5 source/static**, **2/2 actual Chrome UI handlers** PASS; complete serial React Parity and Build receipts in Worklog. See [P2.3 report](./LUKKAJA_P2_3_MERCHANT_ONBOARDING_AUTH_20261125.md). No Staging real email, Production, provider launch or Source write. **P2 phase beyond P2.3 remains open**, next P2.4 Sales Report / deeper Merchant Admin action parity.
+
+---
+
+
 ## 2026-11-25 — P2.2 Store Master / Branding / QR (latest Source)
 
 **P2.2 Store Master/QR COMPLETE locally, ALL QA PASS:** Source branch feature/react-golang-vite-tailwind-axios @ 7bf9d159, read-only. Source-only AdminStoreMasterPage is not a router page; existing PENGUIN AdminPage retains ONE Store Master workspace with own Firebase settings. New Source cover image uses ONE crop frame, vertical physical drag with Y focus and centre X, keyboard + reset, tenant Storage upload. Both Delivery/Takeaway QR encode 100% locally to PNG, no third-party QR requests. Owner/Admin Firestore+Storage permissions and 4 responsive Chrome widths independently tested. Full serial React Parity **EXIT 0**; React Build/Hosting Contract **PASS**; native-print document markup verified, physical printer not tested. No new payment channel, no provider authority. Full scope and exact acceptance: [P2.2 report](./LUKKAJA_P2_2_MERCHANT_STORE_MASTER_QR_BRANDING_20261125.md). P2's other page modules remain.

@@ -1,3 +1,16 @@
+## 2026-11-25 — P2.3 Merchant Onboarding + Auth complete locally
+
+- Source read-only `cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159` (Login/Register, latest role web matrix and Merchant terms). Target `Natchanon45/food-order-app feature/react-firebase-port`, started from P2.2 `f8cfb7a8`.
+- **Register:** Firebase native Auth + subscription-only public backend; Source `revenue_share` selection remains deliberately unavailable until backend financial gate is implemented. Price quoting requires confirmed `getPublicSubscriptionPricing ok:true` and config before submit; Source MerchantServiceTerms port displays current price/slip quota in 5-language shell, avoids Slip2Go labels and incorrect live-settlement claims.
+- **Backend:** `functions/public-signup.js` re-reads current pending/user/slug reservation inside Firestore transactions; revoked/active previous staff users cannot register; changing unactivated slug frees old same-owner pending reservation atomically, no other uid/active claim deletion; verify native Auth/email equality and reservation identity before activation. Activation idempotent preserving original trial/Owner/Tenant. Pre-existing Premier 30-day trial remains, no change to 12-month billing.
+- **Frontend:** reserve/signup Callable succeeds **before** verification email is sent; return link `?verify=1` doesn't assert verified and activates only after native Firebase Auth reload+token refresh. Cross-browser sign-in to pending Firebase account resumes original request instead of trying normal Staff Login (no profile yet). No live email was sent.
+- **Login:** Source web role allowlist `react-app/src/auth/merchantLoginRouting.mjs` plus actual canonical routes; /admin/users Owner-only, Platform Superadmin-only, POS businessScope separate, denied `businessUnits:[]`, unknown next and // URLs fallback safely. Page/server/Firestore RBAC remains authoritative.
+- **Final QA:** `npm run test:p23-merchant-onboarding` **5/5 PASS**; `npm run test:p23-merchant-onboarding-local` **EXIT 0** (Auth+Firestore demo **6/6**, Chrome UI handler fixtures **2/2** over 320/390/768/1440, with real LoginPage and RegisterPage JSX). Existing public billing regression **18/18 PASS**. Prior P1.3f local signed Auth+React Browser regression **EXIT 0, 1/1 PASS**, no provider email. **Entire `npm run test:react-parity` EXIT 0**; final React Build/Hosting Contract **PASS EXIT 0** (`2026.11.09.535`, `index-a2pD0bUz.js`), generated public files and Emulator temp cleaned.
+- **No claim of Staging/Production readiness:** P1.3 real provider QA remains blocked by absent authorized Staging project and mail inbox. No Source writes, live bank/email, Production deploy, main merge or APK/IPA.
+- Detailed report `docs/LUKKAJA_P2_3_MERCHANT_ONBOARDING_AUTH_20261125.md`. **Next P2.4** Merchant Sales Report / remaining latest Source Admin actions; inspect Source branch HEAD again before changes.
+
+---
+
 ## 2026-11-25 — P2.2 Merchant Store Master / Branding / QR from latest JSX
 
 - **Source read-only:** cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7bf9d159. **Target:** Natchanon45/food-order-app, feature/react-firebase-port starting at P2.1 commit a5393505.

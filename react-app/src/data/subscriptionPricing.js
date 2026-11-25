@@ -79,7 +79,14 @@ export function calculateSubscriptionPricing(input = {}) {
 export async function loadPublicSubscriptionPricing() {
   try {
     const response = await httpsCallable(functions, "getPublicSubscriptionPricing")({});
-    const config = normalizeSubscriptionPricing(response?.data?.config || DEFAULT_SUBSCRIPTION_PRICING);
+    // A reachable Callable without a canonical success + pricing config is
+    // NOT a signed-off quote: the registration screen may display a local
+    // fallback for informational use but must refuse to submit the signup.
+    if(response?.data?.ok !== true || !response?.data?.config ||
+      typeof response.data.config !== "object") {
+      throw new Error("PUBLIC_SIGNUP_PRICING_UNCONFIRMED");
+    }
+    const config = normalizeSubscriptionPricing(response.data.config);
     return { config, pricing: calculateSubscriptionPricing(config), source: "remote" };
   } catch (error) {
     console.warn("SUBSCRIPTION_PRICING_FALLBACK", error?.code || error?.message || error);

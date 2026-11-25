@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { authenticateStaff, ROLE_HOME } from "@/auth/authFlow";
+import { mayNavigateToCanonicalPage } from "@/auth/merchantLoginRouting.mjs";
 import { clearRetailPosSession, prepareRetailPosSession } from "@/auth/retailPosSession";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ParityFooter } from "@/components/ParityFooter";
@@ -75,7 +76,8 @@ function safeNextPath(value, fallback = "") {
 }
 
 function businessUnits(profile = {}) {
-  if (Array.isArray(profile.businessUnits) && profile.businessUnits.length) {
+  if (Array.isArray(profile.businessUnits)) {
+    // An explicit [] is a signed deny-all scope, never "both".
     return new Set(profile.businessUnits.map(value => String(value).trim().toLowerCase()));
   }
   const scope = String(profile.businessScope || "both").trim().toLowerCase();
@@ -87,35 +89,44 @@ function businessUnits(profile = {}) {
 function scopedRoleHome(profile = {}) {
   if (profile.role === "super_admin") return "/platform";
   const units = businessUnits(profile);
-  if (units.has("retail_pos") && !units.has("order_delivery")) return "/pos";
-  if (units.has("order_delivery") && !units.has("retail_pos")) {
-    if (profile.role === "kitchen") return "/kitchen";
-    if (profile.role === "cashier") return "/cashier";
-    if (["owner", "admin", "manager"].includes(profile.role)) return "/admin";
-    return "/";
+  if (!units.size) return "/"; // A revoked/empty business scope is deny-all.
+  if (units.has("retail_pos") && !units.has("order_delivery")) {
+    if (profile.role === "kitchen") return "/";
+    return mayNavigateToCanonicalPage(profile.role,"/pos",units) ? "/pos" : "/";
   }
-  return ROLE_HOME[profile.role] || "/react";
+  if (units.has("order_delivery") && !units.has("retail_pos")) {
+    const candidate=profile.role==="kitchen"?"/kitchen":
+      profile.role==="cashier"?"/cashier":
+      ["owner","admin"].includes(profile.role)?"/admin":
+      profile.role==="manager"?"/cashier":"/";
+    return mayNavigateToCanonicalPage(profile.role,candidate,units)?candidate:"/";
+  }
+  const preferred=ROLE_HOME[profile.role]||"/";
+  return mayNavigateToCanonicalPage(profile.role,preferred,units)?preferred:"/";
 }
 
+const AVAILABLE_AUTH_NEXT_ROUTES=new Set([
+  ...Object.keys(REACT_ROUTE_MAP),
+  "/admin/revenue-share","/reports/hybrid-billing","/platform/hybrid-invoices",
+  "/cashier/customer-display","/pos/catalog","/pos/products",
+  "/pos/customer-display","/pos/receipt","/pos/tax-invoice",
+  "/pos/sales","/pos/tax-invoices","/pos/returns","/pos/shifts",
+  "/pos/stock-movements","/pos/stock-counts","/pos/purchases",
+  "/pos/payables","/pos/suppliers","/pos/customers","/pos/settings",
+  "/pos/backup","/pos/users",
+]);
 function canOpenNext(profile = {}, value = "") {
-  const path = safeNextPath(value, "");
+  const path=safeNextPath(value,"");
   if (!path) return false;
-  const pathname = new URL(path, location.origin).pathname.replace(/\/+$/, "") || "/";
-  if (
-    /^\/(?:react\/)?platform(?:\/|$)/.test(pathname)
-    || pathname === "/admin/tenants"
-    || pathname === "/react/admin/tenants"
-    || pathname === "/super-admin/saas-setup"
-    || pathname === "/react/super-admin/saas-setup"
-  ) {
-    return profile.role === "super_admin";
-  }
-  const units = businessUnits(profile);
-  if (/^\/(?:react\/)?pos(?:\/|$)/.test(pathname)) return units.has("retail_pos");
-  if (/^\/(?:react\/)?(?:admin|cashier|kitchen|waiting-queue|reports\/revenue-share)(?:\/|$)/.test(pathname)) {
-    return units.has("order_delivery");
-  }
-  return true;
+  const normalized=reactMigrationTarget(path);
+  if (!normalized) return false;
+  const pathname=new URL(normalized,location.origin).pathname
+    .replace(/\/+$/,"") || "/";
+  // A user-supplied ?next cannot target missing routes or unknown protected
+  // paths; Source role map and explicit business unit scope both must pass.
+  return AVAILABLE_AUTH_NEXT_ROUTES.has(pathname)
+    && pathname!=="/pos/forbidden"
+    && mayNavigateToCanonicalPage(profile.role,pathname,businessUnits(profile));
 }
 
 function reactMigrationTarget(value) {

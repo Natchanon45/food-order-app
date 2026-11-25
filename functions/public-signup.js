@@ -59,16 +59,37 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
   const pendingRef = db.collection("publicTenantSignups").doc(uid);
   const pendingSlugRef = db.collection("publicTenantSignupSlugs").doc(slug);
   const tenantSlugRef = db.collection("tenantSlugs").doc(slug);
+  const userRef = db.collection("users").doc(uid);
   const now = FieldValue.serverTimestamp();
   const signupPricing = pricingSnapshot(await loadPricing(db));
 
   await db.runTransaction(async tx => {
-    const [tenantSlugSnap, pendingSlugSnap, existingPendingSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef), tx.get(pendingRef)]);
-    if (existingPendingSnap.exists && existingPendingSnap.data()?.billingPolicyVersion === "hybrid_v1") {
+    // All claims are re-read in the transaction. A signed-in existing staff
+    // member must not create a second shop by going through public signup.
+    const [tenantSlugSnap, pendingSlugSnap, existingPendingSnap, existingUserSnap] =
+      await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef),
+        tx.get(pendingRef), tx.get(userRef)]);
+    const previous = existingPendingSnap.exists ? existingPendingSnap.data() : {};
+    if (previous?.billingPolicyVersion === "hybrid_v1") {
       throw new HttpsError("failed-precondition", "Retired Hybrid signup requires manual review");
     }
+    if (previous?.status === "active" || (existingUserSnap.exists &&
+      ["owner", "admin", "cashier", "kitchen", "manager", "super_admin"]
+        .includes(existingUserSnap.data()?.role))) {
+      throw new HttpsError("failed-precondition", "This account already has an active staff/tenant profile");
+    }
     if (tenantSlugSnap.exists) throw new HttpsError("already-exists", "This slug is already in use");
-    if (pendingSlugSnap.exists && pendingSlugSnap.data()?.uid !== uid) throw new HttpsError("already-exists", "This slug is already reserved");
+    if (pendingSlugSnap.exists && pendingSlugSnap.data()?.uid !== uid)
+      throw new HttpsError("already-exists", "This slug is already reserved");
+    // The same unactivated Firebase Owner may correct their slug. Release the
+    // prior reservation ATOMICALLY so it does not become a permanent ghost
+    // reservation. Never delete another uid's or an activated reservation.
+    const oldSlug = normalizeSlug(previous?.slug);
+    const oldRef = oldSlug && oldSlug !== slug
+      ? db.collection("publicTenantSignupSlugs").doc(oldSlug) : null;
+    const oldSnap = oldRef ? await tx.get(oldRef) : null;
+    const mayReleaseOld = oldSnap?.exists &&
+      oldSnap.data()?.uid === uid && oldSnap.data()?.status === "pending";
     const payload = {
       uid,
       email,
@@ -90,6 +111,7 @@ exports.requestTrialTenantSignup = onCall({ region: "asia-southeast1" }, async r
       updatedAt: now,
       createdAt: now
     };
+    if (mayReleaseOld) tx.delete(oldRef);
     tx.set(pendingRef, payload, { merge: true });
     tx.set(pendingSlugRef, { uid, slug, email, status: "pending", updatedAt: now, createdAt: now }, { merge: true });
   });
@@ -128,6 +150,12 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
     };
   }
 
+  if (normalizeEmail(authUser.email) !== normalizeEmail(pending.email)) {
+    throw new HttpsError("permission-denied", "Verified account email no longer matches pending signup");
+  }
+  if (pending.status !== "email_verification_required") {
+    throw new HttpsError("failed-precondition", "Signup is not awaiting email verification");
+  }
   const slug = normalizeSlug(pending.slug);
   validateSlug(slug);
   const tenantId = randomUUID();
@@ -145,9 +173,24 @@ exports.activateTrialTenantSignup = onCall({ region: "asia-southeast1" }, async 
   const subscriptionTrial = signupBilling.billingMode === "subscription";
 
   await db.runTransaction(async tx => {
-    const [tenantSlugSnap, pendingSlugSnap] = await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef)]);
+    const [tenantSlugSnap, pendingSlugSnap, currentPendingSnap, existingUserSnap] =
+      await Promise.all([tx.get(tenantSlugRef), tx.get(pendingSlugRef),
+        tx.get(pendingRef), tx.get(userRef)]);
+    const currentPending = currentPendingSnap.exists ? currentPendingSnap.data() : null;
+    if (!currentPending || currentPending.status !== "email_verification_required" ||
+      normalizeSlug(currentPending.slug) !== slug ||
+      normalizeEmail(currentPending.email) !== normalizeEmail(authUser.email)) {
+      throw new HttpsError("failed-precondition", "Signup was changed or already activated; reload canonical status");
+    }
+    if (existingUserSnap.exists && ["owner", "admin", "cashier", "kitchen", "manager", "super_admin"]
+        .includes(existingUserSnap.data()?.role)) {
+      throw new HttpsError("failed-precondition", "Account was already assigned a staff/tenant role");
+    }
     if (tenantSlugSnap.exists) throw new HttpsError("already-exists", "This slug is already in use");
-    if (pendingSlugSnap.exists && pendingSlugSnap.data()?.uid !== uid) throw new HttpsError("permission-denied", "Slug reservation is owned by another user");
+    if (!pendingSlugSnap.exists || pendingSlugSnap.data()?.uid !== uid ||
+      pendingSlugSnap.data()?.status !== "pending") {
+      throw new HttpsError("permission-denied", "A current pending slug reservation is required");
+    }
 
     const ownerProfile = {
       uid,

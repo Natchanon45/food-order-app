@@ -1,6 +1,7 @@
 import {
   createUserWithEmailAndPassword,
   reload,
+  getIdToken,
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
@@ -133,6 +134,7 @@ export async function activateSignup() {
   if (!user) throw new Error("REGISTER_LOGIN_REQUIRED");
   await reload(user);
   if (!auth.currentUser?.emailVerified) throw new Error("REGISTER_EMAIL_NOT_VERIFIED");
+  await getIdToken(user,true);
   const response = await activateTrialTenantSignup({});
   return response.data || {};
 }

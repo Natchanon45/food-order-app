@@ -1,3 +1,13 @@
+## 2026-11-25 — P2.3 Merchant Onboarding / Auth latest Source port
+
+- Source pinned READ ONLY `cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159`, Target `Natchanon45/food-order-app feature/react-firebase-port` base `f8cfb7a8`. Latest Source Register/Login JSX and Laravel role allowlist audited; Firebase signup is Premium monthly/yearly only (existing server rejects retired hybrid/revenue_share public billing).
+- Ported native verified email activation on Register return, cross-browser pending Firebase account login, resend/recovery, Source Merchant terms with actual dynamic central price/receipt quota, hardened no-fallback-price signup. Reservation transaction releases same-owner pending old slug on change and rejects preexisting active **or suspended** Staff/Owner; activation rechecks verified Auth email, current pending, exact same-uid claim and never creates second store/trial. Signup request before email means rejected slug does not send verification.
+- Ported Source Web role navigation into Firebase Login next allowlist, enforced actual mounted routes, Owner-only /admin/users, Platform-only Superadmin, explicit empty business units deny all, blocked foreign/unknown URL paths and proper role fallbacks. Backend/data guards unchanged.
+- **Final local module acceptance:** P2.3 Source/role/static **5/5 PASS**; Firebase Auth+Firestore demo Emulator **6/6 PASS**; actual Chrome rendered LoginPage (14 role/redirect cases) and RegisterPage (4 widths, signup/email ordering, unverified link, verified return, fallback price and cross-browser pending sign-in) **2/2 PASS**. Existing `npm run test:signup-billing-revenue-share` **18/18 PASS**. P1.3 signed real Firebase Auth+React local browser regression **1/1 PASS**. Full React Parity/Build logged after final execution.
+- Browser P2.3 fixtures intentionally mock network-backed Auth/Callable and do NOT constitute signed deployed Staging test; canonical enrollment uses isolated real demo Firebase Auth+Firestore Emulator Callables. No real email, Source writes, Production or main merge. See `docs/LUKKAJA_P2_3_MERCHANT_ONBOARDING_AUTH_20261125.md`.
+
+---
+
 ## 2026-11-25 — P2.2 latest Source Merchant Store Master, Branding and QR
 
 - Pinned Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7bf9d159 read-only. Target Natchanon45/food-order-app feature/react-firebase-port base a5393505.

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
-import { onAuthStateChanged, reload } from "firebase/auth";
+import { getIdToken, onAuthStateChanged, reload, signInWithEmailAndPassword } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "@/firebase/client";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/auth/authFlow";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ParityFooter } from "@/components/ParityFooter";
+import { MerchantServiceTerms } from "@/components/MerchantServiceTerms";
 import {
   formatSubscriptionMoney,
   loadPublicSubscriptionPricing,
@@ -64,11 +65,15 @@ export function RegisterPage() {
   const [verifyStatus, setVerifyStatus] = useState({ text: t("auth.register.verify_waiting"), error: false });
   const [pricing, setPricing] = useState(null);
   const [pricingReady, setPricingReady] = useState(false);
+  const automaticActivationUid = useRef("");
+  const [needsPendingSignIn,setNeedsPendingSignIn] = useState(false);
+  const [pendingEmail,setPendingEmail] = useState("");
+  const [pendingPassword,setPendingPassword] = useState("");
 
   const stylesReady = useParityPage({
     bodyClass: "register-page",
     title: t("auth.register.title"),
-    styles: ["register-page.css"],
+    styles: ["register-page.css", "merchant-service-terms-port.css"],
   });
 
   useEffect(() => {
@@ -89,20 +94,54 @@ export function RegisterPage() {
     return () => { alive = false; };
   }, []);
 
+  // The Firebase email link is NOT an authorization claim; only the native
+  // verified Auth user and canonical server activation may create the Tenant.
+  // Match Source's post-verification automatic activation without trusting
+  // ?verify=1, a client-created UUID, or previously stored signup state.
   useEffect(() => {
-    if (!location.search.includes("verify=1")) return undefined;
-    return onAuthStateChanged(auth, async user => {
-      if (!user) return;
-      await reload(user).catch(() => {});
+    if (new URLSearchParams(location.search).get("verify") !== "1") return undefined;
+    let alive = true;
+    const unsubscribe = onAuthStateChanged(auth, async user => {
+      if (!alive) return;
       setVerifyMode(true);
-      setVerifyStatus({
-        text: auth.currentUser?.emailVerified
-          ? t("auth.register.status.email_verified")
-          : t("auth.register.status.verify_first"),
-        error: false,
-      });
+      if (!user) {
+        setNeedsPendingSignIn(true);
+        setVerifyStatus({text:t("auth.register.status.verify_first"),error:true});
+        return;
+      }
+      setNeedsPendingSignIn(false);
+      try {
+        await reload(user);
+      } catch {
+        if (alive) setVerifyStatus({text:t("auth.register.errors.activate_failed"),error:true});
+        return;
+      }
+      if (!alive) return;
+      if (!user.emailVerified) {
+        setVerifyStatus({text:t("auth.register.status.verify_first"),error:true});
+        return;
+      }
+      if (automaticActivationUid.current === user.uid) return;
+      automaticActivationUid.current = user.uid;
+      setBusy(true);
+      try {
+        await getIdToken(user,true);
+        const result = await activateSignup();
+        if (!alive) return;
+        setVerifyStatus({text:t("auth.register.status.trial_activated"),error:false});
+        navigate("/login"+(result?.slug?"?tenant="+encodeURIComponent(result.slug):""),{replace:true});
+      } catch (error) {
+        if (alive) setVerifyStatus({
+          text:String(error?.message||"").includes("REGISTER_EMAIL_NOT_VERIFIED")
+            ? t("auth.register.status.verify_first")
+            : t("auth.register.errors.activate_failed"),error:true,
+        });
+      } finally {
+        if (alive) setBusy(false);
+      }
     });
-  }, [t]);
+    return () => { alive = false; unsubscribe(); };
+  }, [t,navigate]);
 
   const slugPreview = useMemo(() => {
     const slug = cleanSlug(fields.slug) || "saas-test-shop";
@@ -162,8 +201,15 @@ export function RegisterPage() {
   const submit = async event => {
     event.preventDefault();
     setRegisterStatus({ text: "", error: false });
-    if (!allValid()) {
-      setRegisterStatus({ text: t("auth.register.validation.incomplete"), error: true });
+    if (!allValid() || pricing?.source !== "remote") {
+      setRegisterStatus({
+        text: pricing?.source !== "remote"
+          ? (String(intlLocale||"").toLowerCase().startsWith("th")
+            ? "ไม่สามารถยืนยันราคาสมัครร้านจากระบบกลางได้ กรุณาลองใหม่"
+            : "Current subscription pricing is unavailable. Please retry.")
+          : t("auth.register.validation.incomplete"),
+        error: true,
+      });
       return;
     }
 
@@ -184,11 +230,24 @@ export function RegisterPage() {
       };
 
       const credential = await ensureSignupUser(payload.email, payload.secret);
-      await sendSignupVerification(credential.user, "/register?verify=1");
+      // Reserve and verify the Signup transaction before sending any email.
+      // A rejected/duplicate slug must never send an invitation claiming a
+      // shop exists. If mail delivery fails after a valid reservation, the
+      // verified pending request remains recoverable via the Resend control.
       await requestSignup(payload);
       setFields(current => ({ ...current, slug: payload.slug }));
       setVerifyMode(true);
-      setVerifyStatus({ text: t("auth.register.status.verify_sent"), error: false });
+      try {
+        const result = await sendSignupVerification(credential.user, "/register?verify=1");
+        setVerifyStatus({
+          text:result.alreadyVerified
+            ? t("auth.register.status.email_verified")
+            : t("auth.register.status.verify_sent"),
+          error:false,
+        });
+      } catch {
+        setVerifyStatus({text:t("auth.register.errors.resend_failed"),error:true});
+      }
     } catch (error) {
       console.error(error);
       const code = String(error?.code || error?.message || "");
@@ -197,6 +256,34 @@ export function RegisterPage() {
       if (code.includes("REGISTER_EMAIL_ALREADY_USED")) message = t("auth.register.errors.owner_email_exists");
       if (code.includes("weak-password")) message = t("auth.register.validation.password_min");
       setRegisterStatus({ text: message, error: true });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // A Firebase email verification link may be opened on another browser.
+  // Pending Owners have no users/{uid} staff profile yet, so normal Staff
+  // Login cannot be used to resume them. Native Firebase Auth signs in the
+  // same verified email identity, then the strict server activation decides
+  // whether that identity has a matching pending reservation.
+  const resumePending = async event => {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    try {
+      const credential=await signInWithEmailAndPassword(
+        auth,pendingEmail.trim().toLowerCase(),pendingPassword,
+      );
+      setPendingPassword("");
+      await reload(credential.user);
+      if (!credential.user.emailVerified) {
+        setVerifyStatus({text:t("auth.register.status.verify_first"),error:true});
+      }
+      // The verified onAuthStateChanged handler performs canonical activation.
+    } catch {
+      setVerifyStatus({
+        text:t("auth.login.errors.invalid_credentials"),error:true,
+      });
     } finally {
       setBusy(false);
     }
@@ -361,6 +448,8 @@ export function RegisterPage() {
                   </div>
                 </section>
 
+                <MerchantServiceTerms locale={intlLocale} pricing={pricing} context="registration" />
+
                 <div className="register-form-grid">
                   <label>
                     {t("auth.register.fields.owner_name")}
@@ -459,6 +548,23 @@ export function RegisterPage() {
                 <h2>{t("auth.register.verify_title")}</h2>
                 <p className="register-note">{t("auth.register.verify_description")}</p>
                 <p id="verifyStatus" className={`register-status${verifyStatus.error ? " error" : ""}`}>{verifyStatus.text}</p>
+                {needsPendingSignIn ? <form id="resumePendingSignup" className="register-form"
+                  onSubmit={resumePending} autoComplete="on">
+                  <label>{t("auth.register.fields.email")}
+                    <input id="resumePendingEmail" type="email" required
+                      autoComplete="email" value={pendingEmail}
+                      onChange={event=>setPendingEmail(event.target.value)} />
+                  </label>
+                  <label>{t("auth.register.fields.password")}
+                    <input id="resumePendingPassword" type="password" required
+                      autoComplete="current-password" value={pendingPassword}
+                      onChange={event=>setPendingPassword(event.target.value)} />
+                  </label>
+                  <button type="submit" className="btn btn-primary" disabled={busy}>
+                    <i className="bi bi-box-arrow-in-right app-icon" aria-hidden="true"></i>
+                    <span>{t("auth.register.login")}</span>
+                  </button>
+                </form> : null}
                 <div className="register-actions">
                   <button id="activateTrial" className="btn btn-primary" type="button" onClick={activate} disabled={busy}>
                     <i className="bi bi-patch-check app-icon"></i>

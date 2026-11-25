@@ -104,7 +104,7 @@ test("public registration only offers Premium monthly/yearly and keeps legacy te
   for (const token of ["signupBillingSelectionValid", "normalizeSignupBilling", "businessUnitsFor",
     "signupBilling:", 'revenueShareEnabled: signupBilling.billingMode === "revenue_share"',
     'pending.billingPolicyVersion === "hybrid_v1"',
-    'existingPendingSnap.data()?.billingPolicyVersion === "hybrid_v1"']) {
+    'previous?.billingPolicyVersion === "hybrid_v1"']) {
     assert.ok(backend.includes(token), `Public signup missing ${token}`);
   }
 });
