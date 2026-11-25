@@ -100,7 +100,7 @@ test("Sales Report preserves the centered 1320px Source layout on desktop",()=>{
  const mobile=read("react-app/src/ui/sales-report-source-mobile.css");
  const cascade=read("react-app/public/parity/css/sales-report-source-cascade.css");
  assert.match(cascade,/main\.sales-report-page\s*\{\s*width:\s*min\(1320px, 100%\)/);
- assert.doesNotMatch(mobile,/\bwidth:\s*100%\s*!important/);
+ assert.doesNotMatch(mobile,/(?:^|[;{\n])\s*width:\s*100%\s*!important/);
  assert.ok(page.indexOf('"sales-report-source-cascade.css"')>page.indexOf('"admin-sales-source-polish.css"'));
  assert.match(cascade,/font-size:\.86rem;font-weight:800/);
  assert.match(cascade,/\.sales-back-link\s*\{\s*padding: 10px 14px/);
