@@ -52,7 +52,7 @@ export function getPosPermissions(profile, roleRows = null) {
     const roles = Array.isArray(roleRows) ? roleRows : JSON.parse(localStorage.getItem("retail_pos_roles_v1") || "[]");
     const roleId = String(profile?.roleId || profile?.role || "");
     const role = Array.isArray(roles) ? roles.find(item => String(item?.id || "") === roleId) : null;
-    if (role?.permissions?.length) return new Set(role.permissions);
+    if (Array.isArray(role?.permissions)) return new Set(role.permissions);
   } catch {}
   if (profile?.role === "cashier") {
     return new Set(["pos.sale", "pos.sales", "pos.tax_invoices", "pos.returns", "pos.shifts", "pos.customers"]);
@@ -90,12 +90,11 @@ export function PosNavigation({ profile, currentKey = "" }) {
   ]);
   const posProfile = useMemo(() => ({
     ...(profile || {}),
-    ...(sessionProfile || {}),
-    displayName: sessionProfile?.name || profile?.displayName || profile?.name || profile?.email || "",
-    name: sessionProfile?.name || profile?.name || profile?.displayName || profile?.email || "",
-    email: sessionProfile?.email || profile?.email || "",
-    role: sessionProfile?.role || profile?.role || profile?.roleId || "",
-    roleId: sessionProfile?.roleId || sessionProfile?.role || profile?.roleId || profile?.role || "",
+    displayName: profile?.displayName || profile?.name || profile?.email || "",
+    name: profile?.name || profile?.displayName || profile?.email || "",
+    email: profile?.email || "",
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, sessionProfile]);
   const currentGroup = POS_MENU_GROUPS.find(group => group.items.some(item => item.key === currentKey))?.id || "sales";
   const [open, setOpen] = useState(false);

@@ -102,9 +102,8 @@ export function PosShiftsPage() {
   ]);
   const posAccessProfile = useMemo(() => ({
     ...(profile || {}),
-    ...(posSession || {}),
-    role: posSession?.role || profile?.role || profile?.roleId || "",
-    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, posSession]);
 
   const pagePermissions = useMemo(
@@ -194,11 +193,11 @@ export function PosShiftsPage() {
 
   useEffect(() => {
     if (!tenant?.id || !profile || !hasAccess || redirectTarget) return undefined;
-    const stopSales = watchPosSales(tenant.id, rows => setSales(rows));
+    const stopSales = watchPosSales(tenant.id, rows => setSales(rows),()=>setLoadError("ไม่สามารถโหลดรายการขายได้"));
     const stopShifts = watchPosShiftsParity(
       tenant.id,
       rows => setShifts(rows),
-      error => console.warn("POS_SHIFTS_WATCH_FAILED", error),
+      error => {console.warn("POS_SHIFTS_WATCH_FAILED", error);setLoadError("ไม่สามารถโหลดข้อมูลกะการขายได้");},
     );
     return () => {
       stopSales();

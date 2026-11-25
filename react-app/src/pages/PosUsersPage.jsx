@@ -67,6 +67,7 @@ export function PosUsersPage(){
   const dialogRef=useRef(null);
   const toastTimerRef=useRef(null);
   const [users,setUsers]=useState([]),[roles,setRoles]=useState([]),[selectedRole,setSelectedRole]=useState("cashier");
+  const [usersReadError,setUsersReadError]=useState(false);
   const [ready,setReady]=useState(false),[form,setForm]=useState(EMPTY_USER),[busy,setBusy]=useState(""),[error,setError]=useState("");
   const [toast,setToast]=useState({message:"",variant:"success"});
 
@@ -88,12 +89,12 @@ export function PosUsersPage(){
 
   const load=async()=>{
     if(!tenant?.id)return;
-    setReady(false);setError("");
+    setReady(false);setError("");setUsersReadError(false);
     try{
       const [u,r]=await Promise.all([listRetailPosStaff(tenant.id),loadPosRoleSettings(tenant.id)]);
       setUsers(u);setRoles(r);
       setSelectedRole(current=>r.some(row=>row.id===current)?current:(r[0]?.id||""));
-    }catch(e){console.error("POS_USERS_LOAD_FAILED",e);setError(String(e?.message||"โหลดข้อมูลผู้ใช้ไม่สำเร็จ"))}
+    }catch(e){console.error("POS_USERS_LOAD_FAILED",e);setUsers([]);setRoles([]);setUsersReadError(true);setError(String(e?.message||"โหลดข้อมูลผู้ใช้ไม่สำเร็จ"))}
     finally{setReady(true)}
   };
   useEffect(()=>{load()},[tenant?.id]);
@@ -173,6 +174,7 @@ export function PosUsersPage(){
   if(!profile)return <Navigate to="/login?next=%2Fpos%2Fusers" replace/>;
   if(!tenant)return <Navigate to="/" replace/>;
   if(!["owner","super_admin"].includes(profile.role))return <Navigate to="/pos" replace/>;
+  if(usersReadError)return <PageReadyOverlay error title="ไม่สามารถโหลดข้อมูลผู้ใช้งานได้" onRetry={load}/>;
 
   const renderPermissionBlock=(titleKey,descKey,groups)=>(
     <section className="permission-block">

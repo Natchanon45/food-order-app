@@ -22,14 +22,7 @@ const BUILTIN_POS_ROLES = new Set(["owner", "admin", "manager", "cashier", "stoc
 const ROLE_SETTINGS_TIMEOUT_MS = 6000;
 const INITIAL_DATA_TIMEOUT_MS = 10000;
 
-const cachedPosRoles = () => {
-  try {
-    const rows = JSON.parse(localStorage.getItem("retail_pos_roles_v1") || "[]");
-    return Array.isArray(rows) ? rows : [];
-  } catch {
-    return [];
-  }
-};
+const cachedPosRoles = () => [];
 const withTimeout = (promise, timeoutMs, code) => Promise.race([
   promise,
   new Promise((_, reject) => window.setTimeout(() => {
@@ -121,11 +114,8 @@ export function PosStockCountsPage() {
   const [history, setHistory] = useState([]);
   const [initialReady, setInitialReady] = useState(false);
   const [roleRows, setRoleRows] = useState(() => cachedPosRoles());
-  const [rolesReady, setRolesReady] = useState(() => {
-    const session = getRetailPosSession();
-    const roleId = String(session?.roleId || session?.role || "");
-    return BUILTIN_POS_ROLES.has(roleId) || cachedPosRoles().length > 0;
-  });
+  const [rolesReady,setRolesReady]=useState(false);
+  const [workspaceReadError,setWorkspaceReadError]=useState(false);
   const [actuals, setActuals] = useState({});
   const [countName, setCountName] = useState("");
   const [countDate, setCountDate] = useState(() => localDateKey(new Date()));
@@ -157,9 +147,8 @@ export function PosStockCountsPage() {
   ]);
   const posAccessProfile = useMemo(() => ({
     ...(profile || {}),
-    ...(posSession || {}),
-    role: posSession?.role || profile?.role || profile?.roleId || "",
-    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, posSession]);
   const pagePermissions = useMemo(
     () => getPosPermissions(posAccessProfile, roleRows),
@@ -175,7 +164,7 @@ export function PosStockCountsPage() {
     const requested = location.pathname + location.search;
     if (!profile) return "/pos/login/?next=" + encodeURIComponent(requested);
     if (!canUseRetailPos(posAccessProfile) || tenantState.status === "error" || !tenant) return "/";
-    if (!rolesReady) return "";
+    if (!rolesReady || workspaceReadError) return "";
     if (!canView) {
       const first = firstAllowedPosPage(posAccessProfile, roleRows);
       return first === "/pos/forbidden"
@@ -190,7 +179,7 @@ export function PosStockCountsPage() {
     profile,
     posAccessProfile,
     roleRows,
-    rolesReady,
+    rolesReady, workspaceReadError,
     canView,
     stylesReady,
   ]);
@@ -208,7 +197,7 @@ export function PosStockCountsPage() {
     const cached = cachedPosRoles();
     const roleId = String(posAccessProfile?.roleId || posAccessProfile?.role || "");
     if (cached.length) setRoleRows(cached);
-    setRolesReady(BUILTIN_POS_ROLES.has(roleId) || cached.length > 0);
+    setRolesReady(false);
     withTimeout(
       loadPosRoleSettings(tenant.id),
       ROLE_SETTINGS_TIMEOUT_MS,
@@ -217,9 +206,10 @@ export function PosStockCountsPage() {
       if (!alive) return;
       const normalized = Array.isArray(nextRoles) ? nextRoles : [];
       setRoleRows(normalized);
-      try { localStorage.setItem("retail_pos_roles_v1", JSON.stringify(normalized)); } catch {}
+
     }).catch(error => {
       console.warn("POS_STOCK_COUNTS_ROLE_SETTINGS_LOAD_FAILED", error);
+      if(alive)setWorkspaceReadError(true);
       if (!alive) return;
       if (!cached.length && !BUILTIN_POS_ROLES.has(roleId)) setRoleRows([]);
     }).finally(() => {
@@ -250,6 +240,7 @@ export function PosStockCountsPage() {
       "POS_STOCK_COUNTS_INITIAL_LOAD_TIMEOUT",
     ).catch(error => {
       console.warn("POS_STOCK_COUNTS_LOAD_FAILED", error);
+      if(alive)setWorkspaceReadError(true);
     }).finally(() => {
       if (alive) setInitialReady(true);
     });
@@ -257,10 +248,10 @@ export function PosStockCountsPage() {
   }, [tenant?.id, profile, rolesReady, canView, redirectTarget, refresh]);
 
   useEffect(() => {
-    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget || !initialReady) {
+    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget || !initialReady || workspaceReadError) {
       return undefined;
     }
-    const onError = error => console.warn("POS_STOCK_COUNTS_WATCH_FAILED", error);
+    const onError = error=>{console.warn("POS_STOCK_COUNTS_WATCH_FAILED",error);setWorkspaceReadError(true);};
     const stopProducts = watchRetailProducts(tenant.id, setProducts, onError);
     const stopCounts = watchRetailStockCounts(tenant.id, setHistory, onError);
     return () => {
@@ -566,6 +557,7 @@ export function PosStockCountsPage() {
     || Boolean(redirectTarget)
     || !rolesReady
     || (tenant?.id && profile && canView && !initialReady);
+  if(workspaceReadError)return <PageReadyOverlay error title="ไม่สามารถโหลดข้อมูล POS ได้" message="กรุณาลองใหม่เพื่อยืนยันข้อมูลร้านค้าและสิทธิ์การใช้งาน" onRetry={()=>location.reload()}/>;
   if (needsReady) {
     return <PageReadyOverlay title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }

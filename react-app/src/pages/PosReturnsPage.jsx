@@ -136,9 +136,9 @@ export function PosReturnsPage() {
     profile?.uid, profile?.id, profile?.tenantId, profile?.role, profile?.roleId,
   ]);
   const posAccessProfile = useMemo(() => ({
-    ...(profile || {}), ...(posSession || {}),
-    role: posSession?.role || profile?.role || profile?.roleId || "",
-    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+    ...(profile || {}),
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, posSession]);
   const permissions = useMemo(() => getPosPermissions(posAccessProfile), [posAccessProfile]);
   const hasAccess = permissions.has("pos.returns");
@@ -195,8 +195,9 @@ export function PosReturnsPage() {
 
   useEffect(() => {
     if (!tenant?.id || !profile || !hasAccess || redirectTarget) return undefined;
-    const stopSales = watchPosSales(tenant.id, rows => setSales(rows));
-    const stopReturns = watchPosReturnsParity(tenant.id, rows => setHistory(rows));
+    const onWatchError=()=>setLoadError("ไม่สามารถโหลดข้อมูลรายการคืนสินค้าได้");
+    const stopSales = watchPosSales(tenant.id, rows => setSales(rows),onWatchError);
+    const stopReturns = watchPosReturnsParity(tenant.id, rows => setHistory(rows),onWatchError);
     return () => { stopSales(); stopReturns(); };
   }, [tenant?.id, profile, hasAccess, redirectTarget]);
 

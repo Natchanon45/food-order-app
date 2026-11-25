@@ -41,6 +41,7 @@ export function PosCatalogPage() {
   const [pendingRows, setPendingRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [initialReady, setInitialReady] = useState(false);
+  const [catalogReadError,setCatalogReadError]=useState(false);
   const [excelRows, setExcelRows] = useState([]);
   const [excelResult, setExcelResult] = useState({ message: "", tone: "" });
   const [excelImporting, setExcelImporting] = useState(false);
@@ -58,11 +59,12 @@ export function PosCatalogPage() {
 
   const load = async () => {
     if (!tenant?.id) return;
-    setLoading(true);
+    setLoading(true);setCatalogReadError(false);
     try {
       setExistingProducts(await listCatalogProducts(tenant.id));
     } catch (error) {
       console.error("POS_CATALOG_LOAD_FAILED", error);
+      setCatalogReadError(true);
       setImportResult({ message: tr("dynamic.import_failed", { error: error?.message || tr("dynamic.try_again") }), tone: "error" });
     } finally {
       setLoading(false);
@@ -166,13 +168,13 @@ export function PosCatalogPage() {
   };
 
   const requestImport = () => {
-    if (!VALIDATION.valid || !breakdown.rows.length || importing) return;
+    if (catalogReadError || !initialReady || loading || !VALIDATION.valid || !breakdown.rows.length || importing) return;
     setPendingRows(breakdown.rows);
     importDialogRef.current?.showModal?.();
   };
 
   const confirmImport = async () => {
-    if (!tenant?.id || !pendingRows.length || importing) return;
+    if (!tenant?.id || catalogReadError || loading || !initialReady || !pendingRows.length || importing) return;
     importDialogRef.current?.close?.();
     const rows = [...pendingRows];
     setPendingRows([]);
@@ -227,6 +229,7 @@ export function PosCatalogPage() {
   }
   if (!profile) return <Navigate to="/login?next=%2Fpos%2Fcatalog" replace />;
   if (profile.role !== "owner" || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
+  if(catalogReadError)return <PageReadyOverlay error title="ไม่สามารถโหลดรายการสินค้าได้" onRetry={load}/>;
 
   return (
     <>

@@ -27,14 +27,7 @@ const INITIAL_DATA_TIMEOUT_MS = 10000;
 const EMPTY_CUSTOMER = Object.freeze({
   id: "", customerCode: "", name: "", phone: "", email: "", address: "", note: "", points: 0, active: true,
 });
-const cachedPosRoles = () => {
-  try {
-    const rows = JSON.parse(localStorage.getItem("retail_pos_roles_v1") || "[]");
-    return Array.isArray(rows) ? rows : [];
-  } catch {
-    return [];
-  }
-};
+const cachedPosRoles = () => [];
 const withTimeout = (promise, timeoutMs, code) => Promise.race([
   promise,
   new Promise((_, reject) => window.setTimeout(() => {
@@ -96,10 +89,8 @@ export function PosCustomersPage() {
   const [ledger, setLedger] = useState([]);
   const [initialReady, setInitialReady] = useState(false);
   const [roleRows, setRoleRows] = useState(() => cachedPosRoles());
-  const [rolesReady, setRolesReady] = useState(() => {
-    const session = getRetailPosSession(), roleId = String(session?.roleId || session?.role || "");
-    return BUILTIN_POS_ROLES.has(roleId) || cachedPosRoles().length > 0;
-  });
+  const [rolesReady,setRolesReady]=useState(false);
+  const [workspaceReadError,setWorkspaceReadError]=useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [form, setForm] = useState(() => ({ ...EMPTY_CUSTOMER }));
@@ -115,9 +106,9 @@ export function PosCustomersPage() {
     authUser?.uid, profile?.id, profile?.uid, profile?.tenantId, profile?.role, profile?.roleId,
   ]);
   const posAccessProfile = useMemo(() => ({
-    ...(profile || {}), ...(posSession || {}),
-    role: posSession?.role || profile?.role || profile?.roleId || "",
-    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+    ...(profile || {}),
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, posSession]);
   const pagePermissions = useMemo(() => getPosPermissions(posAccessProfile, roleRows), [posAccessProfile, roleRows]);
   const canView = pagePermissions.has("pos.customers");
@@ -133,7 +124,7 @@ export function PosCustomersPage() {
     const requested = location.pathname + location.search;
     if (!profile) return "/pos/login/?next=" + encodeURIComponent(requested);
     if (!canUseRetailPos(posAccessProfile) || tenantState.status === "error" || !tenant) return "/";
-    if (!rolesReady) return "";
+    if (!rolesReady || workspaceReadError) return "";
     if (!canView) {
       const first = firstAllowedPosPage(posAccessProfile, roleRows);
       return first === "/pos/forbidden"
@@ -141,7 +132,7 @@ export function PosCustomersPage() {
         : first + "?from=permission";
     }
     return "";
-  }, [authState.status, tenantState.status, tenant, profile, posAccessProfile, roleRows, rolesReady, canView, stylesReady]);
+  }, [authState.status, tenantState.status, tenant, profile, posAccessProfile, roleRows, rolesReady, workspaceReadError, canView, stylesReady]);
   useEffect(() => { if (redirectTarget) location.replace(redirectTarget); }, [redirectTarget]);
 
   useEffect(() => {
@@ -149,16 +140,17 @@ export function PosCustomersPage() {
     if (!tenant?.id || !profile) { setRoleRows([]); setRolesReady(true); return () => { alive = false; }; }
     const cached = cachedPosRoles(), roleId = String(posAccessProfile?.roleId || posAccessProfile?.role || "");
     if (cached.length) setRoleRows(cached);
-    setRolesReady(BUILTIN_POS_ROLES.has(roleId) || cached.length > 0);
+    setRolesReady(false);
     withTimeout(loadPosRoleSettings(tenant.id), ROLE_SETTINGS_TIMEOUT_MS, "POS_ROLE_SETTINGS_TIMEOUT")
       .then(next => {
         if (!alive) return;
         const rows = Array.isArray(next) ? next : [];
         setRoleRows(rows);
-        try { localStorage.setItem("retail_pos_roles_v1", JSON.stringify(rows)); } catch {}
+
       })
       .catch(loadError => {
         console.warn("POS_CUSTOMERS_ROLE_SETTINGS_LOAD_FAILED", loadError);
+      if(alive)setWorkspaceReadError(true);
         if (alive && !cached.length && !BUILTIN_POS_ROLES.has(roleId)) setRoleRows([]);
       })
       .finally(() => { if (alive) setRolesReady(true); });
@@ -182,14 +174,14 @@ export function PosCustomersPage() {
       return () => { alive = false; };
     }
     withTimeout(refresh(), INITIAL_DATA_TIMEOUT_MS, "POS_CUSTOMERS_INITIAL_LOAD_TIMEOUT")
-      .catch(loadError => console.warn("POS_CUSTOMERS_LOAD_FAILED", loadError))
+      .catch(loadError=>{console.warn("POS_CUSTOMERS_LOAD_FAILED",loadError);if(alive)setWorkspaceReadError(true);})
       .finally(() => { if (alive) setInitialReady(true); });
     return () => { alive = false; };
   }, [tenant?.id, profile, rolesReady, canView, redirectTarget, refresh]);
 
   useEffect(() => {
-    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget || !initialReady) return undefined;
-    const onError = watchError => console.warn("POS_CUSTOMERS_WATCH_FAILED", watchError);
+    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget || !initialReady || workspaceReadError) return undefined;
+    const onError = watchError=>{console.warn("POS_CUSTOMERS_WATCH_FAILED",watchError);setWorkspaceReadError(true);};
     const stopCustomers = watchPosCustomers(tenant.id, setCustomers, onError);
     const stopSales = watchPosSales(tenant.id, setSales, onError);
     const stopLedger = watchPosLoyaltyLedger(tenant.id, setLedger, onError);
@@ -379,6 +371,7 @@ export function PosCustomersPage() {
 
   const needsReady = authState.status === "loading" || tenantState.status === "loading" || !stylesReady
     || Boolean(redirectTarget) || !rolesReady || (tenant?.id && profile && canView && !initialReady);
+  if(workspaceReadError)return <PageReadyOverlay error title="ไม่สามารถโหลดข้อมูล POS ได้" message="กรุณาลองใหม่เพื่อยืนยันข้อมูลร้านค้าและสิทธิ์การใช้งาน" onRetry={()=>location.reload()}/>;
   if (needsReady) return <PageReadyOverlay title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
 
   return <>

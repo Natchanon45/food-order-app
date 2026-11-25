@@ -51,14 +51,7 @@ const pagesAround = (current, total) => Array.from({ length: total }, (_, index)
 const BUILTIN_POS_ROLES = new Set(["owner", "admin", "manager", "cashier", "stock", "kitchen"]);
 const ROLE_SETTINGS_TIMEOUT_MS = 6000;
 const INITIAL_DATA_TIMEOUT_MS = 10000;
-const cachedPosRoles = () => {
-  try {
-    const rows = JSON.parse(localStorage.getItem("retail_pos_roles_v1") || "[]");
-    return Array.isArray(rows) ? rows : [];
-  } catch {
-    return [];
-  }
-};
+const cachedPosRoles = () => [];
 const withTimeout = (promise, timeoutMs, code) => Promise.race([
   promise,
   new Promise((_, reject) => window.setTimeout(() => {
@@ -161,11 +154,8 @@ export function PosProductsPage() {
   const [initialReady, setInitialReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [roleRows, setRoleRows] = useState(() => cachedPosRoles());
-  const [rolesReady, setRolesReady] = useState(() => {
-    const session = getRetailPosSession();
-    const roleId = String(session?.roleId || session?.role || "");
-    return BUILTIN_POS_ROLES.has(roleId) || cachedPosRoles().length > 0;
-  });
+  const [rolesReady,setRolesReady]=useState(false);
+  const [workspaceReadError,setWorkspaceReadError]=useState(false);
   const [scanStatus, setScanStatus] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
@@ -202,9 +192,7 @@ export function PosProductsPage() {
   const [selectedSortCategory, setSelectedSortCategory] = useState("");
   const [sortDirty, setSortDirty] = useState(false);
   const [dirtyProductIds, setDirtyProductIds] = useState(() => new Set());
-  const [movementClearedAt, setMovementClearedAt] = useState(() =>
-    Number(localStorage.getItem("retail_pos_movement_cleared_at") || 0)
-  );
+  const [movementClearedAt, setMovementClearedAt] = useState(0);
 
   const showToast = useCallback((message, type = "success") => {
     setToastType(type === "error" ? "error" : "success");
@@ -224,9 +212,8 @@ export function PosProductsPage() {
   ]);
   const posAccessProfile = useMemo(() => ({
     ...(profile || {}),
-    ...(posSession || {}),
-    role: posSession?.role || profile?.role || profile?.roleId || "",
-    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, posSession]);
 
   const pagePermissions = useMemo(
@@ -247,7 +234,7 @@ export function PosProductsPage() {
     const requested = location.pathname + location.search;
     if (!profile) return "/pos/login/?next=" + encodeURIComponent(requested);
     if (!canUseRetailPos(posAccessProfile) || tenantState.status === "error" || !tenant) return "/";
-    if (!rolesReady) return "";
+    if (!rolesReady || workspaceReadError) return "";
     if (!canView) {
       const first = firstAllowedPosPage(posAccessProfile, roleRows);
       return first === "/pos/forbidden"
@@ -263,7 +250,7 @@ export function PosProductsPage() {
     posAccessProfile,
     canView,
     roleRows,
-    rolesReady,
+    rolesReady, workspaceReadError,
     stylesReady,
   ]);
   useEffect(() => {
@@ -281,15 +268,16 @@ export function PosProductsPage() {
     const cached = cachedPosRoles();
     const roleId = String(posAccessProfile?.roleId || posAccessProfile?.role || "");
     if (cached.length) setRoleRows(cached);
-    setRolesReady(BUILTIN_POS_ROLES.has(roleId) || cached.length > 0);
+    setRolesReady(false);
 
     withTimeout(loadPosRoleSettings(tenant.id), ROLE_SETTINGS_TIMEOUT_MS, "POS_ROLE_SETTINGS_TIMEOUT").then(rows => {
       if (!alive) return;
       const normalized = Array.isArray(rows) ? rows : [];
       setRoleRows(normalized);
-      try { localStorage.setItem("retail_pos_roles_v1", JSON.stringify(normalized)); } catch {}
+
     }).catch(error => {
       console.warn("POS_PRODUCTS_ROLE_SETTINGS_LOAD_FAILED", error);
+      if(alive)setWorkspaceReadError(true);
       if (!alive) return;
       if (!cached.length && !BUILTIN_POS_ROLES.has(roleId)) setRoleRows([]);
     }).finally(() => {
@@ -326,6 +314,7 @@ export function PosProductsPage() {
     setInitialReady(false);
     withTimeout(refresh(), INITIAL_DATA_TIMEOUT_MS, "POS_PRODUCTS_INITIAL_LOAD_TIMEOUT").catch(error => {
       console.error("POS_PRODUCTS_LOAD_FAILED", error);
+      if(alive)setWorkspaceReadError(true);
       if (error?.code !== "POS_PRODUCTS_INITIAL_LOAD_TIMEOUT") {
         showToast(error?.message || tr("products.empty"), "error");
       }
@@ -336,8 +325,8 @@ export function PosProductsPage() {
   }, [tenant?.id, profile, rolesReady, canView, redirectTarget, refresh]);
 
   useEffect(() => {
-    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget || !initialReady) return undefined;
-    const onError = error => console.warn("POS_PRODUCTS_WATCH_FAILED", error);
+    if (!tenant?.id || !profile || !rolesReady || !canView || redirectTarget || !initialReady || workspaceReadError) return undefined;
+    const onError = error=>{console.warn("POS_PRODUCTS_WATCH_FAILED",error);setWorkspaceReadError(true);};
     const stops = [
       watchRetailProducts(tenant.id, setProducts, onError),
       watchRetailCategories(tenant.id, setCategories, onError),
@@ -900,7 +889,7 @@ export function PosProductsPage() {
       type: "warning",
     })) return;
     const timestamp = Date.now();
-    localStorage.setItem("retail_pos_movement_cleared_at", String(timestamp));
+
     setMovementClearedAt(timestamp);
     showToast(tr("runtime.history_cleared"));
   };
@@ -911,6 +900,7 @@ export function PosProductsPage() {
     || Boolean(redirectTarget)
     || (Boolean(profile && tenant) && !rolesReady)
     || Boolean(tenant?.id && profile && rolesReady && canView && !initialReady);
+  if(workspaceReadError)return <PageReadyOverlay error title="ไม่สามารถโหลดข้อมูล POS ได้" message="กรุณาลองใหม่เพื่อยืนยันข้อมูลร้านค้าและสิทธิ์การใช้งาน" onRetry={()=>location.reload()}/>;
   if (needsReady) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }

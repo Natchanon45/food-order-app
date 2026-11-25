@@ -113,7 +113,7 @@ export function PosTaxInvoicesPage() {
   const [editInvoice, setEditInvoice] = useState(null), [editBuyer, setEditBuyer] = useState(blankBuyer), [editError, setEditError] = useState(""), [editBusy, setEditBusy] = useState(false), [editDbdBusy, setEditDbdBusy] = useState(false), [editManualUrl, setEditManualUrl] = useState("");
   const [retryingId, setRetryingId] = useState(""), [copiedId, setCopiedId] = useState(""), [viewCopied, setViewCopied] = useState(false);
   const posSession = useMemo(() => getRetailPosSession(), [authUser?.uid, profile?.id, profile?.uid, profile?.tenantId, profile?.role, profile?.roleId]);
-  const posAccessProfile = useMemo(() => ({ ...(profile || {}), ...(posSession || {}), role: posSession?.role || profile?.role || profile?.roleId || "", roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "" }), [profile, posSession]);
+  const posAccessProfile = useMemo(() => ({ ...(profile || {}), role: profile?.role || profile?.roleId || "", roleId: profile?.roleId || profile?.role || "" }), [profile, posSession]);
   const posPermissions = useMemo(() => getPosPermissions(posAccessProfile), [posAccessProfile]);
   const hasAccess = posPermissions.has("pos.tax_invoices");  const posRedirectTarget = useMemo(() => {
     if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady) return "";
@@ -136,9 +136,7 @@ export function PosTaxInvoicesPage() {
       const api = taxApi;
       if (sync) { try { await api.syncPendingTaxInvoices(); } catch (error) { health.pendingTaxError = tr("invoice_load_error", { error: String(error?.message || error || "").slice(0, 90) }); } }
       try { await api.syncTaxBuyerProfiles(); } catch (error) { health.profileError = tr("profile_load_error", { error: String(error?.message || error || "").slice(0, 90) }); }
-      let remoteInvoices = [];
-      try { remoteInvoices = await listPosTaxInvoices(tenant.id); } catch (error) { health.remoteListError = tr("remote_load_error", { error: String(error?.message || error || "").slice(0, 90) }); }
-      const remoteSales = await listPosSales(tenant.id).catch(() => []);
+      const [remoteInvoices,remoteSales]=await Promise.all([listPosTaxInvoices(tenant.id),listPosSales(tenant.id)]);
       const localInvoices = (readJson(TAX_LOCAL_KEY, []) || []).map(row => ({ ...row, _syncSourceLocal: true }));
       const markedRemote = remoteInvoices.map(row => ({ ...row, _syncSourceRemote: true }));
       setInvoices(mergeInvoices(localInvoices, markedRemote));
