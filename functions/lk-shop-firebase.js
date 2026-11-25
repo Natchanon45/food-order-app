@@ -53,7 +53,7 @@ async function listDevices({db,auth,data,pilot}){
  const items=list.docs.filter(s=>s.data().enabled===true)
   .map(s=>P.visibleDevice(s.data(),s.id))
   .filter(s=>P.purposeValid(who.scope,s.role)).slice(0,70);
- return {ok:true,scope:who.scope,devices:items,pushServerConfigured:false,
+ return {ok:true,scope:who.scope,devices:items,pushServerConfigured:process.env[P.PUSH_KEY]==="1",
   appBuildVerified:false,mobileGoApiCompatible:false};
 }
 async function issuePair({db,auth,data,pilot,now=Date.now()}){
@@ -112,10 +112,42 @@ async function revoke({db,auth,data,pilot}){
  });
  return {ok:true,...result};
 }
+// One explicitly selected device, within the caller's authorized room scope.
+// No client-provided message, FCM token, role, tenant or financial mutation.
+async function queueTestPush({db,auth,data,pilot=allowed(),push=process.env[P.PUSH_KEY]==="1",now=Date.now()}){
+ checkEnabled(pilot);
+ if(!push)denied("failed-precondition","PG_NOTIFY_PUSH_DISABLED");
+ checkSelector(data,["deviceId"]);
+ if(!P.ID.test(data.deviceId||""))denied("invalid-argument","LK_SHOP_DEVICE_INVALID");
+ const who=await authorized(db,auth,data.scope),ref=deviceRoot(db).doc(data.deviceId);
+ const eventId=P.hash(["pg-notify-test",data.deviceId,Math.floor(now/60000)].join("|"));
+ return db.runTransaction(async tx=>{
+  await authorizeInTransaction(tx,db,who);
+  const [snap,prior]=await Promise.all([tx.get(ref),tx.get(ref.collection("notices").doc(eventId))]);
+  const row=snap.data();
+  if(!row||row.enabled!==true||row.scope!==who.scope||row.tenantId!==who.tenantId||
+    row.scopeKey!==P.scopeKey(who.scope,who.tenantId)||!P.purposeValid(who.scope,row.purpose))
+   denied("not-found","LK_SHOP_DEVICE_NOT_FOUND");
+  if(!P.FCM.test(row.fcmToken||""))denied("failed-precondition","PG_NOTIFY_TOKEN_REQUIRED");
+  if(prior.exists||Number(row.lastTestPushAtMs||0)>now-60000)
+   denied("resource-exhausted","PG_NOTIFY_TEST_RATE_LIMIT");
+  const seq=row.lastNoticeSequence??0;
+  if(!Number.isSafeInteger(seq)||seq<0||seq>=Number.MAX_SAFE_INTEGER)
+   denied("failed-precondition","LK_SHOP_SEQUENCE_INVALID");
+  tx.update(ref,{lastNoticeSequence:seq+1,lastTestPushAtMs:now});
+  tx.create(ref.collection("notices").doc(eventId),{
+   body:"ข้อความทดสอบ PG Notify · ไม่ใช่รายการชำระเงิน",sequence:seq+1,createdAtMs:now,
+   purpose:row.purpose,eventKind:"test_push",tenantId:row.tenantId,createdAt:FieldValue.serverTimestamp(),
+  });
+  return {ok:true,queued:true,deviceId:ref.id,deliveryConfirmed:false};
+ });
+}
+exports.queuePGNotifyTestPush=onCall(opts,request=>queueTestPush({
+ db:getFirestore(),auth:request.auth,data:request.data}));
 exports.getLKShopPairingDevices=onCall(opts,request=>listDevices({
  db:getFirestore(),auth:request.auth,data:request.data}));
 exports.issueLKShopPairingChallenge=onCall(opts,request=>issuePair({
  db:getFirestore(),auth:request.auth,data:request.data}));
 exports.revokeLKShopPairingDevice=onCall(opts,request=>revoke({
  db:getFirestore(),auth:request.auth,data:request.data}));
-exports._privateForTests={authorized,listDevices,issuePair,revoke,checkSelector,authorizeInTransaction};
+exports._privateForTests={authorized,listDevices,issuePair,revoke,checkSelector,authorizeInTransaction,queueTestPush};

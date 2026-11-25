@@ -219,7 +219,7 @@ test("inbox routes and FCM dispatch are generic, opt-in and recheck revoked devi
  const push=await notify.sendPush(db,deviceId,eventId,{pilot:true,push:true,messaging:mock});
  assert.equal(push.sent,true);
  assert.equal(messages.length,1);
- assert.equal(messages[0].notification.title,"LK Shop");
+ assert.equal(messages[0].notification.title,"PG Notify");
  assert.equal(messages[0].data.eventId,"1");
  assert.equal(JSON.stringify(messages).includes("แพลตฟอร์มมีรายการ"),false);
  await pairing.revoke({db,auth:auth(platform),data:{scope:"platform",deviceId},pilot:true});
@@ -256,6 +256,20 @@ test("Platform financial notices route only to global Superadmin room, remain id
   err=>err.status===503);
  assert.deepEqual(await notify.enqueuePlatform(db,event,{pilot:false}),
   {queued:0,skipped:"INVALID_OR_DISABLED"});
+});
+test("authorized test push queues a generic notice only for selected paired device",async()=>{
+ const qr=await issue(owner,"tenant","admin_store");
+ const device=await enroll(qr,{name:"Test push Android",platform:"android",fcmToken:"mockFCM:PGNOTIFYABCDEFGHIJKLMNOPQRST"});
+ const data={scope:"tenant",deviceId:device.deviceId};
+ await assert.rejects(pairing.queueTestPush({db,auth:auth(foreign),data,pilot:true,push:true}),{code:"not-found"});
+ await assert.rejects(pairing.queueTestPush({db,auth:auth(cashier),data,pilot:true,push:true}),{code:"permission-denied"});
+ await assert.rejects(pairing.queueTestPush({db,auth:auth(owner),data,pilot:true,push:false}),{code:"failed-precondition"});
+ const result=await pairing.queueTestPush({db,auth:auth(owner),data,pilot:true,push:true});
+ assert.equal(result.queued,true);assert.equal(result.deliveryConfirmed,false);
+ await assert.rejects(pairing.queueTestPush({db,auth:auth(owner),data,pilot:true,push:true}),{code:"resource-exhausted"});
+ const inbox=await gateway.inbox({db,credential:device.credential,pilot:true});
+ assert.match(inbox.notifications[0].body,/ข้อความทดสอบ PG Notify/);
+ await unpair(device.credential);
 });
 test("Firestore browser rules disallow reading or writing all LK Shop secret/account collections",async()=>{
  const app=initializeClient({apiKey:"demo-not-secret",

@@ -63,6 +63,7 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
  const apk=usePGNotifyDownload();
  const [purpose,setPurpose]=useState(scope==="platform"?"superadmin_slip_manual":"");
  const [devices,setDevices]=useState([]);
+ const [pushServerConfigured,setPushServerConfigured]=useState(false);
  const [qr,setQr]=useState(null);
  const [remaining,setRemaining]=useState(0);
  const [busy,setBusy]=useState(false);
@@ -76,13 +77,13 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
   try{
    const data=await fn("getLKShopPairingDevices",{scope});
    const next=checkList(data,scope);
-   setDevices(next);setDisabled(false);setError("");
+   setDevices(next);setPushServerConfigured(data.pushServerConfigured===true);setDisabled(false);setError("");
    return next;
   }catch(caught){
    if(String(caught?.message||"").includes("LK_SHOP_PILOT_NOT_ENABLED")){
     setDisabled(true);setDevices([]);setQr(null);
    }
-   setError(errorText(caught));
+   setPushServerConfigured(false);setError(errorText(caught));
    if(!silent)report("อ่านรายการ PG Notify ไม่สำเร็จ","error");
    return null;
   }finally{setLoading(false);}
@@ -124,6 +125,17 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
    report("คัดลอกรหัสจับคู่สำหรับทดสอบแล้ว");
   }catch{report("คัดลอกรหัสไม่ได้ กรุณาอนุญาต Clipboard","error");}
  };
+ const testPush=async(device)=>{
+  if(busy||!pushServerConfigured||!device.pushReady)return;
+  setBusy(true);setError("");
+  try{
+   const r=await fn("queuePGNotifyTestPush",{scope,deviceId:device.id});
+   if(r?.ok!==true||r.queued!==true||r.deviceId!==device.id||r.deliveryConfirmed!==false)throw Error("PG_NOTIFY_TEST_UNCONFIRMED");
+   report("ส่งเข้าคิวแล้ว กรุณาตรวจการแจ้งเตือนบนโทรศัพท์");
+  }catch(e){
+   setError(/resource-exhausted|PG_NOTIFY_TEST_RATE_LIMIT/.test(String(e?.code)+" "+String(e?.message))?"รอ 1 นาที ก่อนส่งทดสอบอีกครั้ง":"ส่งแจ้งเตือนทดสอบไม่สำเร็จ กรุณาตรวจสอบการจับคู่");
+  }finally{setBusy(false);}
+ };
  const revoke=async(device)=>{
   if(busy||!DEVICE_ID.test(device?.id||""))return;
   const confirmed=await sweetConfirm(
@@ -161,6 +173,7 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
    กรุณาอย่านำ QR นี้ไปใช้กับ APK ของ LUKKAJA
   </p>
   {apk&&<p><a className="btn btn-sm" href={apk.path} download={apk.path.split("/").pop()}><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด PG Notify (UAT)</a></p>}
+  <p role="status">{pushServerConfigured?"เซิร์ฟเวอร์ Push เปิดใช้งานแล้ว · ทดสอบที่อุปกรณ์หลังจับคู่":"เซิร์ฟเวอร์ Push ยังไม่พร้อมหรือยังตรวจสอบไม่ได้"}</p>
   {error&&<p role="alert" className="lk-shop-error">{error}</p>}
   {loading?<p role="status">กำลังอ่านสถานะ PG Notify จากเซิร์ฟเวอร์…</p>:
    disabled?<p role="status">ระบบจับคู่ PG Notify ของ Firebase ยังไม่ได้เปิดทดสอบ</p>:<>
@@ -212,6 +225,7 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
          <div><strong>{d.name}</strong>
           <small>{d.pushReady?"ลงทะเบียน Token สำหรับ Push แล้ว":"จับคู่แล้ว • ยังไม่ได้เปิด Push บนโทรศัพท์"}</small>
          </div>
+         {pushServerConfigured&&d.pushReady&&<button type="button" className="btn btn-sm" disabled={busy} onClick={()=>void testPush(d)} aria-label={"ส่ง Push ทดสอบ "+d.name}><i className="bi bi-bell" aria-hidden="true"/> ส่งทดสอบ</button>}
          <button type="button" className="btn btn-sm" onClick={()=>void revoke(d)} disabled={busy}
           aria-label={"ยกเลิกการจับคู่ "+d.name}>
           <i className="bi bi-link-45deg" aria-hidden="true"/> ยกเลิกการจับคู่

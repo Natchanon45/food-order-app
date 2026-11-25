@@ -38,6 +38,15 @@ shutil.copyfile(apk, out)
 data = dict(version=version, buildCode=code, mode=mode,
             path="/downloads/"+name, sha256=hashlib.sha256(out.read_bytes()).hexdigest(),
             sizeBytes=out.stat().st_size, signing="development")
-data.update(notificationEnabled=False) if app == "connect" else data.update(pushCertified=False)
+if app == "connect":
+    data.update(notificationEnabled=False)
+else:
+    # Validate compiled native resources without exposing the API key.
+    resources = subprocess.check_output([str(sdk/"aapt2"),"dump","resources",str(apk)],text=True)
+    configured = ("1:1046915702525:android:e05d9f006be8bc6610e894" in resources
+                  and "chat-45754" in resources
+                  and all(re.search(r"\bstring/"+k+r"\b",resources) for k in
+                          ["google_app_id","gcm_defaultSenderId","google_api_key","project_id"]))
+    data.update(pushCertified=False,fcmConfigured=configured)
 (ROOT / f"public/downloads/pg-{app}.json").write_text(json.dumps(data, indent=2)+"\n")
 print(name, data["sizeBytes"], data["sha256"])

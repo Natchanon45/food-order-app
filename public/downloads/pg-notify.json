@@ -1,10 +1,11 @@
 {
   "version": "1.0.0",
-  "buildCode": 2,
+  "buildCode": 3,
   "mode": "notification_uat",
-  "path": "/downloads/PG_Notify_V1.0.0_0002.apk",
-  "sha256": "24916dd468eb421a20077fe338ab4bcb17026ade185c30cc1b7ccb8eccbfe76c",
-  "sizeBytes": 70460422,
+  "path": "/downloads/PG_Notify_V1.0.0_0003.apk",
+  "sha256": "d9523d63ff384908a15b0d24e02c2f2b70a3d7666d33c253555adc175929593b",
+  "sizeBytes": 70466126,
   "signing": "development",
-  "pushCertified": false
+  "pushCertified": false,
+  "fcmConfigured": true
 }

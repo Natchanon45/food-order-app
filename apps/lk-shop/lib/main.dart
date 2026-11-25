@@ -17,8 +17,20 @@ import 'src/lk_system_notices.dart';
 
 @pragma('vm:entry-point')
 Future<void> lkBackgroundMessage(RemoteMessage message) async {
-  // FCM/APNs handles the notification. Unlock app to fetch private details.
+  // Native Firebase config is available before Dart starts. Background
+  // delivery is a generic system notification; private inbox requires pairing.
+  if (Firebase.apps.isEmpty && LKRuntime.nativeFirebaseConfigured) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: LKRuntime.apiKey,
+        appId: LKRuntime.appId,
+        messagingSenderId: LKRuntime.senderId,
+        projectId: LKRuntime.projectId,
+      ),
+    );
+  }
 }
+
 final lkSystemNotices = LKSystemNotices();
 const green = Color(0xff0d7847);
 const ink = Color(0xff173f2b);
@@ -203,7 +215,15 @@ class _LKHomeState extends State<LKHome> with WidgetsBindingObserver {
     if (!widget.firebaseReady) return '';
     try {
       final messaging = FirebaseMessaging.instance;
-      await messaging.requestPermission(alert: true, badge: true, sound: true);
+      final permission = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (permission.authorizationStatus == AuthorizationStatus.denied ||
+          permission.authorizationStatus == AuthorizationStatus.notDetermined) {
+        return '';
+      }
       await messaging.setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
@@ -228,10 +248,10 @@ class _LKHomeState extends State<LKHome> with WidgetsBindingObserver {
   Future<void> _configurePush() async {
     if (!widget.firebaseReady || api.current == null) return;
     final token = await _getFCMToken();
-    if (token.isNotEmpty) {
+    {
       try {
         await api.updatePushToken(token);
-        if (mounted) setState(() => pushReady = true);
+        if (mounted) setState(() => pushReady = token.isNotEmpty);
       } catch (_) {
         if (mounted) setState(() => pushReady = false);
       }

@@ -10,7 +10,7 @@ test("native PG Notify is a distinct Target app with unique package and version,
  const gradle=await fs("apps/lk-shop/android/app/build.gradle.kts");
  const xcode=await fs("apps/lk-shop/ios/Runner.xcodeproj/project.pbxproj");
  const manifest=await fs("apps/lk-shop/android/app/src/main/AndroidManifest.xml");
- assert.match(pub,/version: 1\.0\.0\+2/);
+ assert.match(pub,/version: 1\.0\.0\+3/);
  assert.match(gradle,/applicationId = "com\.natchanon45\.penguin\.lkshop"/);
  assert.match(gradle,/namespace = "com\.natchanon45\.penguin\.lkshop"/);
  assert.match(xcode,/PRODUCT_BUNDLE_IDENTIFIER = com\.natchanon45\.penguin\.lkShop;/);
@@ -47,7 +47,10 @@ test("FCM setup stays disabled until registered native Firebase config is suppli
  assert.match(ignore,/apps\/lk-shop\/ios\/Runner\/GoogleService-Info\.plist/);
  assert.match(ignore,/apps\/lk-shop\/firebase-app-defines\.json/);
  assert.equal(JSON.parse(cfg).LK_FIREBASE_APP_ID,"");
- await assert.rejects(access("apps/lk-shop/android/app/google-services.json"));
+ // Local registered build config is permitted but must remain untracked.
+ const tracked=execFileSync("git",["ls-files","apps/lk-shop/android/app/google-services.json","apps/lk-shop/firebase-app-defines.json"],{encoding:"utf8"});
+ assert.equal(tracked.trim(),"");
+ assert.match(await fs("apps/lk-shop/android/app/build.gradle.kts"),/if \(file\("google-services.json"\).isFile\)/);
  await assert.rejects(access("apps/lk-shop/ios/Runner/GoogleService-Info.plist"));
 });
 test("monotonic notification cursor is allocated in one Firestore transaction",async()=>{

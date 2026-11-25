@@ -56,7 +56,7 @@ export function PublicAppDownloads() {
           </span>
         </div>
       </div>
-      <p className="lk-app-downloads-note"><i className="bi bi-info-circle" aria-hidden="true"/> ไฟล์ APK นี้สำหรับทดสอบบน Android เท่านั้น การรับ Push Notification ต้องตั้งค่าบริการแจ้งเตือนและจับคู่อุปกรณ์ก่อน (Firebase ยังไม่เปิดรับ Push)</p>
+      <p className="lk-app-downloads-note"><i className="bi bi-info-circle" aria-hidden="true"/> ไฟล์ APK นี้สำหรับทดสอบบน Android เท่านั้น {apk?.fcmConfigured===true?"การรับ Push Notification ให้ติดตั้งแอปรุ่นล่าสุด อนุญาตการแจ้งเตือน และสแกน QR จับคู่กับห้องแจ้งเตือนก่อนทดสอบ":"การรับ Push Notification ต้องตั้งค่าบริการแจ้งเตือนและจับคู่อุปกรณ์ก่อน (Firebase ยังไม่เปิดรับ Push)"}</p>
     </section>
   );
 }
