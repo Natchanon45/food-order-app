@@ -1,0 +1,92 @@
+.stripe-connect-delivery{display:grid;gap:12px;min-width:0;padding:16px;border:1px solid #dbe9e1;border-radius:15px;background:linear-gradient(125deg,#ffffff 45%,#f1f8f5);}
+.stripe-connect-delivery-head{display:flex;align-items:center;gap:11px;min-width:0;}
+.stripe-connect-delivery-head-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;background:#e2f4e8;color:#127f45;border-radius:12px;font-size:20px;}
+.stripe-connect-delivery-head-copy{display:grid;gap:4px;flex:1;min-width:0;}
+.stripe-connect-delivery-head-copy strong{font-weight:800;font-size:.92rem;color:#185536;}
+.stripe-connect-delivery-head-copy small{font-size:.74rem;color:#68806d;line-height:1.4;}
+.stripe-connect-delivery-badge{flex:0 0 auto;padding:5px 9px;border-radius:999px;background:#e1f4e8;color:#126b39;font-size:.69rem;font-weight:800;}
+.stripe-connect-delivery-status{padding:12px;border-radius:12px;background:#fff9e9;border:1px solid #f0ddab;}
+.stripe-connect-delivery-status-line{display:flex;align-items:flex-start;gap:10px;}
+.stripe-connect-delivery-status-dot{width:10px;height:10px;flex:0 0 10px;margin-top:4px;background:#d69c24;border-radius:100%;}
+.stripe-connect-delivery-status strong{font-size:.81rem;color:#725014;}
+.stripe-connect-delivery-status p{margin:4px 0 0;line-height:1.55;font-size:.74rem;color:#79633c;}
+.stripe-connect-delivery-account{margin-top:8px;padding-top:8px;border-top:1px solid #f1e4ba;color:#725014;font-size:.72rem;}
+.stripe-connect-delivery-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.stripe-connect-delivery-steps>div{display:flex;align-items:start;gap:9px;padding:11px;border:1px solid #e0ebe3;border-radius:11px;background:#fff;min-width:0;}
+.stripe-connect-delivery-steps>div>i{color:#158a51;font-size:17px;}
+.stripe-connect-delivery-steps span{display:grid;gap:4px;min-width:0;}
+.stripe-connect-delivery-steps strong{font-size:.76rem;color:#20573b;}
+.stripe-connect-delivery-steps small{font-size:.7rem;line-height:1.5;color:#728578;}
+.stripe-connect-delivery-foot{display:grid;gap:11px;border-top:1px solid #e1ece5;padding-top:11px;}
+.stripe-connect-delivery-foot-note{display:flex;align-items:start;gap:8px;font-size:.74rem;line-height:1.55;color:#647e6b;}
+.stripe-connect-delivery-foot-note i{color:#33875d;}
+.stripe-connect-delivery-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+.stripe-connect-delivery-actions button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:9px 13px;border:1px solid #c6e1ce;border-radius:999px;font-weight:800;font-size:.75rem;}
+.stripe-connect-delivery-refresh{background:#ebf8f0;color:#147a41;cursor:pointer;}
+.stripe-connect-delivery-start{background:#e7ebe8;color:#83938a;cursor:not-allowed;opacity:.87;}
+@media(max-width:700px){.stripe-connect-delivery{padding:12px;gap:10px}.stripe-connect-delivery-steps{grid-template-columns:1fr}.stripe-connect-delivery-head{flex-wrap:wrap}.stripe-connect-delivery-badge{margin-left:auto}.stripe-connect-delivery-actions button{flex:1 1 auto}.stripe-connect-delivery-steps>div{padding:10px;}}
+
+
+/* SC2 adds hosted onboarding inside the existing merchant payment card. */
+.stripe-connect-onboarding{display:grid;gap:12px;padding:14px;border:1px solid #cfe4d7;border-radius:12px;background:#f7fcf9;min-width:0}
+.stripe-connect-onboarding-head{display:flex;align-items:flex-start;gap:10px;color:#186b41}
+.stripe-connect-onboarding-head>i{font-size:19px}
+.stripe-connect-onboarding-head>div{display:grid;gap:4px}
+.stripe-connect-onboarding-head strong{font-size:.86rem}
+.stripe-connect-onboarding-head small{font-size:.73rem;color:#6d8475;line-height:1.5}
+.stripe-connect-entity{display:grid;gap:7px;font-size:.76rem;font-weight:750;color:#35694a}
+.stripe-connect-entity select{width:100%;min-height:41px;border:1px solid #cbded1;border-radius:9px;background:#fff;color:#1d402e;padding:7px 10px;font:inherit}
+.stripe-connect-consent{display:flex;align-items:flex-start;gap:9px;font-size:.75rem;line-height:1.65;color:#466552;cursor:pointer}
+.stripe-connect-consent input{accent-color:#158a51;width:17px;height:17px;flex:none;margin-top:2px}
+.stripe-connect-onboarding-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.stripe-connect-onboarding-actions button{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:40px;border:1px solid #b9dcc5;border-radius:10px;padding:9px 13px;font-size:.76rem;font-weight:800}
+.stripe-connect-onboard-button{background:#158549;color:white;border-color:#158549!important;cursor:pointer}
+.stripe-connect-sync-button{background:#eaf7ef;color:#166b3c;cursor:pointer}
+.stripe-connect-onboarding-actions button:disabled{opacity:.55;cursor:not-allowed}
+.stripe-connect-onboarding-error{margin:0;color:#a42e32;background:#fff3f3;border:1px solid #efc9cc;padding:10px;border-radius:9px;font-size:.76rem}
+.stripe-connect-onboarding-note{margin:0;color:#205c3d;font-size:.76rem}
+@media(max-width:700px){.stripe-connect-onboarding{padding:11px}.stripe-connect-onboarding-actions button{flex:1 1 100%}}
+
+/* The provider capability snapshot is informational, never a payment grant. */
+.stripe-connect-capability-status{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:11px}
+.stripe-connect-capability-status>div{display:grid;gap:5px;min-width:0;padding:10px;border:1px solid #cce6d6;border-radius:9px;background:#f8fcf9}
+.stripe-connect-capability-status small{font-size:.69rem;color:#61836d}
+.stripe-connect-capability-status strong{font-size:.75rem;color:#175d37;overflow-wrap:anywhere}
+.stripe-connect-capability-status>p{grid-column:1/-1;margin:1px 0 0;font-size:.7rem;line-height:1.5;color:#638474}
+.stripe-connect-promptpay-button{border-color:#a8d8b7!important;color:#126b39;background:#eaf8ef;cursor:pointer}
+@media(max-width:700px){
+ .stripe-connect-capability-status{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+
+/* Separate SC3/SC4 staging from the SC2 merchant capability badges. */
+.stripe-connect-sc34-readiness{display:grid;gap:8px;padding:11px 13px;border:1px solid #d5e4db;border-radius:11px;background:#f8fbf9;color:#325b40}
+.stripe-connect-sc34-readiness>strong{display:flex;align-items:center;gap:7px;font-size:.78rem}
+.stripe-connect-sc34-checks{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.stripe-connect-sc34-checks>span{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #dde8e0;border-radius:8px;background:#fff;font-size:.71rem;color:#58705f}
+.stripe-connect-sc34-readiness>p{margin:0;font-size:.7rem;line-height:1.55;color:#687c6e}
+
+/* Stripe Connect platform visual identity: LUKKAJA green.
+   Semantically warning, error, expired and pending indicators remain distinct. */
+.stripe-connect-delivery :is(.stripe-connect-delivery-badge,.stripe-connect-delivery-head-icon) {
+  border: 1px solid #c5e5d0;
+}
+.stripe-connect-delivery :is(.stripe-connect-delivery-refresh,.stripe-connect-sync-button,.stripe-connect-promptpay-button) {
+  color: #126b39;
+  background: #e8f7ed;
+  border-color: #b7dec4;
+  transition: background .15s,border-color .15s,box-shadow .15s;
+}
+.stripe-connect-delivery :is(.stripe-connect-delivery-refresh,.stripe-connect-sync-button,.stripe-connect-promptpay-button):hover:not(:disabled) {
+  background: #d6f1e0;
+  border-color: #69bf88;
+}
+.stripe-connect-delivery :is(.stripe-connect-onboard-button):not(:disabled) {
+  background: linear-gradient(110deg,#08753a,#159447);
+  color: #fff;
+  border-color: #08753a !important;
+}
+.stripe-connect-delivery :is(button,select):focus-visible {
+  outline: 3px solid #81d09d;
+  outline-offset: 2px;
+}

@@ -1,3 +1,4 @@
+import { StripeConnectDeliveryAvailability } from "@/components/StripeConnectDeliveryAvailability";
 import { TelegramSettingsPanel } from "@/components/TelegramSettingsPanel";
 import { LKShopPairingPanel } from "@/components/LKShopPairingPanel";
 import { PaymentCompanionPairingCard } from "@/components/PaymentCompanionPairingCard";
@@ -1834,14 +1835,26 @@ export function AdminPage() {
                     <i className="bi bi-cash-stack" aria-hidden="true"></i><strong>{t("admin.delivery_settings.cod_enabled_label")}</strong>
                   </label>
                   <div className="menu-category">{t("admin.delivery_settings.cod_enabled_help")}</div>
+                  <div role="note" style={{marginTop:8,padding:10,borderRadius:10,background:"#fff7e8",color:"#925b12",fontSize:12,lineHeight:1.6,whiteSpace:"normal",overflowWrap:"anywhere"}}>
+                    <i className="bi bi-info-circle" aria-hidden="true"/> ยังไม่ได้รับข้อมูลที่ชัดเจนจาก Lalamove เกี่ยวกับขั้นตอนเก็บเงินและนำส่งเงินให้ร้านค้า จึงไม่แนะนำให้เปิดใช้งานในขณะนี้
+                    <div style={{marginTop:5}}>การเปิดรับผ่าน Lalamove ต้องตรวจสอบว่าบริการรองรับจริง การเรียกรถ COD อัตโนมัติยังไม่ได้รับการยืนยันจากผู้ให้บริการ</div>
+                  </div>
+                  <label style={{display:"flex",alignItems:"flex-start",gap:8,marginTop:10,fontSize:13,whiteSpace:"normal",lineHeight:1.5}}>
+                    <input type="checkbox" id="deliveryLalamoveCodOptIn" style={{flexShrink:0}} checked={false} disabled readOnly/>
+                    <span>รับทราบเงื่อนไขและเปิดรับ COD ผ่าน Lalamove ด้วยตนเอง <small>(ยังไม่รองรับการตั้งค่านี้บน Firebase)</small></span>
+                  </label>
                 </section>
                 <section className="admin-payment-method-card">
                   <label className="admin-payment-method-head" htmlFor="deliveryStripeEnabled">
-                    <input type="checkbox" id="deliveryStripeEnabled" checked={false} disabled readOnly />
+                    <input type="checkbox" id="deliveryStripeEnabled"
+                      checked={false} disabled readOnly />
                     <i className="bi bi-credit-card-2-front" aria-hidden="true"></i>
-                    <strong>Stripe</strong>
+                    <strong>เปิดรับชำระเงินผ่าน Stripe</strong>
                   </label>
-                  <div className="menu-category">ระบบรับชำระผ่าน Stripe Connect สำหรับ Delivery ยังไม่เปิดใช้งานบน Firebase</div>
+                  <div className="menu-category">ลูกค้าสามารถเลือก Stripe PromptPay หรือบัตรสำหรับ Delivery เมื่อบัญชี Stripe ของร้านพร้อมใช้งาน</div>
+                  <div className="menu-category" role="note" style={{ marginTop: 6, color: "#125f37" }}>
+                      <i className="bi bi-shield-lock" aria-hidden="true"></i> ระบบ Stripe Connect สำหรับ Delivery ยังไม่เปิดใช้งานบน Firebase
+                    </div>
                 </section>
               </div>
               {paymentMethodsUnsaved ?
@@ -1863,6 +1876,7 @@ export function AdminPage() {
                   <div className="field"><DynamicField id="bankAccountName" label={t("admin.store.bank_account_name")} value={storeForm.bankAccountName} className="admin-store-dynamic-field"><input className="input" id="bankAccountName" value={storeForm.bankAccountName} onChange={e => patchStore({ bankAccountName: e.target.value })} /></DynamicField></div>
                 </section>
               </div>
+              <div style={{ marginTop: 14 }}><StripeConnectDeliveryAvailability /></div>
             </AdminSettingsGroup>
 
             <AdminSettingsGroup
