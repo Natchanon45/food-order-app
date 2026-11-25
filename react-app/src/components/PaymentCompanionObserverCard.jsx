@@ -136,11 +136,11 @@ export function PaymentCompanionObserverCard({isOwner=false}){
     </p>
    </section>
   </div>
-  <section className="payment-companion-panel payment-companion-lkshop-compare" aria-label="เปรียบเทียบรายการแจ้งเตือนกับ LK Shop">
+  <section className="payment-companion-panel payment-companion-lkshop-compare" aria-label="เปรียบเทียบรายการแจ้งเตือนกับ PG Notify">
    <div className="payment-companion-section-title"><i className="bi bi-chat-left-text" aria-hidden="true"/>
-    <div><strong>รายการแจ้งเตือนที่ส่งเข้า LK Shop</strong><small>ข้อมูลจาก Outbox จริงเท่านั้น ไม่ใช้ยอดแจ้งเงินเข้าแทนการส่งข้อความ</small></div>
+    <div><strong>รายการแจ้งเตือนที่ส่งเข้า PG Notify</strong><small>ข้อมูลจาก Outbox จริงเท่านั้น ไม่ใช้ยอดแจ้งเงินเข้าแทนการส่งข้อความ</small></div>
    </div>
-   <p className="payment-companion-empty" role="status">Firebase รุ่นนี้ยังไม่มี API อ่าน LK Shop Outbox ของร้าน จึงยังไม่แสดงรายการเปรียบเทียบ ไม่ได้หมายความว่าไม่ได้ส่งข้อความ</p>
+   <p className="payment-companion-empty" role="status">Firebase รุ่นนี้ยังไม่มี API อ่าน PG Notify Outbox ของร้าน จึงยังไม่แสดงรายการเปรียบเทียบ ไม่ได้หมายความว่าไม่ได้ส่งข้อความ</p>
   </section>
   <section className="payment-companion-panel payment-companion-match-panel payment-companion-observer-matches" data-companion-matches aria-label="รายการรอจับคู่ยอดเงินเข้า">
    <div className="payment-companion-section-title"><i className="bi bi-intersect" aria-hidden="true"/>

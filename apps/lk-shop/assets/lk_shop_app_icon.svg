@@ -42,6 +42,6 @@
   <path d="M332 200h53v19c0 18-12 30-27 30-14 0-26-12-26-30z" fill="#f9fff9"/>
  </g>
  <path d="M80 378H432" stroke="#a9fbc9" stroke-opacity=".31" stroke-width="2"/>
- <text x="256" y="441" fill="#ffffff" font-size="58" font-family="Arial, sans-serif" font-weight="800" letter-spacing="-2" text-anchor="middle">LK Shop</text>
+ <text x="256" y="441" fill="#ffffff" font-size="51" font-family="Arial, sans-serif" font-weight="800" letter-spacing="-2" text-anchor="middle">PG Notify</text>
  </g>
 </svg>

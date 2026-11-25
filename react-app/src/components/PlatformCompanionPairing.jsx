@@ -9,11 +9,11 @@ import {sweetConfirm} from "./sweetDialog";
 export function PlatformCompanionPairing({onDevicesChange}){
  const [devices,setDevices]=useState([]);
 
- const [apkAvailable,setApkAvailable]=useState(false);
+ const [apk,setApk]=useState(null);
  const [expiresAt,setExpiresAt]=useState("");
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false);
- const [label,setLabel]=useState("LK Connect ส่วนกลาง");
+ const [label,setLabel]=useState("PG Connect ส่วนกลาง");
  const [token,setToken]=useState("");
  const [issuedDeviceId,setIssuedDeviceId]=useState("");
  const [revokeStatus,setRevokeStatus]=useState("");
@@ -32,14 +32,14 @@ export function PlatformCompanionPairing({onDevicesChange}){
    setReady(true);setError("");
    // A published APK requires an actual versioned release manifest, never a guessed URL.
    try{
-    const response=await fetch("/downloads/lk-connect-uat.json",{cache:"no-store"});
+    const response=await fetch("/downloads/pg-connect.json",{cache:"no-store"});
     const manifest=await response.json();
-    setApkAvailable(response.ok&&manifest?.mode==="pairing_only"&&manifest.path==="/downloads/LK-Connect-PENGUIN-Pairing-UAT.apk"&&/^[a-f0-9]{64}$/.test(manifest.sha256));
-   }catch{setApkAvailable(false);}
+    setApk(response.ok&&manifest?.mode==="pairing_only"&&/^\/downloads\/PG_Connect_V\d+\.\d+\.\d+_\d{4}\.apk$/.test(manifest.path)&&/^[a-f0-9]{64}$/.test(manifest.sha256)?manifest:null);
+   }catch{setApk(null);}
    return data.devices;
   }catch{
    setReady(false);
-   setError("ยังไม่สามารถอ่านสถานะ LK Connect ส่วนกลางได้ กรุณาตรวจสอบการตั้งค่า Backend");
+   setError("ยังไม่สามารถอ่านสถานะ PG Connect ส่วนกลางได้ กรุณาตรวจสอบการตั้งค่า Backend");
   }finally{setLoading(false);}
  },[onDevicesChange]);
  useEffect(()=>{void refresh();},[refresh]);
@@ -56,7 +56,7 @@ export function PlatformCompanionPairing({onDevicesChange}){
  const pair=async()=>{
   if(!ready||busy||loading||!label.trim()||devices.filter(d=>d.enabled).length>=3)return;
   const ok=await sweetConfirm("คีย์นี้ใช้ตรวจสอบการเชื่อมต่อส่วนกลางเท่านั้น มีอายุ 24 ชั่วโมง แสดงเพียงครั้งเดียวและไม่อนุญาตรับส่งแจ้งเงินเข้า",{
-   title:"สร้างคีย์ LK Connect ส่วนกลาง",confirmText:"สร้างคีย์",confirmIcon:"key",cancelText:"กลับ",type:"warning"});
+   title:"สร้างคีย์ PG Connect ส่วนกลาง",confirmText:"สร้างคีย์",confirmIcon:"key",cancelText:"กลับ",type:"warning"});
   if(!ok)return;
   setBusy(true);setError("");setRevokeStatus("");setToken("");setIssuedDeviceId("");
   try{
@@ -69,7 +69,7 @@ export function PlatformCompanionPairing({onDevicesChange}){
  const revoke=async device=>{
   if(busy||loading)return;
   const ok=await sweetConfirm("ยกเลิกการจับคู่ "+device.label+"? คีย์นี้จะตรวจสอบการเชื่อมต่อไม่ได้อีก",{
-   title:"ยกเลิก LK Connect ส่วนกลาง",type:"warning",confirmText:"ยกเลิกคีย์",confirmIcon:"link-45deg",cancelText:"กลับ"});
+   title:"ยกเลิก PG Connect ส่วนกลาง",type:"warning",confirmText:"ยกเลิกคีย์",confirmIcon:"link-45deg",cancelText:"กลับ"});
   if(!ok)return;
   setBusy(true);setError("");setRevokeStatus("");
   try{
@@ -94,21 +94,21 @@ export function PlatformCompanionPairing({onDevicesChange}){
   if(!token)return;
   try{
    await navigator.clipboard.writeText(token);
-   setCopyStatus("คัดลอกรหัสแล้ว กรุณานำไปกรอกใน LK Connect เท่านั้น");
+   setCopyStatus("คัดลอกรหัสแล้ว กรุณานำไปกรอกใน PG Connect เท่านั้น");
   }catch{setCopyStatus("คัดลอกไม่ได้ กรุณาอนุญาต Clipboard หรือแสดงรหัสและคัดลอกด้วยตนเอง");}
  };
  const visibleDevices=devices.filter(d=>d.enabled||d.keyDeleted!==true);
- return <section id="platformCompanionPairingSection" className="platform-companion" aria-label="การจับคู่ LK Connect ส่วนกลาง" data-platform-companion>
+ return <section id="platformCompanionPairingSection" className="platform-companion" aria-label="การจับคู่ PG Connect ส่วนกลาง" data-platform-companion>
   <div className="platform-companion-heading">
-   <div><strong><i className="bi bi-phone" aria-hidden="true"/> LK Connect สำหรับบัญชี Platform</strong>
+   <div><strong><i className="bi bi-phone" aria-hidden="true"/> PG Connect สำหรับบัญชี Platform</strong>
     <small>ทดสอบดาวน์โหลดแอปและจับคู่ด้วยคีย์หรือ QR ส่วนกลาง · รุ่นนี้ยังไม่รับแจ้งเงินเข้า</small></div>
    <span>{devices.filter(d=>d.enabled).length}/3 เครื่อง</span>
   </div>
   {revokeStatus?<p role="status"><i className="bi bi-check-circle" aria-hidden="true"/> {revokeStatus}</p>:null}
   {error?<p role="alert" className="platform-collection-warning">{error}</p>:null}
   <div className="platform-companion-install">
-   {apkAvailable?<a className="btn btn-sm" href="/downloads/LK-Connect-PENGUIN-Pairing-UAT.apk" download="LK-Connect-PENGUIN-Pairing-UAT.apk">
-    <i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด LK Connect (UAT)</a>:
+   {apk?<a className="btn btn-sm" href={apk.path} download={apk.path.split("/").pop()}>
+    <i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด PG Connect (UAT)</a>:
     <span className="platform-companion-muted">ยังไม่มี APK รุ่นทดสอบที่เผยแพร่</span>}
    <label htmlFor="platformCompanionDeviceLabel">ชื่ออุปกรณ์
     <input className="input" id="platformCompanionDeviceLabel" maxLength={100} value={label}
@@ -120,11 +120,11 @@ export function PlatformCompanionPairing({onDevicesChange}){
     <i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรช</button>
   </div>
   {token?<div className="platform-companion-issued" role="status" data-platform-pairing-token>
-   <strong>QR สำหรับจับคู่ LK Connect ส่วนกลาง</strong>
-   <img src={qrDataUrl("lkconnect://pair?v=1&server="+encodeURIComponent("https://penguin-food.web.app")+"&token="+token,{size:210})} width="210" height="210" alt="QR สำหรับจับคู่ LK Connect ส่วนกลาง"/>
+   <strong>QR สำหรับจับคู่ PG Connect ส่วนกลาง</strong>
+   <img src={qrDataUrl("lkconnect://pair?v=1&server="+encodeURIComponent("https://penguin-food.web.app")+"&token="+token,{size:210})} width="210" height="210" alt="QR สำหรับจับคู่ PG Connect ส่วนกลาง"/>
    <small>รหัสนี้เป็นความลับ แสดงเพียงครั้งเดียว มีอายุ 24 ชั่วโมง · หมดอายุ {expiresAt?new Date(expiresAt).toLocaleString("th-TH",{timeZone:"Asia/Bangkok"}):"—"}</small>
    <div className="platform-companion-key-actions">
-    <input className="input" type={showToken?"text":"password"} readOnly value={token} aria-label="คีย์ LK Connect ส่วนกลาง"/>
+    <input className="input" type={showToken?"text":"password"} readOnly value={token} aria-label="คีย์ PG Connect ส่วนกลาง"/>
     <button type="button" className="btn btn-sm" onClick={()=>void copy()}>
      <i className="bi bi-copy" aria-hidden="true"/> คัดลอก</button>
     <button type="button" className="btn btn-sm" onClick={()=>setShowToken(!showToken)}>

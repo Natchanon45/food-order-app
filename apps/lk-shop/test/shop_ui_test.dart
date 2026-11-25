@@ -63,7 +63,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('LK Shop'), findsOneWidget);
+    expect(find.text('PG Notify'), findsOneWidget);
     expect(find.textContaining('Version 1.0.3'), findsOneWidget);
     expect(find.byType(LKShopLogo), findsOneWidget);
     final subtitle = find.text(

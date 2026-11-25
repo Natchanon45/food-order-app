@@ -327,7 +327,7 @@ public final class MainActivity extends Activity {
         setContentView(screenRoot);
         screenRoot.requestApplyInsets();
         LinearLayout intro=card(outer);
-        add(intro,text("LK Connect • PENGUIN UAT",17,Color.rgb(24,67,40),true),8);
+        add(intro,text("PG Connect • PENGUIN UAT",17,Color.rgb(24,67,40),true),8);
         add(intro,text("ทดสอบเชื่อมต่อบัญชีส่วนกลางด้วยคีย์หรือ QR · คีย์หมดอายุใน 24 ชั่วโมง",13,Color.rgb(75,108,87),false),8);
         add(intro,text("รุ่นนี้ทดสอบการจับคู่เท่านั้น ไม่อ่าน Notification และไม่รับส่งข้อมูลธนาคาร",12,Color.rgb(154,97,35),false),8);
         healthLabel=text("",13,Color.rgb(144,85,22),true);
@@ -536,7 +536,7 @@ public final class MainActivity extends Activity {
             if(restoringSavedCheckbox)return;
             if(checked&&!notificationAccessEnabled()){
                 enableCheckbox.setChecked(false);
-                showError("เปิด Notification Access ให้ LUKKAJA ในการตั้งค่า Android ก่อน");
+                showError("เปิด Notification Access ให้ PG Connect ในการตั้งค่า Android ก่อน");
                 updateUiState();return;
             }
             if(checked&&settings.token().isEmpty()){
@@ -580,12 +580,12 @@ public final class MainActivity extends Activity {
         add(resetCard,text("ลบรหัสจับคู่ แหล่งแจ้งเตือน และรายการค้างจากโทรศัพท์นี้ " +
             "โดยไม่ต้องเชื่อมต่อเซิร์ฟเวอร์ สิทธิ์บนเซิร์ฟเวอร์จะยังไม่ถูกเพิกถอน",12,
             Color.rgb(115,82,49),false),10);
-        factoryResetButton=button("รีเซ็ต LK Connect ในเครื่อง",false);
+        factoryResetButton=button("รีเซ็ต PG Connect ในเครื่อง",false);
         styleButton(factoryResetButton,0xFFFFF3F1,0xFFB9534B,0xFF972C27);
         add(resetCard,factoryResetButton,0);
         factoryResetButton.setOnClickListener(v->{
             new AlertDialog.Builder(this)
-                .setTitle("รีเซ็ตข้อมูล LK Connect ในโทรศัพท์?")
+                .setTitle("รีเซ็ตข้อมูล PG Connect ในโทรศัพท์?")
                 .setMessage("การดำเนินการนี้ลบรหัสจับคู่ การตั้งค่าร้าน คิวแจ้งเตือน " +
                     "และข้อมูลวิเคราะห์ในเครื่องอย่างถาวร\n\n" +
                     "ไม่ได้เพิกถอนสิทธิ์อุปกรณ์บนเซิร์ฟเวอร์ หากเซิร์ฟเวอร์ยังรับรหัสเดิม " +
@@ -769,7 +769,7 @@ public final class MainActivity extends Activity {
         if(scanned!=null){
             if(scanned.getContents()==null)return;
             CompanionPairingQR.Pairing parsed=CompanionPairingQR.parse(scanned.getContents());
-            if(parsed==null){showError("QR จับคู่ไม่ถูกต้อง กรุณาสแกนจากหน้า Admin ของ LK Connect");return;}
+            if(parsed==null){showError("QR จับคู่ไม่ถูกต้อง กรุณาสแกนจากหน้า Admin ของ PG Connect");return;}
             pairingEditing=true;
             serverInput.setText(parsed.server);
             webhookInput.setText(CompanionClient.defaultWebhook(parsed.server));
@@ -897,7 +897,7 @@ public final class MainActivity extends Activity {
 
     private void resetLocalDevice() {
         if(!resetLocalDeviceData()){
-            showError("ล้างข้อมูลในเครื่องไม่ครบ กรุณาใช้เมนูล้างพื้นที่เก็บข้อมูลของ LK Connect ในการตั้งค่า Android");
+            showError("ล้างข้อมูลในเครื่องไม่ครบ กรุณาใช้เมนูล้างพื้นที่เก็บข้อมูลของ PG Connect ในการตั้งค่า Android");
             return;
         }
         showSuccess("รีเซ็ตข้อมูลในโทรศัพท์แล้ว ยังไม่ได้เพิกถอนสิทธิ์อุปกรณ์บนเซิร์ฟเวอร์");

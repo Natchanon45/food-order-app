@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "buildCode": 2,
+  "mode": "notification_uat",
+  "path": "/downloads/PG_Notify_V1.0.0_0002.apk",
+  "sha256": "24916dd468eb421a20077fe338ab4bcb17026ade185c30cc1b7ccb8eccbfe76c",
+  "sizeBytes": 70460422,
+  "signing": "development",
+  "pushCertified": false
+}

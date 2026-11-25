@@ -5,16 +5,16 @@ import {createRequire} from "node:module";
 import {execFileSync} from "node:child_process";
 const require=createRequire(import.meta.url);
 const fs=async name=>readFile(name,"utf8");
-test("native LK Shop is a distinct Target app with unique package and version, not old LUKKAJA",async()=>{
+test("native PG Notify is a distinct Target app with unique package and version, not old LUKKAJA",async()=>{
  const pub=await fs("apps/lk-shop/pubspec.yaml");
  const gradle=await fs("apps/lk-shop/android/app/build.gradle.kts");
  const xcode=await fs("apps/lk-shop/ios/Runner.xcodeproj/project.pbxproj");
  const manifest=await fs("apps/lk-shop/android/app/src/main/AndroidManifest.xml");
- assert.match(pub,/version: 1\.0\.0\+1/);
+ assert.match(pub,/version: 1\.0\.0\+2/);
  assert.match(gradle,/applicationId = "com\.natchanon45\.penguin\.lkshop"/);
  assert.match(gradle,/namespace = "com\.natchanon45\.penguin\.lkshop"/);
  assert.match(xcode,/PRODUCT_BUNDLE_IDENTIFIER = com\.natchanon45\.penguin\.lkShop;/);
- assert.match(manifest,/android:label="LK Shop PENGUIN"/);
+ assert.match(manifest,/android:label="PG Notify"/);
  assert.doesNotMatch(gradle,/applicationId = "com\.lukkaja/);
 });
 test("native pairing and navigation never accept old Source or caller-controlled origins",async()=>{

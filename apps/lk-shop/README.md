@@ -1,4 +1,4 @@
-# LK Shop — PENGUIN Firebase Native Client
+# PG Notify — PENGUIN Firebase Native Client
 
 **Code Port Module:** Flutter iOS + Android notification inbox from read-only
 LUKKAJA Source `apps/lk-shop` to PENGUIN Firebase Target. This is a new,
@@ -122,3 +122,6 @@ enablement and registered native app identities.
 
 Read full acceptance criteria in
 `docs/LUKKAJA_P1_LK_SHOP_NATIVE_FIREBASE_MODULE_20261123.md`.
+
+## PG Notify 1.0.0 branding release
+The website-distributed UAT APK is development-signed and does not certify live pairing or FCM. Package IDs and API/QR protocol are unchanged. APK filename uses the last four digits of the actual Android versionCode, zero padded.

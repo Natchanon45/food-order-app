@@ -23,7 +23,7 @@ class LKShopLogo extends StatelessWidget {
       height: size,
       fit: BoxFit.cover,
       filterQuality: FilterQuality.medium,
-      semanticLabel: 'LK Shop',
+      semanticLabel: 'PG Notify',
     ),
   );
 }
@@ -81,7 +81,7 @@ class LKVersionFooter extends StatelessWidget {
         child: Center(
           heightFactor: 1,
           child: Text(
-            'LK Shop  •  Version $version  •  Build $buildNumber',
+            'PG Notify  •  Version $version  •  Build $buildNumber',
             maxLines: 1,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
@@ -129,7 +129,7 @@ class LKShopLanding extends StatelessWidget {
           const Center(child: LKShopLogo(size: 106)),
           const SizedBox(height: 14),
           const Text(
-            'LK Shop',
+            'PG Notify',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,

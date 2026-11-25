@@ -604,14 +604,14 @@ export function PlatformContactPage() {
           <section className="card platform-lk-shop-settings-card platform-contact-toggle-host"
             data-expanded={expandedCards.lkShop} aria-labelledby="platformLKShopHeading">
             <ContactCornerToggle expanded={expandedCards.lkShop} onToggle={() => toggleCard("lkShop")}
-              controls="platformContactLKShopPanel" label="การแจ้งเตือน LK Shop" />
+              controls="platformContactLKShopPanel" label="การแจ้งเตือน PG Notify" />
             <div className="section-title">
               <div className="platform-contact-heading-group">
                 <span className="platform-contact-heading-icon platform-contact-heading-icon-lk-shop" aria-hidden="true">
                   <i className="bi bi-shop" />
                 </span>
                 <div className="platform-contact-heading-copy">
-                  <h2 id="platformLKShopHeading">การแจ้งเตือนผ่าน LK Shop</h2>
+                  <h2 id="platformLKShopHeading">การแจ้งเตือนผ่าน PG Notify</h2>
                   <p>เชื่อมต่ออุปกรณ์กับห้องแจ้งเตือนส่วนกลางของ Superadmin</p>
                 </div>
               </div>
@@ -630,16 +630,16 @@ export function PlatformContactPage() {
                   <i className="bi bi-bell" />
                 </span>
                 <div className="platform-contact-heading-copy">
-                  <h2 id="platformLKShopPreviewHeading">ตัวอย่างการแจ้งเตือน LK Shop</h2>
+                  <h2 id="platformLKShopPreviewHeading">ตัวอย่างการแจ้งเตือน PG Notify</h2>
                   <p>ตัวอย่างข้อความแจ้งเตือนที่แสดงในแอป</p>
                 </div>
               </div>
             </div>
             <div className="platform-contact-preview-body" hidden={!expandedCards.lkShop}>
-              <div className="platform-lk-shop-demo" aria-label="ตัวอย่างการแจ้งเตือน LK Shop ไม่ใช่ข้อมูลจริง">
+              <div className="platform-lk-shop-demo" aria-label="ตัวอย่างการแจ้งเตือน PG Notify ไม่ใช่ข้อมูลจริง">
                 <div className="platform-lk-shop-demo-header">
                   <span className="platform-lk-shop-demo-app-icon" aria-hidden="true"><i className="bi bi-shop" /></span>
-                  <span className="platform-lk-shop-demo-app-name">LK Shop</span>
+                  <span className="platform-lk-shop-demo-app-name">PG Notify</span>
                   <span className="platform-lk-shop-demo-time">ตอนนี้</span>
                 </div>
                 <div className="platform-lk-shop-demo-message">

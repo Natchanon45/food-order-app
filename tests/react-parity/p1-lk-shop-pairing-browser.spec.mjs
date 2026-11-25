@@ -5,7 +5,7 @@ import {resolve,basename} from "node:path";
 import {createServer} from "vite";
 import react from "@vitejs/plugin-react";
 import {chromium} from "playwright";
-test("Source LK Shop room picker, QR, device revoke, platform isolation, mobile layout and blocked APK at four widths",async()=>{
+test("Source PG Notify room picker, QR, device revoke, platform isolation, mobile layout and blocked APK at four widths",async()=>{
  const root=resolve("react-app"),dir=await mkdtemp(resolve(root,"p1-lkshop-ui-fixture-"));
  let vite,browser;
  try{
@@ -95,12 +95,12 @@ test("Source LK Shop room picker, QR, device revoke, platform isolation, mobile 
     assert.equal(await downloads.getByRole("button",{name:/APK ยังไม่พร้อม/}).isDisabled(),true);
     assert.equal(await downloads.locator('a[href*=".apk"]').count(),0);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
-    assert.ok(overflow<=2,"LK Shop mobile overflow "+width+": "+overflow);
+    assert.ok(overflow<=2,"PG Notify mobile overflow "+width+": "+overflow);
     assert.deepEqual(errors,[]);
     // Missing native app cannot be represented as successfully configured.
     await page.evaluate(()=>{window.__lkPilotEnabled=false});
     await tenant.getByRole("button",{name:"รีเฟรช"}).click();
-    await tenant.getByText("ระบบจับคู่ LK Shop ของ Firebase ยังไม่ได้เปิดทดสอบ").waitFor();
+    await tenant.getByText("ระบบจับคู่ PG Notify ของ Firebase ยังไม่ได้เปิดทดสอบ").waitFor();
     assert.equal(await tenant.locator("img").count(),0);
    }finally{await page.close();}
    const platform=await browser.newPage({viewport:{width,height:900}});
@@ -119,7 +119,7 @@ test("Source LK Shop room picker, QR, device revoke, platform isolation, mobile 
   }
  }finally{await browser?.close();await vite?.close();await rm(dir,{recursive:true,force:true});}
 });
-test("Admin, Platform and Home mount a Source-consistent LK Shop module without fake native APK readiness",async()=>{
+test("Admin, Platform and Home mount a Source-consistent PG Notify module without fake native APK readiness",async()=>{
  const admin=await readFile("react-app/src/pages/AdminPage.jsx","utf8");
  const platform=await readFile("react-app/src/pages/PlatformContactPage.jsx","utf8");
  const home=await readFile("react-app/src/pages/HomePage.jsx","utf8");

@@ -6,7 +6,7 @@ import {functions} from "@/firebase/client";
 import {loadPlatformReceiptReceiver} from "@/data/platformReceiptReceiver";
 import "@/ui/platform-collection.css";
 
-// The latest LUKKAJA JSX offers live routing between LINE/LK Connect and Stripe.
+// The latest LUKKAJA JSX offers live routing between LINE/PG Connect and Stripe.
 // PENGUIN has NOT ported the corresponding payment-reconciliation and webhook
 // gate yet. Preserve the visual information architecture but do not offer a
 // fake switch which would mislabel unpaid invoices as accepted.
@@ -93,7 +93,7 @@ export function PlatformCollectionPreferences(){
     <Link to="/platform#platformStripeSettings">ตรวจ Stripe</Link>
    </div>
    <div className="platform-collection-progress-step">
-    <i className="bi bi-circle" aria-hidden="true"/><span>ทดสอบ LINE/LK Connect และความถูกต้องของยอดเงินจริง</span>
+    <i className="bi bi-circle" aria-hidden="true"/><span>ทดสอบ LINE/PG Connect และความถูกต้องของยอดเงินจริง</span>
    </div>
    <div className="platform-collection-progress-step">
     <i className="bi bi-circle" aria-hidden="true"/><span>เปิดใช้งานหลังอนุมัติ Staging Provider UAT เท่านั้น</span>

@@ -2,6 +2,7 @@ import {useCallback,useEffect,useState} from "react";
 import {httpsCallable} from "firebase/functions";
 import {functions} from "@/firebase/client";
 import {qrDataUrl} from "@/utils/localQr";
+import {usePGNotifyDownload} from "./PublicAppDownloads";
 import {sweetConfirm} from "@/components/sweetDialog";
 import "@/ui/lk-shop-pairing.css";
 
@@ -26,12 +27,12 @@ const fn=(name,data)=>httpsCallable(functions,name)(data).then(r=>r?.data);
 const errorText=error=>{
  const text=String(error?.message||"");
  if(/LK_SHOP_PILOT_NOT_ENABLED/.test(text))
-  return "ฟีเจอร์ LK Shop บน Firebase ยังไม่เปิดใช้งาน — ต้องผ่านการทดสอบแอปใหม่ก่อน";
+  return "ฟีเจอร์ PG Notify บน Firebase ยังไม่เปิดใช้งาน — ต้องผ่านการทดสอบแอปใหม่ก่อน";
  if(/permission-denied|LK_SHOP_(?:TENANT|PLATFORM|ACTIVE|SESSION)/i.test(text))
   return "สิทธิ์จัดการอุปกรณ์หมดอายุหรือไม่ตรงกับห้อง กรุณาเข้าสู่ระบบใหม่";
  if(/unavailable|deadline-exceeded/i.test(text))
   return "ยังตรวจสอบข้อมูลจากเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่";
- return "การเชื่อมต่อ LK Shop ยังไม่ยืนยัน กรุณารีเฟรชและตรวจสอบสิทธิ์";
+ return "การเชื่อมต่อ PG Notify ยังไม่ยืนยัน กรุณารีเฟรชและตรวจสอบสิทธิ์";
 };
 const validDevice=d=>Boolean(d&&DEVICE_ID.test(d.id||"")&&
  typeof d.name==="string"&&d.name.length<=100&&
@@ -59,6 +60,7 @@ function checkPair(value,purpose){
 }
 export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}){
  const roomOptions=ROOMS[scope]||ROOMS.tenant;
+ const apk=usePGNotifyDownload();
  const [purpose,setPurpose]=useState(scope==="platform"?"superadmin_slip_manual":"");
  const [devices,setDevices]=useState([]);
  const [qr,setQr]=useState(null);
@@ -81,7 +83,7 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
     setDisabled(true);setDevices([]);setQr(null);
    }
    setError(errorText(caught));
-   if(!silent)report("อ่านรายการ LK Shop ไม่สำเร็จ","error");
+   if(!silent)report("อ่านรายการ PG Notify ไม่สำเร็จ","error");
    return null;
   }finally{setLoading(false);}
  },[scope]);
@@ -126,14 +128,14 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
   if(busy||!DEVICE_ID.test(device?.id||""))return;
   const confirmed=await sweetConfirm(
    "ยกเลิกสิทธิ์เครื่อง "+device.name+" หรือไม่? เครื่องนี้จะไม่สามารถรับแจ้งเตือนใหม่ได้",
-   {title:"ยกเลิกการจับคู่ LK Shop",type:"warning",confirmText:"ยกเลิกอุปกรณ์",cancelText:"กลับ",danger:true});
+   {title:"ยกเลิกการจับคู่ PG Notify",type:"warning",confirmText:"ยกเลิกอุปกรณ์",cancelText:"กลับ",danger:true});
   if(!confirmed)return;
   setBusy(true);setQr(null);
   try{
    const result=await fn("revokeLKShopPairingDevice",{scope,deviceId:device.id});
    const latest=await reload({silent:true});
    if(Array.isArray(latest)&&!latest.some(d=>d.id===device.id)&&result?.revoked===true){
-    report("ยกเลิกการจับคู่ LK Shop แล้ว");
+    report("ยกเลิกการจับคู่ PG Notify แล้ว");
    }else{setError("ยังไม่ยืนยันผลการยกเลิกอุปกรณ์ กรุณารีเฟรช");}
   }catch(caught){
    // A stale tab might send an already-revoked ID. Read the authoritative
@@ -149,18 +151,19 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
   data-lk-shop-scope={scope}>
   {!embedded&&<header className="lk-shop-panel-heading">
    <i className="bi bi-bell-fill" aria-hidden="true"/>
-   <div><h3>LK Shop • ห้องแจ้งเตือน</h3>
+   <div><h3>PG Notify • ห้องแจ้งเตือน</h3>
     <p>แยกอุปกรณ์ตามห้องและบทบาทเพื่อไม่ส่งการแจ้งเตือนข้ามทีม</p>
    </div>
   </header>}
   <p className="lk-shop-pilot-note" role="note">
-   LK Shop สำหรับ Firebase อยู่ระหว่าง UAT เปิดคู่ขนานกับ Telegram
+   PG Notify สำหรับ Firebase อยู่ระหว่าง UAT เปิดคู่ขนานกับ Telegram
    และแอปจาก Source รุ่นเดิมยังจับคู่กับโดเมน PENGUIN ไม่ได้
    กรุณาอย่านำ QR นี้ไปใช้กับ APK ของ LUKKAJA
   </p>
+  {apk&&<p><a className="btn btn-sm" href={apk.path} download={apk.path.split("/").pop()}><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด PG Notify (UAT)</a></p>}
   {error&&<p role="alert" className="lk-shop-error">{error}</p>}
-  {loading?<p role="status">กำลังอ่านสถานะ LK Shop จากเซิร์ฟเวอร์…</p>:
-   disabled?<p role="status">ระบบจับคู่ LK Shop ของ Firebase ยังไม่ได้เปิดทดสอบ</p>:<>
+  {loading?<p role="status">กำลังอ่านสถานะ PG Notify จากเซิร์ฟเวอร์…</p>:
+   disabled?<p role="status">ระบบจับคู่ PG Notify ของ Firebase ยังไม่ได้เปิดทดสอบ</p>:<>
     <fieldset className="lk-shop-rooms" disabled={busy}>
      <legend>{scope==="platform"?"ห้องแจ้งเตือนส่วนกลาง":"เลือกห้องสำหรับ QR นี้ *"}</legend>
      <div className="lk-shop-room-grid">
@@ -181,7 +184,7 @@ export function LKShopPairingPanel({scope="tenant",embedded=false,notify=()=>{}}
       disabled={busy}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรช</button>
     </div>
     {qr&&<div className="lk-shop-qr" role="status">
-     <strong>สแกนด้วยแอป LK Shop สำหรับ PENGUIN • {roomOptions.find(x=>x[0]===qr.purpose)?.[1]}</strong>
+     <strong>สแกนด้วยแอป PG Notify สำหรับ PENGUIN • {roomOptions.find(x=>x[0]===qr.purpose)?.[1]}</strong>
      <img src={qr.image} width={240} height={240} alt={"QR จับคู่อุปกรณ์ห้อง "+qr.purpose}/>
      <span>รหัสใช้ได้ครั้งเดียว • เหลือ {String(Math.floor(remaining/60)).padStart(2,"0")}:
       {String(remaining%60).padStart(2,"0")} นาที</span>

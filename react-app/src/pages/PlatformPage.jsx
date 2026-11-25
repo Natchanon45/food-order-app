@@ -837,7 +837,7 @@ export function PlatformPage() {
           </form>
           <div className="platform-receiver-footnote" role="note">
             <i className="bi bi-info-circle" aria-hidden="true"/>
-            <span>ระบบตรวจสลิปใช้สำหรับอ่านหลักฐานประกอบ การรับเงินอัตโนมัติผ่าน LK Connect จะตรวจแจ้งเตือน LINE ตามเงื่อนไขที่เลือกไว้ และบันทึกประวัติแยกจาก Stripe</span>
+            <span>ระบบตรวจสลิปใช้สำหรับอ่านหลักฐานประกอบ การรับเงินอัตโนมัติผ่าน PG Connect จะตรวจแจ้งเตือน LINE ตามเงื่อนไขที่เลือกไว้ และบันทึกประวัติแยกจาก Stripe</span>
           </div>
         </ControlCard>
 

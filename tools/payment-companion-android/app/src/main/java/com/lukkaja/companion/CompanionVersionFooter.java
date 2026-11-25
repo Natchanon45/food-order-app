@@ -11,7 +11,7 @@ final class CompanionVersionFooter {
     private CompanionVersionFooter() {}
 
     static String label() {
-        return "LK Connect  •  Version " + BuildConfig.VERSION_NAME
+        return "PG Connect  •  Version " + BuildConfig.VERSION_NAME
             + "  •  Build " + BuildConfig.VERSION_CODE;
     }
 

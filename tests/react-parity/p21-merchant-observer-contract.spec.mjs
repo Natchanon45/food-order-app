@@ -53,11 +53,11 @@ test("P2.1 latest Source independent Owner observer after Sales Report; pairing 
  assert.match(pairing,/setPaymentCompanionReceiver/);
  assert.match(css,/companion-observer/);
 });
-test("P2.1 unsupported Go Line topup and LK Shop outbox are not fabricated in Firebase",()=>{
+test("P2.1 unsupported Go Line topup and PG Notify outbox are not fabricated in Firebase",()=>{
  const page=read("react-app/src/pages/AdminPage.jsx");
  const observer=read("react-app/src/components/PaymentCompanionObserverCard.jsx");
  assert.doesNotMatch(page,/PlatformLineWalletTopup/);
  assert.doesNotMatch(observer,/api\/tenant\/lalamove\/line-topup/);
- assert.match(observer,/LK Shop Outbox/);
+ assert.match(observer,/PG Notify Outbox/);
  assert.match(observer,/ไม่ใช่ยอดเงินที่ธนาคารยืนยัน/);
 });

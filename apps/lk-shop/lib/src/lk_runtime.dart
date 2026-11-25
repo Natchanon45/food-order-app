@@ -1,4 +1,4 @@
-/// PENGUIN LK Shop native runtime contract. The old LUKKAJA origin is
+/// PENGUIN PG Notify native runtime contract. The old LUKKAJA origin is
 /// deliberately not an option, including for QR manual fallback and links.
 class LKRuntime {
   LKRuntime._();

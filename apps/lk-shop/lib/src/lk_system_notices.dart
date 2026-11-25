@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'lk_api.dart';
 
-/// System notifications for LK Shop's *foreground* inbox polling, independent
+/// System notifications for PG Notify's *foreground* inbox polling, independent
 /// from optional Firebase. Background push is not enabled by this component.
 class LKSystemNotices {
   LKSystemNotices({
@@ -25,7 +25,7 @@ class LKSystemNotices {
   static const AndroidNotificationDetails androidDetails =
       AndroidNotificationDetails(
         channelId,
-        'LK Shop • แจ้งเตือนสำคัญ',
+        'PG Notify • แจ้งเตือนสำคัญ',
         channelDescription: 'คำสั่งซื้อและรายการสำคัญของร้านค้า',
         icon: 'lk_shop_notification_small',
         importance: Importance.max,
@@ -53,7 +53,7 @@ class LKSystemNotices {
             ?.createNotificationChannel(
               const AndroidNotificationChannel(
                 channelId,
-                'LK Shop • แจ้งเตือนสำคัญ',
+                'PG Notify • แจ้งเตือนสำคัญ',
                 description: 'คำสั่งซื้อและรายการสำคัญของร้านค้า',
                 importance: Importance.max,
                 playSound: true,
@@ -94,7 +94,7 @@ class LKSystemNotices {
     try {
       await _plugin.show(
         id: id,
-        title: 'LK Shop • มีรายการแจ้งเตือนใหม่',
+        title: 'PG Notify • มีรายการแจ้งเตือนใหม่',
         body: count > 1
             ? 'มี $count รายการใหม่ แตะเพื่อดูในแอป'
             : 'แตะเพื่อดูรายการล่าสุดในแอป',
@@ -109,7 +109,7 @@ class LKSystemNotices {
           ),
           android: AndroidNotificationDetails(
             channelId,
-            'LK Shop • แจ้งเตือนสำคัญ',
+            'PG Notify • แจ้งเตือนสำคัญ',
             channelDescription: 'คำสั่งซื้อและรายการสำคัญของร้านค้า',
             icon: 'lk_shop_notification_small',
             importance: Importance.max,
@@ -158,7 +158,7 @@ class LKSystemNotices {
       }
       await _plugin.show(
         id: 998001,
-        title: 'LK Shop • ทดสอบการแจ้งเตือน',
+        title: 'PG Notify • ทดสอบการแจ้งเตือน',
         body: 'ตรวจสอบเสียง แถบแจ้งเตือน และจุดบนไอคอนแอป',
         notificationDetails: const NotificationDetails(
           android: androidDetails,

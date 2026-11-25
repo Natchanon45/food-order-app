@@ -4,11 +4,11 @@ import 'package:lk_shop/main.dart';
 import 'package:lk_shop/src/lk_shop_ui.dart';
 
 void main() {
-  testWidgets('LK Shop shell shows app title', (tester) async {
+  testWidgets('PG Notify shell shows app title', (tester) async {
     // The native secure-store workflow is tested on devices. Ensure
     // both platform bundles share the same top-level Flutter app.
     await tester.pumpWidget(const LKShopApp(firebaseReady: false));
-    expect(find.text('LK Shop'), findsOneWidget);
+    expect(find.text('PG Notify'), findsOneWidget);
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.theme?.textTheme.bodyMedium?.fontFamily, 'Kanit');
     expect(roleNames['superadmin_slip_manual'], 'แจ้งเตือนส่วนกลาง');

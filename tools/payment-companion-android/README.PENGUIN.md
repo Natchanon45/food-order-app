@@ -1,2 +1,2 @@
-# PENGUIN LK Connect — pairing-only UAT
+# PENGUIN PG Connect — pairing-only UAT
 Source presentation from LUKKAJA 7e47e85f, separate Android application ID. Only fixed PENGUIN HTTPS status/self-unpair endpoints are supported. The notification listener, boot receiver and upload job are not registered; webhook transmission is rejected. No financial notification collection, app enumeration, settlement or automated payment. The debug APK is a clearly labelled pairing-only UAT, not the full notification observer or a production-signed release. Device token expires after 24 hours. Source README describes original Go implementation, not this release.

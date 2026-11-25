@@ -1672,10 +1672,10 @@ export function AdminPage() {
             className="admin-companion-observer-card"
             icon="activity" accent="green"
             heading={<h2 className="admin-companion-observer-heading"
-              title="ภาพรวมการแจ้งเงินเข้า · Android / LK Shop"
-              aria-label="ภาพรวมการแจ้งเงินเข้า · Android / LK Shop">
-              <span className="admin-companion-observer-heading-full" aria-hidden="true">ภาพรวมการแจ้งเงินเข้า · Android / LK Shop</span>
-              <span className="admin-companion-observer-heading-compact" aria-hidden="true">สรุปเงินเข้า · Android/LK Shop</span>
+              title="ภาพรวมการแจ้งเงินเข้า · Android / PG Notify"
+              aria-label="ภาพรวมการแจ้งเงินเข้า · Android / PG Notify">
+              <span className="admin-companion-observer-heading-full" aria-hidden="true">ภาพรวมการแจ้งเงินเข้า · Android / PG Notify</span>
+              <span className="admin-companion-observer-heading-compact" aria-hidden="true">สรุปเงินเข้า · Android/PG Notify</span>
             </h2>}
             t={t} style={{marginBottom:16}}
           >
@@ -1816,7 +1816,7 @@ export function AdminPage() {
             </AdminSettingsGroup>
 
             <AdminSettingsGroup id="tenantLKShopSettingsGroup" icon="bell"
-              title="LK Shop • ห้องแจ้งเตือน" description="จับคู่โทรศัพท์ตามห้อง Admin, แคชเชียร์ และครัว พร้อมเพิกถอนสิทธิ์"
+              title="PG Notify • ห้องแจ้งเตือน" description="จับคู่โทรศัพท์ตามห้อง Admin, แคชเชียร์ และครัว พร้อมเพิกถอนสิทธิ์"
               status="Firebase UAT" statusTone="neutral">
               <LKShopPairingPanel key={tenant?.id} scope="tenant" embedded notify={showToast}/>
             </AdminSettingsGroup>

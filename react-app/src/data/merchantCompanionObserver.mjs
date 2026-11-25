@@ -49,7 +49,7 @@ export function projectMerchantObserver(result){
   })).filter(row=>row.orderId&&row.amountSatang!==null),
   activeCount:devices.filter(device=>device.enabled).length,
   duplicateGroups:groupedNotices.filter(group=>group.possibleDuplicate).length,
-  // Go Source has LK Shop outbox read; Firebase currently has no equivalent
+  // Go Source has PG Notify outbox read; Firebase currently has no equivalent
   // read authority. We must not manufacture matching entries.
   lkHistoryAvailable:false,
   bankVerified:false,canAutoSettle:false,

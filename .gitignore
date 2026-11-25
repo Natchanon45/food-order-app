@@ -29,3 +29,6 @@ apps/lk-shop/**/*.jks
 /build/
 # Per-build native Firebase app defines; never publish the locally registered native configuration
 apps/lk-shop/firebase-app-defines.json
+
+# Native Android Gradle local cache
+apps/lk-shop/android/.kotlin/

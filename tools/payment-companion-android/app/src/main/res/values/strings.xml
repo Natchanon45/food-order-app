@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LK Connect UAT</string>
-    <string name="notification_service_name">LK Connect รับแจ้งเงินเข้า</string>
+    <string name="app_name">PG Connect</string>
+    <string name="notification_service_name">PG Connect รับแจ้งเงินเข้า</string>
     <color name="lk_icon_background">#08653D</color>
 </resources>

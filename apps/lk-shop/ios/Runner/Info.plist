@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>ใช้กล้องสแกน QR เพื่อจับคู่ LK Shop กับร้านค้าตามสิทธิ์</string>
+	<string>ใช้กล้องสแกน QR เพื่อจับคู่ PG Notify กับร้านค้าตามสิทธิ์</string>
 	<key>UIBackgroundModes</key>
 	<array><string>remote-notification</string></array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
@@ -11,7 +11,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>LK Shop PENGUIN</string>
+	<string>PG Notify</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -19,7 +19,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>LK Shop</string>
+	<string>PG Notify</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

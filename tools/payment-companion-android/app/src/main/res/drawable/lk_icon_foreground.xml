@@ -2,8 +2,8 @@
  android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
  <!-- Keep the green adaptive background full bleed; inset only the mark. -->
  <group android:pivotX="54" android:pivotY="54" android:scaleX="0.82" android:scaleY="0.82">
- <path android:fillColor="#FFFFFF" android:pathData="M27,32H36V60H49V68H27Z M52,32H61V46L74,32H85L69,49L86,68H74L61,53V68H52Z"/>
- <!-- Connected endpoints underline the LK mark. -->
+ <path android:fillColor="#FFFFFF" android:fillType="evenOdd" android:pathData="M25,32H43Q54,32 54,45Q54,58 43,58H34V68H25Z M34,40V50H43Q45,50 45,45Q45,40 43,40Z M59,44Q59,32 72,32H85V40H73Q68,40 68,45V55Q68,60 73,60H77V54H72V47H86V68H73Q59,68 59,55Z"/>
+ <!-- Connected endpoints underline the PG mark. -->
  <path android:strokeColor="#A9F2C9" android:strokeWidth="4" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M40,77H68"/>
  <path android:fillColor="#A9F2C9" android:pathData="M40,72a5,5 0,1 0,0 10a5,5 0,1 0,0 -10 M68,72a5,5 0,1 0,0 10a5,5 0,1 0,0 -10"/>
  </group>

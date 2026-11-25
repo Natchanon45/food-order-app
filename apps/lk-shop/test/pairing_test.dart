@@ -16,7 +16,7 @@ void main() {
   final code = 'a' * 64;
   final qr =
       'lkshop://pair?v=1&server=https%3A%2F%2Fpenguin-food.web.app&code=$code';
-  test('accepts only LK Shop short-lived QR format', () {
+  test('accepts only PG Notify short-lived QR format', () {
     final parsed = LKPairing.parse(qr);
     expect(parsed, isNotNull);
     expect(parsed!.server, 'https://penguin-food.web.app');

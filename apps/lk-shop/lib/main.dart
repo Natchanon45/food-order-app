@@ -88,7 +88,7 @@ class LKShopApp extends StatelessWidget {
         const LKAppVersionFooter(),
       ],
     ),
-    title: 'LK Shop',
+    title: 'PG Notify',
     theme: ThemeData(
       useMaterial3: true,
       fontFamily: 'Kanit',
@@ -333,7 +333,7 @@ class _LKHomeState extends State<LKHome> with WidgetsBindingObserver {
       final entered = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('กรอกรหัสจับคู่ LK Shop'),
+          title: const Text('กรอกรหัสจับคู่ PG Notify'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -516,7 +516,7 @@ class _LKHomeState extends State<LKHome> with WidgetsBindingObserver {
   void _showAbout() {
     showAboutDialog(
       context: context,
-      applicationName: 'LK Shop',
+      applicationName: 'PG Notify',
       applicationVersion: 'Version $installedVersion • Build $installedBuild',
       applicationIcon: const LKShopLogo(size: 54),
       children: const [
@@ -575,7 +575,7 @@ class _LKHomeState extends State<LKHome> with WidgetsBindingObserver {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'LK Shop',
+                    'PG Notify',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 19,

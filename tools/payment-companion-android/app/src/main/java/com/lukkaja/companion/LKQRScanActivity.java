@@ -8,7 +8,7 @@ import android.widget.FrameLayout;
 import com.journeyapps.barcodescanner.CaptureActivity;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
-/** Portrait QR scanner with the LK Shop-style square guide and native ZXing result handling. */
+/** Portrait QR scanner with the PG Notify-style square guide and native ZXing result handling. */
 public final class LKQRScanActivity extends CaptureActivity {
     @Override protected DecoratedBarcodeView initializeContent() {
         setContentView(R.layout.lk_qr_capture);

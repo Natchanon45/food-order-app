@@ -99,7 +99,7 @@ class LKApi {
             ) &&
             const [5000, 5001].contains(Uri.tryParse(server)?.port))) {
       throw const LKApiException(
-        'ไม่อนุญาตให้ใช้เซิร์ฟเวอร์อื่นกับ LK Shop PENGUIN',
+        'ไม่อนุญาตให้ใช้เซิร์ฟเวอร์อื่นกับ PG Notify PENGUIN',
       );
     }
     final url = Uri.parse(server + path);

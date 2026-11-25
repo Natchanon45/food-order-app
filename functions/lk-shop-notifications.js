@@ -89,7 +89,7 @@ async function sendPush(db,deviceId,eventId,{pilot=active(),push=pushActive(),
     return {sent:false,reason:"NOTICE_SEQUENCE_INVALID"};
   await messaging.send({
    token:dev.fcmToken,
-   notification:{title:"LK Shop",
+   notification:{title:"PG Notify",
     body:"คุณมีการแจ้งเตือนใหม่ เปิดแอปเพื่อดูรายละเอียด"},
    data:{eventId:String(notice.sequence)},
    android:{priority:"high",notification:{channelId:"lkshop_staff_alerts_v2"}},
