@@ -70,13 +70,25 @@ exports.getPlatformStripeWalletSandboxGate=onCall(options,async request=>{
  const cfg=settings(),webhookReady=await gate(getFirestore(),cfg);
  return {ok:true,mode:"test",webhookReady,checkoutEnabled:webhookReady&&process.env.PENGUIN_STRIPE_WALLET_SANDBOX_CHECKOUT_ENABLED==="1"};
 });
-exports.getPlatformStripeWalletSandboxHistory=onCall(options,async request=>{
+// Read-only history must never bind Stripe credentials (or request remote
+// Secret Manager) just to display independent TEST ledger entries. Checkout
+// and provider-signing operations still use their own secret-bound handlers.
+exports.getPlatformStripeWalletSandboxHistory=onCall(
+ {region:"asia-southeast1",timeoutSeconds:25},async request=>{
  const p=await user(request.auth);
  if(p.role!=="super_admin")throw new HttpsError("permission-denied","Superadmin only");
  const tenantId=request.data?.tenantId;
  if(typeof tenantId!=="string"||!ledger.TENANT.test(tenantId))throw new HttpsError("invalid-argument","SANDBOX_TENANT_INVALID");
- const cfg=settings();
- if(!cfg||cfg.tenantId!==tenantId)return {ok:true,mode:"test",available:false,balanceSatang:null,items:[]};
+ const demo=process.env.FUNCTIONS_EMULATOR==="true"||
+   Boolean(process.env.FIRESTORE_EMULATOR_HOST)||Boolean(process.env.FIREBASE_AUTH_EMULATOR_HOST)||
+   String(process.env.GCLOUD_PROJECT||process.env.GCP_PROJECT||"").startsWith("demo-");
+ const configuredTenant=String(process.env.PENGUIN_STRIPE_WALLET_SANDBOX_TENANT_ID||"");
+ const viewAllowed=!demo&&process.env.PENGUIN_STRIPE_WALLET_SANDBOX_ENABLED==="1"&&
+   process.env.PENGUIN_STRIPE_WALLET_LIVE_ENABLED!=="1"&&ledger.TENANT.test(configuredTenant)&&
+   Boolean(String(process.env.PENGUIN_STRIPE_WALLET_TEST_ACCOUNT_ID||""));
+ if(!viewAllowed||configuredTenant!==tenantId)return {
+  ok:true,mode:"test",available:false,balanceSatang:null,items:[],
+ };
  const history=await ownHistory(getFirestore(),tenantId);
  // Admin history is read-only; no hosted checkout links are exposed.
  return {ok:true,mode:"test",available:true,balanceSatang:history.balanceSatang,items:history.items.map(({checkoutUrl,...item})=>item)};

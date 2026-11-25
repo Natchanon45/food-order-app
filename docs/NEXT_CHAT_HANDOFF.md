@@ -1,3 +1,15 @@
+## 2026-11-25 — P1.5 new-Source Superadmin Tenant Wallet module
+
+- **Source read-only:** `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159`; **Target:** `Natchanon45/food-order-app`, `feature/react-firebase-port` (started at `f5ab9d3c`). Never use old bankalert Source branch.
+- Implemented Source `BankalertStripeHistory` unified JSX with scoped provider/status badges, canonical real-wallet `topupHistory` projection from actual Firestore topups+ledger; distinct Stripe Sandbox history (test-only). No financial balances or tenant subscription writes outside existing manual review transaction.
+- New Source appeals require a bank reference but Firebase has no verified bank cash/reconciliation writer. **Fail closed:** `appeal_pending` cannot be approved; server rejects even when a user enters a plausible bank reference. Technical Slip2Go outages still follow the original strict policy; duplicate transaction cannot credit again.
+- Browser uses independent canonical reread after every manual review; ambiguous results lock repeat approval per Tenant+topup until confirmed terminal refresh. Read-only history allows focus on older exact same-Tenant topup IDs beyond 50.
+- Tests: `npm run test:p16-wallet-contract` **7/7 PASS**; Firestore + prior manual review **10/10 PASS**; Chrome signed Wallet UI **1/1 PASS** at 320/390/768/1440. Read-only Stripe Sandbox history no longer binds secret credentials (demo Emulator cannot call remote Secret Manager). Full `npm run test:react-parity` **EXIT 0**. Final `npm run test:p16-wallet-local` **EXIT 0** (10/10 + 1/1), complete serial `npm run test:react-parity` **EXIT 0** and `npm run build:react` / Hosting Contract **PASS exit 0** (`2026.11.09.535`, `index-Be4BbLtz.js`), generated `public/**` cleaned. P1.5 also confirms old approved credit receipts by reading the exact prior Ledger ID even when outside the latest 50 debit transactions.
+- Remaining finance/provider module **not** released: LIVE Stripe, LK Connect/LINE bank settlement, trustworthy bank reference appeals and signed webhook. No Production, source writes, main merge or mobile build.
+- Report: `docs/LUKKAJA_P1_5_UNIFIED_WALLET_SOURCE_PORT_20261125.md`.
+
+---
+
 ## 2026-11-25 — LATEST Source rebaseline: feature/react-golang-vite-tailwind-axios@7bf9d159
 
 - **User explicitly changed Source branch:** `cosmatch/lukkhaja`, `feature/react-golang-vite-tailwind-axios@7bf9d15934f387cd887b46d1b17ca1f2924ffab0` — verified HEAD and GitHub remote. **Do not treat previous `feature/lukkaja_bankalert_stripe@8b108f1` as the Source of truth.** Source local `/Users/natchanonsripleng/Desktop/Sites/lukkhaja` READ ONLY. Destination `Natchanon45/food-order-app`, `feature/react-firebase-port`, baseline `fc480549`.

@@ -2,7 +2,9 @@ import { M7StripeTestShadowHistory } from "@/components/M7StripeTestShadowHistor
 import { M7OperationalFinanceReadiness } from "@/components/M7OperationalFinanceReadiness";
 import { M7SourceMigrationPreflight } from "@/components/M7SourceMigrationPreflight";
 import { M7FinanceEvidenceHistory } from "@/components/M7FinanceEvidenceHistory";
-import { PlatformStripeWalletSandboxHistory } from "@/components/BankalertStripeHistory";
+import { BankalertStripeHistory, PlatformStripeWalletSandboxHistory } from "@/components/BankalertStripeHistory";
+import { validateWalletHistory, verifyWalletReviewReadback } from "@/data/tenantWalletHistory.mjs";
+import "@/ui/tenant-wallet-unified.css";
 import { PlatformPaymentHistory } from "@/components/PlatformPaymentHistory";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
@@ -343,7 +345,9 @@ export function AdminTenantsPage() {
   const [walletTenant, setWalletTenant] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [walletLoading, setWalletLoading] = useState(false);
+  const [walletFocusTopupId, setWalletFocusTopupId] = useState("");
   const [walletReviewBusy, setWalletReviewBusy] = useState("");
+  const [uncertainWalletReviews, setUncertainWalletReviews] = useState({});
   const [lalamoveApprovalBusy, setLalamoveApprovalBusy] = useState("");
   const [walletSlipItem, setWalletSlipItem] = useState(null);
   const [walletSlipUrl, setWalletSlipUrl] = useState("");
@@ -1224,43 +1228,58 @@ export function AdminTenantsPage() {
     }
   };
 
-  const refreshWallet = async tenant => {
+  const refreshWallet = async (tenant, focusTopupId = "") => {
     if (!tenant?.id) return;
     setWalletLoading(true);
     try {
-      const data = await getTenantLalamoveWallet({ tenantId: tenant.id });
-      setWallet(data.item || {});
+      const data = await getTenantLalamoveWallet({
+        tenantId: tenant.id, ...(focusTopupId ? {topupId:focusTopupId}:{}),
+      });
+      const verified=validateWalletHistory(data.item);
+      setWallet(verified);
+      // Only a confirmed terminal state resolves an ambiguous earlier
+      // review. A still-pending row cannot authorize resubmission.
+      setUncertainWalletReviews(current => {
+        const next={...current};
+        for (const row of verified.topupHistory) {
+          if (next[tenant.id+":"+row.id] &&
+              ["approved","rejected"].includes(row.status)) delete next[tenant.id+":"+row.id];
+        }
+        return next;
+      });
     } catch (error) {
       console.error("TENANT_LALAMOVE_WALLET_LOAD_FAILED", error);
-      setWallet({ error: true, transactions: [], topups: [] });
+      setWallet({ error: true, transactions: [], topups: [], topupHistory: [] });
     } finally {
       setWalletLoading(false);
     }
   };
 
-  const openWallet = async tenant => {
+  const openWallet = async (tenant, focusTopupId = "") => {
+    setWalletFocusTopupId(focusTopupId);
     setWalletTenant(tenant);
-    setWallet({
-      balance: Number(tenant.lalamoveWallet?.balance || 0),
-      transactions: [],
-      topups: [],
-    });
+    setWallet({ balance: Number(tenant.lalamoveWallet?.balance || 0),
+      transactions: [], topups: [], topupHistory: [] });
     walletDialogRef.current?.showModal?.();
-    await refreshWallet(tenant);
+    await refreshWallet(tenant, focusTopupId);
   };
 
   const closeWallet = () => {
     walletDialogRef.current?.close?.();
+    setWalletFocusTopupId("");
     setWalletTenant(null);
     setWallet(null);
   };
 
   const openWalletSlip = async item => {
     const path = String(item?.slip?.path || "");
-    const directUrl = String(item?.slip?.url || "");
-    if (!path && !directUrl) return;
+    const tenantId=String(walletTenant?.id || "");
+    const topupId=String(item?.id || "");
+    if (!/^[A-Za-z0-9_-]{8,128}$/.test(topupId) ||
+        !path.startsWith(`tenants/${tenantId}/lalamove-wallet-topups/${topupId}/`) ||
+        path.includes("..")) return;
     try {
-      const url = path ? await getDownloadURL(storageRef(storage, path)) : directUrl;
+      const url = await getDownloadURL(storageRef(storage, path));
       setWalletSlipItem(item);
       setWalletSlipUrl(url);
       walletSlipDialogRef.current?.showModal?.();
@@ -1279,61 +1298,81 @@ export function AdminTenantsPage() {
   };
 
   const reviewWalletTopup = async (item, action) => {
-    if (!walletTenant?.id || !item?.id || walletReviewBusy) return;
-    let note = "";
-    if (action === "approve") {
-      const confirmed = await sweetConfirm(
-        t("admin_tenants.wallet.approve_confirm", {
-          amount: money(item.amount),
-          name: walletTenant.name || walletTenant.id,
-        }),
-        {
-          title: t("admin_tenants.wallet.approve_title"),
-          confirmText: t("admin_tenants.wallet.approve"),
-          cancelText: t("admin_tenants.common.cancel"),
-          type: "warning",
-          portalTarget: walletDialogRef.current,
-        },
-      );
-      if (!confirmed) return;
-    } else {
-      note = await sweetPrompt(
-        t("admin_tenants.wallet.reject_prompt"),
-        "",
-        {
-          title: t("admin_tenants.wallet.reject_title"),
-          confirmText: t("admin_tenants.wallet.reject"),
-          cancelText: t("admin_tenants.common.cancel"),
-          type: "warning",
-          portalTarget: walletDialogRef.current,
-        },
-      );
-      if (note === null) return;
-      note = String(note || "").trim();
-      if (!note) return;
+    const tenantId=String(walletTenant?.id || "");
+    const key=tenantId+":"+String(item?.id||"");
+    if (!tenantId || !item?.id || walletReviewBusy || walletLoading ||
+        wallet?.error || uncertainWalletReviews[key]) return;
+    if (action==="approve" && !item.reviewable) {
+      showToast(item.bankEvidenceRequired
+        ? "รายการอุทธรณ์ยังไม่มีหลักฐานการยืนยันรับเงินจากธนาคารใน Firebase จึงยังอนุมัติไม่ได้"
+        : "รายการนี้ไม่ผ่านเงื่อนไขอนุมัติแบบตรวจสอบด้วยคน","error");
+      return;
     }
-
+    if (action==="reject" && !item.rejectable) return;
+    let note="";
+    if (action === "approve") {
+      const confirmed=await sweetConfirm(
+        t("admin_tenants.wallet.approve_confirm",{
+          amount:money(item.amountSatang/100),
+          name:walletTenant.name||tenantId,
+        }),{title:t("admin_tenants.wallet.approve_title"),
+          confirmText:t("admin_tenants.wallet.approve"),
+          cancelText:t("admin_tenants.common.cancel"),
+          type:"warning",portalTarget:walletDialogRef.current},
+      );
+      if(!confirmed)return;
+    } else if (action === "reject") {
+      note=await sweetPrompt(t("admin_tenants.wallet.reject_prompt"),"",{
+        title:t("admin_tenants.wallet.reject_title"),
+        confirmText:t("admin_tenants.wallet.reject"),
+        cancelText:t("admin_tenants.common.cancel"),
+        type:"warning",portalTarget:walletDialogRef.current,
+      });
+      if(note===null)return;
+      note=String(note||"").trim();
+      if(!note)return;
+    } else return;
+    if (walletReviewBusy || uncertainWalletReviews[key]) return;
     setWalletReviewBusy(item.id);
     try {
-      const data = await reviewTenantLalamoveWalletTopup({
-        tenantId: walletTenant.id,
-        topupId: item.id,
-        action,
-        note,
+      const receipt=await reviewTenantLalamoveWalletTopup({
+        tenantId,topupId:item.id,action,note,
       });
-      setWallet(data.item || {});
-      const message = t(action === "approve" ? "admin_tenants.wallet.approve_success" : "admin_tenants.wallet.reject_success");
+      // Require the exact server receipt AND independent fresh canonical
+      // wallet + ledger read, not only a successful Callable acknowledgement.
+      verifyWalletReviewReadback(receipt?.item,item.id,action);
+      const confirmed=verifyWalletReviewReadback(
+        (await getTenantLalamoveWallet({tenantId,topupId:item.id})).item,
+        item.id,action,
+      );
+      setWallet(confirmed);
+      setUncertainWalletReviews(current => {
+        const next={...current};delete next[key];return next;
+      });
+      setWalletTenant(current=>current?.id===tenantId
+        ? {...current,lalamoveWallet:{...current.lalamoveWallet,balance:confirmed.balance}}
+        : current);
+      const message=t(action==="approve"?"admin_tenants.wallet.approve_success":
+        "admin_tenants.wallet.reject_success");
       setStatus(message);
       showToast(message);
-      await Promise.all([loadTenantList(), refreshAdminNotifications({ force: true })]);
-    } catch (error) {
-      console.error("TENANT_LALAMOVE_WALLET_REVIEW_FAILED", error);
-      const message = t("admin_tenants.wallet.review_failed");
+      // Side reads are not a reason to label a verified credit as failed.
+      await Promise.allSettled([loadTenantList({silent:true}),
+        refreshAdminNotifications({force:true})]);
+    } catch(error) {
+      console.error("TENANT_LALAMOVE_WALLET_REVIEW_FAILED",error?.code||error?.message);
+      const code=String(error?.code||"").replace(/^functions\//,"");
+      const definite=["invalid-argument","unauthenticated","permission-denied",
+        "failed-precondition","not-found"].includes(code);
+      if(!definite) setUncertainWalletReviews(current=>({...current,[key]:true}));
+      const message=!definite
+        ? "ยังยืนยันผลการตรวจสอบและยอดเครดิตจาก Firebase ไม่ได้ ระบบล็อกการตรวจซ้ำไว้ กรุณารีเฟรชตรวจรายการก่อน"
+        : code==="failed-precondition"
+          ? "รายการนี้ยังไม่มีหลักฐานตามเงื่อนไขสำหรับอนุมัติ กรุณาตรวจข้อมูลล่าสุด"
+          : t("admin_tenants.wallet.review_failed");
       setStatus(message);
-      showToast(message, "error");
-    } finally {
-      setWalletReviewBusy("");
-    }
+      showToast(message,"error");
+    } finally{setWalletReviewBusy("");}
   };
 
   if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialTenantsReady)) {
@@ -1823,46 +1862,57 @@ export function AdminTenantsPage() {
               <strong id="lalamoveWalletBalance">{money(wallet?.balance || 0)}</strong>
               <small>{t("admin_tenants.wallet.credit_unit")}</small>
             </div>
-            <div className="tenant-wallet-phase-note">{t("admin_tenants.wallet.credit_note")}</div>
-            {walletTenant?.id&&<PlatformStripeWalletSandboxHistory key={walletTenant.id} tenantId={walletTenant.id}/>}
-            <div className="tenant-wallet-history-head"><strong>{t("admin_tenants.wallet.topups")}</strong></div>
-            <div id="lalamoveWalletTopups" className="tenant-wallet-history">
+            <div className="tenant-wallet-phase-note tenant-wallet-refresh-row">
+              <span>{t("admin_tenants.wallet.credit_note")}</span>
+              <button type="button" className="btn btn-sm" data-wallet-refresh
+                disabled={walletLoading || Boolean(walletReviewBusy) || !walletTenant?.id}
+                onClick={() => void refreshWallet(walletTenant,walletFocusTopupId)}>
+                <i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรชสถานะและยอด
+              </button>
+            </div>
+            <div id="lalamoveWalletTopups" className="tenant-wallet-unified">
               {walletLoading ? (
                 <div className="tenant-list-loading">{t("admin_tenants.wallet.loading")}</div>
               ) : wallet?.error ? (
                 <div className="upload-error">{t("admin_tenants.wallet.load_failed")}</div>
-              ) : Array.isArray(wallet?.topups) && wallet.topups.length ? wallet.topups.map(item => {
-                const pending = String(item.status || "") === "pending";
-                const statusKey = `admin_tenants.wallet.statuses.${String(item.status || "pending")}`;
-                const submitted = item.submittedAt
-                  ? new Intl.DateTimeFormat(intlLocale, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(item.submittedAt))
-                  : "-";
-                return (
-                  <div className={`tenant-wallet-row tenant-wallet-topup-row ${item.status || "pending"}`} key={item.id}>
-                    <div className="tenant-wallet-topup-copy">
-                      <strong>{money(item.amount)} {t("admin_tenants.wallet.credit_unit")} · {t(statusKey)}</strong>
-                      <small>{submitted}{item.verificationStatus ? ` · ${item.verificationStatus}` : ""}{item.reviewNote ? ` · ${item.reviewNote}` : ""}</small>
-                    </div>
-                    <div className="tenant-wallet-topup-actions">
-                      <button className="btn btn-sm" type="button" data-wallet-topup-slip={item.id} onClick={() => openWalletSlip(item)} disabled={!item.slip?.path && !item.slip?.url}>
-                        <i className="bi bi-eye" aria-hidden="true"></i><span>{t("admin_tenants.wallet.view_slip")}</span>
-                      </button>
-                      {pending ? <>
-                        <button className="btn btn-primary btn-sm" type="button" data-wallet-topup-approve={item.id} disabled={walletReviewBusy === item.id} onClick={() => reviewWalletTopup(item, "approve")}>
-                          <i className="bi bi-check-lg" aria-hidden="true"></i><span>{t("admin_tenants.wallet.approve")}</span>
-                        </button>
-                        <button className="btn btn-danger btn-sm" type="button" data-wallet-topup-reject={item.id} disabled={walletReviewBusy === item.id} onClick={() => reviewWalletTopup(item, "reject")}>
-                          <i className="bi bi-x-lg" aria-hidden="true"></i><span>{t("admin_tenants.wallet.reject")}</span>
-                        </button>
-                      </> : null}
-                    </div>
-                  </div>
-                );
-              }) : (
-                <div className="tenant-wallet-empty">{t("admin_tenants.wallet.topup_empty")}</div>
+              ) : (
+                <BankalertStripeHistory items={wallet?.topupHistory} unified compact
+                  title="ประวัติการเติมเครดิต" focusReference={walletFocusTopupId}
+                  renderActions={item => (item.slip||item.reviewable||item.rejectable)
+                    ? <div className="wallet-history-actions">
+                      {item.slip&&<button type="button" className="btn btn-sm" data-wallet-topup-slip={item.id}
+                        disabled={Boolean(walletReviewBusy)} onClick={()=>void openWalletSlip(item)}>
+                        <i className="bi bi-file-earmark-image" aria-hidden="true"/> ดูหลักฐาน
+                      </button>}
+                      {item.reviewable&&<button type="button" className="btn btn-sm btn-primary"
+                        data-wallet-topup-approve={item.id} onClick={()=>void reviewWalletTopup(item,"approve")}
+                        disabled={Boolean(walletReviewBusy)||Boolean(uncertainWalletReviews[walletTenant?.id+":"+item.id])}>
+                        <i className="bi bi-check-lg" aria-hidden="true"/> อนุมัติ
+                      </button>}
+                      {item.rejectable&&<button type="button" className="btn btn-sm btn-danger"
+                        data-wallet-topup-reject={item.id} onClick={()=>void reviewWalletTopup(item,"reject")}
+                        disabled={Boolean(walletReviewBusy)||Boolean(uncertainWalletReviews[walletTenant?.id+":"+item.id])}>
+                        <i className="bi bi-x-lg" aria-hidden="true"/> ไม่อนุมัติ
+                      </button>}
+                      {item.bankEvidenceRequired&&<small role="status" className="wallet-history-bank-evidence">
+                        <i className="bi bi-shield-exclamation" aria-hidden="true"/>
+                        รอหลักฐานรับเงินจากธนาคารที่ตรวจสอบได้ ไม่สามารถอนุมัติจากสลิปหรือข้อความ LINE เพียงอย่างเดียว
+                      </small>}
+                      {uncertainWalletReviews[walletTenant?.id+":"+item.id]&&
+                        <small role="alert">รอยืนยันผลคำสั่งเดิม กรุณารีเฟรชสถานะก่อนดำเนินการต่อ</small>}
+                    </div> : null}
+                />
               )}
+              <p className="tenant-wallet-unified-hint">
+                แสดงเฉพาะประวัติเครดิต Lalamove จริงที่บันทึกใน Firebase เท่านั้น
+                Stripe Sandbox แสดงแยก ไม่ถูกนับเป็นเครดิตเงินจริง
+              </p>
             </div>
-
+            {walletTenant?.id&&<section className="tenant-wallet-sandbox-separate"
+              aria-label="Stripe Sandbox แยกจากเครดิตจริง">
+              <h3><i className="bi bi-shield-lock" aria-hidden="true"/> Stripe Sandbox — เครดิตทดสอบแยกบัญชี</h3>
+              <PlatformStripeWalletSandboxHistory key={walletTenant.id} tenantId={walletTenant.id}/>
+            </section>}
             <div className="tenant-wallet-history-head tenant-wallet-ledger-head"><strong>{t("admin_tenants.wallet.history")}</strong></div>
             <div id="lalamoveWalletHistory" className="tenant-wallet-history">
               {walletLoading ? (

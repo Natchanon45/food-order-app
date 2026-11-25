@@ -1,3 +1,16 @@
+## 2026-11-25 — P1.5 latest Source Superadmin Tenant Wallet unified history
+
+- **Source:** pinned `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159` read-only; Target `Natchanon45/food-order-app` `feature/react-firebase-port` start `f5ab9d3c`.
+- Ported Source `BankalertStripeHistory` unified card JSX with wallet history actions, channel status and mobile layout. Backend `functions/wallet-unified-history-policy.js` projects strictly from real wallet topups and matching credit ledger, not Stripe Sandbox; Source Stripe Test remains visibly separate. Stale approval with missing ledger displays `under_review`.
+- Existing Finance manual review policy retained; a bank appeal prompt is **not** evidence, so `appeal_pending` manual approval is denied backend + UI pending actual bank-authoritative provider. Rejecting invalid/mismatched pending rows remains allowed, with no credit.
+- Per-tenant/topup uncertain review lock, independent canonical summary and ledger reread before success, scoped receipt paths and exact older notification lookup implemented. Invalid/forged history fails closed; no direct URL previews.
+- **FINAL ACCEPTANCE:** P1.5 pure Source JSX/data policy **7/7 PASS**. `npm run test:p16-wallet-local` **EXIT 0**: Firebase Firestore policy + existing manual-review regressions **10/10 PASS**, signed real React Chrome at 320/390/768/1440 **1/1 PASS** including approval/rejection/refresh, no external Secret Manager access. Full serial `npm run test:react-parity` **EXIT 0**. Final `npm run build:react` + Hosting Contract **PASS exit 0** (`2026.11.09.535`, bundle `index-Be4BbLtz.js`), all generated-only `public/**` assets cleaned.
+- **Older Ledger proof:** a long-lived Wallet may have >50 subsequent debits after an authentic topup. Backend reads the exact prior transaction from the same Tenant to confirm old approved credits; unknown/mismatched proof remains under review. Explicit Refresh does not trigger a credit write.
+- **Security repair:** restored Firebase Callable imports to Source unified component while preserving separate Sandbox component; removed unnecessary Secret Manager bindings from read-only Stripe Sandbox history, with all payment/writer/webhook secret-bound handlers intact. No Production deploy, real provider calls, Source writes or `main` merge.
+- Full module report `docs/LUKKAJA_P1_5_UNIFIED_WALLET_SOURCE_PORT_20261125.md`.
+
+---
+
 ## 2026-11-25 — NEW Source JSX baseline and P1 Platform re-port first slice
 
 - Source changed by user to **`feature/react-golang-vite-tailwind-axios@7bf9d159`** (verified GitHub HEAD). Source `cosmatch/lukkhaja` strict read-only; Target `Natchanon45/food-order-app` `feature/react-firebase-port` (start `fc480549`), clean baseline. No new project/duplicate structure.

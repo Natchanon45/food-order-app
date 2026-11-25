@@ -1,5 +1,6 @@
 const { HttpsError, onCall } = require("./managed-email-callable");
 const { walletTopupManualReviewAllowed } = require("./finance-manual-review-policy");
+const { makeHistory } = require("./wallet-unified-history-policy");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { createHash, createHmac, randomUUID } = require("crypto");
@@ -455,7 +456,7 @@ function topupPayload(doc) {
   };
 }
 
-async function walletSummary(ref, transactionLimit = 50, topupLimit = 50) {
+async function walletSummary(ref, transactionLimit = 50, topupLimit = 50, focusTopupId = "") {
   const [walletSnapshot, transactionsSnapshot, topupsSnapshot, lalamoveSnapshot, ready, destination, tenantStatus] = await Promise.all([
     ref.collection("settings").doc("lalamoveWallet").get(),
     ref.collection("lalamoveWalletTransactions").orderBy("createdAt", "desc").limit(transactionLimit).get(),
@@ -467,6 +468,26 @@ async function walletSummary(ref, transactionLimit = 50, topupLimit = 50) {
   ]);
   const wallet = walletSnapshot.data() || {};
   const topups = topupsSnapshot.docs.map(topupPayload);
+  if(focusTopupId && !topups.some(item=>item.id===focusTopupId)){
+    // Deep link ID is never used as a query filter across tenants; retrieve
+    // only the exact record inside the already authorized tenant namespace.
+    const item=await ref.collection("lalamoveWalletTopups").doc(focusTopupId).get();
+    if(item.exists)topups.push(topupPayload(item));
+  }
+  const transactions=transactionsSnapshot.docs.map(transactionPayload);
+  // A shop can have >50 delivery debits since its last real Wallet credit.
+  // Load the exact referenced old credit receipts from the SAME Tenant before
+  // labeling an approved topup as ledger-backed. Never assume approved is
+  // proof of money, and never scan Stripe Sandbox or other Tenants.
+  const recentIds=new Set(transactions.map(entry=>entry.id));
+  const olderCreditIds=[...new Set(topups
+    .filter(item=>item.status==="approved" &&
+      /^[A-Za-z0-9_-]{8,128}$/.test(item.walletTransactionId||"") &&
+      !recentIds.has(item.walletTransactionId))
+    .map(item=>item.walletTransactionId))].slice(0,topupLimit+1);
+  const olderCreditDocs=await Promise.all(olderCreditIds.map(id=>
+    ref.collection("lalamoveWalletTransactions").doc(id).get()));
+  const olderCreditProofs=olderCreditDocs.filter(doc=>doc.exists).map(transactionPayload);
   const account = accountStatus(lalamoveSnapshot.data() || {}, ready);
   const topupAllowed = tenantStatus.accountMode === "fod_central" && tenantStatus.fodCentralApproved === true;
   return {
@@ -474,8 +495,10 @@ async function walletSummary(ref, transactionLimit = 50, topupLimit = 50) {
     balance: money(wallet.balance),
     currency: String(wallet.currency || "THB"),
     creditPolicy: { unit: "credit", thbPerCredit: 1, creditsPerThb: 1, cashOutAllowed: false },
-    transactions: transactionsSnapshot.docs.map(transactionPayload),
+    transactions,
     topups,
+    topupHistory: makeHistory(topups,[...transactions,...olderCreditProofs],ref.id),
+    topupHistoryOrigin: "firebase_real_wallet_only",
     topup: {
       storageReady: true,
       allowed: topupAllowed,
@@ -504,7 +527,10 @@ exports.updateTenantLalamoveApproval = onCall({ region: REGION }, async request 
 exports.getTenantLalamoveWallet = onCall({ region: REGION }, async request => {
   await assertSuperAdmin(request.auth);
   const ref = await tenantRef(request.data?.tenantId);
-  return { item: await walletSummary(ref) };
+  const topupId=String(request.data?.topupId||"");
+  if(topupId && !/^[A-Za-z0-9_-]{8,128}$/.test(topupId))
+    throw new HttpsError("invalid-argument","WALLET_FOCUS_ID_INVALID");
+  return { item: await walletSummary(ref,50,50,topupId) };
 });
 
 exports.reviewTenantLalamoveWalletTopup = onCall({ region: REGION }, async request => {
@@ -532,6 +558,11 @@ exports.reviewTenantLalamoveWalletTopup = onCall({ region: REGION }, async reque
 
     let walletTransactionId = "";
     if (action === "approve") {
+      // Latest Source appeal flow requires verified bank transaction identity.
+      // PENGUIN has not ported a bank-authoritative reconciliation writer.
+      // A typed note alone cannot prove that money arrived or was not used.
+      if(String(topup.verificationStatus||"")==="appeal_pending")
+        throw new HttpsError("failed-precondition","WALLET_APPEAL_BANK_EVIDENCE_REQUIRED");
       if (!walletTopupManualReviewAllowed({ ...topup, status: "pending" })) {
         throw new HttpsError("failed-precondition", "SLIP_MANUAL_REVIEW_NOT_ELIGIBLE");
       }

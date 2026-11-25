@@ -1,5 +1,12 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P1.5 Superadmin Tenant Wallet unified history
+
+Started from the latest user-selected JSX Source `feature/react-golang-vite-tailwind-axios@7bf9d159`. Replaced Stripe-only/pending-only wallet UI with Source unified history, backed exclusively by the existing canonical Firebase Lalamove credit ledger and post/review proof. Stripe Sandbox remains separate (never real credit); `appeal_pending` approval remains blocked until bank-authoritative evidence integration exists. See [P1.5 Module report](./LUKKAJA_P1_5_UNIFIED_WALLET_SOURCE_PORT_20261125.md). Do not imply real bank/Stripe provider activation.
+
+---
+
+
 ## 2026-11-25 — NEW authoritative Source JSX baseline: `feature/react-golang-vite-tailwind-axios`
 
 **Explicit user change:** Source is now `cosmatch/lukkhaja@7bf9d15934f387cd887b46d1b17ca1f2924ffab0`, branch `feature/react-golang-vite-tailwind-axios` (verified with `git ls-remote`); **do not use old `feature/lukkaja_bankalert_stripe@8b108f1` as the latest Source.** Destination remains `Natchanon45/food-order-app` `feature/react-firebase-port`, based on `fc480549`. Source is READ ONLY, Target Firebase modules retained.

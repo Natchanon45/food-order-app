@@ -1,0 +1,26 @@
+/* Source-aligned unified Lalamove wallet history; Stripe Sandbox separate. */
+.lalamove-wallet-dialog .tenant-wallet-unified {display:grid;gap:10px;min-width:0}
+.lalamove-wallet-dialog .tenant-wallet-unified-hint{margin:0;color:#66796a;font-size:12px;line-height:1.65}
+.lalamove-wallet-dialog .wallet-history-channel{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:#42664c;background:#ecf6ef;padding:4px 8px;border-radius:20px;max-width:100%;overflow-wrap:anywhere}
+.lalamove-wallet-dialog .wallet-history-detail{display:block;margin-top:5px;color:#697b70;overflow-wrap:anywhere}
+.lalamove-wallet-dialog .wallet-history-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.lalamove-wallet-dialog .wallet-history-actions>.btn{font-weight:400;display:inline-flex;align-items:center;justify-content:center;gap:6px;max-width:100%}
+.lalamove-wallet-dialog .wallet-history-actions>small{flex-basis:100%;line-height:1.6;overflow-wrap:anywhere}
+.lalamove-wallet-dialog .wallet-history-bank-evidence{color:#905a15}
+.lalamove-wallet-dialog .tenant-wallet-sandbox-separate{padding:12px;border:1px dashed #d6e4dd;border-radius:12px;background:#f7faf8;display:grid;gap:8px;min-width:0}
+.lalamove-wallet-dialog .tenant-wallet-sandbox-separate>h3{margin:0;font-weight:600;font-size:13px;display:flex;align-items:center;gap:7px;color:#496352}
+.lalamove-wallet-dialog .tenant-wallet-sandbox-separate .bankalert-stripe-history{min-width:0}
+.lalamove-wallet-dialog .bankalert-stripe-history-item-main{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.lalamove-wallet-dialog .bankalert-stripe-history-item-main>strong{margin-right:auto}
+.lalamove-wallet-dialog .bankalert-stripe-history-item-meta code{word-break:break-all}
+@media(max-width:520px){
+ .lalamove-wallet-dialog .wallet-history-actions>.btn{font-size:12px;padding:8px 9px}
+ .lalamove-wallet-dialog .bankalert-stripe-history-heading{align-items:flex-start;gap:6px}
+ .lalamove-wallet-dialog .bankalert-stripe-history-heading strong{overflow-wrap:anywhere}
+ .lalamove-wallet-dialog .tenant-wallet-sandbox-separate{padding:9px}
+}
+
+.lalamove-wallet-dialog .tenant-wallet-refresh-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.lalamove-wallet-dialog .tenant-wallet-refresh-row>span{min-width:0;flex:1 1 190px}
+.lalamove-wallet-dialog .tenant-wallet-refresh-row>.btn{display:inline-flex;gap:6px;align-items:center;font-weight:400;white-space:nowrap}
+@media(max-width:390px){.lalamove-wallet-dialog .tenant-wallet-refresh-row>.btn{width:100%;justify-content:center}}
