@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { OriginalItemLine, OriginalLineAmount, RevisedOrderNet, OrderCancellationWatermark } from "@/components/OrderRevisionDisplay";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { getPublicOrder, getPublicStoreSettings, resolvePublicTenant } from "@/data/publicStorefrontData";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -25,7 +26,7 @@ function total(order) {
   const sub = subtotal(order);
   const stored = Number(order?.totalAmount);
   if (order?.orderType === "delivery") return Number.isFinite(stored) ? Math.max(0, stored) : sub + deliveryFee(order, sub);
-  return sub;
+  return Number.isFinite(stored) ? Math.max(0, stored) : sub;
 }
 
 function Metric({ icon, label, value, totalMetric = false }) {
@@ -39,8 +40,8 @@ function OrderItems({ order, money, t }) {
   const rows = activeItems(order);
   return <ul className="order-items verify-items">
     {rows.length ? rows.map((item, index) => <li key={(item.menuId || item.name || "item") + index}>
-      <span>{Number(item.qty || 0)} × {item.name}{item.isGift === true ? " " + t("verify.gift_suffix") : ""}</span>
-      <strong>{money(Number(item.qty || 0) * Number(item.price || 0))}</strong>
+      <span><OriginalItemLine item={item} money={money}/>{Number(item.qty || 0)} × {item.name}{item.isGift === true ? " " + t("verify.gift_suffix") : ""}</span>
+      <strong className="receipt-line-revision"><OriginalLineAmount item={item} money={money}/>{money(Number(item.qty || 0) * Number(item.price || 0))}</strong>
     </li>) : <li><span>{t("verify.no_billable_items")}</span><strong>—</strong></li>}
   </ul>;
 }
@@ -72,6 +73,7 @@ export function VerifyPage() {
     (async () => {
       setLoading(true);
       setErrorText("");
+      setOrders([]);
       try {
         if (!tenantSlug) throw new Error(t("verify.errors.missing_tenant"));
         const nextTenant = await resolvePublicTenant(tenantSlug);
@@ -82,7 +84,10 @@ export function VerifyPage() {
           Promise.all(ids.map(id => getPublicOrder(nextTenant, id))),
         ]);
         const valid = rows.filter(Boolean).sort((a, b) => Number(a.roundNumber || 0) - Number(b.roundNumber || 0));
-        if (!valid.length) throw new Error(t("verify.errors.order_not_found"));
+        if (!valid.length||valid.length!==ids.length||new Set(ids).size!==ids.length||
+            (ids.length>1&&valid.some(row=>row.orderType!=="table"||!row.tableToken||
+              row.tableToken!==valid[0].tableToken||row.tableCode!==valid[0].tableCode)))
+          throw new Error(t("verify.errors.order_not_found"));
         if (!alive) return;
         setTenant(nextTenant); setSettings(nextSettings || {}); setOrders(valid);
       } catch (error) {
@@ -100,7 +105,7 @@ export function VerifyPage() {
   const first = orders[0];
   const merged = orderIds.length > 0;
   const paymentText = order => {
-    if (order?.paymentStatus === "paid" || order?.status === "paid") return t("verify.payment.paid");
+    if (order?.paymentStatus === "paid" && order?.status !== "cancelled") return t("verify.payment.paid");
     if (order?.paymentMethod === "cod") return t("verify.payment.cod");
     if (order?.paymentStatus === "pending_verification") return t("verify.payment.pending_verification");
     return t("verify.payment.unpaid");
@@ -118,7 +123,8 @@ export function VerifyPage() {
         <div className="verify-hero-copy"><span className="verify-hero-icon"><i className="bi bi-shield-check"></i></span><div><h1>{t("verify.hero.title")}</h1><p>{t("verify.hero.description")}</p></div></div>
         <span className="verify-trust-badge"><i className="bi bi-cloud-check"></i><span>{t("verify.latest_badge")}</span></span>
       </section>
-      <section className="card verify-result-card">
+      <section className="card verify-result-card order-revision-watermark-host">
+        {orders.length>0?<OrderCancellationWatermark orders={orders} t={t}/>:null}
         {errorText ? <div className="verify-error"><span className="verify-error-icon"><i className="bi bi-exclamation-circle"></i></span><strong>{errorText}</strong></div> : null}
         {!loading && !errorText && first ? <>
           <div className="verify-shop-head">
@@ -131,8 +137,8 @@ export function VerifyPage() {
                 <Metric icon="diagram-3" label={t("verify.fields.type")} value={t("verify.summary.merged_table", { table: first.tableCode || "-" })} />
                 <Metric icon="layers" label={t("verify.fields.rounds")} value={t("verify.summary.round_count", { count: orders.length })} />
                 <Metric icon="calendar3" label={t("verify.fields.date")} value={formatTime(first.createdAt || first.createdAtText)} />
-                <Metric icon="credit-card" label={t("verify.fields.payment")} value={orders.every(o => ["paid","cancelled"].includes(o.status) || o.paymentStatus === "paid") ? t("verify.payment.paid") : t("verify.payment.unpaid")} />
-                <Metric icon="cash-stack" label={t("verify.fields.net_total")} value={money(orders.reduce((sum, o) => sum + total(o), 0)) + " " + t("verify.units.baht")} totalMetric />
+                <Metric icon="credit-card" label={t("verify.fields.payment")} value={orders.some(o => o.status !== "cancelled") && orders.every(o => o.status === "cancelled" || o.paymentStatus === "paid") ? t("verify.payment.paid") : t("verify.payment.unpaid")} />
+                <Metric icon="cash-stack" label={t("verify.fields.net_total")} value={<RevisedOrderNet orders={orders} current={orders.reduce((sum,o)=>sum+total(o),0)} money={money} unit={t("verify.units.baht")}/>} totalMetric />
               </div>
               <div className="verify-rounds">{orders.map(order => <section className={"verify-round-card" + (order.status === "cancelled" ? " is-cancelled" : "")} key={order.id}>
                 <div className="verify-round-title"><i className="bi bi-receipt"></i><span>{t("verify.round.title", { round: order.roundNumber || 1 })}{order.status === "cancelled" ? t("verify.round.cancelled_suffix") : ""}</span></div>
@@ -145,7 +151,7 @@ export function VerifyPage() {
                 <Metric icon="bag-check" label={t("verify.fields.type")} value={typeText(first)} />
                 <Metric icon="activity" label={t("verify.fields.latest_status")} value={t("shared.status." + String(first.status || "pending"))} />
                 <Metric icon="credit-card" label={t("verify.fields.payment")} value={paymentText(first)} />
-                <Metric icon="cash-stack" label={t("verify.fields.net_total")} value={money(total(first)) + " " + t("verify.units.baht")} totalMetric />
+                <Metric icon="cash-stack" label={t("verify.fields.net_total")} value={<RevisedOrderNet order={first} current={total(first)} money={money} unit={t("verify.units.baht")}/>} totalMetric />
               </div>
               {first.orderType === "delivery" ? <section className="verify-detail-panel">
                 <div className="verify-detail-title"><i className="bi bi-truck"></i><span>{t("verify.order_type.delivery")}</span></div>

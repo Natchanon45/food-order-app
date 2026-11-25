@@ -37,6 +37,6 @@ test("Verification order reference, statuses, delivery totals and amounts remain
   assert.match(source, /String\(first\.id \|\| orderId\)\.slice\(0,12\)\.toUpperCase\(\)/);
   assert.match(source, /Number\(item\.qty \|\| 0\) \* Number\(item\.price \|\| 0\)/);
   assert.match(source, /t\("shared\.status\." \+ String\(first\.status \|\| "pending"\)\)/);
-  assert.match(source, /money\(total\(first\)\)/);
+  assert.match(source, /<RevisedOrderNet order=\{first\} current=\{total\(first\)\}/);
   assert.match(source, /money\(deliveryFee\(first\)\)/);
 });

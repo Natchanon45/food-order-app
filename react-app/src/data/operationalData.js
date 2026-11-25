@@ -195,13 +195,26 @@ export async function updateCustomerDisplay(tenantId, displayId, payload = {}) {
   const id = String(displayId || "").trim();
   if (!id) throw new Error("CUSTOMER_DISPLAY_ID_REQUIRED");
   const ref = tenantDoc(tenantId, "customerDisplays", id);
-  await setDoc(ref, {
-    ...payload,
-    id,
-    tenantId: requireTenantId(tenantId),
-    shopId: requireTenantId(tenantId),
-    updatedAt: serverTimestamp(),
-  }, { merge: true });
+  const row={...payload,id,tenantId:requireTenantId(tenantId),shopId:requireTenantId(tenantId),updatedAt:serverTimestamp()};
+  if(id.startsWith("quick-order-")){
+    const version=payload.updatedAt;
+    if(!Number.isSafeInteger(version)||version<=0)throw Error("DISPLAY_TIMESTAMP_INVALID");
+    await runTransaction(db,async tx=>{
+      const prior=await tx.get(ref);
+      const current=Number(prior.data()?.snapshotUpdatedAt||0);
+      const stale=()=>Object.assign(Error("DISPLAY_SNAPSHOT_STALE"),{code:"DISPLAY_SNAPSHOT_STALE"});
+      if(current>version)throw stale();
+      if(current===version){
+        const canonical=value=>Array.isArray(value)?value.map(canonical):
+          value&&typeof value==="object"?Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])):value;
+        const saved=prior.data(),keys=Object.keys(payload).filter(k=>k!=="updatedAt");
+        if(keys.some(k=>JSON.stringify(canonical(saved[k]))!==JSON.stringify(canonical(payload[k]))))
+          throw stale();
+        return;
+      }
+      tx.set(ref,{...row,snapshotUpdatedAt:version},{merge:true});
+    });
+  }else await setDoc(ref,row,{merge:true});
   return { ...payload, id };
 }
 export function watchCustomerDisplay(tenantId, displayId, onValue, onError = console.error) {

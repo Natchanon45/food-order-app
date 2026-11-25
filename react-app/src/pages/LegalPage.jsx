@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase/client";
 import { Link } from "react-router-dom";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -31,6 +34,12 @@ const CONTENT = {
 
 export function LegalPage({ type = "privacy" }) {
   const content = CONTENT[type] || CONTENT.privacy;
+  const fallback="sripleng.natchanon@gmail.com";
+  const [supportEmail,setSupportEmail]=useState(fallback);
+  useEffect(()=>onSnapshot(doc(db,"platformSettings","publicContact"),snapshot=>{
+    const row=snapshot.data(),email=String(row?.email||"").trim().toLowerCase();
+    setSupportEmail(row?.enabled===true&&row?.emailEnabled===true&&email.length<=254&&/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)?email:fallback);
+  },()=>setSupportEmail(fallback)),[]);
   const stylesReady = useParityPage({
     title: content.title + " | PENGUIN",
     bodyClass: "legal-react-page",
@@ -52,7 +61,7 @@ export function LegalPage({ type = "privacy" }) {
             </section>
           ))}
           <nav className="legal-actions" aria-label="ลิงก์ที่เกี่ยวข้อง">
-            <a href="mailto:sripleng.natchanon@gmail.com"><i className="bi bi-envelope" aria-hidden="true"></i><span>ติดต่อฝ่ายสนับสนุน</span></a>
+            <a href={`mailto:${supportEmail}`}><i className="bi bi-envelope" aria-hidden="true"></i><span>ติดต่อฝ่ายสนับสนุน</span></a>
             <Link to="/"><i className="bi bi-house-door" aria-hidden="true"></i><span>กลับหน้าแรก</span></Link>
             <Link to={content.related[0]}><i className={"bi bi-" + content.related[2]} aria-hidden="true"></i><span>{content.related[1]}</span></Link>
           </nav>

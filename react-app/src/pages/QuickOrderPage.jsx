@@ -10,7 +10,7 @@ import { sweetConfirm } from "@/components/sweetDialog";
 import {
   createWalkInOrder,
   appendUnpaidWalkInItems,
-  getOperationalOrder,
+  getOperationalOrderFromServer,
   loadOperationalSnapshot,
   releaseQuickOrderHeldBill,
   saveQuickOrderHeldBill,
@@ -25,6 +25,7 @@ import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
 import { generatePromptPayPayload } from "@/utils/promptPay";
+import { orderQuickOrderMenus, quickOrderCategoryNames } from "@/data/quickOrderAdminMenuOrder.mjs";
 
 function showToast(message, type = "success") {
   const el = document.createElement("div");
@@ -124,6 +125,10 @@ export function QuickOrderPage() {
   const pendingAppendId = useRef("");
   const displayTimer = useRef(null);
   const displaySignature = useRef("");
+  const displayVersion = useRef(0);
+  const displayFailure = useRef(null);
+  const [displayIssue,setDisplayIssue]=useState("");
+  const [displayRetryBusy,setDisplayRetryBusy]=useState(false);
   const heldDialogRef = useRef(null);
   const cashDialogRef = useRef(null);
   const resultDialogRef = useRef(null);
@@ -176,15 +181,8 @@ export function QuickOrderPage() {
     return activeTable(table) && !occupiedWalkInCodes.has(code);
   }), [tables, occupiedWalkInCodes]);
 
-  const categories = useMemo(() => {
-    const names = [];
-    const seen = new Set();
-    menus.filter(menu => menu.active !== false).forEach(menu => {
-      const name = categoryKey(menu.category);
-      if (!seen.has(name)) { seen.add(name); names.push(name); }
-    });
-    return names;
-  }, [menus]);
+  const orderedMenus = useMemo(() => orderQuickOrderMenus(menus, storeSettings.categoryOrder), [menus, storeSettings.categoryOrder]);
+  const categories = useMemo(() => quickOrderCategoryNames(orderedMenus), [orderedMenus]);
 
   const bestSellerRank = useMemo(() => {
     const now = new Date();
@@ -237,7 +235,7 @@ export function QuickOrderPage() {
 
   const visibleMenus = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase();
-    const rows = menus.filter(menu => {
+    const rows = orderedMenus.filter(menu => {
       if (menu.active === false) return false;
       if (category === "__best__" && !bestSellerRank.has(String(menu.id))) return false;
       if (!["__all__", "__best__"].includes(category) && categoryKey(menu.category) !== category) return false;
@@ -248,7 +246,7 @@ export function QuickOrderPage() {
       rows.sort((a, b) => (bestSellerRank.get(String(a.id)) ?? 9999) - (bestSellerRank.get(String(b.id)) ?? 9999));
     }
     return rows;
-  }, [menus, category, search, bestSellerRank]);
+  }, [orderedMenus, category, search, bestSellerRank]);
 
   useEffect(() => {
     if (!tenant?.id || !allowedRole) return undefined;
@@ -361,11 +359,24 @@ export function QuickOrderPage() {
     ? pairedDisplayId : safeDisplayId(profile?.uid || profile?.id || "main");
   const customerDisplayLink = `/cashier/customer-display?displayId=${encodeURIComponent(displayId)}`;
 
+  const retryDisplay=async()=>{
+    const failure=displayFailure.current;
+    if(!failure||displayRetryBusy||failure.tenantId!==tenant?.id||failure.id!==displayId)return;
+    setDisplayRetryBusy(true);
+    try{
+      await updateCustomerDisplay(failure.tenantId,failure.id,failure.snapshot);
+      if(displayFailure.current===failure){displayFailure.current=null;setDisplayIssue("");}
+    }catch(error){if(displayFailure.current===failure)setDisplayIssue(error?.code==="DISPLAY_SNAPSHOT_STALE"?"stale":"failed");}
+    finally{setDisplayRetryBusy(false);}
+  };
   useEffect(() => {
+    displayFailure.current=null;setDisplayIssue("");displaySignature.current="";
     if (!tenant?.id || !allowedRole) return undefined;
+    let active=true;
     window.clearTimeout(displayTimer.current);
     displayTimer.current = window.setTimeout(async () => {
-      const now = Date.now();
+      const now = Math.max(Date.now(),displayVersion.current+1);
+      displayVersion.current=now;
       const items = cartItems.map((item, index) => {
         const unit = t("quick_order.payment.amount", { amount: money(item.price || 0) });
         const itemNote = String(item.note || "").trim();
@@ -404,12 +415,19 @@ export function QuickOrderPage() {
       const signature = JSON.stringify({ items: items.map(({ id, name, meta, qty, total }) => ({ id, name, meta, qty, total })), total: summary.total, paymentQr });
       if (signature === displaySignature.current) return;
       displaySignature.current = signature;
-      try { localStorage.setItem(`retail_pos_customer_display_${displayId}`, JSON.stringify(snapshot)); } catch {}
-      try { await updateCustomerDisplay(tenant.id, displayId, snapshot); }
-      catch (error) { displaySignature.current = ""; console.warn("QUICK_ORDER_CUSTOMER_DISPLAY_SYNC_FAILED", error); }
+      try {
+        await updateCustomerDisplay(tenant.id, displayId, snapshot);
+        if(active)try { localStorage.setItem(`retail_pos_customer_display_${displayId}`, JSON.stringify(snapshot)); } catch {}
+      } catch (error) {
+        if(active){
+          displayFailure.current={tenantId:tenant.id,id:displayId,snapshot};
+          setDisplayIssue(error?.code==="DISPLAY_SNAPSHOT_STALE"?"stale":"failed");
+        }
+        console.warn("QUICK_ORDER_CUSTOMER_DISPLAY_SYNC_FAILED", error);
+      }
     }, 160);
-    return () => window.clearTimeout(displayTimer.current);
-  }, [tenant?.id, tenant?.name, profile?.uid, allowedRole, cartItems, summary.qty, summary.total, paymentMethod, storeSettings, t]);
+    return () => {active=false;displayFailure.current=null;window.clearTimeout(displayTimer.current);};
+  }, [tenant?.id, tenant?.name, profile?.uid, displayId, allowedRole, cartItems, summary.qty, summary.total, paymentMethod, storeSettings, t]);
 
   const cashValue = () => {
     const value = Number(String(cashReceived || "").trim());
@@ -605,7 +623,9 @@ export function QuickOrderPage() {
   });
   const transientError = error => ["RESOURCE_EXHAUSTED", "UNAVAILABLE", "INTERNAL", "DEADLINE_EXCEEDED"].includes(String(error?.code || ""));
   const recoverOrder = async id => {
-    const existing = await getOperationalOrder(tenant.id, id);
+    let existing;
+    try { existing=await getOperationalOrderFromServer(tenant.id,id); }
+    catch(error){if(error?.message==="ORDER_NOT_FOUND")return null;throw error;}
     return existing && String(existing.orderType || "").toLowerCase() === "walkin" ? existing : null;
   };
   const createSafely = async payload => {
@@ -701,6 +721,8 @@ export function QuickOrderPage() {
           pendingOrderId.current = "";
           pendingSignature.current = "";
           setCashOpen(false);
+          resetDraft();
+          setCartOpen(false);
           if (previous.paymentStatus === "paid") setPaymentResult(previous);
           showToast(t(previous.paymentStatus === "unpaid" ? "quick_order.deferred.sent" : "quick_order.toast.recovered", { queue: previous.queueNo || "-" }));
           return;
@@ -741,9 +763,9 @@ export function QuickOrderPage() {
       } else if (transientError(error)) {
         showToast(t("quick_order.toast.temporarily_busy"), "error");
       } else {
-        pendingOrderId.current = "";
-        pendingSignature.current = "";
-        showToast(t("quick_order.toast.create_failed"), "error");
+        // An uncertain response does not prove the order was never committed.
+        // Keep the original id until authoritative readback confirms it.
+        showToast(t("quick_order.toast.create_failed") + " · กรุณาตรวจสอบบิลเดิมก่อนลองอีกครั้ง", "error");
       }
     } finally { setBusy(false); }
   };
@@ -834,6 +856,11 @@ export function QuickOrderPage() {
           </div>
         </section>
         {loadError ? <div className="upload-error" role="alert">{loadError}</div> : null}
+        {displayIssue && <div className="card" role="alert" style={{padding:"12px",marginBottom:12,border:"1px solid #e0c38b",background:"#fff8e9"}}>
+          <strong>หน้าจอลูกค้าอาจยังไม่อัปเดต</strong>
+          <div>{displayIssue==="stale"?"หน้าจอลูกค้ามีข้อมูลใหม่กว่าจากเครื่องอื่น กรุณาตรวจสอบ":"โปรดตรวจสอบหน้าจอลูกค้าก่อนรับชำระเงิน"}</div>
+          {displayIssue!=="stale"&&<button type="button" className="btn btn-sm" disabled={displayRetryBusy} onClick={retryDisplay}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> ลองส่งอีกครั้ง</button>}
+        </div>}
         {appendToId ? <div className="card" data-open-walkin-bill style={{ marginBottom: 12, padding: "12px 16px", border: "1px solid #8bc2a3", background: "#effaf2" }}>
           <strong>{t("quick_order.deferred.add_title")}: {appendBill?.queueNo || appendToId}</strong>
           <p>{appendBill
@@ -863,11 +890,12 @@ export function QuickOrderPage() {
               className="input"
               id="quickTableSelect"
               value={serviceType === "dine_in" ? tableCode : ""}
-              disabled={serviceType !== "dine_in"}
+              disabled={serviceType !== "dine_in" || Boolean(appendToId)}
               onChange={e => setTableCode(e.target.value)}
             >
               <option value="">{t("quick_order.table.select_placeholder")}</option>
-              {availableTables.map(table => <option key={table.id} value={table.code || table.id}>{table.name || table.code || table.id}</option>)}
+              {appendBill?.tableCode ? <option value={appendBill.tableCode}>{appendBill.tableName || appendBill.tableCode}</option> : null}
+              {!appendToId ? availableTables.map(table => <option key={table.id} value={table.code || table.id}>{table.name || table.code || table.id}</option>) : null}
             </select>
             <small>{t("quick_order.table.optional_help")}</small>
           </label>
@@ -956,7 +984,7 @@ export function QuickOrderPage() {
             </div>
 
             <div className="quick-cart-checkout">
-              <div className="quick-payment-section">
+              <div className="quick-payment-section" hidden={Boolean(appendToId)}>
                 <strong>{t("quick_order.payment.title")}</strong>
                 <div className="quick-segment quick-payment-segment" id="quickPaymentMethod">
                   <button type="button" className={paymentMethod === "cash" ? "active" : ""} data-payment-method="cash" onClick={() => setPaymentMethod("cash")}><span>{t("quick_order.payment.cash")}</span></button>

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
+import { sweetAlert } from "@/components/sweetDialog";
 import { UserMenu } from "@/components/UserMenu";
 import { subscribeActiveTables } from "@/data/adminQrData";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -31,6 +32,7 @@ export function AdminQrPage() {
   const [loading, setLoading] = useState(true);
   const [initialReady, setInitialReady] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const printRequestRef=useRef(0);
 
   const baseUrl = useMemo(() => {
     if (!tenant?.slug) return "";
@@ -45,6 +47,7 @@ export function AdminQrPage() {
     return subscribeActiveTables(
       tenant.id,
       rows => {
+        setLoadError("");
         setTables(rows);
         setLoading(false);
         setInitialReady(true);
@@ -60,17 +63,37 @@ export function AdminQrPage() {
   useEffect(() => {
     window.addEventListener("afterprint", clearPrintTarget);
     return () => {
+      printRequestRef.current+=1;
       window.removeEventListener("afterprint", clearPrintTarget);
       clearPrintTarget();
     };
   }, []);
 
-  const printCard = event => {
-    clearPrintTarget();
+  const printCard = async event => {
     const card = event.currentTarget.closest(".qr-card");
-    card?.classList.add("print-target");
-    document.body.classList.add("qr-printing");
-    requestAnimationFrame(() => window.print());
+    const qrImage = card?.querySelector(".qr-ticket-code img");
+    const requestId = ++printRequestRef.current;
+    clearPrintTarget();
+    try {
+      if (!qrImage?.getAttribute("src")) throw new Error("ADMIN_QR_PRINT_IMAGE_NOT_READY");
+      for (let attempt = 0; attempt < 90 && (!qrImage.complete || qrImage.naturalWidth <= 0); attempt += 1) {
+        if (requestId !== printRequestRef.current) return;
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
+      if (!qrImage.complete || qrImage.naturalWidth <= 0) throw new Error("ADMIN_QR_PRINT_IMAGE_NOT_READY");
+      if (typeof qrImage.decode === "function") await qrImage.decode();
+      if (document.fonts?.ready) await document.fonts.ready;
+      if (requestId !== printRequestRef.current || !card.isConnected) return;
+      card.classList.add("print-target");
+      document.body.classList.add("qr-printing");
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      if (requestId === printRequestRef.current && card.isConnected) window.print();
+    } catch (error) {
+      if (requestId !== printRequestRef.current) return;
+      clearPrintTarget();
+      console.error("ADMIN_QR_PRINT_PREPARE_FAILED", error);
+      void sweetAlert("ไม่สามารถเตรียม QR สำหรับพิมพ์ได้ กรุณารอให้รูป QR โหลดแล้วลองอีกครั้ง", { type: "error" });
+    }
   };
 
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (["owner", "admin"].includes(profile?.role) && tenant?.id && !initialReady)) {

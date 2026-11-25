@@ -30,12 +30,12 @@ function safeHttpUrl(value = "") {
 }
 
 function safePhone(value = "") {
-  return String(value).replace(/[^\\d+*#,;]/g, "");
+  return String(value).replace(/[^\d+*#,;]/g, "");
 }
 
 function safeEmail(value = "") {
   const normalized = String(value).trim().toLowerCase();
-  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalized) ? normalized : "";
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) ? normalized : "";
 }
 
 function supportsModule(profile = {}, moduleName = "", tenant = null) {

@@ -113,7 +113,7 @@
     "verify:react-build": "node tools/generated-react-build-contract.mjs",
     "test:delivery-mobile-category-scroll": "node --test tests/react-parity/delivery-mobile-category-scroll.spec.mjs",
     "test:quick-order-back-icon-alignment": "node --test tests/react-parity/quick-order-back-icon-alignment.spec.mjs",
-    "test:quick-order-display-pairing": "node --test tests/react-parity/quick-order-display-pairing.spec.mjs",
+    "test:quick-order-display-pairing": "node --test tests/react-parity/quick-order-display-pairing.spec.mjs tests/react-parity/p36-quick-merchant-web.spec.mjs",
     "test:quick-order-restaurant-only": "node --test tests/react-parity/quick-order-restaurant-only.spec.mjs",
     "test:quick-order-customer-display-rules": "node --test tests/react-parity/quick-order-customer-display-rules.spec.mjs",
     "test:self-delivery-driver-share": "node --test tests/react-parity/self-delivery-driver-share.spec.mjs",
