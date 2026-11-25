@@ -5,6 +5,10 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "public/react/index.html"
 TARGETS = [
     "public/index.html",
+    "public/home/index.html",
+    "public/session/index.html",
+    "public/admin/store-settings/index.html",
+    "public/pos/categories/index.html",
     "public/order/index.html",
     "public/privacy/index.html",
     "public/verify/index.html",
