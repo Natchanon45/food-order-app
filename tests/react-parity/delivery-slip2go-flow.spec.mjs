@@ -28,7 +28,14 @@ test("expired Lalamove quotation refreshes before verifying a paid PromptPay rec
   assert.equal(lalamoveQuoteMatchesPayment(refreshed, 59, now), true);
   const checkout = fs.readFileSync("react-app/src/pages/DeliveryPage.jsx", "utf8");
   assert.ok(checkout.includes('await refreshLalamoveCheckoutQuote({'));
-  assert.ok(checkout.indexOf('await refreshLalamoveCheckoutQuote({') < checkout.indexOf('await uploadPublicPaymentSlip(tenant, slipFile, orderId)'));
+  // P3.4: actual upload is automatic on file selection, earlier than
+  // checkout; the final refreshed provider quote still precedes verifying
+  // the already-staged immutable proof for this bill.
+  assert.ok(checkout.includes("stagedCheckoutSlipRef.current"));
+  assert.ok(checkout.indexOf('await refreshLalamoveCheckoutQuote({') <
+    checkout.indexOf('await verifyDeliveryPaymentSlip({'));
+  assert.ok(checkout.indexOf("const slip = paymentMethod") <
+    checkout.indexOf('await verifyDeliveryPaymentSlip({'));
   assert.match(checkout, /quotationId: usesLalamove \? String\(checkoutQuote\?\.quotationId \|\| ""\)/);
   assert.match(checkout, /const quote = checkoutQuote \|\| \{\};/);
 });

@@ -1,3 +1,12 @@
+## 2026-11-26 — P3.4 Source original Delivery slip, customer correction and review UI
+
+- Source latest READ ONLY 7e47e85f; target feature/react-firebase-port baseline 4c1d112c. Ported on-select Firebase Storage image upload with authentic observed byte callback/9s animation, immutable proof order-path and no duplicate checkout upload, Source checkout review and read-only original cart.
+- Added 256-bit first-create non-QR PromptPay original-order customer correction capability (SHA256 digest only in order); new getPublicDeliveryCorrectionState/submitPublicDeliveryCorrectionSlip Callables with exact Tenant/order status/14d, immutable Storage bytes/path/metadata, global duplicate hash + per-order audit in transaction, idempotent replay. Customer success correction UI sends original image under same bill but NEVER changes paid status, admits Kitchen or starts Lalamove/COD.
+- Local policy 7/7 PASS; original delivery/security regression 33/33 PASS; real anonymous Chrome+Firebase Auth/Firestore/Functions/Storage 1/1 PASS with four viewport widths, forged/wrong token/replay/paid-state guard; Checkout review Chrome 1/1 PASS. Full serial React Parity **PASS Exit 0**; final React Build and generated Hosting Contract **PASS Exit 0** (version 2026.11.09.535, /react/assets/index-BRwHz-t7.js). Generated-only public output cleaned.
+- Remaining latest Source notification-first/optional-slip/Stripe real bank reconciliation and provider authority are not ported, do not claim either DeliveryPage/DeliverySuccessPage accepted yet; 15/65=23.1% accepted/dispositioned, 50/65=76.9% remaining. No Source changes/Production/main merge/APK/IPA.
+
+---
+
 ## 2026-11-25 evening — P3.4 Source sync Thai Payment QR high-DPI / observed mask
 
 - Read-only Source branch feature/react-golang-vite-tailwind-axios updated from 7bf9d159 to 7e47e85f (5 commits, 20 files +517/-48). 65 JSX pages unchanged; only two Source pages DeliveryPage/DeliverySuccessPage changed, other edits QR component, billing/wallet components and Go payment observation. Source and Target continue on their own branches.

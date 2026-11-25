@@ -81,7 +81,11 @@ test("open store creates only server-controlled delivery metadata", async () => 
   const submitted = payload().order;
   submitted.status = "pending";
   const result = await backend.createDeliveryOrderWithGuard(db, tenantId, orderId, submitted);
-  assert.deepEqual(result, { id: orderId });
+  assert.equal(result.id, orderId);
+  assert.match(result.paymentCorrectionCapability,/^[a-f0-9]{64}$/);
+  assert.match(state.writes[0].data.customerCorrectionCapabilityDigest,/^[a-f0-9]{64}$/);
+  assert.ok(!JSON.stringify(state.writes[0].data).includes(result.paymentCorrectionCapability),
+    "Plain 256-bit customer correction token must never be placed in public order GET");
   assert.deepEqual(state.reads, [
     "tenants/" + tenantId,
     "tenants/" + tenantId + "/settings/store",

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "@/ui/companion-qr.css";
 import { createPortal } from "react-dom";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { DeliveryCheckoutReviewDialog } from "@/components/DeliveryCheckoutReviewDialog";
 import { useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { sweetConfirm } from "@/components/sweetDialog";
@@ -30,6 +31,10 @@ import { svgQrPngBlob } from "@/utils/downloadQrPng";
 import { validDeliveryLocation as normalizeLocation, matchGpsSavedAddress, validatedGpsFix } from "@/utils/deliveryLocationPolicy";
 import { refreshLalamoveCheckoutQuote } from "@/utils/lalamoveCheckoutQuote";
 import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
+import {
+  isSupportedRetrySlip, slipUploadPercent, slipUploadAnimatedPercent,
+  slipUploadDisplayHoldMs,
+} from "@/utils/slipUploadProgress.mjs";
 
 const computeDeliveryRoute = httpsCallable(functions, "computeDeliveryRoute");
 const quotePublicLalamoveDelivery = httpsCallable(functions, "quotePublicLalamoveDelivery");
@@ -163,10 +168,15 @@ export function DeliveryPage() {
   const [paymentMethod, setPaymentMethod] = useState("promptpay");
   const [slipFile, setSlipFile] = useState(null);
   const [slipPreview, setSlipPreview] = useState("");
+  const [slipUploadPercentValue, setSlipUploadPercentValue] = useState(0);
+  const [slipUploadPhase, setSlipUploadPhase] = useState("idle");
+  const stagedCheckoutSlipRef = useRef(null);
+  const stageAliveRef = useRef(true);
   const [paymentLocked, setPaymentLocked] = useState(false);
   const [companionQrEnabled,setCompanionQrEnabled]=useState(false);
   const [lockedTotal, setLockedTotal] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [checkoutReviewOpen, setCheckoutReviewOpen] = useState(false);
   const [promptPayPng, setPromptPayPng] = useState({ source: "", url: "" });
 
   // Full-screen editor avoids crowding the narrow delivery sidebar.
@@ -331,6 +341,10 @@ export function DeliveryPage() {
   }, [profileLoading, profile.addresses, initialGps]);
 
   useEffect(() => () => { if (slipPreview) URL.revokeObjectURL(slipPreview); }, [slipPreview]);
+  useEffect(() => {
+    stageAliveRef.current = true;
+    return () => { stageAliveRef.current = false; };
+  }, []);
 
   useEffect(() => {
     if (favoriteIds.size === 0 && activeCategory === "__favorites__") {
@@ -634,22 +648,61 @@ export function DeliveryPage() {
     } finally { setCustomerBusy(""); }
   };
 
-  const chooseSlip = file => {
-    if (!file) return;
-    const ext = String(file.name || "").split(".").pop()?.toLowerCase() || "";
-    const allowed = ["jpg","jpeg","png","webp","heic","heif"];
-    if (file.size > 8 * 1024 * 1024) {
-      showStorefrontToast(t("delivery.checkout.payment.slip_too_large"), "error"); return;
+  // P3.4 Source: selecting the original slip starts the real Firebase
+  // Storage transfer immediately. The upload alone never verifies a bank
+  // payment, decrements a Slip2Go quota or creates an operational order.
+  const chooseSlip = async file => {
+    if (!file || slipUploadPhase === "uploading" || submitting ||
+      !tenant || !paymentLocked) return;
+    if (!isSupportedRetrySlip(file) ||
+      !["image/jpeg", "image/png", "image/webp"].includes(String(file.type || ""))) {
+      showStorefrontToast(file.size > 8 * 1024 * 1024
+        ? t("delivery.checkout.payment.slip_too_large")
+        : t("delivery.checkout.payment.slip_type_toast"), "error");
+      return;
     }
-    if ((file.type && !file.type.startsWith("image/")) || (!file.type && !allowed.includes(ext))) {
-      showStorefrontToast(t("delivery.checkout.payment.slip_type_toast"), "error"); return;
-    }
-    if (slipPreview) URL.revokeObjectURL(slipPreview);
-    setSlipFile(file); setSlipPreview(URL.createObjectURL(file));
+    const orderId = preparePublicOrderId(tenant, "delivery");
+    stagedCheckoutSlipRef.current = null;
+    setSlipFile(file);
+    setSlipPreview(URL.createObjectURL(file));
+    setSlipUploadPercentValue(0);
+    setSlipUploadPhase("uploading");
+    const start = Date.now();
+    let actual = 0;
+    const displayTimer = window.setInterval(() => {
+      if (!stageAliveRef.current) return;
+      setSlipUploadPercentValue(slipUploadAnimatedPercent(actual, Date.now() - start));
+    }, 80);
+    try {
+      const staged = await uploadPublicPaymentSlip(tenant, file, orderId, {
+        onUploadProgress: event => {
+          const next = slipUploadPercent(event);
+          if (next !== null) actual = Math.max(actual, next);
+        },
+      });
+      if (!staged?.path) throw Error("DELIVERY_STAGE_NOT_CONFIRMED");
+      stagedCheckoutSlipRef.current = { file, orderId, path: staged.path };
+      actual = 99;
+      await new Promise(resolve => window.setTimeout(resolve, slipUploadDisplayHoldMs(start)));
+      if (!stageAliveRef.current) return;
+      setSlipUploadPercentValue(100);
+      setSlipUploadPhase("finished");
+    } catch (error) {
+      console.warn("DELIVERY_SLIP_STAGE_FAILED", error?.code || "unknown");
+      stagedCheckoutSlipRef.current = null;
+      if (stageAliveRef.current) {
+        setSlipUploadPhase("error");
+        showStorefrontToast(t("delivery.checkout.errors.storage_retry"), "error");
+      }
+    } finally { window.clearInterval(displayTimer); }
   };
   const clearSlip = () => {
-    if (slipPreview) URL.revokeObjectURL(slipPreview);
-    setSlipFile(null); setSlipPreview("");
+    if (["uploading", "uploaded"].includes(slipUploadPhase) || submitting) return;
+    stagedCheckoutSlipRef.current = null;
+    setSlipFile(null);
+    setSlipPreview("");
+    setSlipUploadPercentValue(0);
+    setSlipUploadPhase("idle");
   };
 
   useEffect(() => {
@@ -744,8 +797,14 @@ export function DeliveryPage() {
       showStorefrontToast("บัญชีพร้อมเพย์ของร้านมีการเปลี่ยนแปลง กรุณาติดต่อร้านก่อนชำระซ้ำ", "error");
       return;
     }
-    if (paymentMethod === "promptpay" && !confirmedQrFlow && !slipFile) {
-      showStorefrontToast(t("delivery.checkout.payment.slip_required_toast"), "error"); return;
+    if (paymentMethod === "promptpay" && !confirmedQrFlow &&
+      (!slipFile || slipUploadPhase !== "finished" ||
+        stagedCheckoutSlipRef.current?.file !== slipFile ||
+        !stagedCheckoutSlipRef.current?.path)) {
+      showStorefrontToast(slipUploadPhase === "uploading"
+        ? "กำลังอัปโหลดสลิป กรุณารอจนแสดง 100% ก่อนยืนยันคำสั่งซื้อ"
+        : t("delivery.checkout.payment.slip_required_toast"), "error");
+      return;
     }
     const orderId = preparePublicOrderId(tenant, "delivery");
     let submittingToBackend = false;
@@ -776,7 +835,12 @@ export function DeliveryPage() {
           console.info("DELIVERY_LALAMOVE_QUOTE_REFRESH_RESULT", latest.reason);
         }
       }
-      const slip = paymentMethod === "promptpay" && !confirmedQrFlow ? await uploadPublicPaymentSlip(tenant, slipFile, orderId) : { path: "" };
+      const slip = paymentMethod === "promptpay" && !confirmedQrFlow
+        ? (stagedCheckoutSlipRef.current || { path: "" }) : { path: "" };
+      if (paymentMethod === "promptpay" && !confirmedQrFlow &&
+        (slip.file !== slipFile || slip.orderId !== orderId || !slip.path)) {
+        throw Error("DELIVERY_SLIP_STAGE_NOT_CONFIRMED");
+      }
       let slipCheckStatus = "";
       if (paymentMethod === "promptpay" && !confirmedQrFlow) {
         const response = await verifyDeliveryPaymentSlip({
@@ -914,13 +978,17 @@ export function DeliveryPage() {
 
       submittingToBackend = true;
       const created=await createPublicDeliveryOrder(tenant, payload, { menus, settings });
-      if(confirmedQrFlow){
-        if(created?.paymentQrMode!=="confirmed_order_5m"||
-          !/^[a-f0-9]{64}$/.test(created?.paymentCorrectionCapability||""))
-          throw new Error("DELIVERY_QR_CAPABILITY_UNCONFIRMED");
-        try{
-          sessionStorage.setItem("penguin:companion-qr-cap:"+tenant.id+":"+orderId,created.paymentCorrectionCapability);
-        }catch{showStorefrontToast("ไม่สามารถบันทึกสิทธิ์แนบสลิปสำรองในเบราว์เซอร์นี้ได้ กรุณาเก็บเลขออเดอร์และติดต่อร้านหาก QR หมดอายุ","warning");}
+      if(paymentMethod === "promptpay"){
+        if(!/^[a-f0-9]{64}$/.test(created?.paymentCorrectionCapability||""))
+          throw Error("DELIVERY_PAYMENT_CAPABILITY_UNCONFIRMED");
+        try {
+          const key=confirmedQrFlow
+            ? "penguin:companion-qr-cap:"+tenant.id+":"+orderId
+            : "penguin:delivery:correction:v1:"+tenant.id+":"+orderId;
+          sessionStorage.setItem(key,created.paymentCorrectionCapability);
+        }catch{
+          showStorefrontToast("ไม่สามารถบันทึกสิทธิ์แนบหลักฐานในเบราว์เซอร์ได้ กรุณาเก็บเลขบิลและติดต่อร้านหากต้องตรวจสอบอีกครั้ง","warning");
+        }
       }
 
       // Do not rewrite saved-address coordinates as a side effect of checkout.
@@ -1237,7 +1305,8 @@ export function DeliveryPage() {
                 {freeShipping.enabled && subtotal > 0 ? <div id="deliveryFreeShippingStatus" className={"delivery-free-shipping-status" + (!freeShippingApplied ? " is-progress" : "")}>{freeShippingApplied ? t("delivery.checkout.promotion.free_shipping_applied", { minimum: money(freeShipping.minimumSubtotal) }) : t("delivery.checkout.promotion.free_shipping_progress", { remaining: money(Math.max(0, freeShipping.minimumSubtotal - subtotal)) })}</div> : null}
               </div>
               <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.order_note")}</label><textarea className="input" id="orderNote" maxLength={300} value={orderNote} disabled={submitting} onChange={event => setOrderNote(event.target.value)} /></div>
-              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" id="paymentMethod" value={paymentMethod} disabled={submitting || (!promptPayEnabled && !codEnabled)} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}>
+              <div className="field" style={{ marginTop: 12 }}><label>{t("delivery.checkout.summary.payment_method")} *</label><select className="input" id="paymentMethod" value={paymentMethod} disabled={submitting || slipUploadPhase === "uploading" ||
+                  (!promptPayEnabled && !codEnabled)} onChange={event => { setPaymentMethod(event.target.value); setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}>
                   {!promptPayEnabled && !codEnabled ? <option value="">{t("admin.delivery_settings.payment_method_unavailable")}</option> : null}
                   {promptPayEnabled ? <option value="promptpay">{t("delivery.checkout.payment.promptpay_option")}</option> : null}
                   {codEnabled ? <option value="cod">{t("delivery.checkout.payment.cod_option")}</option> : null}
@@ -1268,19 +1337,54 @@ export function DeliveryPage() {
                     {paymentLocked && promptPayQr.src ? paymentQrDownloadUrl
                       ? <a className="btn btn-dark" id="downloadPaymentQr" href={paymentQrDownloadUrl} download={"promptpay-" + (tenant?.slug || "penguin") + ".png"}><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_short")}</span></a>
                       : <button className="btn btn-dark" id="downloadPaymentQr" type="button" disabled><i className="bi bi-download app-icon"></i><span>{t("delivery.checkout.payment_lock.download_short")}</span></button> : null}
-                    {paymentLocked ? <button className="btn" id="editLockedOrder" type="button" onClick={() => { setPaymentLocked(false); setLockedTotal(null); clearSlip(); }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_short")}</span></button> : null}
+                    {paymentLocked ? <button className="btn" id="editLockedOrder" type="button"
+                      disabled={slipUploadPhase === "uploading"} onClick={() => {
+                        setPaymentLocked(false); setLockedTotal(null); clearSlip();
+                      }}><i className="bi bi-pencil app-icon"></i><span>{t("delivery.checkout.payment_lock.edit_short")}</span></button> : null}
                   </div>
                 </div>
                 {paymentLocked ? <>
                   <div className="payment-slip-wrap" id="paymentSlipWrap" style={{ marginTop: 14, textAlign: "left" }}>
                     <label style={{ fontSize: 13, fontWeight: 700, color: "var(--muted)" }}>{t("delivery.checkout.payment.slip_label")} *</label>
-                    <div className={"payment-slip-dropzone" + (slipFile ? " has-file" : "")} id="paymentSlipDropzone">
-                      <input id="paymentSlip" type="file" accept="image/*,.heic,.heif" onChange={event => chooseSlip(event.target.files?.[0] || null)} />
+                    <div className={"payment-slip-dropzone" + (slipFile ? " has-file" : "")}
+                      id="paymentSlipDropzone" onDragOver={event => {
+                        if (!slipFile && slipUploadPhase !== "uploading") event.preventDefault();
+                      }} onDrop={event => {
+                        event.preventDefault();
+                        if (!slipFile && slipUploadPhase !== "uploading") void chooseSlip(event.dataTransfer.files?.[0] || null);
+                      }}>
+                      <input id="paymentSlip" type="file" accept="image/jpeg,image/png,image/webp"
+                        disabled={Boolean(slipFile) || submitting || slipUploadPhase === "uploading"}
+                        onChange={event => { void chooseSlip(event.target.files?.[0] || null); event.target.value = ""; }} />
                       {!slipFile ? <div className="payment-slip-content" id="paymentSlipContent"><div className="payment-slip-icon">+</div><div className="payment-slip-title">{t("delivery.checkout.payment.slip_drop_title")}</div><div className="payment-slip-help">{t("delivery.checkout.payment.slip_help")}</div></div> : <div className="payment-slip-preview" id="paymentSlipPreviewWrap"><img id="paymentSlipPreview" src={slipPreview} alt={t("delivery.checkout.payment.slip_preview_alt")} /><div className="payment-slip-meta"><span id="paymentSlipFileName">{slipFile.name}</span><span id="paymentSlipFileSize">{(slipFile.size / 1024 / 1024).toFixed(2)} MB</span></div></div>}
                     </div>
                     <div className="payment-slip-error" id="paymentSlipError" hidden></div>
-                    {slipFile ? <button type="button" className="btn btn-sm payment-slip-remove-icon" id="removePaymentSlip" aria-label={t("delivery.checkout.payment.remove_slip")} title={t("delivery.checkout.payment.remove_slip")} onClick={clearSlip}><i className="bi bi-x-lg app-icon" aria-hidden="true"></i></button> : null}
+                    {slipFile && slipUploadPhase === "finished" ? <button
+                      type="button" className="btn btn-sm payment-slip-remove-icon" id="removePaymentSlip"
+                      aria-label={t("delivery.checkout.payment.remove_slip")}
+                      title={t("delivery.checkout.payment.remove_slip")}
+                      disabled={submitting} onClick={clearSlip}>
+                      <i className="bi bi-x-lg app-icon" aria-hidden="true" /></button> : null}
                   </div>
+                  {slipFile && <div className="customer-retry-upload-progress" id="checkoutSlipUploadProgress">
+                    <div className="customer-retry-upload-progress-header">
+                      <strong>{slipUploadPhase === "finished" ? "อัปโหลดไฟล์ครบแล้ว" :
+                        slipUploadPhase === "error" ? "อัปโหลดไม่สำเร็จ" : "กำลังอัปโหลดไฟล์"}</strong>
+                    </div>
+                    <div className="customer-retry-upload-track" role="progressbar"
+                      aria-label="ความคืบหน้าอัปโหลดสลิป" aria-valuemin={0} aria-valuemax={100}
+                      aria-valuenow={slipUploadPercentValue}>
+                      <div className="customer-retry-upload-fill progress-bar-striped"
+                        style={{width:slipUploadPercentValue+"%"}} />
+                      <span className="customer-retry-upload-progress-text">{slipUploadPercentValue}%</span>
+                    </div>
+                    <small>{slipUploadPhase === "finished"
+                      ? "อัปโหลดครบ 100% ไม่ได้หมายความว่ารับชำระเงินแล้ว"
+                      : "ความคืบหน้าเป็นการส่งไฟล์ ไม่ใช่การตรวจยอดเงิน"}</small>
+                  </div>}
+                  {slipUploadPhase === "error" && <button type="button" className="btn btn-sm"
+                    id="checkoutSlipRetry" onClick={clearSlip} disabled={submitting}>
+                    เลือกสลิปใหม่</button>}
                   <small className="menu-category delivery-payment-slip-review-note" id="paymentSlipReviewNote">{t("delivery.checkout.payment.review_note")}</small></> : null}</>:null}
               </div> : null}
             </section>
@@ -1289,11 +1393,30 @@ export function DeliveryPage() {
       )}
     </main>
 
+    <DeliveryCheckoutReviewDialog
+      open={checkoutReviewOpen} onClose={() => setCheckoutReviewOpen(false)}
+      onConfirm={() => {
+        if (submitting || !tenant || !validateBase()) return;
+        setCheckoutReviewOpen(false);
+        void submit();
+      }}
+      busy={submitting} uploadPending={slipUploadPhase === "uploading"}
+      cart={cart} subtotal={subtotal} fee={deliveryFee} total={total}
+      money={money} paymentMethod={paymentMethod}
+      paymentEnabled={paymentMethod === "promptpay" && promptPayEnabled}
+      routeReady={routeReady} storeReady={storeAcceptingOrders}
+    />
     <div className="cart-bar">
       <div><small>{t("delivery.checkout.summary.total_with_delivery")}</small><div style={{ fontSize: 20, fontWeight: 800 }}><span id="cartTotal">{money(total)}</span> {t("delivery.checkout.units.baht")}</div></div>
-      <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting || !storeAcceptingOrders || !selectedAddressId || !deliveryLocation || Boolean(addressEditor)} onClick={submit}>
-        <i className={"bi bi-" + (submitting ? "hourglass-split" : paymentMethod === "promptpay" && !paymentLocked ? "credit-card" : "check-lg") + " app-icon"}></i>
-        <span>{submitting ? t("delivery.checkout.submit.sending") : confirmedQrFlow ? "ยืนยันคำสั่งซื้อและสร้าง QR 5 นาที" : paymentMethod === "promptpay" && !paymentLocked ? t("delivery.checkout.summary.review_and_pay") : t("delivery.checkout.summary.submit_order")}</span>
+      <button className="btn btn-primary" id="submitOrder" type="button" disabled={!tenant || !cart.length || submitting || !storeAcceptingOrders ||
+        slipUploadPhase === "uploading" || !selectedAddressId || !deliveryLocation ||
+        Boolean(addressEditor)} onClick={() => {
+          if (submitting || !tenant || !validateBase()) return;
+          setCheckoutReviewOpen(true);
+        }}>
+        <i className={"bi bi-" + (submitting ? "hourglass-split" : "credit-card") + " app-icon"}></i>
+        <span>{submitting ? t("delivery.checkout.submit.sending") :
+          t("delivery.checkout.summary.review_and_pay")}</span>
       </button>
     </div>
     <PublicStorefrontFooter />

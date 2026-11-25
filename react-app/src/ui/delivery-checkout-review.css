@@ -1,0 +1,42 @@
+.delivery-review-backdrop{position:fixed;inset:0;z-index:160000;
+ background:rgba(14,28,20,.58);display:grid;place-items:center;
+ padding:12px;box-sizing:border-box}
+.delivery-review-modal{box-sizing:border-box;width:min(560px,100%);max-height:min(92dvh,900px);
+ display:flex;flex-direction:column;background:#fff;border:1px solid #d8e3db;
+ border-radius:16px;overflow:hidden;box-shadow:0 18px 64px #071c142f;color:#234934}
+.delivery-review-modal-header{display:flex;align-items:flex-start;
+ justify-content:space-between;gap:10px;padding:16px 18px 12px;border-bottom:1px solid #e2e9e4}
+.delivery-review-modal-header h2{margin:0;font-size:19px;text-align:left;font-weight:700}
+.delivery-review-modal-header p{margin:4px 0 0;color:#668175;font-size:13px}
+.delivery-review-close{flex:none;width:34px;height:34px;display:grid;place-items:center;
+ border:1px solid #d9e7dc;border-radius:50%;background:#fff;color:#355947;cursor:pointer}
+.delivery-review-close:focus-visible{outline:2px solid #19864c;outline-offset:3px}
+.delivery-review-modal-body{overflow:auto;overscroll-behavior:contain;padding:14px 18px 18px;
+ flex:1;min-height:0}
+.delivery-review-cart{margin:0}
+.delivery-review-cart .cart-qty-button:disabled{opacity:1;cursor:default}
+.delivery-review-cart [data-note][readonly]{opacity:1;cursor:default}
+.delivery-review-summary{display:grid;gap:8px;border:1px solid #dce9df;border-radius:11px;
+ background:#f8fbf9;padding:10px 12px;margin:14px 0}
+.delivery-review-summary>div{display:flex;justify-content:space-between;gap:10px;
+ align-items:baseline;font-size:13px}
+.delivery-review-summary strong{white-space:nowrap;text-align:right}
+.delivery-review-total{border-top:1px solid #dce8df;padding-top:9px;color:#126e43;
+ font-size:15px!important;font-weight:700}
+.delivery-review-payment{display:grid;gap:8px;border:0;padding:0;margin:0;min-width:0}
+.delivery-review-payment legend{font-size:14px;font-weight:700}
+.delivery-review-payment small{font-size:12px;line-height:1.5;color:#637d6a}
+.delivery-payment-option{display:flex;align-items:center;gap:10px;padding:10px 12px;
+ min-height:47px;border:1px solid #168344;border-radius:11px;background:#edf8f0;
+ color:#194c31;font-size:14px;box-sizing:border-box}
+.delivery-payment-option input{width:18px;height:18px;accent-color:#168344;min-height:0;flex:none}
+.delivery-payment-option i{font-size:19px;color:#168344}
+.delivery-review-modal-footer{display:flex;justify-content:space-between;align-items:center;
+ gap:10px;padding:13px 18px;border-top:1px solid #e2e9e4}
+.delivery-review-modal-footer .btn{font-weight:400;white-space:normal}
+@media(max-width:420px){
+ .delivery-review-modal-header{padding:12px}
+ .delivery-review-modal-body{padding:12px}
+ .delivery-review-modal-footer{padding:11px 12px;gap:7px}
+ .delivery-review-modal-footer .btn{font-size:12px;padding:8px}
+}

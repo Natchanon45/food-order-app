@@ -1,0 +1,22 @@
+.delivery-customer-correction{display:grid;gap:10px;margin-top:12px;padding:14px;
+  background:#f6faf7;border:1px solid #cdded1;border-radius:14px;color:#214933;min-width:0}
+.delivery-customer-correction h4{font-size:15px;margin:0 0 6px}
+.delivery-customer-correction p{margin:0;line-height:1.55;overflow-wrap:anywhere}
+.delivery-customer-correction small{display:block;font-size:12px;line-height:1.5;color:#536f5d}
+.delivery-correction-upload{display:grid;gap:10px;min-width:0}
+.delivery-correction-upload label{font-size:13px}
+.delivery-correction-upload input[type=file]{min-width:0;max-width:100%;font:inherit}
+.delivery-correction-upload .btn{font-weight:400;width:fit-content;max-width:100%;white-space:normal}
+.customer-retry-upload-progress{display:grid;gap:8px;max-width:100%;min-width:0}
+.customer-retry-upload-progress-header{display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;gap:8px;min-width:0}
+.customer-retry-upload-progress-header strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.customer-retry-upload-track{position:relative;height:22px;border-radius:10px;overflow:hidden;
+  background:#dce7dd;border:1px solid #b5c7b9}
+.customer-retry-upload-fill{height:100%;transition:width .14s linear;background:#23854e;
+  background-image:linear-gradient(135deg,rgba(255,255,255,.22) 25%,transparent 25%,transparent 50%,
+    rgba(255,255,255,.22) 50%,rgba(255,255,255,.22) 75%,transparent 75%,transparent);
+  background-size:32px 32px}
+.customer-retry-upload-progress .btn{justify-self:start}
+.delivery-correction-feedback{color:#235b3c;font-weight:400}
+@media(max-width:420px){.delivery-customer-correction{padding:10px}}

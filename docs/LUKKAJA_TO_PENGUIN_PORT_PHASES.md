@@ -1,5 +1,14 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-26 — P3.4 original Delivery slip and correction proof gates
+
+Source 7e47e85f read-only. Completed local Firebase-safe source UI: auto-stage original slip on selection with actual byte progress and 9-second visual hold; explicit read-only cart/fee/payment Checkout review; new first-create 256-bit original-order correction capability with hash-only Firestore, two signed public state/proof Callables and customer receipt UI for same pending bill. Firebase Storage proof path/bytes checked, immutable audit/global hash, repeat-safe receipt, no fake paid/COD or Kitchen release. Pure 7/7 PASS, Chrome signed Storage/Functions 1/1 PASS, checkout modal Chrome 1/1 PASS, legacy security contracts 33/33 PASS. Full serial React Parity **PASS Exit 0**; final React Build and generated Hosting Contract **PASS Exit 0** (version 2026.11.09.535, /react/assets/index-BRwHz-t7.js). Generated-only public output cleaned.
+
+Current Source latest bank notification-first, Stripe LIVE hosted rail and external Lalamove real provider remain unresolved and demand authorized Staging evidence. DeliveryPage and DeliverySuccessPage are partially ported but NOT accepted; strict Master remains 15/65=23.1% accepted/dispositioned, 50/65=76.9% pending. No Source writes, Production, main merge or APK/IPA.
+
+---
+
+
 ## 2026-11-25 evening — P3.4 latest Source QR payment refresh
 
 Source read-only branch re-pinned from 7bf9d159 to 7e47e85f (5 new commits; 20 tracked files, no new JSX pages). Latest Source changes high-resolution composited Thai QR PromptPay PNG, locked checkout receiver and observed-bank-amount QR masking across Delivery and billing wallet/invoice UI. Target copied reusable *rendering behavior* using its native qrSvg and byte-matching public artwork, retained Firebase signed 5-minute QR server authority and review gates, and physically removes scannable QR on authoritative observed-unverified kitchen admission. Actual Chrome/Swift Vision decodes two payloads from source-style PNG at four widths, 1/1 PASS; pure Source contract 5/5 PASS.

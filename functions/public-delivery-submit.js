@@ -82,8 +82,12 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     throw new HttpsError("invalid-argument","DELIVERY_QR_QUOTE_OR_CART_INVALID");
   }
   // Creation token never gets persisted; clients only ever see its digest.
-  const capability=wantsQr?randomBytes(32).toString("hex"):"";
-  const capabilityHash=wantsQr?createHash("sha256").update(capability).digest("hex"):"";
+  // Every public PromptPay order receives a unique capability ONLY in the
+  // first create response. The public order document stores its SHA-256
+  // digest, never the secret. QR five-minute orders keep the existing
+  // separately verified QR capability path.
+  const capability=order.paymentMethod==="promptpay"?randomBytes(32).toString("hex"):"";
+  const capabilityHash=capability?createHash("sha256").update(capability).digest("hex"):"";
   return db.runTransaction(async transaction => {
     // Every transaction attempt re-reads store hours; a concurrent admin close
     // causes Firestore to retry and refuse the pending create.
@@ -159,11 +163,16 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
       tableCode: "DELIVERY", tableToken: "", tableName: "",
       status: "pending",
       ...(authoritativeQr||{}),
-      ...(authoritativeQr?{slipCheckStatus:"",paymentReviewRequired:false,paymentSlipPath:""}:{}),
+      ...(authoritativeQr?{slipCheckStatus:"",paymentReviewRequired:false,paymentSlipPath:""}:
+        capability?{customerCorrectionCapabilityDigest:capabilityHash,
+          paymentCorrectionRevision:0}:{}),
       paymentStatus: order.paymentMethod === "promptpay" ? "pending_verification" : "unpaid",
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     });
-    return { id, ...(authoritativeQr?{paymentQrMode:"confirmed_order_5m",paymentCorrectionCapability:capability}:{} ) };
+    return { id,
+      ...(capability?{paymentCorrectionCapability:capability}:{}),
+      ...(authoritativeQr?{paymentQrMode:"confirmed_order_5m"}:{}),
+    };
   });
 }
 

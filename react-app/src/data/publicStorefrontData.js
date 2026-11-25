@@ -2,7 +2,7 @@ import {
   collection, doc, getDoc, getDocFromServer, getDocs, onSnapshot, query, runTransaction,
   serverTimestamp, setDoc, where,
 } from "firebase/firestore";
-import { ref as storageRef, uploadBytes } from "firebase/storage";
+import { ref as storageRef, uploadBytesResumable } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 import { db, storage, functions } from "@/firebase/client";
 import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
@@ -340,15 +340,21 @@ export async function createPublicDeliveryOrder(tenant, order = {}, catalog = nu
     order: { ...normalized, id },
   });
   if (result?.data?.id !== id) throw new Error("DELIVERY_ORDER_CREATE_NOT_CONFIRMED");
+  if(order.paymentMethod==="promptpay" &&
+    !/^[a-f0-9]{64}$/.test(result?.data?.paymentCorrectionCapability||""))
+    throw new Error("DELIVERY_PAYMENT_CAPABILITY_UNCONFIRMED");
   if(order.paymentQrMode==="confirmed_order_5m" &&
-    (result?.data?.paymentQrMode!=="confirmed_order_5m"||
-     !/^[a-f0-9]{64}$/.test(result?.data?.paymentCorrectionCapability||"")))
+    result?.data?.paymentQrMode!=="confirmed_order_5m")
     throw new Error("DELIVERY_QR_CAPABILITY_UNCONFIRMED");
   clearPublicOrderId(tenant, "delivery");
-  return { id, ...(order.paymentQrMode==="confirmed_order_5m"?{
-    paymentQrMode:"confirmed_order_5m",
-    paymentCorrectionCapability:result.data.paymentCorrectionCapability,
-  }:{}) };
+  return { id,
+    ...(order.paymentMethod==="promptpay"?{
+      paymentCorrectionCapability:result.data.paymentCorrectionCapability,
+    }:{}),
+    ...(order.paymentQrMode==="confirmed_order_5m"?{
+      paymentQrMode:"confirmed_order_5m",
+    }:{}),
+  };
 }
 
 export async function getPublicOrder(tenant, id) {
@@ -362,13 +368,30 @@ export function watchPublicOrder(tenant, id, callback, onError = console.error) 
   }, onError);
 }
 
-export async function uploadPublicPaymentSlip(tenant, file, orderId) {
+export async function uploadPublicPaymentSlip(tenant, file, orderId, { onUploadProgress } = {}) {
   if (!file) return { path: "" };
-  if (file.size > 8 * 1024 * 1024) throw new Error("SLIP_TOO_LARGE");
-  const extension = (String(file.name || "").split(".").pop() || "jpg").replace(/[^A-Za-z0-9]/g, "") || "jpg";
-  const path = "tenants/" + tenant.id + "/payment-slips/" + orderId + "/" + Date.now() + "." + extension;
+  if (!Number.isFinite(file.size) || file.size < 1 || file.size > 8 * 1024 * 1024)
+    throw new Error("SLIP_TOO_LARGE");
+  if (!/^[A-Za-z0-9_-]{4,128}$/.test(String(tenant?.id || "")) ||
+    !/^[A-Za-z0-9_-]{8,128}$/.test(String(orderId || "")))
+    throw new Error("SLIP_REFERENCE_INVALID");
+  const extension = (String(file.name || "").split(".").pop() || "jpg").toLowerCase();
+  if (!["jpg", "jpeg", "png", "webp"].includes(extension) ||
+    !["image/jpeg", "image/png", "image/webp"].includes(file.type))
+    throw new Error("SLIP_IMAGE_UNSUPPORTED");
+  // Never overwrite proof after an ambiguous response. A fresh path also
+  // prevents a retry from destroying the original bank evidence.
+  const name = typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2);
+  const path = "tenants/" + tenant.id + "/payment-slips/" + orderId + "/" + name + "." + extension;
   const fileRef = storageRef(storage, path);
-  const contentType = file.type && file.type.startsWith("image/") ? file.type : "image/jpeg";
-  await uploadBytes(fileRef, file, { contentType, customMetadata: { tenantId: tenant.id, orderId } });
+  const task = uploadBytesResumable(fileRef, file, {
+    contentType: file.type, customMetadata: { tenantId: tenant.id, orderId },
+  });
+  await new Promise((resolve, reject) => task.on("state_changed", snapshot => {
+    if (typeof onUploadProgress === "function" && snapshot.totalBytes > 0) {
+      onUploadProgress({ loaded: snapshot.bytesTransferred, total: snapshot.totalBytes });
+    }
+  }, reject, resolve));
   return { path };
 }

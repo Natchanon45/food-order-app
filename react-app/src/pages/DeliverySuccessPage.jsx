@@ -1,4 +1,5 @@
 import { CompanionConfirmedQr } from "@/components/CompanionConfirmedQr";
+import { DeliveryPaymentCorrection } from "@/components/DeliveryPaymentCorrection";
 import { ReceiptOriginalItemRow, RevisedOrderNet, OrderCancellationWatermark } from "@/components/OrderRevisionDisplay";
 import { deliveryReceiptTotals } from "@/utils/deliveryReceiptTotal.mjs";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
@@ -425,6 +426,8 @@ export function DeliverySuccessPage() {
           {order?.companionKitchenRelease?.status === "admitted_unverified" &&
             <p>รายการนี้เข้าครัวในสถานะรอตรวจรับเงินจริงโดยร้านค้า
               และยังไม่อนุญาตเรียกผู้จัดส่งจากการแจ้งเงินเข้าที่ยังไม่ผ่านการยืนยัน</p>}
+          <DeliveryPaymentCorrection tenant={tenant} order={order}
+            orderId={orderId} onToast={showStorefrontToast}/>
         </section>}
       {mayShowReceipt ? <section className="receipt" id="customerReceipt" ref={receiptRef}>
         <OrderCancellationWatermark order={order} t={t} />

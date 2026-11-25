@@ -415,6 +415,9 @@ const companionQR = require("./payment-companion-qr");
 exports.getPublicCompanionQrAvailability = companionQR.getPublicCompanionQrAvailability;
 exports.getPublicCompanionQrState = companionQR.getPublicCompanionQrState;
 exports.submitPublicCompanionLateSlip = companionQR.submitPublicCompanionLateSlip;
+const deliveryCorrection = require("./public-delivery-correction");
+exports.getPublicDeliveryCorrectionState = deliveryCorrection.getPublicDeliveryCorrectionState;
+exports.submitPublicDeliveryCorrectionSlip = deliveryCorrection.submitPublicDeliveryCorrectionSlip;
 
 const companionKitchen = require("./payment-companion-kitchen");
 exports.onPaymentCompanionNoticeForKitchen = companionKitchen.onPaymentCompanionNoticeForKitchen;

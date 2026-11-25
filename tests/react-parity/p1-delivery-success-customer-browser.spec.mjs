@@ -34,6 +34,9 @@ test("Delivery Success uses newest Source top-action/green-card layout, Firebase
    export const showStorefrontToast=()=>{};
    export const CompanionConfirmedQr=()=> <section data-firebase-confirmed-qr>
     QR PromptPay จาก Firebase · สถานะจากเซิร์ฟเวอร์
+   </section>;
+   export const DeliveryPaymentCorrection=()=> <section data-firebase-original-slip-correction>
+     การส่งสลิปแก้ไขต้องได้รับสิทธิ์จาก Firebase Server ก่อน
    </section>;`);
   await writeFile(resolve(dir,"store.js"),`
     const base={id:"order-customer-987654",billNo:"B261123-00045",
@@ -69,6 +72,7 @@ test("Delivery Success uses newest Source top-action/green-card layout, Firebase
    {find:"@/components/PageReadyOverlay",replacement:resolve(dir,"components.jsx")},
    {find:"@/components/PublicStorefront",replacement:resolve(dir,"components.jsx")},
    {find:"@/components/CompanionConfirmedQr",replacement:resolve(dir,"components.jsx")},
+   {find:"@/components/DeliveryPaymentCorrection",replacement:resolve(dir,"components.jsx")},
    {find:"@/data/publicStorefrontData",replacement:resolve(dir,"store.js")},
    {find:"@/utils/localQr",replacement:resolve(dir,"qr.js")},
    {find:"@",replacement:resolve(root,"src")},

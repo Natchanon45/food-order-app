@@ -1,3 +1,16 @@
+## 2026-11-26 — P3.4 Delivery Checkout staged slip, Source review, signed customer correction
+
+- Source READ ONLY cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @7e47e85f, Target Natchanon45/food-order-app feature/react-firebase-port start @4c1d112c.
+- DeliveryPage original slip now auto-stages real bytes via Firebase Storage resumable upload on file selection. Original stable order ID and same File bind to immutable Storage path; 9s striped visual progress never precedes observed bytes/actual ack; no duplicate reupload at submit. Source explicit Checkout review modal and read-only shared PublicCartList, total/fee/PromptPay only, COD globally disabled, live Stripe not invented.
+- New public 256-bit original-order capability returned only by first create; SHA256 digest only in Firestore. Two HTTPS Callables getPublicDeliveryCorrectionState and submitPublicDeliveryCorrectionSlip verify same original Tenant/order/payment state, expiry, image metadata/bytes/sha and cross-order reuse. Atomic immutable audit and global SHA claim; idempotent reply; pending_manual_review only, never paid/dispatch/Kitchen.
+- DeliverySuccess renders signed capability-bound correction panel for original bill with immediate Firebase image staging/9sec progress and review POST. Existing confirmed QR 5m path remains separate.
+- P3.4 local QA pure policy 7/7 PASS, existing security regression 33/33 PASS, real anonymous Chrome/Auth+Firestore+Functions+Storage 1/1 PASS, Checkout review Chrome 1/1 PASS across 320/390/768/1440. Full serial React Parity **PASS Exit 0**; final React Build and generated Hosting Contract **PASS Exit 0** (version 2026.11.09.535, /react/assets/index-BRwHz-t7.js). Generated-only public output cleaned.
+- P3.4 full latest Source bank notification-first and Stripe/real Lalamove provider behavior STILL PENDING. No Production/real paid claims. Master 15/65=23.1% accepted/dispositioned, 50/65=76.9% pending. Source-only Go finance functions never copied blindly.
+- Report docs/LUKKAJA_P3_4_DELIVERY_CHECKOUT_CORRECTION_20261126.md.
+- Next: reconcile latest Source delivery notification-first and signed provider bank review/reconciliation/Stripe and Lalamove gates under authorized Staging; then mark DeliveryPage/DeliverySuccessPage accepted only after full equivalent Firebase acceptance.
+
+---
+
 ## 2026-11-25 evening — P3.4 refreshed Source 7e47e85f, Thai QR PNG progress
 
 - Latest Source READ ONLY cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7e47e85f9012e4b084b68d816b32b6e60b15f3d2, previous 7bf9d159. Five new commits 098a3cc3, 090912cd, 7a18c426, a0ebbb26, 7e47e85f; 20 files +517/-48; 65 Source JSX pages unchanged, only DeliveryPage and DeliverySuccessPage JSX changed. Master re-pinned without resetting existing Target acceptance.

@@ -268,7 +268,7 @@ export function PublicMenuCatalog({
   );
 }
 
-export function PublicCartList({ items = [], prefix, onIncrease, onDecrease, onNote, emptyTextKey, listId = undefined }) {
+export function PublicCartList({ items = [], prefix, onIncrease, onDecrease, onNote, readOnly = false, emptyTextKey, listId = undefined }) {
   const { t, formatNumber } = useI18n();
   const cartPrefix = prefix;
   return (
@@ -280,16 +280,21 @@ export function PublicCartList({ items = [], prefix, onIncrease, onDecrease, onN
             <div className="menu-category">{t(cartPrefix + ".amount", { amount: formatNumber(Number(item.price || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}</div>
           </div>
           <div className="qty">
-            <button className="cart-qty-button" type="button" aria-label={t(cartPrefix + ".decrease")} title={t(cartPrefix + ".decrease")} onClick={() => onDecrease(item)}>
+            <button className="cart-qty-button" type="button" aria-label={t(cartPrefix + ".decrease")}
+              title={t(cartPrefix + ".decrease")} disabled={readOnly}
+              onClick={() => onDecrease(item)}>
               <i className="bi bi-dash-lg" aria-hidden="true"></i>
             </button>
             <strong>{item.qty}</strong>
-            <button className="cart-qty-button" type="button" aria-label={t(cartPrefix + ".increase")} title={t(cartPrefix + ".increase")} onClick={() => onIncrease(item.id)}>
+            <button className="cart-qty-button" type="button" aria-label={t(cartPrefix + ".increase")}
+              title={t(cartPrefix + ".increase")} disabled={readOnly}
+              onClick={() => onIncrease(item.id)}>
               <i className="bi bi-plus-lg" aria-hidden="true"></i>
             </button>
           </div>
-          <input className="input" data-note={item.id} value={item.note || ""} placeholder={t(cartPrefix + ".item_note_placeholder")}
-            onChange={event => onNote(item.id, event.target.value)} />
+          <input className="input" data-note={item.id} value={item.note || ""}
+            placeholder={t(cartPrefix + ".item_note_placeholder")} readOnly={readOnly}
+            onChange={event => { if (!readOnly) onNote(item.id, event.target.value); }} />
         </div>
       )) : <div className="empty">{t(emptyTextKey || cartPrefix + ".empty")}</div>}
     </div>
