@@ -452,14 +452,15 @@ export function RegisterPage() {
                 <MerchantServiceTerms locale={intlLocale} pricing={pricing} context="registration" />
 
                 <div className="register-form-grid">
-                  <label>
-                    {t("auth.register.fields.owner_name")}
-                    <input id="ownerName" {...fieldValidationProps("ownerName")} required value={fields.ownerName} onChange={e => setField("ownerName", e.target.value)} maxLength="120" autoComplete="name" />
+                  <div className="register-dynamic-field">
+                    <DynamicField id="ownerName" label={t("auth.register.fields.owner_name")} value={fields.ownerName}>
+                      <input id="ownerName" {...fieldValidationProps("ownerName")} required value={fields.ownerName} onChange={e => setField("ownerName", e.target.value)} maxLength="120" autoComplete="name" />
+                    </DynamicField>
                     {renderError("ownerName")}
-                  </label>
-                  <label>
-                    {t("auth.register.fields.phone")}
-                    <input
+                  </div>
+                  <div className="register-dynamic-field">
+                    <DynamicField id="phone" label={t("auth.register.fields.phone")} value={fields.phone}>
+                      <input
                       id="phone" {...fieldValidationProps("phone")}
                       type="tel"
                       required
@@ -469,15 +470,16 @@ export function RegisterPage() {
                       maxLength="30"
                       autoComplete="tel"
                       inputMode="numeric"
-                      placeholder={t("auth.register.phone_placeholder")}
                     />
+                    </DynamicField>
                     {renderError("phone")}
-                  </label>
-                  <label className="full">
-                    {t("auth.register.fields.email")}
-                    <input id="email" {...fieldValidationProps("email")} type="email" required value={fields.email} onChange={e => setField("email", e.target.value)} maxLength="120" autoComplete="email" />
+                  </div>
+                  <div className="register-dynamic-field full">
+                    <DynamicField id="email" label={t("auth.register.fields.email")} value={fields.email}>
+                      <input id="email" {...fieldValidationProps("email")} type="email" required value={fields.email} onChange={e => setField("email", e.target.value)} maxLength="120" autoComplete="email" />
+                    </DynamicField>
                     {renderError("email")}
-                  </label>
+                  </div>
 
                   {includesRestaurant ? (
                     <div className={includesRetail ? "register-inline-hint-field" : "register-inline-hint-field full"}>
@@ -516,16 +518,18 @@ export function RegisterPage() {
                   </div>
                   <div className="full slug-preview" id="slugPreview">{slugPreview}</div>
 
-                  <label>
-                    {t("auth.register.fields.password")}
-                    <input id="secretA" {...fieldValidationProps("secretA")} type="password" required value={fields.secretA} onChange={e => setField("secretA", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
+                  <div className="register-dynamic-field">
+                    <DynamicField id="secretA" label={t("auth.register.fields.password")} value={fields.secretA}>
+                      <input id="secretA" {...fieldValidationProps("secretA")} type="password" required value={fields.secretA} onChange={e => setField("secretA", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
+                    </DynamicField>
                     {renderError("secretA")}
-                  </label>
-                  <label>
-                    {t("auth.register.fields.password_confirmation")}
-                    <input id="secretB" {...fieldValidationProps("secretB")} type="password" required value={fields.secretB} onChange={e => setField("secretB", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
+                  </div>
+                  <div className="register-dynamic-field">
+                    <DynamicField id="secretB" label={t("auth.register.fields.password_confirmation")} value={fields.secretB}>
+                      <input id="secretB" {...fieldValidationProps("secretB")} type="password" required value={fields.secretB} onChange={e => setField("secretB", e.target.value)} minLength="8" maxLength="100" autoComplete="new-password" />
+                    </DynamicField>
                     {renderError("secretB")}
-                  </label>
+                  </div>
                 </div>
 
                 <p className="register-note">{t("auth.register.after_signup_note")}</p>

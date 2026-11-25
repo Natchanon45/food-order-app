@@ -1,3 +1,9 @@
+## 2026-11-26 — Register all floating captions
+
+User's screenshots confirm Source renders floating captions on all eight signup text controls, although checked-in Source JSX has explicit DynamicField on three only. Target now explicitly wraps ownerName, phone, email, secretA and secretB in DynamicField as well as existing store names and slug. Scoped register CSS overrides legacy static input/label typography and focus, preserves validation, business selection, native Firebase signup, terms checkbox, mobile keyboard. Browser local Chrome at 1440 and 390 tested all eight controls: empty/idle top 22px, focus top 4px, filled blur 4px, cleared blur 22px; font shrinks on focus; 16/16, no horizontal overflow or page errors. Foundation, 24/24 targeted, React build PASS. No signup submitted or backend changes. Hosting only.
+
+---
+
 ## 2026-11-26 — Register Source visual correction
 
 Source read-only @7e47e85f, target from abf988ec. Ported exact latest Source JSX for restaurant and retail shop-name fields and slug (DynamicField inline hint) and scoped register CSS; base CSS and Thai registration translations match. Added Source monthly service-credit and annual excess-share policy descriptions to shared service terms; retained configured quota, PENGUIN branding, real 30-day Firebase trial disclosure and explicit financial readiness warning. No change to native Auth/activation, billing policy or database. Unconfirmed price display uses dash, signup still requires remote price. Source trial calendar-month and Firebase 30-day implementation differ; not silently changing either. Foundation/Build PASS, focused 24/24 PASS, local Chrome public register desktop 1440/mobile 390 with both businesses, all three absolute captions, no overflow or page errors. Did not submit a signup or create any account. Hosting only; no Functions/Rules deployment.
