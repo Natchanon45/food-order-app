@@ -409,6 +409,9 @@ exports.paymentCompanionNoticeIngest = paymentCompanion.paymentCompanionNoticeIn
 exports.setPaymentCompanionReceiver = paymentCompanion.setPaymentCompanionReceiver;
 exports.getPaymentCompanionCashierReview = paymentCompanion.getPaymentCompanionCashierReview;
 exports.recordPaymentCompanionCashierReview = paymentCompanion.recordPaymentCompanionCashierReview;
+const deliveryNotificationMatch = require("./delivery-notification-match");
+exports.getDeliveryNotificationMatch = deliveryNotificationMatch.getDeliveryNotificationMatch;
+exports.recordDeliveryNotificationObservation = deliveryNotificationMatch.recordDeliveryNotificationObservation;
 exports.setCompanionAutoKitchenConsent = paymentCompanion.setCompanionAutoKitchenConsent;
 
 const companionQR = require("./payment-companion-qr");
