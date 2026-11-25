@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// One immutable source-of-truth inventory (pinned 7bf9d159) + auditable
+// One immutable source-of-truth inventory (pinned 7e47e85f) + auditable
 // module completion: do NOT equate file presence, LOC or a passing build with
 // Source JSX / Firebase action parity.
 import {readFileSync,writeFileSync} from "node:fs";
@@ -48,7 +48,7 @@ const lines=[
  "",
  "## Accounting rules (fixed denominator)",
  "",
- "- **Authoritative JSX Source:** cosmatch/lukkhaja / feature/react-golang-vite-tailwind-axios @ 7bf9d15934f387cd887b46d1b17ca1f2924ffab0.",
+ "- **Authoritative JSX Source:** cosmatch/lukkhaja / feature/react-golang-vite-tailwind-axios @ 7e47e85f9012e4b084b68d816b32b6e60b15f3d2.",
  "- **Target:** Natchanon45/food-order-app / feature/react-firebase-port. Source is read-only.",
  "- A page earns **accepted** only after its latest Source behavior is explicitly adapted to Firebase, role/security and scenario contracts are tested, and its module is accepted locally. This is a *conservative page-level acceptance ledger*, not a prediction or arbitrary equivalence to deployed functionality.",
  "- A Source-only page can earn **dispositioned** only when Source routing proves it is an unused extracted wrapper and the equivalent existing target route is accepted. An unreviewed wrapper remains outstanding.",

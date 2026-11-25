@@ -3,6 +3,7 @@ import {httpsCallable} from "firebase/functions";
 import {functions} from "@/firebase/client";
 import {generatePromptPayPayload} from "@/utils/promptPay";
 import {qrDataUrl} from "@/utils/localQr";
+import {ThaiPaymentQR,ThaiPaymentProgress} from "@/components/ThaiPaymentQR";
 import {uploadPublicPaymentSlip} from "@/data/publicStorefrontData";
 import "@/ui/companion-qr.css";
 const qrStatus=httpsCallable(functions,"getPublicCompanionQrState");
@@ -44,11 +45,21 @@ export function CompanionConfirmedQr({tenant,order,orderId,onToast=()=>{}}){
  const serverOffset=Number.isFinite(server?.serverNowMs)?server.serverNowMs-(server._clientReceivedAt||now):0;
  // The expiry is stored server-side. The client never writes it back.
  const seconds=server?.active&&Number.isFinite(expiration)?Math.max(0,Math.ceil((expiration-(now+serverOffset))/1000)):0;
- const displayQr=order?.paymentStatus==="pending_verification"&&order?.status==="pending"&&server?.active===true&&seconds>0&&!order?.paymentSlipPath;
+ // Only signed server state may authorize a scannable QR. Never keep it
+ // visible after a matched Android observation admitted the order to kitchen.
+ const observedUnverified=order?.companionKitchenRelease?.status==="admitted_unverified"
+   || server?.reason==="kitchen_admitted";
+ const displayQr=order?.paymentStatus==="pending_verification"&&
+   order?.status==="pending"&&server?.active===true&&
+   !observedUnverified&&seconds>0&&!order?.paymentSlipPath;
+ const qrPayload=useMemo(()=>{
+   if(!displayQr||!server?.recipientId||!Number.isFinite(order?.totalAmount)||order.totalAmount<=0)return "";
+   try{return generatePromptPayPayload(server.recipientId,order.totalAmount);}catch{return "";}
+ },[displayQr,server?.recipientId,order?.totalAmount]);
  const qrImage=useMemo(()=>{
   if(!displayQr||!server?.recipientId||!Number.isFinite(order?.totalAmount)||order.totalAmount<=0)return "";
-  try{return qrDataUrl(generatePromptPayPayload(server.recipientId,order.totalAmount),{size:320,margin:4});}catch{return "";}
- },[displayQr,server?.recipientId,order?.totalAmount]);
+  try{return qrDataUrl(qrPayload,{size:320,margin:4});}catch{return "";}
+ },[qrPayload]);
  const availableFallback=order?.paymentStatus==="pending_verification"&&server?.canUploadSlip===true&&!order?.paymentSlipPath;
  const submit=async()=>{
   if(lock.current||!file||!availableFallback||!validCap(capability))return;
@@ -78,13 +89,18 @@ export function CompanionConfirmedQr({tenant,order,orderId,onToast=()=>{}}){
   <strong>เลขที่รายการ {String(order?.billNo||orderId).slice(0,40)}</strong>
   {!server&&<small role={issue?"alert":"status"}>{issue?"ยังไม่สามารถตรวจสอบสถานะ QR จากเซิร์ฟเวอร์ได้ กรุณาลองรีเฟรชอีกครั้ง":"กำลังตรวจสอบ QR จากเซิร์ฟเวอร์…"}</small>}
   {displayQr&&qrImage&&<><div className="companion-qr-countdown" role="timer">{String(Math.floor(seconds/60)).padStart(2,"0")}:{String(seconds%60).padStart(2,"0")}</div>
-    <img src={qrImage} width="260" height="260" alt="QR PromptPay สำหรับรายการที่ยืนยันแล้ว"/>
-    <strong>{Number(order.totalAmount).toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</strong>
+    <ThaiPaymentQR payload={qrPayload} imageId="confirmedOrderPromptPayQR"
+      amount={Number(order.totalAmount).toLocaleString("th-TH",
+        {minimumFractionDigits:2,maximumFractionDigits:2})+" บาท"}
+      recipient={server.recipientName} alt="QR PromptPay สำหรับรายการที่ยืนยันแล้ว" />
     <small>ผู้รับเงิน: {server.recipientName||"ร้านค้า"} · QR หมดอายุภายใน 5 นาทีจากเวลาที่บันทึกออเดอร์</small>
     <small>โปรดตรวจสอบชื่อผู้รับก่อนชำระ ระบบยังไม่ยืนยันเงินเข้า และยังไม่ส่งครัว</small>
   </>}
   {server?.reason==="pilot_disabled"&&<small className="companion-qr-error" role="alert">ระบบ QR ทดสอบปิดใช้งานชั่วคราว กรุณาติดต่อร้านค้าเพื่อให้เจ้าหน้าที่ตรวจสอบ</small>}
-  {server?.reason==="kitchen_admitted"&&<small role="status">ร้านรับออเดอร์เข้าครัวเบื้องต้นแล้ว แต่ยังไม่ยืนยันว่าชำระเงินสำเร็จ และยังไม่เรียกผู้จัดส่ง</small>}
+  {observedUnverified&&<ThaiPaymentProgress amount={Number(order?.totalAmount||0)
+    .toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDigits:2})+" บาท"}/>}
+  {observedUnverified&&<small role="status">มีรายการแจ้งเงินเข้าและรับเข้าครัวเบื้องต้นแล้ว
+    แต่ยังไม่ใช่ธนาคารยืนยันชำระ และยังไม่เรียกผู้จัดส่ง</small>}
   {server?.mode==="resolved"&&<small role="status">สถานะการชำระเงินของรายการนี้เปลี่ยนแล้ว กรุณาตรวจสอบข้อมูลด้านล่าง</small>}
   {!displayQr&&server?.mode==="confirmed_order_5m"&&!availableFallback&&<small role="status">อยู่ระหว่างตรวจหลักฐานการชำระเงิน กรุณาตรวจสอบกับร้านค้า</small>}
   {availableFallback&&<div className="companion-qr-fallback">

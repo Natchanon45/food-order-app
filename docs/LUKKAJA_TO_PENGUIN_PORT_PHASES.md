@@ -1,5 +1,14 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 evening — P3.4 latest Source QR payment refresh
+
+Source read-only branch re-pinned from 7bf9d159 to 7e47e85f (5 new commits; 20 tracked files, no new JSX pages). Latest Source changes high-resolution composited Thai QR PromptPay PNG, locked checkout receiver and observed-bank-amount QR masking across Delivery and billing wallet/invoice UI. Target copied reusable *rendering behavior* using its native qrSvg and byte-matching public artwork, retained Firebase signed 5-minute QR server authority and review gates, and physically removes scannable QR on authoritative observed-unverified kitchen admission. Actual Chrome/Swift Vision decodes two payloads from source-style PNG at four widths, 1/1 PASS; pure Source contract 5/5 PASS.
+
+M7 Source Go payment observation and topup/invoice approval remain external financial gates; cannot import their paid flags into Firebase. P3.4 DeliveryPage and DeliverySuccessPage are partial, NOT formally accepted. Conservative Master: 15/65 (23.1%) complete/dispositioned, 50/65 (76.9%) outstanding; Source JSX denominator unchanged. Full React Parity PASS Exit 0, final React Build/Hosting Contract PASS Exit 0 (index-Qp0WXRAA.js) and existing companion QR browser 2/2 PASS; receipts in Worklog. No Source edits, Production, main merge, real bank or APK/IPA.
+
+---
+
+
 ## 2026-11-25 — P3.3 public Table / Takeaway Source intake
 
 Locally accepted PublicOrderPage, TakeawayPage, PublicRouteMissingPage and StorefrontCompatibilityEntry. Replaced public Browser Firestore writes with canonical Table/Takeaway Server Callables verifying current Tenant, active menu price, QR table token, round and idempotent order ID; direct guest Firestore writes denied. COD globally disabled in Delivery Client+Server, unverified bank notice and historical receipt display on DeliverySuccessPage. DeliveryPage and DeliverySuccessPage full Source provider/slip-correction parity remain PENDING. P3.3 pure 9/9 PASS, real guest Firebase Chrome 1/1 PASS, Delivery Server 9/9 PASS, 152 managed Callables PASS, full React Parity EXIT 0, final React Build/Hosting Contract PASS Exit 0 (index-DrFGa8qY.js). Detailed P3.3 report and Worklog cover QA.

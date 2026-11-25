@@ -25,6 +25,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { generatePromptPayPayload } from "@/utils/promptPay";
 import { qrDataUrl } from "@/utils/localQr";
+import { ThaiPaymentQR } from "@/components/ThaiPaymentQR";
 import { svgQrPngBlob } from "@/utils/downloadQrPng";
 import { validDeliveryLocation as normalizeLocation, matchGpsSavedAddress, validatedGpsFix } from "@/utils/deliveryLocationPolicy";
 import { refreshLalamoveCheckoutQuote } from "@/utils/lalamoveCheckoutQuote";
@@ -439,14 +440,22 @@ export function DeliveryPage() {
 
   const promptPayQr = useMemo(() => {
     if (paymentMethod !== "promptpay" || total <= 0) return { src: "", error: "" };
-    const id = String(settings.promptPayId || "").replace(/\D/g, "");
-    if (!id) return { src: "", error: t("delivery.checkout.payment.promptpay_not_configured") };
+    // Lock both the payable amount and the merchant receiver. Re-rendering
+    // the page after a settings update must never silently change a QR the
+    // customer might already have paid.
+    const id = String(paymentLocked
+      ? lockedTotal?.recipientId || ""
+      : settings.promptPayId || "").replace(/\D/g, "");
+    const paymentAmount = paymentLocked ? Number(lockedTotal?.total) : total;
+    if (!id) return { src: "", payload: "", error: t("delivery.checkout.payment.promptpay_not_configured") };
     try {
-      return { src: qrDataUrl(generatePromptPayPayload(id, total), { size: 320, margin: 4 }), error: "" };
+      const payload = generatePromptPayPayload(id, paymentAmount);
+      return { payload, src: qrDataUrl(payload, { size: 320, margin: 4 }), error: "" };
     } catch {
-      return { src: "", error: t("delivery.checkout.payment.promptpay_invalid") };
+      return { src: "", payload: "", error: t("delivery.checkout.payment.promptpay_invalid") };
     }
-  }, [paymentMethod, total, settings.promptPayId, t]);
+  }, [paymentMethod, total, paymentLocked, lockedTotal?.total,
+    lockedTotal?.recipientId, settings.promptPayId, t]);
 
   // Prepare real PNG bytes while the payment card is displayed. Native anchor
   // downloads retain the browser user gesture on mobile (unlike async click()).
@@ -717,9 +726,22 @@ export function DeliveryPage() {
       if(!confirmed)return;
     }
     if (paymentMethod === "promptpay" && !confirmedQrFlow && !paymentLocked) {
-      setLockedTotal({ subtotal, deliveryFee, total });
+      setLockedTotal({
+        subtotal, deliveryFee, total,
+        recipientId: String(settings.promptPayId || "").replace(/\D/g, ""),
+        recipientName: String(settings.promptPayName
+          || settings.promptPayAccountName || settings.shopName || "").trim(),
+      });
       setPaymentLocked(true);
       showStorefrontToast(t("delivery.checkout.payment_lock.locked_done", { total: money(total) }));
+      return;
+    }
+    // Source payment-receiver guard: reject changing the bank account after
+    // the QR was locked; never reuse a proof for another receiver.
+    if (paymentMethod === "promptpay" && paymentLocked && !confirmedQrFlow
+      && String(lockedTotal?.recipientId || "") !==
+        String(settings.promptPayId || "").replace(/\D/g, "")) {
+      showStorefrontToast("บัญชีพร้อมเพย์ของร้านมีการเปลี่ยนแปลง กรุณาติดต่อร้านก่อนชำระซ้ำ", "error");
       return;
     }
     if (paymentMethod === "promptpay" && !confirmedQrFlow && !slipFile) {
@@ -1224,9 +1246,17 @@ export function DeliveryPage() {
               {paymentMethod === "promptpay" ? <div id="promptPaySection" className="card" style={{ marginTop: 12, textAlign: "center" }}>
                 <h3 style={{ marginTop: 0 }}><i className="bi bi-qr-code app-icon"></i><span>{t("delivery.checkout.payment.promptpay_title")}</span></h3>
                 {!paymentLocked && !promptPayQr.src && !confirmedQrFlow ? <div id="promptPayPlaceholder" className="empty" style={{ padding: "24px 12px" }}>{promptPayQr.error || t("delivery.checkout.payment.add_items_for_qr")}</div> : null}
-                {paymentLocked && !confirmedQrFlow && promptPayQr.src ? <img id="promptPayQr" src={promptPayQr.src} width="220" height="220" alt={t("delivery.checkout.payment.qr_alt")} /> : null}
+                {paymentLocked && !confirmedQrFlow && promptPayQr.payload
+                  ? <ThaiPaymentQR payload={promptPayQr.payload}
+                      imageId="promptPayQr" amountId="promptPayAmount"
+                      recipientId="promptPayName"
+                      amount={money(Number(lockedTotal?.total ?? total)) + " " + t("delivery.checkout.units.baht")}
+                      recipient={lockedTotal?.recipientName}
+                      title={t("delivery.checkout.payment.promptpay_title")}
+                      alt={t("delivery.checkout.payment.qr_alt")} />
+                  : null}
                 {paymentLocked && !confirmedQrFlow && promptPayQr.error ? <div className="empty">{promptPayQr.error}</div> : null}
-                {paymentLocked ? <><div><strong id="promptPayAmount">{money(total)} {t("delivery.checkout.units.baht")}</strong></div><div id="promptPayName" className="menu-category">{settings.promptPayName || settings.promptPayAccountName || settings.shopName || ""}</div></> : null}
+
                 {confirmedQrFlow?<div className="companion-qr-preview-note" role="status"><i className="bi bi-shield-check" aria-hidden="true"/><div><strong>ยืนยันออเดอร์ก่อน แล้วค่อยสแกน QR</strong><small>QR จะสร้างจากข้อมูลรับเงินที่ร้านยืนยัน เริ่มนับ 5 นาทีหลังบันทึกออเดอร์ ไม่ต้องแนบสลิปก่อนยืนยันคำสั่งซื้อ หากตรวจแจ้งเงินเข้าไม่ได้ สามารถแนบสลิปต้นฉบับหลัง QR หมดอายุ</small></div></div>:null}
                 {!confirmedQrFlow?<><div id="paymentLockPanel" className="payment-lock-panel">
                   {!paymentLocked ? <div className="payment-lock-state" id="paymentLockState"><strong>{t("delivery.checkout.payment_lock.unlocked_title")}</strong><span>{t("delivery.checkout.payment_lock.unlocked_help")}</span></div> : <div className="payment-lock-summary" id="paymentLockSummary">

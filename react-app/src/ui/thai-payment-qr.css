@@ -1,0 +1,32 @@
+/* One fixed-proportion PNG. Page-level CSS cannot resize individual logos. */
+.lk-thai-payment-qr {
+  position:relative;box-sizing:border-box;width:100%;max-width:440px;min-width:0;
+  margin:0 auto;text-align:center;color:#123e2a;
+}
+.lk-thai-payment-qr > .lk-thai-payment-card-image,
+#customerConfirmedPromptPayQR .lk-thai-payment-qr > #confirmedOrderPromptPayQR {
+  display:block!important;width:100%!important;max-width:100%!important;height:auto!important;
+  aspect-ratio:440/466!important;margin:0 auto!important;padding:0!important;
+  border:0!important;border-radius:0!important;object-fit:contain!important;
+  background:transparent!important;
+  /* This PNG contains text and logos, not just QR modules. Smooth the
+     responsive downsampling on mobile and high-DPI screens. */
+  image-rendering:auto!important;
+}
+.lk-thai-payment-accessible {
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+  margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;
+  white-space:nowrap!important;border:0!important;
+}
+
+.lk-thai-payment-guard {aspect-ratio:440/466;display:grid;place-items:center;overflow:hidden;border:1px solid #cfe6d6;border-radius:16px;background:#edf5f0;isolation:isolate}
+.lk-thai-payment-guard-backdrop {position:absolute;inset:0;display:grid;justify-items:center;align-content:center;gap:12px;filter:blur(12px);opacity:.38;pointer-events:none}
+.lk-thai-payment-guard-backdrop > span {width:70%;height:38px;background:#00427a;border-radius:8px}
+.lk-thai-payment-guard-backdrop > div {width:65%;aspect-ratio:1;background:linear-gradient(135deg,#fff,#d0d8d3);border-radius:8px}
+.lk-thai-payment-guard-backdrop > small {width:38%;height:12px;background:#537461}
+.lk-thai-payment-guard-content {z-index:1;display:grid;justify-items:center;gap:10px;max-width:90%;padding:18px 12px;border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 4px 22px #183b241a;line-height:1.45;color:#103e29}
+.lk-thai-payment-guard-content > strong {font-size:16px}
+.lk-thai-payment-guard-content > small {font-size:12px}
+.lk-thai-payment-spinner {width:44px;height:44px;border:4px solid #d4e8db;border-top-color:#138046;border-radius:50%;animation:lk-thai-payment-spin .85s linear infinite}
+@keyframes lk-thai-payment-spin {to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.lk-thai-payment-spinner{animation-duration:2s}}

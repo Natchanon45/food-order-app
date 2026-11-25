@@ -36,7 +36,7 @@ test("source-like post-confirm QR on customer success: server clock, no double Q
    {find:"firebase/functions",replacement:resolve(dir,"functions.js")},
    {find:"@/data/publicStorefrontData",replacement:resolve(dir,"storefront.js")},
    {find:"@",replacement:resolve(root,"src")}
-  ]},server:{host:"127.0.0.1",port:0},publicDir:false});
+  ]},server:{host:"127.0.0.1",port:0},publicDir:resolve("public")});
   await server.listen();browser=await chromium.launch({channel:"chrome",headless:true});
   for(const width of [320,390,768,1440]){
    const page=await browser.newPage({viewport:{width,height:900}});

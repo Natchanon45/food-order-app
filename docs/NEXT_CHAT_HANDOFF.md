@@ -1,3 +1,14 @@
+## 2026-11-25 evening — P3.4 refreshed Source 7e47e85f, Thai QR PNG progress
+
+- Latest Source READ ONLY cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7e47e85f9012e4b084b68d816b32b6e60b15f3d2, previous 7bf9d159. Five new commits 098a3cc3, 090912cd, 7a18c426, a0ebbb26, 7e47e85f; 20 files +517/-48; 65 Source JSX pages unchanged, only DeliveryPage and DeliverySuccessPage JSX changed. Master re-pinned without resetting existing Target acceptance.
+- Added latest Source ThaiPaymentQR/ThaiPaymentProgress artwork to PENGUIN using native qrSvg payload and identical existing Thai QR/PromptPay image/font assets, no new payment provider. Fixed high-DPI 1320x1398 PNG and protected scannability. On signed Firebase observed-unverified Kitchen admission, actual scannable QR is removed and only spinner/blurred placeholder remains. Locked Delivery checkout receiver ID/name/total remain immutable, changes force review.
+- QA: Source QR policy 5/5 PASS; real Chrome+Swift Vision two PromptPay cases across 320/390/768/1440 passed exact PNG decode and observation mask/reload (1/1). Full React Parity PASS Exit 0 and final React Build/Hosting Contract PASS Exit 0 (2026.11.09.535, index-Qp0WXRAA.js); existing signed-QR Chrome regression 2/2 PASS after updating its local art fixture.
+- Target financial authority is unchanged; Source Go PlatformLineWalletTopup/M7IssuedInvoiceList bank notification/routing are not equivalent to Firebase Stripe Sandbox; do not invent Stripe live, manual paid status or any bank verification.
+- NEXT P3.4 remaining work: DeliveryPage full original-slip upload/review and DeliverySuccessPage signed correction/5-minute QR/real provider gate; these 2 remain not formally accepted, no live provider UAT. Master 15/65=23.1%, 50/65=76.9% pending. No Source edits, Production, main merge or mobile builds.
+- Full report: docs/LUKKAJA_P3_4_SOURCE_REFRESH_THAI_PAYMENT_QR_20261125.md.
+
+---
+
 ## 2026-11-25 — P3.3 public guest Table/Takeaway complete locally
 
 - Source READ ONLY cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159; target food-order-app feature/react-firebase-port starting 27b90bbe.

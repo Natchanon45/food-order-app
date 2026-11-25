@@ -1,12 +1,20 @@
 # LUKKAJA → PENGUIN | New JSX source rebaseline (2026-11-25)
 
-**Authoritative Source requested by user:** `cosmatch/lukkhaja`, branch `feature/react-golang-vite-tailwind-axios`, pinned exact commit `7bf9d15934f387cd887b46d1b17ca1f2924ffab0`. Confirmed local HEAD, remote-tracking HEAD and `git ls-remote` agree. Source working tree clean; **strictly read-only**.
+**Authoritative Source requested by user:** `cosmatch/lukkhaja`, branch `feature/react-golang-vite-tailwind-axios`, latest verified commit `7e47e85f9012e4b084b68d816b32b6e60b15f3d2`. Confirmed local HEAD, remote-tracking HEAD and `git ls-remote` agree. Source working tree clean; **strictly read-only**.
 
 **Port Target:** `Natchanon45/food-order-app` branch `feature/react-firebase-port`. Target base `fc48054952f912694cce7cd6d59276f6a4e975be`. Never recreate project, wipe completed Firebase modules, or port Laravel/Go network APIs directly.
 
+## 2026-11-25 evening Source refresh (LATEST)
+
+Previous pinned Source 7bf9d15934f387cd887b46d1b17ca1f2924ffab0 updated to 7e47e85f9012e4b084b68d816b32b6e60b15f3d2 on the SAME read-only feature/react-golang-vite-tailwind-axios branch. Five new commits: 098a3cc3, 090912cd, 7a18c426, a0ebbb26, 7e47e85f. The delta has 20 files, 517 insertions and 48 deletions, and zero added or deleted Source JSX pages. The fixed 65-page denominator does not change. Only DeliveryPage.jsx and DeliverySuccessPage.jsx top-level pages changed (Source LOC 1614 -> 1618 and 1005 -> 1006). Other React changes: new ThaiPaymentQR.jsx component, PlatformLineWalletTopup.jsx and M7IssuedInvoiceList.jsx, plus Go server payment-observation logic, CSS and browser decode tests.
+
+Source now composes a high-DPI 1320x1398 Thai PromptPay payment card using existing local payment-branding assets, preserves original QR payload/recipient at lock, and masks actual QR on an observed bank notification. An observation is not itself a confirmed bank settlement. Target uses native Firebase qrSvg (instead of adding qrcode.react), shows source artwork, freezes locked account/amount, renders a separate non-scannable progress surface on an authoritative Firebase observed-unverified state. Actual Chrome + macOS Vision tests decode each PNG back to the exact original PromptPay payload.
+
+PENGUIN does not have the Source Go M7 invoice/topup bank authority. It must not port Go paid flags or Stripe/payment approvals as client-side assertions. These financial actions stay gated until the actual Firebase provider contract exists. Prior snapshot baseline Target LOC are historical measurements and were intentionally not rewritten. At this refresh the strict review remains 15 of 65 accepted/dispositioned (23.1%), with 50 of 65 outstanding (76.9%) including both partial Delivery pages.
+
 ## Inventory and previous-source delta
 
-- **Source JSX:** 65 pages, 36,001 lines (including `wc -l` total). **Target JSX before this rebaseline:** 53 pages, 30,893 lines.
+- **Source JSX:** 65 pages, 36,006 lines (including `wc -l` total). **Target JSX before this rebaseline:** 53 pages, 30,893 lines.
 - **Shared by exact filename:** 52 pages. **Source-only:** 13. **Target-only:** `AccountEmailVerificationPage.jsx` — intentional native Firebase email-verification UI; retain it.
 - **Changed Source JSX since old baseline `8b108f1`:** 15 relevant Source commits, **8 pages** materially modified. A full filename inventory follows.
 - **Do not equate LOC deltas with missing functionality:** PENGUIN has Firebase-based adaptation and security/operation receipts absent from original Laravel JSX. Source-only `CanonicalLaravelBridgePage`, `LaravelSessionPage`, `PortMissingRoute` are legacy transport/navigation references, not automatic Firebase page requirements; the various `Pos*MasterPage` need route/interface verification before porting.
@@ -34,8 +42,8 @@
 | `CashierPage.jsx` | 1635 | 1369 | Latest Source JSX modified |
 | `CashierReceiptPage.jsx` | 405 | 367 | Shared — adapter/parity review |
 | `CashierTableQrPage.jsx` | 624 | 544 | Shared — adapter/parity review |
-| `DeliveryPage.jsx` | 1614 | 1269 | Shared — adapter/parity review |
-| `DeliverySuccessPage.jsx` | 1005 | 480 | Shared — adapter/parity review |
+| `DeliveryPage.jsx` | 1618 | 1269 | Shared — adapter/parity review |
+| `DeliverySuccessPage.jsx` | 1006 | 480 | Shared — adapter/parity review |
 | `HomePage.jsx` | 404 | 380 | Shared — adapter/parity review |
 | `HybridBillingReportPage.jsx` | 335 | 338 | Shared — adapter/parity review |
 | `HybridBillingReviewPage.jsx` | 561 | 563 | Latest Source JSX modified |

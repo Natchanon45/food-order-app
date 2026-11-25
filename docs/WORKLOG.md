@@ -1,3 +1,13 @@
+## 2026-11-25 evening — P3.4 Source sync Thai Payment QR high-DPI / observed mask
+
+- Read-only Source branch feature/react-golang-vite-tailwind-axios updated from 7bf9d159 to 7e47e85f (5 commits, 20 files +517/-48). 65 JSX pages unchanged; only two Source pages DeliveryPage/DeliverySuccessPage changed, other edits QR component, billing/wallet components and Go payment observation. Source and Target continue on their own branches.
+- Ported high-DPI local Thai QR payment art to existing PENGUIN native PromptPay qrSvg without changing bank data/Stripe. Delivery checkout freeze receiver/total. Companion server active/expiry remains authoritative; observed-unverified kitchen entry hides actual QR completely under a non-scannable spinner/placeholder to prevent reuse.
+- Pure Source/Firebase QR contract 5/5 PASS, real Chrome 320/390/768/1440, local high-DPI PNG with native macOS Swift Vision decode for two distinct amounts/recipients and observation mask reload 1/1 PASS. Full React Parity PASS Exit 0 and React Build/Hosting Contract PASS Exit 0 (2026.11.09.535, index-Qp0WXRAA.js); previous Companion confirmed QR browser regression 2/2 PASS; no generated public outputs left.
+- Source Go platform invoice/topup bank observation has no equivalent trusted Firebase backend; bank money approval and live external providers remain blocked pending proper Staging UAT. DeliveryPage/DeliverySuccessPage still NOT fully accepted.
+- Strict Master 15/65 locally accepted/dispositioned (23.1%), 50/65 still pending (76.9%). No changes to Source, Production, main branch or mobile builds.
+
+---
+
 ## 2026-11-25 — P3.3 Public guest canonical Firebase Table/Takeaway
 
 - Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159 READ ONLY; target feature/react-firebase-port baseline 27b90bbe.
