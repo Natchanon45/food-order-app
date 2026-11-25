@@ -1110,3 +1110,10 @@ body.admin-vr-page .payment-companion-lkshop-link {
     gap: 6px 9px;
   }
 }
+
+@media (max-width: 620px) {
+  .admin-react-store-master #storePaymentGroup .admin-payment-method-grid {grid-template-columns:minmax(0,1fr);min-width:0}
+  .admin-react-store-master #storePaymentGroup .admin-payment-method-card,
+  .admin-react-store-master #storePaymentGroup .admin-payment-method-head,
+  .admin-react-store-master #storePaymentGroup .menu-category {min-width:0;white-space:normal;overflow-wrap:anywhere}
+}

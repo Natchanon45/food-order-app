@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DynamicField } from "./DynamicField";
 import {
   SHOP_WEEKDAYS, getDeliveryOpeningStatus, normalizeDeliveryHours, normalizeManualStoreStatus,
 } from "@/utils/deliveryOpeningHours";
@@ -52,16 +53,21 @@ export function DeliveryHoursEditor({ t, hours, savedHours, onChange, manual, on
         </div>
         <p className="menu-category">{t("admin.opening_hours.temporary_help")}</p>
         <div className="grid grid-2">
-          <label className="field">
-            <span>{t("admin.opening_hours.reason")}</span>
-            <input className="input" id="deliveryManualReason" maxLength={180} value={reason}
-              onChange={e => setReason(e.target.value)} placeholder={t("admin.opening_hours.reason_example")} />
-          </label>
-          <label className="field">
-            <span>{t("admin.opening_hours.until")}</span>
-            <input className="input" id="deliveryManualUntil" type="datetime-local" value={until}
-              onChange={e => setUntil(e.target.value)} />
-          </label>
+          <div className="field">
+            <DynamicField id="deliveryManualReason" label={t("admin.opening_hours.reason")} value={reason}
+              className="admin-delivery-hours-dynamic-field"
+              description={t("admin.opening_hours.reason_example")}>
+              <input className="input" id="deliveryManualReason" maxLength={180} value={reason}
+                onChange={e => setReason(e.target.value)} />
+            </DynamicField>
+          </div>
+          <div className="field">
+            <DynamicField id="deliveryManualUntil" label={t("admin.opening_hours.until")} value={until}
+              className="admin-native-date-dynamic-field">
+              <input className="input" id="deliveryManualUntil" type="datetime-local" value={until}
+                onChange={e => setUntil(e.target.value)} />
+            </DynamicField>
+          </div>
         </div>
         {override.mode !== "auto" ? <div className="admin-delivery-hours-override-status">
           <i className="bi bi-info-circle app-icon" aria-hidden="true"></i>

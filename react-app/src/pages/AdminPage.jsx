@@ -551,6 +551,22 @@ function PromotionEditor({ value, onChange, menus, t, formatMoney, embedded = fa
             value={value.freeShippingMinimumSubtotal} className="admin-delivery-promotion-dynamic-field"><input className="input" id="deliveryFreeShippingMinimumSubtotal" type="number" min="0" step="0.01" disabled={!value.freeShippingEnabled} value={value.freeShippingMinimumSubtotal} onChange={e => patch({ freeShippingMinimumSubtotal: Math.max(0, Number(e.target.value || 0)) })} /></DynamicField><span>{t("admin.common.baht")}</span></div></div>
         </div>
       </div>
+      <div className="admin-delivery-promotion-block" id="deliveryDiscountSettings">
+        <div className="admin-delivery-discount-toolbar">
+          <label className="admin-promotion-toggle">
+            <input id="deliveryDiscountEnabled" type="checkbox" checked={false} disabled readOnly />
+            <span className="admin-promotion-toggle-ui" />
+            <span><strong>เปิดใช้ส่วนลดสำหรับคำสั่งซื้อ Delivery</strong>
+              <small>ส่วนลดตามระดับยอดอาหารยังไม่เปิดใช้งานบน Firebase</small></span>
+          </label>
+          <button type="button" className="btn btn-sm admin-delivery-discount-add" disabled>
+            <i className="bi bi-plus-lg" aria-hidden="true"/> เพิ่มระดับส่วนลด
+          </button>
+        </div>
+        <div className="admin-delivery-discount-rules">
+          <small className="admin-promotion-help" role="status">ยังไม่สามารถคำนวณส่วนลดตามระดับยอดอาหารจากระบบได้</small>
+        </div>
+      </div>
       <div className="admin-delivery-promotion-block">
         <label className="admin-promotion-toggle">
           <input type="checkbox" id="deliveryFreeGiftEnabled" checked={value.freeGiftEnabled} onChange={e => patch({ freeGiftEnabled: e.target.checked })} />
@@ -1650,6 +1666,9 @@ export function AdminPage() {
   const storeBasicsReady = Boolean(storeForm.shopName.trim() && storeForm.shopAddress.trim());
   const promptPayReady = Boolean(storeForm.promptPayId.trim() && storeForm.promptPayName.trim());
   const bankReady = Boolean(storeForm.bankName.trim() && storeForm.bankAccountNumber.trim() && storeForm.bankAccountName.trim());
+  const paymentMethodsUnsaved =
+    storeForm.deliveryPromptPayEnabled !== (settings.deliveryPromptPayEnabled !== false)
+    || storeForm.deliveryCodEnabled !== (settings.deliveryCodEnabled !== false);
   const paymentMethodCount = Number(promptPayReady && storeForm.deliveryPromptPayEnabled)
     + Number(bankReady) + Number(storeForm.deliveryCodEnabled);
   const promotionActiveCount = Number(promotion.freeShippingEnabled) + Number(promotion.freeGiftEnabled);
@@ -1697,10 +1716,10 @@ export function AdminPage() {
             className="admin-companion-observer-card"
             icon="activity" accent="green"
             heading={<h2 className="admin-companion-observer-heading"
-              title="ภาพรวมการแจ้งเงินเข้า · Android / PG Notify"
-              aria-label="ภาพรวมการแจ้งเงินเข้า · Android / PG Notify">
-              <span className="admin-companion-observer-heading-full" aria-hidden="true">ภาพรวมการแจ้งเงินเข้า · Android / PG Notify</span>
-              <span className="admin-companion-observer-heading-compact" aria-hidden="true">สรุปเงินเข้า · Android/PG Notify</span>
+              title="ภาพรวมการแจ้งเงินเข้า · Android / PG Connect"
+              aria-label="ภาพรวมการแจ้งเงินเข้า · Android / PG Connect">
+              <span className="admin-companion-observer-heading-full" aria-hidden="true">ภาพรวมการแจ้งเงินเข้า · Android / PG Connect</span>
+              <span className="admin-companion-observer-heading-compact" aria-hidden="true">สรุปเงินเข้า · Android/PG Connect</span>
             </h2>}
             t={t} style={{marginBottom:16}}
           >
@@ -1816,7 +1835,21 @@ export function AdminPage() {
                   </label>
                   <div className="menu-category">{t("admin.delivery_settings.cod_enabled_help")}</div>
                 </section>
+                <section className="admin-payment-method-card">
+                  <label className="admin-payment-method-head" htmlFor="deliveryStripeEnabled">
+                    <input type="checkbox" id="deliveryStripeEnabled" checked={false} disabled readOnly />
+                    <i className="bi bi-credit-card-2-front" aria-hidden="true"></i>
+                    <strong>Stripe</strong>
+                  </label>
+                  <div className="menu-category">ระบบรับชำระผ่าน Stripe Connect สำหรับ Delivery ยังไม่เปิดใช้งานบน Firebase</div>
+                </section>
               </div>
+              {paymentMethodsUnsaved ?
+                <div className="menu-category admin-payment-unsaved-note" role="status"
+                  style={{ marginTop: 9, padding: "9px 12px", borderRadius: 10, background: "#fff9e9", border: "1px solid #ebd8a5", color: "#745719" }}>
+                  <i className="bi bi-info-circle" aria-hidden="true"></i>
+                  {" "}การเปลี่ยนวิธีชำระเงินยังไม่ได้บันทึก กรุณากดปุ่ม "บันทึกข้อมูลร้าน" ด้านล่างก่อนทดลองสั่ง Delivery
+                </div> : null}
               <div className="admin-payment-method-grid" style={{ marginTop: 16 }}>
                 <section className="admin-payment-method-card">
                   <div className="admin-payment-method-head"><i className="bi bi-qr-code" aria-hidden="true"></i><strong>PromptPay</strong></div>
@@ -1874,37 +1907,56 @@ export function AdminPage() {
               statusTone={previewLalamoveAvailable ? "ready" : previewLalamoveMode === "disabled" ? "muted" : "warning"}
             >
               <div className="admin-lalamove-account-card admin-settings-inner-panel" id="lalamoveAccountCard">
-                            <div className="grid grid-2">
-                              <div className="field">
-                                <label htmlFor="lalamoveAccountMode">{t("admin.delivery_settings.lalamove_account_mode")}</label>
-                                <select className="input" id="lalamoveAccountMode" value={lalamoveForm.accountMode} onChange={e => patchLalamove({ accountMode: e.target.value })}>
-                                  <option value="disabled">{t("admin.delivery_settings.lalamove_mode_disabled")}</option>
-                                  <option value="tenant">{t("admin.delivery_settings.lalamove_mode_tenant")}</option>
-                                  <option value="fod_central">{t("admin.delivery_settings.lalamove_mode_fod")}</option>
-                                </select>
+                            <div className="admin-lalamove-account-modes" id="lalamoveAccountModeOptions">
+                              <div className="admin-lalamove-account-modes-head">
+                                <div><strong>รูปแบบการเชื่อมต่อ Lalamove</strong><small>เลือกวิธีเรียกรถสำหรับร้าน โดยสามารถปรับเปลี่ยนภายหลังได้</small></div>
+                                <span>{lalamoveForm.accountMode === "fod_central" ? "บัญชีกลาง" : lalamoveForm.accountMode === "tenant" ? "Partner ร้านค้า" : "ยังไม่เปิดใช้"}</span>
                               </div>
-                              {tenantLalamoveMode ? (
-                                <div className="field" id="lalamoveTenantEnvironmentField">
-                                  <DynamicField id="lalamoveTenantEnvironment" label={t("admin.delivery_settings.lalamove_environment")}
-                                    value={lalamoveForm.environment} kind="select" className="admin-lalamove-dynamic-field"><select className="input" id="lalamoveTenantEnvironment" value={lalamoveForm.environment} onChange={e => patchLalamove({ environment: e.target.value })}>
-                                    <option value="sandbox">Sandbox</option>
-                                    <option value="production">Production</option>
-                                  </select></DynamicField>
-                                </div>
-                              ) : null}
+                              <select hidden id="lalamoveAccountMode" value={lalamoveForm.accountMode}
+                                aria-label={t("admin.delivery_settings.lalamove_account_mode")}
+                                onChange={e => patchLalamove({ accountMode: e.target.value })}>
+                                <option value="disabled">{t("admin.delivery_settings.lalamove_mode_disabled")}</option>
+                                <option value="tenant">{t("admin.delivery_settings.lalamove_mode_tenant")}</option>
+                                <option value="fod_central">{t("admin.delivery_settings.lalamove_mode_fod")}</option>
+                              </select>
+                              <div className="admin-lalamove-mode-grid" role="group" aria-label="โหมดบัญชี Lalamove">
+                                {[
+                                  {id:"fod_central",icon:"bi-buildings",title:"บัญชีกลาง PENGUIN",desc:"เติมเครดิตสำหรับชำระค่าจัดส่ง ระบบกลางดูแลการเชื่อมต่อ",tag:"แนะนำ"},
+                                  {id:"tenant",icon:"bi-key",title:"Lalamove Partner ของร้าน",desc:"เชื่อมบัญชี API ของร้านเอง พร้อมเลือก Sandbox หรือ Production",tag:"บัญชีร้าน"},
+                                  {id:"disabled",icon:"bi-slash-circle",title:"ไม่ใช้ Lalamove",desc:"ปิดการเรียกรถผ่าน Lalamove โดยไม่ลบประวัติเครดิตเดิม",tag:"ปิดใช้งาน"},
+                                ].map(option=><button type="button" key={option.id}
+                                  className={"admin-lalamove-mode-card"+(lalamoveForm.accountMode===option.id?" is-selected":"")}
+                                  aria-pressed={lalamoveForm.accountMode===option.id}
+                                  onClick={()=>patchLalamove({accountMode:option.id})}>
+                                  <span className="admin-lalamove-mode-card-top"><i className={"bi "+option.icon} aria-hidden="true"/><span className="admin-lalamove-mode-tag">{option.tag}</span></span>
+                                  <strong>{option.title}</strong><small>{option.desc}</small><span className="admin-lalamove-mode-radio" aria-hidden="true"/>
+                                </button>)}
+                              </div>
                             </div>
+                            {tenantLalamoveMode ? (
+                              <div className="admin-lalamove-credentials-grid admin-lalamove-environment-row" id="lalamoveTenantEnvironmentField">
+                                <div className="field">
+                                  <DynamicField id="lalamoveTenantEnvironment" label={t("admin.delivery_settings.lalamove_environment")}
+                                    value={lalamoveForm.environment} kind="select" className="admin-lalamove-dynamic-field">
+                                    <select className="input" id="lalamoveTenantEnvironment" value={lalamoveForm.environment} onChange={e => patchLalamove({environment:e.target.value})}>
+                                      <option value="sandbox">Sandbox</option><option value="production">Production</option>
+                                    </select>
+                                  </DynamicField>
+                                </div>
+                              </div>
+                            ) : null}
 
                             {tenantLalamoveMode ? (
                               <div className="grid grid-2" id="lalamoveTenantCredentials">
                               <div className="field">
                                 <DynamicField id="lalamoveTenantApiKey" label={t("admin.delivery_settings.lalamove_api_key")} value={lalamoveForm.apiKey}
                                   className="admin-lalamove-dynamic-field"
-                                  description={lalamoveApiKeyMask ? "มีรหัสตั้งค่าไว้แล้ว • เว้นช่องว่างเพื่อใช้รหัสเดิม (ไม่แสดงค่าจริง)" : "กรอกรหัสของบัญชี Lalamove Partner ที่ได้รับมา • ค่าจะไม่ถูกแสดงเป็นข้อความ"} ><input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} placeholder={lalamoveApiKeyMask || "pk_..."} onChange={e => patchLalamove({ apiKey: e.target.value })} /></DynamicField>
+                                  description={lalamoveApiKeyMask ? "มีรหัสตั้งค่าไว้แล้ว • เว้นช่องว่างเพื่อใช้รหัสเดิม (ไม่แสดงค่าจริง)" : "กรอกรหัสของบัญชี Lalamove Partner ที่ได้รับมา • ค่าจะไม่ถูกแสดงเป็นข้อความ"} ><input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} onChange={e => patchLalamove({ apiKey: e.target.value })} /></DynamicField>
                               </div>
                               <div className="field">
                                 <DynamicField id="lalamoveTenantApiSecret" label={t("admin.delivery_settings.lalamove_api_secret")} value={lalamoveForm.apiSecret}
                                   className="admin-lalamove-dynamic-field"
-                                  description={lalamoveApiSecretMask ? "มีรหัสตั้งค่าไว้แล้ว • เว้นช่องว่างเพื่อใช้รหัสเดิม (ไม่แสดงค่าจริง)" : "กรอกรหัสของบัญชี Lalamove Partner ที่ได้รับมา • ค่าจะไม่ถูกแสดงเป็นข้อความ"} ><input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} placeholder={lalamoveApiSecretMask || "sk_..."} onChange={e => patchLalamove({ apiSecret: e.target.value })} /></DynamicField>
+                                  description={lalamoveApiSecretMask ? "มีรหัสตั้งค่าไว้แล้ว • เว้นช่องว่างเพื่อใช้รหัสเดิม (ไม่แสดงค่าจริง)" : "กรอกรหัสของบัญชี Lalamove Partner ที่ได้รับมา • ค่าจะไม่ถูกแสดงเป็นข้อความ"} ><input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} onChange={e => patchLalamove({ apiSecret: e.target.value })} /></DynamicField>
                               </div>
                               </div>
                             ) : null}
