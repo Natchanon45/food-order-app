@@ -12,6 +12,7 @@ import {
 } from "@/auth/authFlow";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ParityFooter } from "@/components/ParityFooter";
+import { DynamicField } from "@/components/DynamicField";
 import { MerchantServiceTerms } from "@/components/MerchantServiceTerms";
 import {
   formatSubscriptionMoney,
@@ -73,7 +74,7 @@ export function RegisterPage() {
   const stylesReady = useParityPage({
     bodyClass: "register-page",
     title: t("auth.register.title"),
-    styles: ["register-page.css", "merchant-service-terms-port.css"],
+    styles: ["register-page.css", "merchant-service-terms-port.css", "register-source-layout.css"],
   });
 
   useEffect(() => {
@@ -329,7 +330,7 @@ export function RegisterPage() {
     }
   };
 
-  const number = value => formatSubscriptionMoney(value, intlLocale);
+  const number = value => pricing?.source === "remote" && typeof value === "number" && Number.isFinite(value) ? formatSubscriptionMoney(value, intlLocale) : "—";
   const config = pricing?.config;
   const annual = pricing?.pricing?.annual;
   const monthly = pricing?.pricing?.monthly;
@@ -424,7 +425,7 @@ export function RegisterPage() {
                     <span className="register-choice-icon"><i className="bi bi-wallet2" aria-hidden="true"></i></span>
                     <div>
                       <b>{t("auth.register.billing.subscription.title")}</b>
-                      <small>{t("auth.register.billing.subscription.trial")} · {t("auth.register.billing.subscription.monthly", { amount: number(config?.monthlyPrice ?? 590) })} · {t("auth.register.billing.subscription.yearly", { regular: number(annual?.regularConfigured ?? 7080), amount: number(annual?.configured ?? 5900) })}</small>
+                      <small>{t("auth.register.billing.subscription.trial")} · {t("auth.register.billing.subscription.monthly", { amount: number(config?.monthlyPrice) })} · {t("auth.register.billing.subscription.yearly", { regular: number(annual?.regularConfigured), amount: number(annual?.configured) })}</small>
                     </div>
                   </div>
                 </section>
@@ -437,12 +438,12 @@ export function RegisterPage() {
                   <div className="subscription-cycle-grid">
                     <label className={`cycle-option ${planCode === "monthly" ? "is-selected" : ""}`}>
                       <input type="radio" name="planCode" value="monthly" checked={planCode === "monthly"} onChange={() => setPlanCode("monthly")} />
-                      <span><strong>{t("auth.register.subscription_cycle.monthly")}</strong><small>{number(config?.monthlyPrice ?? 590)} {t("auth.register.subscription_cycle.baht_per_month")}</small></span>
+                      <span><strong>{t("auth.register.subscription_cycle.monthly")}</strong><small>{number(config?.monthlyPrice)} {t("auth.register.subscription_cycle.baht_per_month")}</small></span>
                       <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
                     </label>
                     <label className={`cycle-option ${planCode === "yearly" ? "is-selected" : ""}`}>
                       <input type="radio" name="planCode" value="yearly" checked={planCode === "yearly"} onChange={() => setPlanCode("yearly")} />
-                      <span><strong>{t("auth.register.subscription_cycle.yearly")}</strong><small><span className="old-price-slash">{number(annual?.regularConfigured ?? 7080)}</span> <b>{number(annual?.configured ?? 5900)}</b> {t("auth.register.subscription_cycle.baht_per_year")}</small></span>
+                      <span><strong>{t("auth.register.subscription_cycle.yearly")}</strong><small><span className="old-price-slash">{number(annual?.regularConfigured)}</span> <b>{number(annual?.configured)}</b> {t("auth.register.subscription_cycle.baht_per_year")}</small></span>
                       <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
                     </label>
                   </div>
@@ -479,34 +480,40 @@ export function RegisterPage() {
                   </label>
 
                   {includesRestaurant ? (
-                    <label className={includesRetail ? "" : "full"}>
-                      {t("auth.register.fields.order_delivery_shop")} <span className="label-small">{t("auth.register.order_delivery_hint")}</span>
-                      <input id="orderDeliveryShopName" {...fieldValidationProps("orderDeliveryShopName")} required value={fields.orderDeliveryShopName} onChange={e => setField("orderDeliveryShopName", e.target.value)} maxLength="120" />
+                    <div className={includesRetail ? "register-inline-hint-field" : "register-inline-hint-field full"}>
+                      <DynamicField id="orderDeliveryShopName" label={t("auth.register.fields.order_delivery_shop")}
+                        inlineHint={t("auth.register.order_delivery_hint")} value={fields.orderDeliveryShopName}>
+                        <input id="orderDeliveryShopName" {...fieldValidationProps("orderDeliveryShopName")} required value={fields.orderDeliveryShopName} onChange={e => setField("orderDeliveryShopName", e.target.value)} maxLength="120" />
+                      </DynamicField>
                       {renderError("orderDeliveryShopName")}
-                    </label>
+                    </div>
                   ) : null}
                   {includesRetail ? (
-                    <label className={includesRestaurant ? "" : "full"}>
-                      {t("auth.register.fields.retail_pos_shop")} <span className="label-small">{t("auth.register.retail_pos_hint")}</span>
-                      <input id="retailPosShopName" {...fieldValidationProps("retailPosShopName")} required value={fields.retailPosShopName} onChange={e => setField("retailPosShopName", e.target.value)} maxLength="120" />
+                    <div className={includesRestaurant ? "register-inline-hint-field" : "register-inline-hint-field full"}>
+                      <DynamicField id="retailPosShopName" label={t("auth.register.fields.retail_pos_shop")}
+                        inlineHint={t("auth.register.retail_pos_hint")} value={fields.retailPosShopName}>
+                        <input id="retailPosShopName" {...fieldValidationProps("retailPosShopName")} required value={fields.retailPosShopName} onChange={e => setField("retailPosShopName", e.target.value)} maxLength="120" />
+                      </DynamicField>
                       {renderError("retailPosShopName")}
-                    </label>
+                    </div>
                   ) : null}
                   {includesRestaurant && includesRetail ? <p className="full field-help">{t("auth.register.same_shop_help")}</p> : null}
 
-                  <label className="full">
-                    {t("auth.register.fields.slug")} <span className="label-small">{t("auth.register.slug_help")}</span>
-                    <input
-                      id="slug" {...fieldValidationProps("slug")}
-                      required
-                      value={fields.slug}
-                      onChange={e => setField("slug", e.target.value)}
-                      maxLength="50"
-                      placeholder="saas-test-shop"
-                      autoComplete="off"
-                    />
+                  <div className="register-inline-hint-field full">
+                    <DynamicField id="slug" label={t("auth.register.fields.slug")}
+                      inlineHint={t("auth.register.slug_help")} value={fields.slug}>
+                      <input
+                        id="slug" {...fieldValidationProps("slug")}
+                        required
+                        value={fields.slug}
+                        onChange={e => setField("slug", e.target.value)}
+                        maxLength="50"
+                        placeholder="saas-test-shop"
+                        autoComplete="off"
+                      />
+                    </DynamicField>
                     {renderError("slug")}
-                  </label>
+                  </div>
                   <div className="full slug-preview" id="slugPreview">{slugPreview}</div>
 
                   <label>
@@ -588,13 +595,13 @@ export function RegisterPage() {
                 <p className="plan-price">0฿ <small>{t("auth.register.plans.first_month_suffix")}</small></p>
                 {planCode === "monthly" ? (
                   <p className="plan-next-price">
-                    {t("auth.register.pricing.next_month", { amount: number(config?.monthlyPrice || 590) })}
+                    {t("auth.register.pricing.next_month", { amount: number(config?.monthlyPrice) })}
                     {monthlyVatText ? <span className="plan-vat-note">{monthlyVatText}</span> : null}
                   </p>
                 ) : (
                   <p className="plan-year-price">
-                    <span className="old-price-slash">{number(annual?.regularConfigured || 7080)}</span>{" "}
-                    <span className="new-year-price">{number(annual?.configured || 5900)}/{t("auth.register.subscription_cycle.year_suffix")}</span>
+                    <span className="old-price-slash">{number(annual?.regularConfigured)}</span>{" "}
+                    <span className="new-year-price">{number(annual?.configured)}/{t("auth.register.subscription_cycle.year_suffix")}</span>
                     {annualDiscount ? <small className="plan-discount-label">{annualDiscount}</small> : null}
                   </p>
                 )}

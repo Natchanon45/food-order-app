@@ -1,0 +1,49 @@
+
+/* Registration-only exception (restaurant name, retail name and slug):
+   the translated parenthetical hint belongs INSIDE the same dynamic caption.
+   All other field descriptions continue to use the info-below rule. */
+.register-form-grid .register-inline-hint-field {
+  min-width: 0;
+  width: 100%;
+}
+.register-form-grid .register-inline-hint-field .lk-dynamic-field--inline-hint .lk-dynamic-control,
+.register-form-grid .register-inline-hint-field .lk-dynamic-field--inline-hint input {
+  min-height: 44px;
+  height: 44px;
+}
+.register-form-grid .register-inline-hint-field .lk-dynamic-field--inline-hint input {
+  padding: 17px 12px 3px;
+  font-size: 0.94rem;
+  font-weight: 500;
+}
+.register-form-grid .register-inline-hint-field .lk-dynamic-caption {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  min-width: 0;
+  gap: 5px;
+  overflow: hidden;
+  font-weight: 400;
+  line-height: 1.2;
+}
+.register-form-grid .register-inline-hint-field .lk-dynamic-caption-text {
+  flex: 0 0 auto;
+  max-width: 48%;
+}
+.register-form-grid .register-inline-hint-field .lk-dynamic-caption-inline-hint {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #678473;
+  font-size: 0.84em;
+  font-weight: 400;
+}
+.register-form-grid .register-inline-hint-field .lk-dynamic-control:focus-within .lk-dynamic-caption-inline-hint,
+.register-form-grid .register-inline-hint-field .lk-dynamic-control.is-filled .lk-dynamic-caption-inline-hint {
+  font-size: 1em;
+}
