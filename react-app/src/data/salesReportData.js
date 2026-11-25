@@ -1,3 +1,4 @@
+import {verifyCompleteTenantSalesSnapshot,VALID_TENANT_ID} from "@/data/completeSalesSnapshot.mjs";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase/client";
 
@@ -18,6 +19,30 @@ export function subscribeTenantOrders(tenantId, callback, onError) {
       onError?.(error);
     },
   );
+}
+
+// P2.4 Source's complete-history precondition on Firestore. This is a
+// collection-wide server snapshot (NOT the cashier's latest-250 feed):
+// Firestore delivers each query result atomically; never show a cache-only
+// subset, local pending writes, or a truncated/invalid financial history.
+export function subscribeCompleteTenantSalesOrders(tenantId, callback, onError) {
+  const id = requireTenantId(tenantId);
+  if (!VALID_TENANT_ID.test(id)) throw new Error("SALES_REPORT_TENANT_INVALID");
+  const ref = collection(db,"tenants",id,"orders");
+  let stopped = false;
+  const stop = onSnapshot(ref,{includeMetadataChanges:true},snapshot => {
+    if (stopped) return;
+    // Cache-only or optimistic local snapshots must not become financial KPI.
+    if (snapshot.metadata.fromCache || snapshot.metadata.hasPendingWrites) return;
+    try {
+      callback(verifyCompleteTenantSalesSnapshot(snapshot,id));
+    } catch(error) {
+      onError?.(error);
+    }
+  },error => {
+    if (!stopped) onError?.(error);
+  });
+  return () => { stopped = true; stop(); };
 }
 
 function giftItemId(item = {}) {

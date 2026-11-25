@@ -1,3 +1,15 @@
+## 2026-11-25 — P2.4 Source Sales Report completed and Master Checklist
+
+- Source READ ONLY: cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7bf9d159. Target: Natchanon45/food-order-app feature/react-firebase-port, initial P2.3 HEAD 5b755188.
+- Ported latest Source AdminSalesReportPage JSX and SalesReportReadFailure using Firebase native Auth+Tenant. The new subscribeCompleteTenantSalesOrders uses a **full server-confirmed Firestore snapshot**, not the cashier latest-250 feed or stale local cache. Pure policy checks money, Tenant, row identity and 20k safety cap; incorrect history shows failure, not false KPI.
+- Bangkok-only day/hour/month/year and bounded custom date ranges, cancelled receipt history separate from net sales, receipt actor/item detail, period/payment/order filters and responsive 320/390/768/1440. CSS imported as Vite module; no Production Provider writes.
+- Final local P2.4 acceptance: Source+data pure **5/5 PASS**, signed native Firebase Auth+Firestore real Chrome with 260 paid and 1 cancelled record **1/1 PASS**, previous accounting static tests **7/7 PASS**, entire npm run test:react-parity **EXIT 0**, React Build/Hosting Contract **PASS EXIT 0** (2026.11.09.535, index-B5mvD6gD.js). Public-generated files cleaned.
+- Master checklist generator: node tools/update-port-master-checklist.mjs -> docs/LUKKAJA_TO_PENGUIN_MASTER_CHECKLIST_20261125.md. Current stringent audit **9/65 Source pages =13.8%**, **56/65=86.2% pending**, grouped as POS29, Cashier/Kitchen/Queue8, Delivery/Public6, Superadmin/Billing5, Merchant Admin/General5, Laravel transport wrappers3. 52/65 old Target filename presence is **not** completed features. Audit coverage is deliberately distinct from Production readiness or amount of existing code.
+- NEXT: verify latest Source Cashier/Kitchen/Delivery modifications with Firebase safety and real signed Emulator tests; follow Master Checklist, do not create duplicate Source-only routes. Keep live payments, bank/LINE webhook, staging real inbox and Production unapproved.
+- P2.4 details in docs/LUKKAJA_P2_4_MERCHANT_SALES_REPORT_20261125.md. No source writes, main merge, deploy or APK/IPA.
+
+---
+
 ## 2026-11-25 — P2.3 Merchant Onboarding + Auth complete locally
 
 - Source read-only `cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159` (Login/Register, latest role web matrix and Merchant terms). Target `Natchanon45/food-order-app feature/react-firebase-port`, started from P2.2 `f8cfb7a8`.

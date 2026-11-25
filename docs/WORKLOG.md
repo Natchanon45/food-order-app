@@ -1,3 +1,13 @@
+## 2026-11-25 — P2.4 Merchant Sales Report, verified history and strict whole-project %
+
+- Pinned Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159 READ ONLY; Target Natchanon45/food-order-app feature/react-firebase-port base 5b755188.
+- Complete Source sales history read ported to server-confirmed Firebase Firestore whole Tenant snapshot, no cache/pending writes or cashier last-250. Malformed Tenant, duplicate, impossible money or >20k rows fails closed, explicit Bangkok accounting dates, responsive report and cancelled receipt history without KPI double-count.
+- QA: pure Source/accounting/clock policy **5/5 PASS**, signed native Firebase Auth+Firestore Chrome with 261 orders and valid THB1300 net, corruption/recovery, 4 viewport widths and cross-Tenant/Cashier guards **1/1 PASS**, previous accounting visual contracts **7/7 PASS**, full npm run test:react-parity **EXIT 0**, npm run build:react/Hosting Contract **PASS EXIT 0**, 2026.11.09.535 bundle index-B5mvD6gD.js. Generated public files removed. No Prod/provider side effects.
+- Whole-project Master Checklist pinned 65 JSX: **8 changed-feature local audits + 1 unneeded Source-only Store Master route disposition = 9/65 (13.8%) strictly reviewed; remaining 56/65 (86.2%) pending latest-Source formal audit; 52/65 matching Target files (80%) is file presence only.** Remaining breakdown POS 29, Cashier/Kitchen/Queue 8, Delivery/Public 6, Superadmin/Billing 5, Merchant/general 5, Laravel wrappers 3. This is NOT % of product code missing or ready for Production.
+- Full P2.4 report docs/LUKKAJA_P2_4_MERCHANT_SALES_REPORT_20261125.md; master docs/LUKKAJA_TO_PENGUIN_MASTER_CHECKLIST_20261125.md. No Source writes, real bank, Staging/Prod, main merge or mobile build.
+
+---
+
 ## 2026-11-25 — P2.3 Merchant Onboarding / Auth latest Source port
 
 - Source pinned READ ONLY `cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159`, Target `Natchanon45/food-order-app feature/react-firebase-port` base `f8cfb7a8`. Latest Source Register/Login JSX and Laravel role allowlist audited; Firebase signup is Premium monthly/yearly only (existing server rejects retired hybrid/revenue_share public billing).

@@ -1,0 +1,89 @@
+/* P2.4 source Sales Report: scoped handset width and nested chart/table scroll.
+   Keep receipt and chart horizontal scrolling INSIDE their own regions. */
+body.sales-report-workspace {
+  max-width: 100%;
+  overflow-x: clip;
+}
+body.sales-report-workspace .sales-report-page {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+body.sales-report-workspace .sales-report-page > *,
+body.sales-report-workspace .report-filter-grid,
+body.sales-report-workspace .report-filter-grid > *,
+body.sales-report-workspace .receipt-section,
+body.sales-report-workspace .receipt-table-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+body.sales-report-workspace .receipt-table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+@media (max-width: 400px) {
+  body.sales-report-workspace .sales-report-page {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  body.sales-report-workspace .sales-summary-grid,
+  body.sales-report-workspace .report-breakdown-grid,
+  body.sales-report-workspace .report-analysis-grid {
+    min-width: 0;
+  }
+  body.sales-report-workspace .receipt-heading,
+  body.sales-report-workspace .receipt-cancellation-controls {
+    flex-wrap: wrap;
+  }
+}
+/* The shared app-header can be 5px wider than a 320px browser viewport.
+   Contain the outer page; receipt-table and chart keep their own scrollbars. */
+html:has(body.sales-report-workspace) {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+body.sales-report-workspace > .app-header,
+body.sales-report-workspace .super-admin-header {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 400px) {
+  /* The original three-column revenue breakdown had min-content sizes of
+     95px + 70px + a nonwrapping value; that exceeded a 320px handset by 5px. */
+  body.sales-report-workspace .report-breakdown-grid .breakdown-row {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    grid-template-columns: minmax(0,.85fr) minmax(0,.8fr) minmax(0,1.15fr);
+    gap: 6px;
+  }
+  body.sales-report-workspace .report-breakdown-grid .breakdown-label,
+  body.sales-report-workspace .report-breakdown-grid .breakdown-value {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+/* Keep the padded report and its nested grid inside the viewport box. */
+body.sales-report-workspace main.sales-report-page {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.sales-report-workspace .report-breakdown-grid {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+body.sales-report-workspace .report-breakdown-grid > .card,
+body.sales-report-workspace .report-breakdown-grid .breakdown-list {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}

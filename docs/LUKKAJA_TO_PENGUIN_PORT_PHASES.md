@@ -1,5 +1,14 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P2.4 Merchant Sales Report and Master Checklist
+
+**P2.4 local feature complete.** Latest Source 7bf9d159 sales report now verifies one complete real Firebase server read, refuses cached/pending/invalid financial numbers, uses explicit Bangkok report periods, preserves cancelled historical receipts without overstating sales, and scrolls properly on 320/390/768/1440. Signed Auth+Firestore Chrome with 261 orders **1/1 PASS**, pure data/Source contracts **5/5 PASS**, full serial React Parity and Build/Hosting Contract **PASS**. Detailed report: docs/LUKKAJA_P2_4_MERCHANT_SALES_REPORT_20261125.md.
+
+**Master progress tracking:** docs/LUKKAJA_TO_PENGUIN_MASTER_CHECKLIST_20261125.md. 65 pinned Source JSX; 8 accepted local changed-feature page audits plus 1 Source-only Store Master route disposition = **9/65 (13.8%) reviewed** and **56/65 (86.2%) pending formal latest-Source audit**. 52/65 (80%) Target filename presence is not accepted feature completeness. This is strict review coverage, **not** overall Production-readiness. Next Source/Target audits cover the remaining Merchant, Cashier/Kitchen, Delivery and POS pages.
+
+---
+
+
 ## 2026-11-25 — P2.3 Merchant Onboarding / Auth from latest Source
 
 **Module P2.3 local scope COMPLETE after final full QA:** Pinned read-only Source `feature/react-golang-vite-tailwind-axios@7bf9d159`. Register/Login retain canonical Firebase Premium monthly/yearly (Source Go revenue_share option is unavailable in Firebase, not faked). Restored Source Merchant Service Terms with confirmed public price and dynamic receipt quota; unconfirmed pricing blocks signup. Reserved native Firebase pending Signup **before sending email**, released previous same-uid pending Slug atomically, blocked duplicate/restored/suspended staff enrollment, and added strict Auth email/current reservation checks in activation transaction. Native email link return activates once only after actual `emailVerified` token refresh; cross-browser pending email sign-in recovers without creating a second Signup. Login `next` now follows the Source role matrix and actual routed pages, empty business units deny all. **6/6 demo Auth+Firestore**, **5/5 source/static**, **2/2 actual Chrome UI handlers** PASS; complete serial React Parity and Build receipts in Worklog. See [P2.3 report](./LUKKAJA_P2_3_MERCHANT_ONBOARDING_AUTH_20261125.md). No Staging real email, Production, provider launch or Source write. **P2 phase beyond P2.3 remains open**, next P2.4 Sales Report / deeper Merchant Admin action parity.

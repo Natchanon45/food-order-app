@@ -24,8 +24,9 @@ test("cancelled paid and unpaid receipts remain history but contribute zero sale
 test("sales KPI and receipt history use different inputs, filter defaults to all",()=>{
  const src=page("AdminSalesReportPage");
  assert.match(src,/orders\.filter\(isReceiptHistoryOrder\)/);
- assert.match(src,/const salesReceipts = useMemo\(/);
- assert.match(src,/filteredReceipts\.filter\(receipt => receipt\.status !== "cancelled"\)/);
+ assert.match(src,/const filteredReceipts = useMemo\(\(\) => matchingReceipts\.filter\(r => r\.status === "normal"\)/);
+ assert.match(src,/const receiptRows = useMemo\(/);
+ assert.match(src,/matchingReceipts\.filter\(r => !receiptStatus \|\| r\.status === receiptStatus\)/);
  assert.match(src,/const \[receiptStatus, setReceiptStatus\] = useState\(""\)/);
  assert.match(src,/receiptStatusFilter/);
  assert.match(src,/reportedSalesNet\(sorted\)/);
