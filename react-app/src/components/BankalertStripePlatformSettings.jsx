@@ -18,7 +18,7 @@ export function BankalertStripePlatformSettings(){
       if(data?.ok!==true || data.mode!=="test" || data.checkoutEnabled!==false)throw Error("STRIPE_STATUS_INVALID");
       if(gate?.ok!==true||gate.mode!=="test"||typeof gate.checkoutEnabled!=="boolean"||typeof gate.webhookReady!=="boolean")throw Error("STRIPE_GATE_INVALID");
       if(id===requestId.current)setInfo({...data,...gate});
-    }catch{if(id===requestId.current)setError("ไม่สามารถอ่านสถานะ Stripe Sandbox จาก Firebase ได้");}
+    }catch{if(id===requestId.current)setError("ยังอ่านสถานะ Stripe จาก Firebase ไม่ได้ กรุณาตรวจสอบ Cloud Functions และ Secret Key ที่ Server ก่อนใช้งาน");}
     finally{if(id===requestId.current)setBusy(false);}
   };
   useEffect(()=>()=>{requestId.current++;},[]);
@@ -33,9 +33,9 @@ export function BankalertStripePlatformSettings(){
     ["Checkout Sandbox",info?.checkoutEnabled?"เปิดเฉพาะร้านทดสอบ":"ยังไม่เปิดใช้งาน",info?.checkoutEnabled],
   ];
   return <section className="card platform-google-api-card platform-card-collapsible bankalert-stripe-settings" data-bankalert-stripe-superadmin-settings data-expanded={expanded} aria-labelledby="walletStripeTitle">
-    <PlatformCardAccordionHeader titleId="walletStripeTitle" panelId="walletStripePanel" icon="bi bi-qr-code" title="Stripe PromptPay — Lalamove Wallet Test Mode" description="Firebase Sandbox · จัดการ Secret Key ที่ Server" badge={status} badgeClass="is-error" expanded={expanded} onToggle={toggle}/>
+    <PlatformCardAccordionHeader titleId="walletStripeTitle" panelId="walletStripePanel" icon="bi bi-qr-code" title="Stripe · การรับชำระเงินของระบบกลาง" description="รับค่าบริการ Platform ส่วนแบ่งรายวัน และเติมเครดิต Lalamove" badge={status} badgeClass="is-error" expanded={expanded} onToggle={toggle}/>
     <div id="walletStripePanel" className="platform-card-accordion-panel" hidden={!expanded}>
-      <div className="bankalert-stripe-notice"><i className="bi bi-info-circle" aria-hidden="true"/><span>ทดสอบการเติมเครดิต Lalamove แยกจาก Stripe Connect สำหรับค่าอาหาร Delivery ไม่เพิ่มเครดิตจริงของร้านค้า</span></div>
+      <div className="bankalert-stripe-notice"><i className="bi bi-info-circle" aria-hidden="true"/><span>ระบบนี้แยกจากการรับชำระค่าอาหารของร้านค้า ขณะนี้ Firebase รองรับเฉพาะการทดสอบเติมเครดิต Lalamove ยังไม่เปิดรับค่าบริการหรือส่วนแบ่งเงินจริง</span></div>
       <div className="bankalert-stripe-alert bankalert-stripe-alert-warning" role="status"><i className="bi bi-shield-lock" aria-hidden="true"/><span>อนุญาต Checkout เฉพาะร้านทดสอบที่กำหนดไว้ หลังยืนยัน Webhook และเปิดสิทธิ์ที่ Server เท่านั้น</span></div>
       {info&&<div className="bankalert-stripe-checklist" data-stripe-checklist>{rows.map(([label,value,ok])=><div key={label}><i className={ok?"bi bi-check-circle":"bi bi-exclamation-circle"} aria-hidden="true"/><span>{label}</span><strong>{value}</strong></div>)}</div>}
       {error&&<div role="alert" className="bankalert-stripe-alert bankalert-stripe-alert-error">{error}</div>}

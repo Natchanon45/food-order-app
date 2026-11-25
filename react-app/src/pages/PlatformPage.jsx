@@ -86,7 +86,7 @@ const EMPTY_LALAMOVE = {
 };
 
 // A failed or slow remote read must never hold the entire Superadmin page.
-function boundedPlatformRead(promise, timeoutMs=10000) {
+function boundedPlatformRead(promise, timeoutMs=25000) {
   let timer;
   return Promise.race([promise,new Promise((_,reject)=>{
     timer=window.setTimeout(()=>reject(Error("PLATFORM_READ_TIMEOUT")),timeoutMs);
@@ -376,7 +376,7 @@ export function PlatformPage() {
       refreshing=true;
       try {
         const summary = await boundedPlatformRead(loadPlatformAdminNotificationSummary({ force: true }));
-        if (active) {setAdminNotifications(summary);setNotificationsReadError(false);}
+        if (active) {setAdminNotifications(summary);setNotificationsReadError(summary?.partial===true);}
       } catch (error) {
         console.error("PLATFORM_ADMIN_NOTIFICATIONS_LOAD_FAILED", error);
         if(active){setNotificationsReadError(true);setAdminNotifications(EMPTY_PLATFORM_ADMIN_NOTIFICATIONS);}
@@ -602,6 +602,13 @@ export function PlatformPage() {
     : (lalamoveError || (lalamove.ready
       ? t("platform.lalamove.connection_ready", { environment: lalamove.environment })
       : t("platform.lalamove.connection_not_ready")));
+  const failedSettings = [
+    brandingLoadError && t("platform.branding.title"),
+    googleLoadError && t("platform.google_api.title"),
+    slipLoadError && "บัญชีผู้รับเงินกลาง",
+    lalamoveLoadError && t("platform.lalamove.title"),
+    notificationsReadError && "การแจ้งเตือน",
+  ].filter(Boolean);
   const notificationTotal = Number(adminNotifications?.total || 0);
   const walletNotificationCount = Number(adminNotifications?.wallet?.total || 0);
   const revenueNotificationCount = Number(adminNotifications?.revenueShare?.total || 0);
@@ -623,9 +630,9 @@ export function PlatformPage() {
         </section>
 
         {!initialReady && <p role="status" className="platform-receiver-promptpay-help">กำลังโหลดการตั้งค่าแต่ละส่วน สามารถเข้าเมนูจัดการร้านค้าได้ตามปกติ</p>}
-        {(brandingLoadError||googleLoadError||slipLoadError||lalamoveLoadError||notificationsReadError) &&
+        {failedSettings.length>0 &&
           <div className="card" role="alert" style={{padding:12,marginBottom:12}}>
-            โหลดข้อมูลบางส่วนไม่สำเร็จ กรุณาลองใหม่ <button type="button" className="btn btn-sm" onClick={()=>location.reload()}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> โหลดใหม่</button>
+            โหลดข้อมูลบางส่วนไม่สำเร็จ: {failedSettings.join(" · ")} <button type="button" className="btn btn-sm" onClick={()=>location.reload()}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> โหลดใหม่</button>
           </div>}
         <section className="nav-cards platform-cards">
           <Link className={`card nav-card platform-tenant-notification-card${notificationTotal > 0 ? " has-notifications" : ""}`} to="/admin/tenants" data-platform-tenant-notifications={notificationTotal}>
@@ -819,6 +826,7 @@ export function PlatformPage() {
               <span><i className="bi bi-check-circle" aria-hidden="true"/> เติมเครดิต Lalamove</span>
             </div>
             <p role="note" className="platform-receiver-promptpay-help">บัญชีที่บันทึกใน Firebase ยังไม่เปิดใช้เป็นช่องทางรับชำระอัตโนมัติ ต้องตรวจสอบระบบจับคู่ธุรกรรมและอนุมัติแยกต่างหาก</p>
+            {slip.legacyUnconfirmed && <p role="note" className="platform-receiver-promptpay-help">พบข้อมูลบัญชีเดิมจากระบบตรวจสลิป กรุณาตรวจสอบรายละเอียดและยืนยันบันทึกก่อนใช้งาน</p>}
             {receiverUnconfirmed && <p role="alert" className="platform-receiver-promptpay-help">ยังยืนยันผลการบันทึกไม่ได้ กรุณารีโหลดก่อนดำเนินการต่อ</p>}
             <div className="platform-google-api-actions">
               <button className="btn btn-primary" id="savePlatformReceiptRecipientButton" type="submit"

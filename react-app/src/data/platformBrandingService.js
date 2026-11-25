@@ -31,7 +31,11 @@ export async function resolvePlatformBranding(item = {}) {
 
 export async function loadPlatformBranding() {
   const response = await getBranding({});
-  return resolvePlatformBranding(response?.data?.item || {});
+  const item=response?.data?.item;
+  if(!item||typeof item!=="object"||Array.isArray(item)||
+    !["logoPath","faviconPath","appIconPath"].every(key=>typeof item[key]==="string"))
+    throw Error("PLATFORM_BRANDING_READ_INVALID");
+  return resolvePlatformBranding(item);
 }
 
 export async function savePlatformBranding({ files = {}, clear = {} } = {}) {
