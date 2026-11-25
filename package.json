@@ -60,7 +60,7 @@
     "test:delivery-parity-browser": "playwright test tests/react-parity/delivery-parity.spec.mjs",
     "test:staff-operation": "node --test --test-concurrency=1 tests/react-parity/p1-staff-operation-policy.spec.mjs tests/react-parity/p1-staff-operation-ui.spec.mjs tests/react-parity/p1-staff-operation-browser.spec.mjs",
     "test:tenant-safe-deletion": "node --test --test-concurrency=1 tests/react-parity/p1-tenant-safe-deletion-policy.spec.mjs tests/react-parity/p1-tenant-safe-deletion-ui.spec.mjs",
-    "test:p34-delivery-correction-contract": "node --test --test-concurrency=1 tests/react-parity/p34-delivery-correction-contract.spec.mjs",
+    "test:p34-delivery-correction-contract": "node --test --test-concurrency=1 tests/react-parity/p34-delivery-correction-contract.spec.mjs tests/react-parity/p34-delivery-notification-intake.spec.mjs",
     "test:p34-delivery-checkout-review-browser": "node --test --test-concurrency=1 tests/react-parity/p34-delivery-checkout-review-browser.spec.mjs",
     "test:p34-delivery-correction-local": "node tools/p34-run-delivery-correction-local.mjs",
     "test:p34-source-qr-rebaseline": "node --test --test-concurrency=1 tests/react-parity/p34-source-qr-rebaseline.spec.mjs",

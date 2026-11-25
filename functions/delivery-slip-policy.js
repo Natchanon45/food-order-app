@@ -22,6 +22,7 @@ function slipDecision(result = {}) {
 
 function proofBoundToOrder(order = {}, proof = {}) {
   if (order.orderType !== "delivery" || order.paymentMethod !== "promptpay"
+    || order.bankTransferReviewFlow === "notification_first"
     || !proof.slipPath || order.paymentSlipPath !== proof.slipPath) return false;
   const paidItems = (Array.isArray(order.items) ? order.items : []).filter(item => item.isGift !== true);
   if (normalizedItems(paidItems) !== proof.itemsSignature) return false;

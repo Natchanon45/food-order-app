@@ -187,3 +187,57 @@ test("P3.4 real public callable refuses missing or forged checkout evidence and 
  assert.match(accepted.body.result.paymentCorrectionCapability,/^[a-f0-9]{64}$/);
  assert.ok(!JSON.stringify(saved).includes(accepted.body.result.paymentCorrectionCapability));
 });
+
+test("P3.4 notification-first demo creates only canonical unpaid order without slip", {timeout:40000},async()=>{
+ const tenant="p34-notify-"+nonce,id="p34-notify-order-"+nonce,menuId="p34-notify-menu-"+nonce;
+ const shop=db.collection("tenants").doc(tenant);
+ const ref=shop.collection("orders").doc(id);
+ await shop.set({active:true,businessType:"restaurant_cafe",subscriptionStatus:"active",businessUnits:["order_delivery"]});
+ await shop.collection("settings").doc("store").set({
+  deliveryProvider:"self",deliveryPromptPayEnabled:true,storeLatitude:13.75,storeLongitude:100.5,
+  bankName:"SCB",bankAccountName:"DEMO ONLY",bankAccountNumber:"0000000000",promptPayId:"0800000000",
+  deliveryFeeOptions:[{id:"nearby",label:"Near",fee:30,maxDistanceKm:5}]
+ });
+ await shop.collection("menus").doc(menuId).set({name:"Canonical Demo Food",price:120,active:true});
+ const order={id,orderType:"delivery",paymentMethod:"promptpay",paymentStatus:"paid",status:"accepted",
+  bankTransferReviewFlow:"notification_first",paymentRecipientId:"0800000000",
+  recipientName:"Demo",recipientPhone:"0800000000",deliveryAddress:"Demo",
+  deliveryProvider:"self",deliveryLatitude:13.76,deliveryLongitude:100.51,
+  deliveryZone:"nearby",deliveryZoneLabel:"FORGED",deliveryBaseFee:30,deliveryFee:30,
+  deliveryFeeDiscount:0,subtotalAmount:120,totalAmount:150,
+  items:[{menuId,name:"FORGED",price:120,qty:1}],lalamoveCodEnabled:true};
+ const call=async (name,data)=>{
+  const response=await fetch("http://127.0.0.1:5001/demo-penguin-hybrid/asia-southeast1/"+name,
+   {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data})});
+  return {status:response.status,body:await response.json()};
+ };
+ const submit=(o=order,tenantId=tenant)=>call("submitPublicDeliveryOrder",{tenantId,order:o});
+ assert.equal((await submit(order,"ordinary-demo-tenant")).body.error?.message,"DELIVERY_NOTIFICATION_DISABLED");
+ assert.equal((await submit()).body.error?.message,"DELIVERY_NOTIFICATION_ROUTE_REQUIRED");
+ assert.equal((await ref.get()).exists,false);
+ const key=[tenant,"13.75000","100.50000","13.76000","100.51000"].join("_");
+ await db.collection("deliveryRouteCache").doc(key).set({tenantId:tenant,
+  origin:{latitude:13.75,longitude:100.5},destination:{latitude:13.76,longitude:100.51},
+  distanceMeters:2000,duration:"300s",updatedAt:FieldValue.serverTimestamp()});
+ assert.equal((await submit({...order,totalAmount:149})).body.error?.message,"DELIVERY_NOTIFICATION_TOTAL_CHANGED");
+ assert.equal((await submit({...order,paymentRecipientId:"0899999999"})).body.error?.message,"DELIVERY_NOTIFICATION_RECEIVER_CHANGED");
+ assert.equal((await ref.get()).exists,false);
+ const accepted=await submit();
+ assert.equal(accepted.status,200,JSON.stringify(accepted.body));
+ const receipt=accepted.body.result, saved=(await ref.get()).data();
+ assert.equal(receipt.bankTransferReviewFlow,"notification_first");
+ assert.equal(saved.paymentStatus,"pending_verification");
+ assert.equal(saved.status,"pending");
+ assert.equal(saved.paymentSlipPath,"");
+ assert.equal(saved.items[0].name,"Canonical Demo Food");
+ assert.equal(saved.deliveryZoneLabel,"Near");
+ assert.equal(saved.lalamoveCodEnabled,undefined);
+ assert.equal(saved.kitchenReleasedAt,undefined);
+ assert.match(receipt.paymentCorrectionCapability,/^[a-f0-9]{64}$/);
+ assert.ok(!JSON.stringify(saved).includes(receipt.paymentCorrectionCapability));
+ const rights=await call("getPublicDeliveryCorrectionState",{tenantId:tenant,orderId:id,capability:receipt.paymentCorrectionCapability});
+ assert.equal(rights.body.result?.canUploadNewSlip,true);
+ assert.equal(rights.body.result?.paymentVerified,false);
+ assert.equal((await submit()).body.error?.message,"DELIVERY_ORDER_ALREADY_EXISTS");
+ assert.equal((await ref.get()).data().paymentStatus,"pending_verification");
+});

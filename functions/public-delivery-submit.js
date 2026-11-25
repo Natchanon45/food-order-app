@@ -4,6 +4,7 @@ const { onCall, HttpsError } = require("./managed-email-callable");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { randomBytes, createHash } = require("node:crypto");
 const qr = require("./payment-companion-qr-policy");
+const notification = require("./delivery-notification-intake");
 const { proofBoundToOrder, proofValidForOrder } = require("./delivery-slip-policy");
 const { allowManualReview } = require("./finance-manual-review-policy");
 const { getDeliveryOpeningStatus } = require("./delivery-opening-hours");
@@ -19,6 +20,7 @@ const ALLOWED_FIELDS = new Set([
   "freeGiftMaxSelectableItems", "freeGiftValidFrom", "freeGiftValidUntil",
   "subtotalAmount", "totalAmount", "paymentMethod", "paymentSlipUrl",
   "paymentSlipPath", "slipCheckStatus", "paymentReviewRequired", "paymentQrMode", "note",
+  "bankTransferReviewFlow", "paymentRecipientId",
   "items", "deliveryLatitude", "deliveryLongitude", "deliveryDistanceKm",
   "deliveryDistanceMeters", "deliveryDurationSeconds", "deliveryRouteProvider",
   "lalamoveQuotationId", "lalamoveQuotationExpiresAt", "lalamoveCurrency",
@@ -58,7 +60,7 @@ function validateSubmission(data) {
     || !Number.isFinite(order.deliveryLatitude) || Math.abs(order.deliveryLatitude) > 90
     || !Number.isFinite(order.deliveryLongitude) || Math.abs(order.deliveryLongitude) > 180
     || (order.deliveryLatitude === 0 && order.deliveryLongitude === 0)
-    || (order.paymentMethod === "promptpay" && order.paymentQrMode !== "confirmed_order_5m" && (
+    || (order.paymentMethod === "promptpay" && order.paymentQrMode !== "confirmed_order_5m" && order.bankTransferReviewFlow !== notification.FLOW && (
       !["matched", "manual_review"].includes(order.slipCheckStatus)
       || !order.paymentSlipPath || typeof order.paymentSlipPath !== "string"
       || !order.paymentSlipPath.startsWith("tenants/" + tenantId + "/payment-slips/" + id + "/")
@@ -70,6 +72,16 @@ function validateSubmission(data) {
     || order.paymentSlipPath || order.slipCheckStatus || order.paymentReviewRequired === true)) {
     throw new HttpsError("invalid-argument", "DELIVERY_QR_ORDER_INVALID");
   }
+  if(order.bankTransferReviewFlow != null &&
+    (order.bankTransferReviewFlow!==notification.FLOW||order.paymentQrMode!=null||
+     order.paymentMethod!=="promptpay"||order.paymentSlipPath||order.slipCheckStatus||
+     order.paymentReviewRequired===true||
+     !/^(?:0[0-9]{9}|[0-9]{13})$/.test(order.paymentRecipientId||"")||
+     (order.deliveryProvider==="lalamove"&&!qr.ID.test(order.lalamoveQuotationId||""))||
+     order.items.length>60||order.items.some(item=>!qr.ID.test(item.menuId||""))))
+    throw new HttpsError("invalid-argument","DELIVERY_NOTIFICATION_INVALID");
+  if(order.bankTransferReviewFlow==null&&order.paymentRecipientId!=null)
+    throw new HttpsError("invalid-argument","DELIVERY_NOTIFICATION_INVALID");
   return { tenantId, id, order };
 }
 
@@ -94,6 +106,9 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
   const settingsRef = tenantRef.collection("settings").doc("store");
   const orderRef = tenantRef.collection("orders").doc(id);
   const wantsQr=order.paymentQrMode==="confirmed_order_5m";
+  const wantsNotification=order.bankTransferReviewFlow===notification.FLOW;
+  if(wantsNotification&&!notification.demoEnabled(tenantId))
+    throw new HttpsError("failed-precondition","DELIVERY_NOTIFICATION_DISABLED");
   if(wantsQr&&(!qr.ID.test(String(order.lalamoveQuotationId||""))||
     !Array.isArray(order.items)||order.items.length>60||
     order.items.some(item=>!qr.ID.test(String(item.menuId||""))))){
@@ -167,8 +182,19 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
         };
       }catch(err){throw new HttpsError("failed-precondition",String(err.message||"DELIVERY_QR_UNCONFIRMED"));}
     }
+    let authoritativeNotification=null;
+    if(wantsNotification){
+      try{
+        if(tenantData.active!==true)throw Error("DELIVERY_NOTIFICATION_DISABLED");
+        const menus=await Promise.all(order.items.map(item=>transaction.get(tenantRef.collection("menus").doc(item.menuId))));
+        const evidence=await transaction.get(order.deliveryProvider==="lalamove"
+          ?tenantRef.collection("deliveryCheckoutQuotes").doc(String(order.lalamoveQuotationId||"invalid"))
+          :db.collection("deliveryRouteCache").doc(notification.routeKey(tenantId,store,order)));
+        authoritativeNotification=notification.canonical(tenantId,settingsSnap,order,menus,evidence);
+      }catch(err){throw new HttpsError("failed-precondition",String(err.message||"DELIVERY_NOTIFICATION_UNCONFIRMED"));}
+    }
     let authorizedStatus = "";
-    if (!authoritativeQr) {
+    if (!authoritativeQr && !authoritativeNotification) {
       const proofSnap = await transaction.get(tenantRef.collection("deliverySlipChecks").doc(id));
       authorizedStatus = authorizedSlipStatus(tenantId, id, order, proofSnap.data());
       if (!proofSnap.exists || !authorizedStatus)
@@ -179,6 +205,8 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     );
     // No privileged payment statuses or audit fields can be supplied by public clients.
     delete safeOrder.paymentQrMode;
+    delete safeOrder.bankTransferReviewFlow;
+    delete safeOrder.paymentRecipientId;
     delete safeOrder.slipVerificationStatus;
     delete safeOrder.paymentStatus;
     delete safeOrder.status;
@@ -186,12 +214,20 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     delete safeOrder.paymentReviewRequired;
     delete safeOrder.paymentSlipUrl;
     transaction.create(orderRef, {
-      ...safeOrder,
+      ...(authoritativeNotification?{
+        recipientName:order.recipientName.trim().slice(0,150),
+        recipientPhone:order.recipientPhone.trim().slice(0,30),
+        deliveryAddress:order.deliveryAddress.trim().slice(0,500),
+        deliveryLatitude:order.deliveryLatitude,deliveryLongitude:order.deliveryLongitude,
+        note:String(order.note||"").slice(0,300),paymentMethod:"promptpay",
+        ...authoritativeNotification,
+      }:safeOrder),
       id, tenantId, shopId: tenantId, orderType: "delivery",
       tableCode: "DELIVERY", tableToken: "", tableName: "",
       status: "pending",
       ...(authoritativeQr||{}),
-      ...(authoritativeQr?{slipCheckStatus:"",paymentReviewRequired:false,paymentSlipPath:""}:
+      ...(authoritativeNotification?{customerCorrectionCapabilityDigest:capabilityHash}:
+        authoritativeQr?{slipCheckStatus:"",paymentReviewRequired:false,paymentSlipPath:""}:
         capability?{customerCorrectionCapabilityDigest:capabilityHash,
           paymentCorrectionRevision:0,
           slipCheckStatus:authorizedStatus,
@@ -203,6 +239,7 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     return { id,
       ...(capability?{paymentCorrectionCapability:capability}:{}),
       ...(authoritativeQr?{paymentQrMode:"confirmed_order_5m"}:{}),
+      ...(authoritativeNotification?{bankTransferReviewFlow:notification.FLOW}:{}),
     };
   });
 }

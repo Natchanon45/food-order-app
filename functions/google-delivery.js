@@ -173,3 +173,6 @@ exports.computeDeliveryRoute = onCall({ region: REGION, timeoutSeconds: 25, secr
   await cacheRef.set(cache, { merge: true });
   return { ...routeResult(cache, settings), cached: false };
 });
+
+// Reuse exact server route pricing in the notification-first intake transaction.
+exports.__test = { maxDistance, deliveryZones, cacheKey, routeResult };

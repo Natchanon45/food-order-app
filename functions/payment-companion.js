@@ -93,7 +93,7 @@ async function candidateSnapshot(db,tenantId,tx){
  const rows=notices.docs.map(d=>d.data());
  const eligible=orders.docs.flatMap(d=>{
   const o=d.data(),createdMs=o.createdAt?.toMillis?.(),amountSatang=Math.round(o.totalAmount*100);
-  if(o.orderType!=="delivery"||o.paymentMethod!=="promptpay"||o.paymentStatus!=="pending_verification"||o.status!=="pending"||!Number.isFinite(createdMs)||createdMs>now+120000||!Number.isFinite(o.totalAmount)||!Number.isSafeInteger(amountSatang)||amountSatang<=0||Math.abs(o.totalAmount*100-amountSatang)>0.00001)return [];
+  if(o.orderType!=="delivery"||o.bankTransferReviewFlow==="notification_first"||o.paymentMethod!=="promptpay"||o.paymentStatus!=="pending_verification"||o.status!=="pending"||!Number.isFinite(createdMs)||createdMs>now+120000||!Number.isFinite(o.totalAmount)||!Number.isSafeInteger(amountSatang)||amountSatang<=0||Math.abs(o.totalAmount*100-amountSatang)>0.00001)return [];
   return [{id:d.id,amountSatang,createdMs,
     paymentQrMode:o.paymentQrMode==="confirmed_order_5m"?"confirmed_order_5m":"legacy",
     qrStartedMs:Date.parse(o.paymentQrStartedAtUTC||""),
