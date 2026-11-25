@@ -13,10 +13,10 @@
 
 | Metric | Verified count | Percent | Meaning |
 |---|---:|---:|---|
-| Source JSX audited and accepted against latest branch | 10/65 | 15.4% | Tested at page/module level, local only |
+| Source JSX audited and accepted against latest branch | 14/65 | 21.5% | Tested at page/module level, local only |
 | Source-only route extract dispositioned without a duplicate page | 1/65 | 1.5% | Existing accepted target Admin UI |
-| **Accepted or explicitly dispositioned** | **11/65** | **16.9%** | **Conservative overall Source JSX parity progress** |
-| **Still requires latest-Source acceptance review** | **54/65** | **83.1%** | Not necessarily absent: old port code/tests already exist |
+| **Accepted or explicitly dispositioned** | **15/65** | **23.1%** | **Conservative overall Source JSX parity progress** |
+| **Still requires latest-Source acceptance review** | **50/65** | **76.9%** | Not necessarily absent: old port code/tests already exist |
 | JSX filename already present in Target before rebaseline | 52/65 | 80.0% | **Presence only** — never call it functional progress |
 
 ### Do not misread this %
@@ -80,14 +80,14 @@ The 65-page baseline includes POS/Laravel thin wrappers and legacy transport. Th
 | PosTaxInvoicesPage.jsx | POS และ Source-only POS Master | Present (495 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | PosUsersMasterPage.jsx | POS และ Source-only POS Master | Not present | Pending latest-Source audit | Source-only: verify route/wrapper before adding Firebase JSX |
 | PosUsersPage.jsx | POS และ Source-only POS Master | Present (251 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
-| PublicOrderPage.jsx | Delivery / Public Ordering | Present (243 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
-| PublicRouteMissingPage.jsx | Delivery / Public Ordering | Present (32 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
+| PublicOrderPage.jsx | Delivery / Public Ordering | Present (243 baseline LOC) | Accepted (local) | P3.3 Table QR live session revocation, canonical signed Tenant/menu/table-token/round intake |
+| PublicRouteMissingPage.jsx | Delivery / Public Ordering | Present (32 baseline LOC) | Accepted (local) | P3.3 Source route reviewed, PENGUIN branding retained |
 | QuickOrderPage.jsx | Cashier / Kitchen / Queue | Present (1105 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | RegisterPage.jsx | Merchant Admin / General / Auth | Present (508 baseline LOC) | Accepted (local) | P2.3 Owner signup/verified email/native Firebase |
 | RevenueShareReportPage.jsx | Superadmin / Billing | Present (839 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | SaasSetupPage.jsx | Superadmin / Billing | Present (153 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
-| StorefrontCompatibilityEntry.jsx | Delivery / Public Ordering | Present (30 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
-| TakeawayPage.jsx | Delivery / Public Ordering | Present (220 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
+| StorefrontCompatibilityEntry.jsx | Delivery / Public Ordering | Present (30 baseline LOC) | Accepted (local) | P3.3 validated slug, target allowlist, canonical Firebase storefront URL |
+| TakeawayPage.jsx | Delivery / Public Ordering | Present (220 baseline LOC) | Accepted (local) | P3.3 live suspended-store gate, canonical menu price, signed idempotent guest queue |
 | VerifyPage.jsx | Merchant Admin / General / Auth | Present (162 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | WaitingQueueCustomerPage.jsx | Cashier / Kitchen / Queue | Present (287 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | WaitingQueueDisplayPage.jsx | Cashier / Kitchen / Queue | Present (121 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
@@ -100,7 +100,7 @@ The 65-page baseline includes POS/Laravel thin wrappers and legacy transport. Th
 | Merchant Admin / General / Auth | 5 | AdminQrPage, AdminUsersPage, HomePage, LegalPage, VerifyPage |
 | Laravel transport/route wrapper audit | 3 | CanonicalLaravelBridgePage, LaravelSessionPage, PortMissingRoute |
 | Cashier / Kitchen / Queue | 6 | CashierReceiptPage, CashierTableQrPage, QuickOrderPage, WaitingQueueCustomerPage, WaitingQueueDisplayPage, WaitingQueuePage |
-| Delivery / Public Ordering | 6 | DeliveryPage, DeliverySuccessPage, PublicOrderPage, PublicRouteMissingPage, StorefrontCompatibilityEntry, TakeawayPage |
+| Delivery / Public Ordering | 2 | DeliveryPage, DeliverySuccessPage |
 | Superadmin / Billing | 5 | HybridBillingReportPage, HybridBillingReviewPage, PlatformOwnersPage, RevenueShareReportPage, SaasSetupPage |
 | POS และ Source-only POS Master | 29 | PosBackupPage, PosCatalogMasterPage, PosCatalogPage, PosCategoriesMasterPage, PosCustomerDisplayPage, PosCustomersMasterPage, PosCustomersPage, PosForbiddenPage, PosPage, PosPayablesPage, PosProductsMasterPage, PosProductsPage, PosPurchasesPage, PosReceiptPage, PosReturnsPage, PosSalesPage, PosSettingsMasterPage, PosSettingsPage, PosShiftsPage, PosStockCountsMasterPage, PosStockCountsPage, PosStockMovementsMasterPage, PosStockMovementsPage, PosSuppliersMasterPage, PosSuppliersPage, PosTaxInvoicePage, PosTaxInvoicesPage, PosUsersMasterPage, PosUsersPage |
 

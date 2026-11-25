@@ -1,5 +1,14 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P3.3 public Table / Takeaway Source intake
+
+Locally accepted PublicOrderPage, TakeawayPage, PublicRouteMissingPage and StorefrontCompatibilityEntry. Replaced public Browser Firestore writes with canonical Table/Takeaway Server Callables verifying current Tenant, active menu price, QR table token, round and idempotent order ID; direct guest Firestore writes denied. COD globally disabled in Delivery Client+Server, unverified bank notice and historical receipt display on DeliverySuccessPage. DeliveryPage and DeliverySuccessPage full Source provider/slip-correction parity remain PENDING. P3.3 pure 9/9 PASS, real guest Firebase Chrome 1/1 PASS, Delivery Server 9/9 PASS, 152 managed Callables PASS, full React Parity EXIT 0, final React Build/Hosting Contract PASS Exit 0 (index-DrFGa8qY.js). Detailed P3.3 report and Worklog cover QA.
+
+Master: 15/65 (23.1%) accepted/dispositioned locally; 50/65 (76.9%) formal latest-Source audit pending. Do not equate filename overlap or demo acceptance with Production readiness.
+
+---
+
+
 ## 2026-11-25 — P3.2 Kitchen latest JSX and signed Firebase status/financial audit
 
 Local Kitchen source parity is complete: P3.2 Source delivery header, revised item/net/discount display, Courier reservation lock, authorized Telegram order focus, responsive action layout and immutable signed Kitchen transitions. The Firebase Backend now requires exact current Tenant/role, expected status/payment/revision, canonical menu price, idempotent action audit, and preserves paid funds while flagging revised amounts for manual finance review. Deferred Walk-in already-signed APIs remain. COD stays user-disabled. Pure tests 8/8, signed Firebase/Chrome 1/1. Complete npm run test:react-parity **PASS Exit 0**; npm run build:react and generated Hosting Contract **PASS Exit 0** (2026.11.09.535, bundle /react/assets/index-D2gHJ-Qo.js). Generated public assets and Emulator temp config cleaned. Report in P3.2 Kitchen Source Port document.

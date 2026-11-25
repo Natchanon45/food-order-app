@@ -10,6 +10,7 @@ import {
   createPublicTableOrder, findPublicTableSession, getPublicTable, getPublicStoreSettings, listPublicMenus, resolvePublicTenant, watchPublicTableOrders,
 } from "@/data/publicStorefrontData";
 import { useI18n } from "@/i18n/I18nProvider";
+import { tableOrderFailureText } from "@/data/tableOrderFailureText.mjs";
 import { useParityPage } from "@/hooks/useParityPage";
 
 function timestampValue(value) {
@@ -124,9 +125,19 @@ export function PublicOrderPage() {
   useEffect(() => {
     if (!tenant?.id || !activeTable?.id || !tableToken) { setOrders([]); return undefined; }
     return watchPublicTableOrders(tenant, activeTable.id, tableToken, payload => {
-      if (payload.table && payload.table.orderToken === tableToken) setActiveTable(payload.table);
+      // Source revocation guard: a table moved/released in another tab is
+      // never an actionable stale session, even between periodic checks.
+      if (!payload.table || payload.table.status !== "occupied" ||
+          payload.table.orderToken !== tableToken) {
+        setActiveTable(null);setOrders([]);return;
+      }
+      setActiveTable(payload.table);
       setOrders(payload.orders || []);
-    }, watchError => console.error("PUBLIC_ORDER_WATCH_FAILED", watchError));
+    }, watchError => {
+      console.error("PUBLIC_ORDER_WATCH_FAILED", watchError?.code || "UNKNOWN");
+      setActiveTable(null);setOrders([]);
+      setError("INVALID_TABLE_SESSION");
+    });
   }, [tenant?.id, activeTable?.id, tableToken]);
 
   const addItem = item => {
@@ -168,7 +179,11 @@ export function PublicOrderPage() {
       showStorefrontToast(t("order.toast.submitted"));
     } catch (submitError) {
       console.error("PUBLIC_ORDER_SUBMIT_FAILED", submitError);
-      showStorefrontToast(submitError?.message === "INVALID_TABLE_SESSION" ? t("order.errors.expired") : t("order.toast.submit_failed"), "error");
+      if (submitError?.message === "INVALID_TABLE_SESSION") {
+        setActiveTable(null);setOrders([]);
+      }
+      showStorefrontToast(tableOrderFailureText(submitError,
+        t("order.toast.submit_failed"),t("order.errors.expired")),"error");
     } finally { setSubmitting(false); }
   };
 

@@ -8,16 +8,20 @@ const ACTIVE_TENANT_KEY = "food_order_active_tenant";
 function storedTenantSlug() {
   try {
     const value = JSON.parse(localStorage.getItem(ACTIVE_TENANT_KEY) || "null");
-    return String(value?.slug || value?.tenantSlug || "").trim().toLowerCase();
+    const slug = String(value?.slug || value?.tenantSlug || "").trim().toLowerCase();
+    return /^[a-z0-9][a-z0-9-]{0,127}$/.test(slug) ? slug : "";
   } catch {
     return "";
   }
 }
 
-export function StorefrontCompatibilityEntry({ target, allowStoredTenant = false }) {
+// Do not resolve arbitrary external paths or unvalidated localStorage slugs.
+export function StorefrontCompatibilityEntry({ target = "takeaway", allowStoredTenant = false }) {
   const navigate = useNavigate();
   const slug = allowStoredTenant ? storedTenantSlug() : "";
-  const destination = slug
+  // PENGUIN canonical route differs from Source Laravel; preserve safe
+  // tenant-based path, with allowlisted routes only.
+  const destination = slug && ["takeaway","delivery","order"].includes(target)
     ? "/s/" + encodeURIComponent(slug) + "/" + target + location.search + location.hash
     : "";
 

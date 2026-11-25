@@ -1,3 +1,13 @@
+## 2026-11-25 — P3.3 Public guest canonical Firebase Table/Takeaway
+
+- Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159 READ ONLY; target feature/react-firebase-port baseline 27b90bbe.
+- Four Source pages accepted: PublicOrderPage, TakeawayPage, PublicRouteMissingPage, StorefrontCompatibilityEntry. New Table/Takeaway guest Server Callables use exact canonical Tenant/menu/price/QR token and SHA-256 idempotency; no browser-written or forged paid sales. Firestore denies direct guest create, Takeaway suspends live, Table revokes QR immediately.
+- Partial safety/display only: DeliveryPage COD globally off on client and server, suspended Tenant server protection; DeliverySuccessPage receipt revisions/discounts/cancel actor and unpaid bank warning. Both still PENDING Source complete acceptance and live provider QA.
+- QA: P3.3 pure 9/9 PASS, real guest Firebase Chrome 1/1 PASS across four viewports with price tamper/replay/suspension/session rejection, Delivery server guard 9/9 PASS, managed Auth wrapper 47 modules/152 Callables PASS; full serial React Parity EXIT 0. Final React Build and Hosting Contract PASS Exit 0 (2026.11.09.535, index-DrFGa8qY.js); temporary public assets and demo Emulator config cleaned.
+- Master accepted/dispositioned 15/65=23.1%, remaining 50/65=76.9%; original target 52/65 matching names do not prove functional acceptance. No Production/main merge/APK/IPA or Source writes.
+
+---
+
 ## 2026-11-25 — P3.2 Kitchen Source parity and Firebase audited status transitions
 
 - Pinned READ ONLY Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159, Target food-order-app feature/react-firebase-port starting da96f048.

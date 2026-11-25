@@ -1,3 +1,16 @@
+## 2026-11-25 — P3.3 public guest Table/Takeaway complete locally
+
+- Source READ ONLY cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159; target food-order-app feature/react-firebase-port starting 27b90bbe.
+- Four accepted Source pages: PublicOrderPage, TakeawayPage, PublicRouteMissingPage, StorefrontCompatibilityEntry. Public QR token revocation, suspended-store Takeaway UI, safe guest errors and validated canonical Firebase redirects.
+- Two public unauthenticated Callables submitPublicTableOrder and submitPublicTakeawayOrder validate current Tenant, active menu/price, exact occupied Table token, server-owned pending/unpaid total and queue. SHA-256 fingerprint/idempotent retry; changed cart and reused ID conflict; guest direct Firestore create denied.
+- DeliveryPage globally disabled COD in browser and signed Server; delivery server denies suspended shops. DeliverySuccessPage displays Source revised item/net, discounts, cancelled-actor and unpaid bank review notice. These two Source pages remain PENDING full latest-Source review.
+- QA: P3.3 policy 9/9, guest real Chrome+Firebase Auth/Firestore/Functions 1/1, Delivery Server 9/9, centrally protected 47 modules / 152 Callables. Full React Parity PASS Exit 0; final Build and generated Hosting Contract PASS Exit 0 (2026.11.09.535, index-DrFGa8qY.js).
+- Master 65 Source JSX: 15/65=23.1% accepted/dispositioned; 50/65=76.9% pending (Delivery/Public2, POS29, Cashier/Queue6, Superadmin/Billing5, Merchant/General5, wrappers3). Filename overlap 52/65 is NOT parity.
+- NEXT P3.4: complete Delivery Checkout+Success trusted staged-slip/review/correction and real bank/Stripe/Lalamove provider gating. No Source write, Production/main merge or APK/IPA.
+- Report: docs/LUKKAJA_P3_3_PUBLIC_GUEST_ORDER_INTAKE_20261125.md.
+
+---
+
 ## 2026-11-25 — P3.2 Kitchen latest Source completed locally
 
 - Source READ ONLY: cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159. Target: Natchanon45/food-order-app feature/react-firebase-port; starting da96f048.

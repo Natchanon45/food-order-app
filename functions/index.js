@@ -387,6 +387,9 @@ exports.cancelTenantLalamoveDispatch = lalamoveDispatch.cancelTenantLalamoveDisp
 
 // Server-enforced public Delivery writes; client Firestore delivery creates are denied.
 exports.submitPublicDeliveryOrder = require("./public-delivery-submit").submitPublicDeliveryOrder;
+const publicGuestOrders = require("./public-guest-order-intake");
+exports.submitPublicTableOrder = publicGuestOrders.submitPublicTableOrder;
+exports.submitPublicTakeawayOrder = publicGuestOrders.submitPublicTakeawayOrder;
 
 // PENGUIN central Slip2Go verification for restaurant/cafe Delivery only.
 const deliverySlip = require("./delivery-slip");

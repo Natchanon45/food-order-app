@@ -10,6 +10,8 @@ import {
   createPublicTakeawayOrder, loadPublicStorefront, resolvePublicTenant,
 } from "@/data/publicStorefrontData";
 import { useI18n } from "@/i18n/I18nProvider";
+import { takeawayOrderFailureText } from "@/data/takeawayOrderFailureText.mjs";
+import { watchPublicTenantOrderAccess } from "@/data/publicStorefrontData";
 import { useParityPage } from "@/hooks/useParityPage";
 
 export function TakeawayPage() {
@@ -27,6 +29,7 @@ export function TakeawayPage() {
   const [tenant, setTenant] = useState(null);
   const [settings, setSettings] = useState({});
   const [menus, setMenus] = useState([]);
+  const [publicAccess, setPublicAccess] = useState("checking");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [activeCategory, setActiveCategory] = useState("__all__");
@@ -65,6 +68,16 @@ export function TakeawayPage() {
     return () => { alive = false; };
   }, [slug]);
 
+  // A public customer must not keep the Add/Submit controls from the previous
+  // active snapshot after a shop is suspended, closed or reactivated.
+  useEffect(() => {
+    if (!tenant?.id) {setPublicAccess("checking");return;}
+    setPublicAccess("checking");
+    return watchPublicTenantOrderAccess(tenant,
+      active=>{setPublicAccess(active?"open":"suspended");},
+      ()=>setPublicAccess("suspended"));
+  }, [tenant?.id]);
+
   const cartTotal = useMemo(
     () => cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0),
     [cart],
@@ -99,7 +112,7 @@ export function TakeawayPage() {
   const noteItem = (id, value) => setCart(current => current.map(row => row.id === id ? { ...row, note: value } : row));
 
   const submit = async () => {
-    if (!tenant || submitting || !cart.length) return;
+    if (!tenant || submitting || !cart.length || publicAccess !== "open") return;
     if (!customerName.trim() && !customerPhone.trim()) {
       showStorefrontToast(t("takeaway.customer.required"), "error");
       return;
@@ -137,18 +150,21 @@ export function TakeawayPage() {
       });
     } catch (error) {
       console.error("TAKEAWAY_REACT_SUBMIT_FAILED", error);
-      showStorefrontToast(
-        error?.message === "TAKEAWAY_CUSTOMER_REQUIRED"
-          ? t("takeaway.customer.required")
-          : t("takeaway.toast.submit_failed"),
-        "error",
-      );
+      if (["TENANT_INACTIVE","TAKEAWAY_STORE_UNAVAILABLE"].includes(String(error?.code||error?.message||""))) {
+        setPublicAccess("suspended");
+      }
+      showStorefrontToast(takeawayOrderFailureText(error,
+        t("takeaway.toast.submit_failed"),t("takeaway.customer.required")),"error");
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (!stylesReady || loading) return <PageReadyOverlay />;
+  if (!stylesReady || loading || (publicAccess === "checking" && !loadError)) return <PageReadyOverlay />;
+  const accessSuspended = publicAccess !== "open" && !loadError;
+  const effectiveLoadError = accessSuspended
+    ? "ร้านค้าถูกระงับการใช้งานชั่วคราว จึงยังไม่รับออร์เดอร์ กรุณาติดต่อร้านค้า"
+    : loadError;
   const shopName = String(settings?.shopName || tenant?.name || t("shared.store.fallback_name") || "PENGUIN").trim();
 
   return (
@@ -180,7 +196,10 @@ export function TakeawayPage() {
           <small>{t("takeaway.customer.hint")}</small>
         </section>
 
-        {loadError ? <section className="card empty">{loadError}</section> : (
+        {effectiveLoadError ? <section className="card empty" role="alert" aria-live="polite"
+          data-public-store-access-suspended={accessSuspended ? "" : undefined}>
+          {effectiveLoadError}
+        </section> : (
           <div className="delivery-pos">
             {loading ? <div className="delivery-menu-column"><div className="card empty">{t("shared.loading")}</div></div> : (
               <PublicMenuCatalog menus={menus} prefix="takeaway.menu" activeCategory={activeCategory}
@@ -209,7 +228,7 @@ export function TakeawayPage() {
           <small>{t("takeaway.cart.total")}</small>
           <div style={{ fontSize: 20, fontWeight: 800 }}>{formatNumber(cartTotal, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {t("takeaway.cart.currency")}</div>
         </div>
-        <button className="btn btn-primary" type="button" disabled={!tenant || !cart.length || submitting} onClick={submit}>
+        <button className="btn btn-primary" type="button" disabled={accessSuspended || !tenant || !cart.length || submitting} onClick={submit}>
           <i className={"bi bi-" + (submitting ? "hourglass-split" : "check-lg") + " app-icon"} aria-hidden="true"></i>
           <span>{t(submitting ? "takeaway.actions.submitting" : "takeaway.actions.submit")}</span>
         </button>

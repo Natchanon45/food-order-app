@@ -1,5 +1,7 @@
 import { CompanionConfirmedQr } from "@/components/CompanionConfirmedQr";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ReceiptOriginalItemRow, RevisedOrderNet, OrderCancellationWatermark } from "@/components/OrderRevisionDisplay";
+import { deliveryReceiptTotals } from "@/utils/deliveryReceiptTotal.mjs";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { Link, useParams } from "react-router-dom";
 import { getPublicOrder, getPublicStoreSettings, resolvePublicTenant, watchPublicOrder } from "@/data/publicStorefrontData";
@@ -406,7 +408,26 @@ export function DeliverySuccessPage() {
       {loading ? <section className="card empty">{t("delivery.success.tracking.loading")}</section> : null}
       {errorText ? <section className="card empty">{errorText}</section> : null}
 
+      {order?.paymentStatus === "pending_verification" &&
+        <section className="card delivery-payment-review-card" id="customerPaymentReviewNotice"
+          role="status" aria-live="polite" data-public-order-unverified="true">
+          <div className="delivery-payment-review-header">
+            <span className="delivery-payment-review-icon" aria-hidden="true">
+              <i className="bi bi-shield-check" /></span>
+            <div className="delivery-payment-review-heading">
+              <small>การตรวจสอบยอดชำระ</small>
+              <h3>ยังไม่ยืนยันรับเงิน</h3>
+            </div>
+            <span className="badge warning">รอตรวจสอบ</span>
+          </div>
+          <p>บันทึกออเดอร์แล้ว แต่หลักฐานธนาคารหรือการแจ้งเงินเข้ายังไม่ใช่ผลยืนยันการชำระเงิน
+            โปรดอย่าโอนเงินซ้ำ หากโอนแล้วกรุณาติดต่อร้านค้าพร้อมสลิปต้นฉบับของรายการเดิม</p>
+          {order?.companionKitchenRelease?.status === "admitted_unverified" &&
+            <p>รายการนี้เข้าครัวในสถานะรอตรวจรับเงินจริงโดยร้านค้า
+              และยังไม่อนุญาตเรียกผู้จัดส่งจากการแจ้งเงินเข้าที่ยังไม่ผ่านการยืนยัน</p>}
+        </section>}
       {mayShowReceipt ? <section className="receipt" id="customerReceipt" ref={receiptRef}>
+        <OrderCancellationWatermark order={order} t={t} />
         <div className="receipt-header">
           <h1 id="shopName">{shopName}</h1>
           <div id="shopAddress">{settings.shopAddress || ""}</div>
@@ -438,7 +459,9 @@ export function DeliverySuccessPage() {
             </tr>
           </thead>
           <tbody id="receiptItems">
-            {items.map((item, index) => <tr key={(item.menuId || item.name || "item") + index}>
+            {items.map((item, index) => <Fragment key={(item.menuId || item.name || "item") + index}>
+              <ReceiptOriginalItemRow item={item} money={money}/>
+              <tr>
               <td className="receipt-item-name">
                 <div className="receipt-item-line">
                   <span className="receipt-item-text" title={item.name}>{deliveryReceiptItemLabel(item)}</span>
@@ -447,7 +470,8 @@ export function DeliverySuccessPage() {
               </td>
               <td className="num receipt-unit">{money(item.price)}</td>
               <td className="num receipt-line-total">{money(Number(item.qty || 0) * Number(item.price || 0))}</td>
-            </tr>)}
+              </tr>
+            </Fragment>)}
           </tbody>
         </table>
 
@@ -455,7 +479,20 @@ export function DeliverySuccessPage() {
 
         <div className="receipt-row"><span>{t("delivery.success.receipt.fields.subtotal")}</span><span><span id="receiptSubtotal">{money(subtotal)}</span> {t("delivery.success.receipt.unit_baht")}</span></div>
         <div className="receipt-row"><span>{t("delivery.success.receipt.fields.delivery_fee")}</span><span><span id="receiptDeliveryFee">{money(fee)}</span> {t("delivery.success.receipt.unit_baht")}</span></div>
-        <div className="receipt-row receipt-total"><span>{t("delivery.success.receipt.fields.net_total")}</span><span><span id="receiptTotal">{money(total)}</span> {t("delivery.success.receipt.unit_baht")}</span></div>
+        <div className="receipt-row delivery-before-discount-total">
+          <span>ยอดรวมก่อนส่วนลด</span>
+          <span><strong id="receiptBeforeDiscountTotal">{money(deliveryReceiptTotals(order,subtotal).beforeDiscount)}</strong> {t("delivery.success.receipt.unit_baht")}</span>
+        </div>
+        {Number(order?.deliveryPromotionDiscount || 0)>0 &&
+          <div className="receipt-row delivery-promotion-discount-row" id="receiptDeliveryPromotionDiscount">
+            <span>ส่วนลดค่าจัดส่งตามยอดอาหาร</span>
+            <span>−{money(order.deliveryPromotionDiscount)} {t("delivery.success.receipt.unit_baht")}</span>
+          </div>}
+        <div className="receipt-row receipt-total">
+          <span>{t("delivery.success.receipt.fields.net_total")}</span>
+          <span id="receiptTotal"><RevisedOrderNet order={order} current={total}
+            money={money} unit={t("delivery.success.receipt.unit_baht")} /></span>
+        </div>
 
         <div id="receiptNoteWrap" hidden={!order.note}>
           <hr className="receipt-rule" />

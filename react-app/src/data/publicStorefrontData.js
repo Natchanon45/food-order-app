@@ -6,8 +6,11 @@ import { ref as storageRef, uploadBytes } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
 import { db, storage, functions } from "@/firebase/client";
 import { getDeliveryOpeningStatus } from "@/utils/deliveryOpeningHours";
+import { publicOrderAcceptingTenant } from "@/data/publicStorefrontOrderAccess.mjs";
 
 const submitPublicDeliveryOrder = httpsCallable(functions, "submitPublicDeliveryOrder", { timeout: 55000 });
+const submitPublicTableOrder = httpsCallable(functions,"submitPublicTableOrder",{timeout:45000});
+const submitPublicTakeawayOrder = httpsCallable(functions,"submitPublicTakeawayOrder",{timeout:45000});
 
 const DEFAULT_FOOD_IMAGE = "/assets/images/default-food.svg";
 const ACTIVE_TENANT_KEY = "food_order_active_tenant";
@@ -95,6 +98,14 @@ export async function resolvePublicTenant(slugValue = publicSlugFromPath()) {
   return tenant;
 }
 
+// Real-time guest order access: server rules must independently re-evaluate
+// this Tenant at the moment of create; React never grants financial authority.
+export function watchPublicTenantOrderAccess(tenant,onAccess,onError=console.error){
+  return onSnapshot(doc(db,"tenants",String(tenant.id)),
+    snapshot=>onAccess(snapshot.exists()&&publicOrderAcceptingTenant(snapshot.data())),
+    onError);
+}
+
 export async function getPublicStoreSettings(tenant) {
   const snapshot = await getDoc(tenantDocument(tenant, "settings", "store"));
   return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : {};
@@ -176,29 +187,33 @@ export function clearPublicOrderId(tenant, channel, identity = "") {
 }
 
 export async function createPublicTableOrder(tenant, order = {}) {
-  const table = await getPublicTable(tenant, order.tableCode);
-  if (!table) throw new Error("INVALID_TABLE_SESSION");
-  const tableRef = tenantDocument(tenant, "tables", table.id);
-  const orderId = String(order.id || preparePublicOrderId(tenant, "table", order.tableToken || order.tableCode));
-  const orderRef = tenantDocument(tenant, "orders", orderId);
-  await runTransaction(db, async transaction => {
-    const tableSnapshot = await transaction.get(tableRef);
-    if (!tableSnapshot.exists()) throw new Error("INVALID_TABLE_SESSION");
-    const tableData = tableSnapshot.data() || {};
-    if (tableData.status !== "occupied" || tableData.orderToken !== order.tableToken) throw new Error("INVALID_TABLE_SESSION");
-    const roundNumber = Number(tableData.currentRound || 0) + 1;
-    transaction.update(tableRef, tenantPayload(tenant, {
-      currentRound: roundNumber,
-      orderIds: [...new Set([...(tableData.orderIds || []), orderId])],
-      updatedAt: serverTimestamp(),
-    }));
-    transaction.set(orderRef, tenantPayload(tenant, {
-      ...order, id: orderId, orderType: "table", paymentStatus: order.paymentStatus || "unpaid",
-      status: order.status || "pending", roundNumber, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
-    }));
-  });
-  clearPublicOrderId(tenant, "table", order.tableToken || order.tableCode);
-  return { id: orderId };
+  const id=String(order.id||preparePublicOrderId(tenant,"table",
+    order.tableToken||order.tableCode));
+  // The public guest cannot write an order, payment status, items, or
+  // table rounds directly. Server rereads canonical menu and active table.
+  const table=await findPublicTableSession(tenant,
+    order.tableCode,order.tableToken);
+  if(!table)throw Error("INVALID_TABLE_SESSION");
+  try{
+    const reply=await submitPublicTableOrder({
+      tenantId:tenant.id,orderId:id,tableId:table.id,
+      tableToken:order.tableToken,
+      orderNote:order.note||"",
+      items:(order.items||[]).map(item=>({
+        menuId:String(item.menuId||item.id||""),
+        qty:Number(item.qty||0),note:String(item.note||""),
+      })),
+    });
+    if(reply.data?.id!==id)throw Error("TABLE_ORDER_NOT_CONFIRMED");
+    clearPublicOrderId(tenant,"table",order.tableToken||order.tableCode);
+    return reply.data;
+  }catch(error){
+    // Lost response retains the same pending order ID. User can refresh
+    // the kitchen queue instead of blindly writing a second round.
+    if(error?.code==="functions/already-exists")
+      throw Error("TABLE_ORDER_ALREADY_SUBMITTED_CHECK_KITCHEN");
+    throw error;
+  }
 }
 
 export function watchPublicTableOrders(tenant, tableId, tableToken, callback, onError = console.error) {
@@ -243,20 +258,27 @@ function takeawayQueueNo(value = new Date()) {
 }
 
 export async function createPublicTakeawayOrder(tenant, order = {}) {
-  const customerName = String(order.customerName || "").trim();
-  const customerPhone = String(order.customerPhone || "").trim();
-  if (!customerName && !customerPhone) throw new Error("TAKEAWAY_CUSTOMER_REQUIRED");
-  const createdAtText = new Date().toISOString();
-  const queueNo = takeawayQueueNo(createdAtText);
-  const id = String(order.id || preparePublicOrderId(tenant, "takeaway"));
-  await setDoc(tenantDocument(tenant, "orders", id), tenantPayload(tenant, {
-    ...order, id, orderType: "takeaway", tableCode: "", tableToken: "", tableName: "",
-    customerName, customerPhone, queueNo, pickupStatus: "waiting",
-    paymentStatus: order.paymentStatus || "unpaid", status: order.status || "pending",
-    dateKey: dateKeyFrom(createdAtText), createdAt: serverTimestamp(), createdAtText, updatedAt: serverTimestamp(),
-  }));
-  clearPublicOrderId(tenant, "takeaway");
-  return { id, queueNo };
+  const customerName=String(order.customerName||"").trim();
+  const customerPhone=String(order.customerPhone||"").trim();
+  if(!customerName&&!customerPhone)throw Error("TAKEAWAY_CUSTOMER_REQUIRED");
+  const id=String(order.id||preparePublicOrderId(tenant,"takeaway"));
+  try{
+    const reply=await submitPublicTakeawayOrder({
+      tenantId:tenant.id,orderId:id,customerName,customerPhone,
+      orderNote:String(order.note||""),
+      items:(order.items||[]).map(item=>({
+        menuId:String(item.menuId||item.id||""),
+        qty:Number(item.qty||0),note:String(item.note||""),
+      })),
+    });
+    if(reply.data?.id!==id)throw Error("TAKEAWAY_ORDER_NOT_CONFIRMED");
+    clearPublicOrderId(tenant,"takeaway");
+    return reply.data;
+  }catch(error){
+    if(error?.code==="functions/already-exists")
+      throw Error("TAKEAWAY_ORDER_ALREADY_SUBMITTED_CHECK_KITCHEN");
+    throw error;
+  }
 }
 
 function localDateKey() {

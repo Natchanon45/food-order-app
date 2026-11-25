@@ -9,7 +9,7 @@ const { __test: backend } = require("../../functions/public-delivery-submit.js")
 
 const tenantId = "ff897699-de82-4370-a360-35b22cc74c85";
 const orderId = "delivery-test-uuid-0000000000000001";
-function payload(method = "cod") {
+function payload(method = "promptpay") {
   return { tenantId, order: {
     id: orderId, orderType: "delivery", status: "pending",
     paymentStatus: method === "cod" ? "unpaid" : "pending_verification",
@@ -89,7 +89,7 @@ test("open store creates only server-controlled delivery metadata", async () => 
   ]);
   assert.equal(state.writes.length, 1);
   assert.equal(state.writes[0].data.orderType, "delivery");
-  assert.equal(state.writes[0].data.paymentStatus, "unpaid");
+  assert.equal(state.writes[0].data.paymentStatus, "pending_verification");
   assert.equal(state.writes[0].data.id, orderId);
   assert.equal(state.writes[0].data.tenantId, tenantId);
 });
@@ -117,9 +117,9 @@ test("retail-only, missing store, missing tenant and duplicate order are refused
 });
 test("per-shop COD and PromptPay switches are enforced in the server transaction", async () => {
   for (const [payment, settings, allowed] of [
-    ["cod", {}, true],
+    ["cod", {}, false],
     ["promptpay", {}, true],
-    ["cod", { deliveryCodEnabled: true, deliveryPromptPayEnabled: false }, true],
+    ["cod", { deliveryCodEnabled: true, deliveryPromptPayEnabled: false }, false],
     ["promptpay", { deliveryCodEnabled: true, deliveryPromptPayEnabled: false }, false],
     ["cod", { deliveryCodEnabled: false, deliveryPromptPayEnabled: true }, false],
     ["promptpay", { deliveryCodEnabled: false, deliveryPromptPayEnabled: true }, true],
@@ -146,9 +146,11 @@ test("Admin delivery payment settings and customer checkout have matching contro
   for (const flag of ["deliveryCodEnabled", "deliveryPromptPayEnabled"]) {
     assert.match(admin, new RegExp('checked=\\{storeForm\\.' + flag + '\\}'));
     assert.match(admin, new RegExp('saved\\?\\.' + flag + ' !== payload\\.' + flag));
-    assert.match(customer, new RegExp('settings\\.' + flag + ' !== false'));
+    if (flag === "deliveryCodEnabled") assert.match(customer, /const codEnabled = false;/);
+    else assert.match(customer, new RegExp('settings\\.' + flag + ' !== false'));
   }
   assert.match(admin, /!storeForm\.deliveryPromptPayEnabled && !storeForm\.deliveryCodEnabled/);
+  assert.match(customer, /const codEnabled = false;/);
   assert.match(customer, /codEnabled \? <option value="cod">/);
   assert.match(customer, /promptPayEnabled \? <option value="promptpay">/);
   assert.match(customer, /const validateBase = \(\) => \{\s+if \(!\(\(paymentMethod === "promptpay"/);

@@ -353,7 +353,9 @@ export function DeliveryPage() {
   const zones = useMemo(() => normalizeZones(settings).filter(zone => zone.id !== "pickup"), [settings]);
   const usesLalamove = String(settings.deliveryProvider || "self").toLowerCase() === "lalamove";
   const promptPayEnabled = settings.deliveryPromptPayEnabled !== false;
-  const codEnabled = settings.deliveryCodEnabled !== false;
+  // COD policy is globally held until real wallet/bank settlement is enabled.
+  // A legacy shop flag alone must never surface a payable COD checkout.
+  const codEnabled = false;
   const maxDistance = Number(settings.deliveryMaxDistanceKm) > 0 ? Number(settings.deliveryMaxDistanceKm) : null;
 
   const routeZone = routeState.route?.zone || null;

@@ -22,6 +22,10 @@ const accepted=new Map([
  ["AdminSalesReportPage.jsx","P2.4 complete sales history and receipt UI"],
  ["CashierPage.jsx","P3.1 signed Cashier cash/pickup/cancel, Source courier/receipt/Telegram UI; bank/LINE/Stripe live provider settlement gated"],
  ["KitchenPage.jsx","P3.2 signed Kitchen item/status/paid-adjustment audit, Source delivery header/courier lock; external finance review and live provider gated"],
+ ["PublicOrderPage.jsx","P3.3 Table QR live session revocation, canonical signed Tenant/menu/table-token/round intake"],
+ ["TakeawayPage.jsx","P3.3 live suspended-store gate, canonical menu price, signed idempotent guest queue"],
+ ["PublicRouteMissingPage.jsx","P3.3 Source route reviewed, PENGUIN branding retained"],
+ ["StorefrontCompatibilityEntry.jsx","P3.3 validated slug, target allowlist, canonical Firebase storefront URL"],
 ]);
 const disposition=new Map([
  ["AdminStoreMasterPage.jsx","Source-only extract not routed: integrated into AdminPage P2.2; no duplicate route"],

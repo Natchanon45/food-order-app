@@ -98,13 +98,21 @@ async function createDeliveryOrderWithGuard(db, tenantId, id, order) {
     if (!tenantSnap.exists || !settingsSnap.exists) {
       throw new HttpsError("not-found", "DELIVERY_STORE_STATUS_UNAVAILABLE");
     }
+    const tenantData=tenantSnap.data()||{};
+    if(tenantData.active===false||tenantData.operationalSuspended===true||
+      tenantData.revenueShareSuspended===true||
+      ["expired","suspended"].includes(String(tenantData.subscriptionStatus||"").toLowerCase())||
+      String(tenantData.status||"").toLowerCase()==="suspended")
+      throw new HttpsError("failed-precondition","M7_PUBLIC_STOREFRONT_SUSPENDED");
     const type = String(tenantSnap.data()?.businessType || "both");
     if (!["both", "restaurant_cafe"].includes(type)) {
       throw new HttpsError("permission-denied", "DELIVERY_BUSINESS_DISABLED");
     }
     const store = settingsSnap.data() || {};
-    // Both payment options default to their legacy enabled state until a shop opts out.
-    if (order.paymentMethod === "cod" && store.deliveryCodEnabled === false) {
+    // Global operational policy: COD remains suspended until the store wallet
+    // and bank reconciliation are independently approved. A per-store flag is
+    // NOT authorization to start collecting cash via an external driver.
+    if(order.paymentMethod === "cod") {
       throw new HttpsError("failed-precondition", "DELIVERY_COD_DISABLED");
     }
     if (order.paymentMethod === "promptpay" && store.deliveryPromptPayEnabled === false) {
