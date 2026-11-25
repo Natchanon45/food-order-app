@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { httpsCallable } from "firebase/functions";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PublicAppDownloads } from "@/components/PublicAppDownloads";
@@ -10,10 +9,9 @@ import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/auth/AuthProvider";
 import { useTenant } from "@/tenant/TenantProvider";
 import { STAFF_ROLES } from "@/auth/authFlow";
-import { db, functions } from "@/firebase/client";
+import { db } from "@/firebase/client";
 import { useI18n } from "@/i18n/I18nProvider";
 import { loadPublicSubscriptionPricing, formatSubscriptionMoney } from "@/data/subscriptionPricing";
-import { listOwnIssuedHybridInvoices } from "@/data/hybridIssuedInvoiceStatusClient";
 import { useParityPage } from "@/hooks/useParityPage";
 
 const roleAliases = new Set(["owner", "admin", "cashier", "kitchen", "manager"]);
@@ -88,15 +86,9 @@ export function HomePage() {
   const masterRestaurantEnabled = tenant?.businessType !== "retail";
   const masterRetailEnabled = tenant?.businessType !== "restaurant_cafe";
   const staff = profile?.active !== false && STAFF_ROLES.includes(profile?.role);
-  const [revenueShareEnabled, setRevenueShareEnabled] = useState(null);
   const [resolvedShopName, setResolvedShopName] = useState("");
   const [publicContact, setPublicContact] = useState(null);
   const [publicPricing,setPublicPricing]=useState(null);
-  const [invoiceNotice,setInvoiceNotice]=useState(null);
-  const invoiceScope=tenant?.id&&["owner","admin"].includes(profile?.role)&&profile?.active!==false
-    ? JSON.stringify([tenant.id,profile.uid||profile.id||"",profile.role]) : "";
-  const visibleInvoiceNotice=invoiceNotice?.scope===invoiceScope?invoiceNotice:null;
-
   useEffect(()=>{
     if(authState.status==="loading"||staff)return;
     let alive=true;
@@ -106,44 +98,12 @@ export function HomePage() {
     return()=>{alive=false;};
   },[authState.status,staff]);
 
-  useEffect(()=>{
-    setInvoiceNotice(null);
-    if(!invoiceScope)return;
-    let alive=true,busy=false;
-    const refresh=async()=>{
-      if(busy)return;
-      busy=true;
-      try{
-        const page=await listOwnIssuedHybridInvoices({expectedTenantId:tenant.id,pageSize:30});
-        const outstanding=page.items.filter(row=>row.paymentStatus!=="recorded_paid");
-        if(alive)setInvoiceNotice({scope:invoiceScope,count:outstanding.length,hasMore:page.hasMore});
-      }catch{if(alive)setInvoiceNotice({scope:invoiceScope,unavailable:true});}
-      finally{busy=false;}
-    };
-    void refresh();
-    const timer=window.setInterval(refresh,60000);
-    return()=>{alive=false;window.clearInterval(timer);};
-  },[invoiceScope,tenant?.id]);
-
   const stylesReady = useParityPage({
     bodyClass: staff ? "staff-home" : "",
     title: t("home.meta.title"),
     styles: ["home-dashboard.css", "public-contact.css", "public-utility-actions.css", "home-page.css"],
     attributes: staff ? { "data-roles": profile?.role || "" } : {},
   });
-
-  useEffect(() => {
-    let alive = true;
-    if (!["owner", "admin"].includes(profile?.role)) {
-      setRevenueShareEnabled(false);
-      return () => { alive = false; };
-    }
-    setRevenueShareEnabled(null);
-    httpsCallable(functions, "getTenantRevenueShareAccess")({})
-      .then(result => { if (alive) setRevenueShareEnabled(result.data?.enabled === true); })
-      .catch(() => { if (alive) setRevenueShareEnabled(false); });
-    return () => { alive = false; };
-  }, [profile?.role, profile?.tenantId]);
 
   useEffect(() => {
     let alive = true;
@@ -357,15 +317,6 @@ export function HomePage() {
             <p>{profile.role === "owner" ? shopName : t("home.staff.hero_description")}</p>
           </section>
 
-          {visibleInvoiceNotice&&(visibleInvoiceNotice.unavailable||visibleInvoiceNotice.count>0||visibleInvoiceNotice.hasMore)?(
-            <section className="card" data-home-issued-invoice-notice role="status" style={{marginBottom:16,padding:16}}>
-              <h2 style={{fontSize:18,marginTop:0}}><i className="bi bi-receipt" aria-hidden="true"/> ทะเบียนใบแจ้งหนี้</h2>
-              <p>{visibleInvoiceNotice.unavailable?"ยังไม่สามารถอ่านสถานะใบแจ้งหนี้ได้ กรุณาตรวจสอบในรายงาน":
-                visibleInvoiceNotice.count>0?`พบ ${visibleInvoiceNotice.count} รายการที่ยังต้องตรวจสอบหรือดำเนินการ${visibleInvoiceNotice.hasMore?" จากรายการที่โหลด":""}`:
-                "มีใบแจ้งหนี้เพิ่มเติม กรุณาตรวจสอบในรายงาน"}</p>
-              <Link className="btn btn-sm" to="/reports/hybrid-billing"><i className="bi bi-list-ul" aria-hidden="true"/> ดูทะเบียนใบแจ้งหนี้</Link>
-            </section>
-          ):null}
           {masterRestaurantEnabled ? <section className="dashboard-section dashboard-section-order-delivery" aria-labelledby="frontServiceTitle">
             <div className="dashboard-section-head">
               <h2 id="frontServiceTitle">Order / Delivery</h2>
@@ -379,22 +330,7 @@ export function HomePage() {
             </div>
           </section> : null}
 
-          {tenant?.billingPolicyVersion === "hybrid_v1" ? (
-            <section className="dashboard-section" aria-labelledby="hybridReportTitle">
-              <div className="dashboard-section-head">
-                <h2 id="hybridReportTitle">{t("hybrid_report.title")}</h2>
-                <p>{t("hybrid_report.subtitle")}</p>
-              </div>
-              <div className="nav-cards">
-                <DashboardCard profile={profile} tenant={tenant} roles={["owner", "admin"]}
-                  href="/reports/hybrid-billing" cardKey="hybrid_billing"
-                  icon="bi bi-graph-up-arrow app-icon" label={t("hybrid_report.title")}
-                  description={t("hybrid_report.subtitle")} />
-              </div>
-            </section>
-          ) : null}
-
-          {revenueShareEnabled ? (
+          {["owner", "admin"].includes(profile?.role) && masterRestaurantEnabled ? (
             <section className="dashboard-section" aria-labelledby="centralReportsTitle" data-revenue-share-section>
               <div className="dashboard-section-head">
                 <h2 id="centralReportsTitle">{t("revenue_share_report.menu.section_title")}</h2>

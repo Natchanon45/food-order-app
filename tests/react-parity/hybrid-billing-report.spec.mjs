@@ -39,10 +39,12 @@ test("hybrid report is routed, localized and uses backend preview, never payment
   const data = fs.readFileSync("react-app/src/data/hybridBillingReport.js", "utf8");
   assert.match(app, /path="\/reports\/hybrid-billing"/);
   assert.match(app, /hybridSuspended/);
-  // The legacy Hybrid read-only preview is not a second Premium owner report.
-  assert.match(home, /\{tenant\?\.billingPolicyVersion === "hybrid_v1" \? \(/);
+  // Source G2-06 defers the standalone Hybrid report from merchant Home.
+  // Keep the read-only route and existing suspension recovery separate.
+  assert.doesNotMatch(home, /hybridReportTitle|cardKey="hybrid_billing"|href="\/reports\/hybrid-billing"|data-home-issued-invoice-notice/);
   assert.match(home, /href="\/reports\/revenue-share" cardKey="revenue_share"/);
-  assert.match(home, /href="\/reports\/hybrid-billing" cardKey="hybrid_billing"/);
+  assert.match(home, /\["owner", "admin"\]\.includes\(profile\?\.role\) && masterRestaurantEnabled/);
+  assert.doesNotMatch(home, /getTenantRevenueShareAccess|revenueShareEnabled/);
   assert.doesNotMatch(page, /tenant\?\.billingPolicyVersion !== "hybrid_v1"/);
   const preview = fs.readFileSync("functions/hybrid-billing-preview.js", "utf8");
   assert.match(preview, /const minMonth = tenantAnchorDate\(tenant\)/);
