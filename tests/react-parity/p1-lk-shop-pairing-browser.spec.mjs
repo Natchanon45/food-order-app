@@ -128,7 +128,7 @@ test("Admin, Platform and Home mount a Source-consistent PG Notify module withou
  const functions=await readFile("functions/index.js","utf8");
  const rules=await readFile("firestore.rules","utf8");
  const hosting=await readFile("firebase.json","utf8");
- assert.match(admin,/tenantLKShopSettingsGroup/);
+ assert.match(admin,/storeLKShopGroup/);
  assert.match(admin,/LKShopPairingPanel key=\{tenant\?\.id\} scope="tenant"/);
  assert.match(platform,/platformContactLKShopPanel/);
  assert.match(platform,/LKShopPairingPanel scope="platform"/);

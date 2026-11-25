@@ -693,7 +693,7 @@ export function AdminPage() {
       "admin-upload.css", "admin-mobile-table.css",
       "admin-wallet-source-wrapper.css", "admin-store-source-wrapper.css",
       "admin-fee-source-wrapper.css", "admin-branding-source-wrapper.css",
-      "admin-store-source-dynamic.css", "admin-sales-source-polish.css",
+      "admin-store-source-dynamic.css", "admin-sales-source-polish.css", "telegram-notifications-port.css",
     ],
     attributes: { "data-roles": "admin", "data-admin-workspace-refresh": "1" },
   });
@@ -727,6 +727,7 @@ export function AdminPage() {
   const [fees, setFees] = useState([]);
   const [promotion, setPromotion] = useState(normalizedPromotion({}));
   const [storeSaving, setStoreSaving] = useState(false);
+  const [telegramActiveCount, setTelegramActiveCount] = useState(null);
   const [storeBrandFiles, setStoreBrandFiles] = useState({ logo: null, cover: null });
   const [deliveryHours, setDeliveryHours] = useState(defaultDeliveryHours);
   const [deliveryManualStatus, setDeliveryManualStatus] = useState({ mode: "auto", reason: "", until: "" });
@@ -1831,20 +1832,6 @@ export function AdminPage() {
               </div>
             </AdminSettingsGroup>
 
-            <PaymentCompanionPairingCard key={tenant?.id} isOwner={profile?.role === "owner"} SettingsGroup={AdminSettingsGroup} notify={showToast} />
-
-            <AdminSettingsGroup id="tenantTelegramSettingsGroup" icon="send"
-              title="แจ้งเตือน Telegram ของร้านค้า" description="ตั้งค่าช่องทาง Admin ร้าน แคชเชียร์ และครัว พร้อม Bot Token ที่เข้ารหัส"
-              status="3 ช่องทาง" statusTone="neutral">
-              <TelegramSettingsPanel key={tenant?.id} scope="tenant" hideHeading />
-            </AdminSettingsGroup>
-
-            <AdminSettingsGroup id="tenantLKShopSettingsGroup" icon="bell"
-              title="PG Notify • ห้องแจ้งเตือน" description="จับคู่โทรศัพท์ตามห้อง Admin, แคชเชียร์ และครัว พร้อมเพิกถอนสิทธิ์"
-              status="Firebase UAT" statusTone="neutral">
-              <LKShopPairingPanel key={tenant?.id} scope="tenant" embedded notify={showToast}/>
-            </AdminSettingsGroup>
-
             <AdminSettingsGroup
               id="storeDeliveryGroup"
               icon="truck"
@@ -2067,8 +2054,34 @@ export function AdminPage() {
               <div className="admin-settings-hidden-note"><i className="bi bi-info-circle" aria-hidden="true"></i><span>{t("admin.store_workspace.lalamove_fee_note")}</span></div>
             )}
 
-            <button className="btn btn-primary admin-store-save-full-row" id="storeSettingsSaveButton" type="submit" disabled={storeSaving} data-admin-button-icon="floppy"><i className="bi bi-floppy app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.store.save")}</span></button>
           </form>
+
+          <PaymentCompanionPairingCard key={tenant?.id} isOwner={profile?.role === "owner"} SettingsGroup={AdminSettingsGroup} notify={showToast} />
+          {["owner","admin"].includes(profile?.role) ? (
+            <AdminSettingsGroup
+              id="storeLKShopGroup"
+              icon="bell"
+              title="PG Notify • ห้องแจ้งเตือน"
+              description="เลือกห้องแจ้งเตือนและจับคู่อุปกรณ์ของแอดมิน แคชเชียร์ และครัว"
+              status="3 ห้อง"
+              statusTone="ready"
+            >
+              <LKShopPairingPanel key={tenant?.id} scope="tenant" embedded notify={showToast}/>
+            </AdminSettingsGroup>
+          ) : null}
+
+          <AdminSettingsGroup
+            id="storeTelegramGroup"
+            icon="telegram"
+            title="การแจ้งเตือนผ่าน Telegram"
+            description="ตั้งค่า Bot สำหรับ Admin ร้านค้า แคชเชียร์ และครัว"
+            status={telegramActiveCount === null ? "3 ช่องทาง" : `${telegramActiveCount}/3 เปิดใช้งาน`}
+            statusTone="ready"
+          >
+            <TelegramSettingsPanel key={tenant?.id} scope="tenant" onActiveCountChange={setTelegramActiveCount} />
+          </AdminSettingsGroup>
+
+          <button className="btn btn-primary admin-store-save-full-row" id="storeSettingsSaveButton" type="submit" form="storeForm" disabled={storeSaving} data-admin-button-icon="floppy"><i className="bi bi-floppy app-icon admin-button-icon" aria-hidden="true"></i><span className="admin-button-label">{t("admin.store.save")}</span></button>
         </AdminCollapsibleCard>
 
         <AdminCollapsibleCard
