@@ -41,14 +41,14 @@ test("Source PG Notify room picker, QR, device revoke, platform isolation, mobil
   await writeFile(resolve(dir,"lk-shop-pairing.css"),
    await readFile("react-app/src/ui/lk-shop-pairing.css","utf8"));
   await writeFile(resolve(dir,"lk-shop-public-downloads.css"),
-   await readFile("react-app/src/ui/lk-shop-public-downloads.css","utf8"));
+   await readFile("react-app/public/parity/css/home-source-wrapper.css","utf8"));
   await writeFile(resolve(dir,"fixture.jsx"),`import React from "react";
    import{createRoot}from"react-dom/client";
    import "./lk-shop-pairing.css";import "./lk-shop-public-downloads.css";
    import {LKShopPairingPanel}from"@/components/LKShopPairingPanel";
    import {PublicAppDownloads}from"@/components/PublicAppDownloads";
    const platform=new URLSearchParams(location.search).has("platform");
-   createRoot(document.getElementById("root")).render(<main style={{maxWidth:850,
+   createRoot(document.getElementById("root")).render(<main id="publicLanding" style={{maxWidth:850,
      margin:"12px auto",padding:"0 12px"}}>
     <LKShopPairingPanel scope={platform?"platform":"tenant"}/>
     <PublicAppDownloads/>
