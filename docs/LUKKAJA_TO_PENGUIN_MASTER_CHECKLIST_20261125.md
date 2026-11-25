@@ -13,10 +13,10 @@
 
 | Metric | Verified count | Percent | Meaning |
 |---|---:|---:|---|
-| Source JSX audited and accepted against latest branch | 8/65 | 12.3% | Tested at page/module level, local only |
+| Source JSX audited and accepted against latest branch | 9/65 | 13.8% | Tested at page/module level, local only |
 | Source-only route extract dispositioned without a duplicate page | 1/65 | 1.5% | Existing accepted target Admin UI |
-| **Accepted or explicitly dispositioned** | **9/65** | **13.8%** | **Conservative overall Source JSX parity progress** |
-| **Still requires latest-Source acceptance review** | **56/65** | **86.2%** | Not necessarily absent: old port code/tests already exist |
+| **Accepted or explicitly dispositioned** | **10/65** | **15.4%** | **Conservative overall Source JSX parity progress** |
+| **Still requires latest-Source acceptance review** | **55/65** | **84.6%** | Not necessarily absent: old port code/tests already exist |
 | JSX filename already present in Target before rebaseline | 52/65 | 80.0% | **Presence only** — never call it functional progress |
 
 ### Do not misread this %
@@ -34,7 +34,7 @@ The 65-page baseline includes POS/Laravel thin wrappers and legacy transport. Th
 | AdminTenantsPage.jsx | Merchant Admin / General / Auth | Present (1943 baseline LOC) | Accepted (local) | P1.5 canonical real-wallet history and review |
 | AdminUsersPage.jsx | Merchant Admin / General / Auth | Present (614 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | CanonicalLaravelBridgePage.jsx | Laravel transport/route wrapper audit | Not present | Pending latest-Source audit | Source-only: verify route/wrapper before adding Firebase JSX |
-| CashierPage.jsx | Cashier / Kitchen / Queue | Present (1369 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
+| CashierPage.jsx | Cashier / Kitchen / Queue | Present (1369 baseline LOC) | Accepted (local) | P3.1 signed Cashier cash/pickup/cancel, Source courier/receipt/Telegram UI; bank/LINE/Stripe live provider settlement gated |
 | CashierReceiptPage.jsx | Cashier / Kitchen / Queue | Present (367 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | CashierTableQrPage.jsx | Cashier / Kitchen / Queue | Present (544 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
 | DeliveryPage.jsx | Delivery / Public Ordering | Present (1269 baseline LOC) | Pending latest-Source audit | Target exists: validate latest Source actions, security, UI and tests |
@@ -99,7 +99,7 @@ The 65-page baseline includes POS/Laravel thin wrappers and legacy transport. Th
 |---|---:|---|
 | Merchant Admin / General / Auth | 5 | AdminQrPage, AdminUsersPage, HomePage, LegalPage, VerifyPage |
 | Laravel transport/route wrapper audit | 3 | CanonicalLaravelBridgePage, LaravelSessionPage, PortMissingRoute |
-| Cashier / Kitchen / Queue | 8 | CashierPage, CashierReceiptPage, CashierTableQrPage, KitchenPage, QuickOrderPage, WaitingQueueCustomerPage, WaitingQueueDisplayPage, WaitingQueuePage |
+| Cashier / Kitchen / Queue | 7 | CashierReceiptPage, CashierTableQrPage, KitchenPage, QuickOrderPage, WaitingQueueCustomerPage, WaitingQueueDisplayPage, WaitingQueuePage |
 | Delivery / Public Ordering | 6 | DeliveryPage, DeliverySuccessPage, PublicOrderPage, PublicRouteMissingPage, StorefrontCompatibilityEntry, TakeawayPage |
 | Superadmin / Billing | 5 | HybridBillingReportPage, HybridBillingReviewPage, PlatformOwnersPage, RevenueShareReportPage, SaasSetupPage |
 | POS และ Source-only POS Master | 29 | PosBackupPage, PosCatalogMasterPage, PosCatalogPage, PosCategoriesMasterPage, PosCustomerDisplayPage, PosCustomersMasterPage, PosCustomersPage, PosForbiddenPage, PosPage, PosPayablesPage, PosProductsMasterPage, PosProductsPage, PosPurchasesPage, PosReceiptPage, PosReturnsPage, PosSalesPage, PosSettingsMasterPage, PosSettingsPage, PosShiftsPage, PosStockCountsMasterPage, PosStockCountsPage, PosStockMovementsMasterPage, PosStockMovementsPage, PosSuppliersMasterPage, PosSuppliersPage, PosTaxInvoicePage, PosTaxInvoicesPage, PosUsersMasterPage, PosUsersPage |

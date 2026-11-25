@@ -349,6 +349,9 @@ exports.settleDeferredWalkIn = operationalOrders.settleDeferredWalkIn;
 exports.cancelDeferredWalkIn = operationalOrders.cancelDeferredWalkIn;
 exports.updateDeferredKitchen = operationalOrders.updateDeferredKitchen;
 exports.cancelReviewedPaidWalkIn = operationalOrders.cancelReviewedPaidWalkIn;
+exports.cashierRecordCashReceipt = operationalOrders.cashierRecordCashReceipt;
+exports.cashierPickupAction = operationalOrders.cashierPickupAction;
+exports.cashierCancelOrderSafely = operationalOrders.cashierCancelOrderSafely;
 
 // Superadmin-only encrypted Telegram bot settings and explicit test delivery.
 const platformTelegram = require("./platform-telegram");

@@ -1,3 +1,16 @@
+## 2026-11-25 — P3.1 Cashier complete locally; Master JSX coverage 15.4%
+
+- Source READ ONLY: cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159. Target: Natchanon45/food-order-app feature/react-firebase-port, initial f83c25f8.
+- Ported latest Source Cashier bill/status/recipient header, mobile courier fieldset and safe order controls, original revised items/net, Telegram focus and paid-uncollected Takeaway visibility. Source fresh-quote helper now requires signed server reread and a SECOND approval if fee changes. Unknown courier/booking outcome never auto-retries, COD remains disabled.
+- Three signed Firebase Callables cashierRecordCashReceipt, cashierPickupAction, cashierCancelOrderSafely are scoped by active uid/Tenant/role and current Firestore transaction state. Cash-only and all table rounds; audit and idempotent retry; handover cannot mark paid; bank evidence, kitchen in-progress and Lalamove active/uncertain may not be cancelled.
+- Removed Cashier page-load payment/table repair and direct cash/pickup/cancellation Firestore updates; existing CompanionCashierReview is bank notification evidence only, not payment verification.
+- QA: pure 8/8 PASS; signed real Firebase Auth+Firestore+Functions+Storage Emulator/Chrome 1/1 PASS using ten seeded mixed orders, Owner/foreign Owner/Kitchen and 320/390/768/1440. Source React foundation/P0 and centrally protected 149 Callables PASS. Complete npm run test:react-parity EXIT 0; final npm run build:react + generated Hosting Contract EXIT 0 (2026.11.09.535, index-CbPKGrba.js). Build artifacts and demo Emulator config cleaned.
+- Master generator tools/update-port-master-checklist.mjs gives 10/65=15.4% accepted locally, 55/65=84.6% remaining audit, 52/65 existing names are presence only. Groups POS29, Cashier/Kitchen/Queue7, Delivery/Public6, Superadmin/Billing5, Merchant/General5, Laravel wrappers3.
+- NEXT P3.2 Kitchen: Source cancellation/dispatch guard and changed-item display, server transactions; next P3.3 Delivery. Live bank/Stripe/Android notification settlement Staging/provider remains blocked; no Source changes, Production, main merge or APK/IPA.
+- P3.1 details docs/LUKKAJA_P3_1_CASHIER_SOURCE_PORT_20261125.md.
+
+---
+
 ## 2026-11-25 — P2.4 Source Sales Report completed and Master Checklist
 
 - Source READ ONLY: cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7bf9d159. Target: Natchanon45/food-order-app feature/react-firebase-port, initial P2.3 HEAD 5b755188.

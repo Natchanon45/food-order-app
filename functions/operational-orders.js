@@ -894,3 +894,145 @@ exports.cancelReviewedPaidWalkIn = onCall({ region: REGION, timeoutSeconds: 30 }
     return { item: { ...order, ...patch }, duplicate: false };
   });
 });
+
+// P3.1 trusted Cashier actions for existing Premium Firebase Tenant orders.
+// Reuse the existing signed staff context and Firestore transaction semantics:
+// no browser bank/LINE match or purported Stripe/PromptPay transfer can turn
+// into cashier cash, no pickup mutation can imply the payment was made.
+const cashierPolicy=require("./cashier-safe-order-policy");
+const CASHIER_ACTION_ROLES=new Set(["owner","admin","manager","cashier"]);
+
+exports.cashierRecordCashReceipt=onCall({region:REGION,timeoutSeconds:45},async request=>{
+ const {db,tenantId,uid}=await callerContext(request,CASHIER_ACTION_ROLES);
+ const ids=Array.isArray(request.data?.orderIds)?request.data.orderIds:[];
+ const orderIds=ids.map(id=>String(id||"").trim());
+ if(orderIds.length<1||orderIds.length>50||
+    orderIds.some(id=>!cashierPolicy.VALID_ID.test(id))||
+    new Set(orderIds).size!==orderIds.length)invalid("CASHIER_CASH_ORDER_IDS_INVALID");
+ const operationId=text(request.data?.operationId,128);
+ if(!cashierPolicy.VALID_ID.test(operationId)||operationId.length<8)
+   invalid("CASHIER_OPERATION_ID_INVALID");
+ const kind=text(request.data?.kind,20);
+ if(!["order","table"].includes(kind))invalid("CASHIER_CASH_KIND_INVALID");
+ const ordersCollection=db.collection("tenants").doc(tenantId).collection("orders");
+ const refs=orderIds.map(id=>ordersCollection.doc(id));
+ const auditRef=db.collection("tenants").doc(tenantId).collection("cashierActionAudit").doc("cash-"+operationId);
+ return db.runTransaction(async tx=>{
+  const snapshots=await Promise.all([tx.get(auditRef),...refs.map(r=>tx.get(r))]);
+  const priorAudit=snapshots[0];
+  const orders=snapshots.slice(1).map((snap,index)=>{
+   if(!snap.exists)missing("CASHIER_CASH_ORDER_NOT_FOUND");
+   return {id:orderIds[index],...snap.data()};
+  });
+  if(priorAudit.exists){
+   const recorded=priorAudit.data();
+   if(recorded.uid!==uid||recorded.kind!==kind||
+      recorded.orderIds.join("|")!==orderIds.join("|"))conflict("CASHIER_OPERATION_ID_REUSED");
+   if(orders.some(row=>row.paymentStatus!=="paid"))conflict("CASHIER_PAYMENT_READBACK_UNCONFIRMED");
+   return {items:orders,alreadyRecorded:true,confirmed:true,total:recorded.total};
+  }
+  const types=orders.map(row=>String(row.orderType||"").toLowerCase());
+  if(kind==="order"&&(orders.length!==1||types[0]!=="takeaway"))
+   conflict("CASHIER_SINGLE_CASH_TAKEAWAY_REQUIRED");
+  if(kind==="table"&&!types.every(type=>type==="table"))
+   conflict("CASHIER_CASH_TABLE_REQUIRED");
+  if(orders.some(row=>!cashierPolicy.isCashOnly(row)))
+   conflict("CASHIER_CASH_PAYMENT_METHOD_NOT_ELIGIBLE");
+  if(orders.some(row=>row.paymentStatus!=="unpaid"&&row.paymentStatus!=="paid"))
+   conflict("CASHIER_CASH_PAYMENT_REVIEW_REQUIRED");
+  const payable=orders.filter(row=>row.paymentStatus!=="paid");
+  if(payable.some(row=>!cashierPolicy.canCashierReceiveCash(row)))
+   conflict("CASHIER_CASH_ORDER_STATE_INVALID");
+  if(kind==="table"){
+   const token=String(orders[0].tableToken||"").trim();
+   if(!token||orders.some(row=>row.tableToken!==token))
+     conflict("CASHIER_TABLE_SESSION_MISMATCH");
+   // Prevent settling just one of the multi-round table's unpaid orders.
+   const live=await tx.get(ordersCollection.where("tableToken","==",token).limit(100));
+   if(live.size>=100)conflict("CASHIER_TABLE_SESSION_TOO_LARGE");
+   const actuallyUnpaid=live.docs
+    .filter(snap=>snap.data()?.orderType==="table"
+      && snap.data()?.paymentStatus!=="paid"
+      && snap.data()?.status!=="cancelled")
+    .map(snap=>snap.id).sort();
+   if(actuallyUnpaid.join("|")!==payable.map(row=>row.id).sort().join("|"))
+    conflict("CASHIER_TABLE_PAYMENT_WINDOW_STALE");
+  }
+  if(!payable.length)conflict("CASHIER_CASH_ALREADY_PAID_OPERATION_UNKNOWN");
+  const totalCents=payable.reduce((sum,row)=>sum+cashierPolicy.moneyCents(row.totalAmount),0);
+  if(!Number.isSafeInteger(totalCents)||totalCents<0)conflict("CASHIER_CASH_TOTAL_INVALID");
+  const now=new Date().toISOString();
+  payable.forEach(row=>{
+   const patch={paymentStatus:"paid",paidAt:now,
+    cashierCashConfirmedAt:now,cashierCashConfirmedBy:uid,
+    updatedAt:FieldValue.serverTimestamp()};
+   if(row.status==="served")Object.assign(patch,{status:"paid",completedAt:now});
+   tx.update(ordersCollection.doc(row.id),patch);
+  });
+  tx.create(auditRef,{
+   tenantId,uid,kind,orderIds,amountSatang:totalCents,total:totalCents/100,
+   operationId,action:"cashier_cash_physically_received",
+   // The Cashier confirms physical cash, NEVER any bank notification.
+   paymentEvidenceType:"cashier_manual_cash",
+   createdAt:FieldValue.serverTimestamp(),
+  });
+  return {items:orders.map(row=>payable.some(x=>x.id===row.id)?
+    {...row,paymentStatus:"paid",paidAt:now,
+     ...(row.status==="served"?{status:"paid",completedAt:now}:{})}:row),
+    confirmed:true,alreadyRecorded:false,total:totalCents/100};
+ });
+});
+
+exports.cashierPickupAction=onCall({region:REGION,timeoutSeconds:30},async request=>{
+ const {db,tenantId,uid}=await callerContext(request,CASHIER_ACTION_ROLES);
+ const orderId=text(request.data?.orderId,128);
+ const action=text(request.data?.action,24);
+ if(!cashierPolicy.VALID_ID.test(orderId)||!["call","handover"].includes(action))
+   invalid("CASHIER_PICKUP_INPUT_INVALID");
+ const ref=db.collection("tenants").doc(tenantId).collection("orders").doc(orderId);
+ return db.runTransaction(async tx=>{
+  const snapshot=await tx.get(ref);
+  if(!snapshot.exists)missing("ORDER_NOT_FOUND");
+  const order={id:orderId,...snapshot.data()};
+  if(order.pickupStatus==="picked_up"&&order.paymentStatus==="paid")
+   return {item:order,alreadyCompleted:true};
+  if(!cashierPolicy.canCashierHandlePickup(order,action))
+   conflict("PICKUP_PAYMENT_NOT_SETTLED_OR_NOT_READY");
+  const now=new Date().toISOString();
+  const patch=action==="call"
+   ?{pickupStatus:"called",pickupCalledAt:now}
+   :{pickupStatus:"picked_up",pickedUpAt:now,completedAt:order.completedAt||now,status:"paid"};
+  tx.update(ref,{...patch,updatedAt:FieldValue.serverTimestamp()});
+  return {item:{...order,...patch},alreadyCompleted:false};
+ });
+});
+
+exports.cashierCancelOrderSafely=onCall({region:REGION,timeoutSeconds:30},async request=>{
+ const {db,tenantId,uid}=await callerContext(request,CASHIER_ACTION_ROLES);
+ const id=text(request.data?.orderId,128);
+ if(!cashierPolicy.VALID_ID.test(id))invalid("CASHIER_CANCEL_ID_INVALID");
+ const ref=db.collection("tenants").doc(tenantId).collection("orders").doc(id);
+ const auditRef=db.collection("tenants").doc(tenantId).collection("cashierActionAudit").doc("cancel-"+id);
+ return db.runTransaction(async tx=>{
+  const [snap,audit]=await Promise.all([tx.get(ref),tx.get(auditRef)]);
+  if(!snap.exists)missing("ORDER_NOT_FOUND");
+  const order={id,...snap.data()};
+  if(order.status==="cancelled"){
+   return {item:order,alreadyCancelled:true};
+  }
+  // Server re-reads the current booking attempt, money evidence, payment
+  // and kitchen state IN the transaction. Browser/stale Cashier UI is NOT proof.
+  if(!cashierPolicy.canCashierCancel(order))
+   conflict("CASHIER_CANCEL_REVIEW_REQUIRED_OR_DISPATCH_EXISTS");
+  const now=new Date().toISOString();
+  const patch={status:"cancelled",cancelledAt:now,cancellationSource:"cashier",
+   cancellationReason:"cashier_unpaid_unstarted",cancelledByUid:uid,
+   updatedAt:FieldValue.serverTimestamp()};
+  tx.update(ref,patch);
+  if(!audit.exists)tx.create(auditRef,{
+   tenantId,uid,orderId:id,action:"cashier_cancel_unpaid_unstarted",
+   paymentStatusBefore:order.paymentStatus||"unpaid",createdAt:FieldValue.serverTimestamp(),
+  });
+  return {item:{...order,...patch},alreadyCancelled:false};
+ });
+});

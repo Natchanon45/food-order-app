@@ -1,0 +1,505 @@
+/* Keep destructive whole-order cancellation away from frequently tapped actions.
+ * Shared only by the Kitchen and Cashier React workspaces, not per-item delete
+ * buttons or unrelated dialogs. The imported legacy mobile theme uses
+ * !important 40px/icon-only controls, so the narrow exceptions below are
+ * necessary to preserve readable labels on the full-order action row.
+ */
+body.cashier-page .order-card > .order-actions:is(.kitchen-safe-order-actions, .cashier-safe-order-actions) {
+  box-sizing: border-box;
+  display: flex !important;
+  flex-flow: row nowrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: clamp(10px, 3vw, 32px);
+  width: 100%;
+  min-width: 0;
+}
+
+body.cashier-page .order-card > .order-actions:is(.kitchen-safe-order-actions, .cashier-safe-order-actions) > :is(.kitchen-cancel-order-action, .cashier-cancel-order-action) {
+  order: 0;
+  flex: 0 0 auto !important;
+  align-self: center;
+  margin-inline-end: auto !important;
+  white-space: nowrap !important;
+}
+
+body.cashier-page .order-card > .order-actions:is(.kitchen-safe-order-actions, .cashier-safe-order-actions) > :is(.kitchen-primary-order-actions, .cashier-primary-order-actions) {
+  order: 1;
+  display: flex;
+  flex: 1 1 0%;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Cashier: restore labels hidden by cashier-refresh's mobile icon-only bar,
+ * and size them to the viewport without wrapping Thai text. */
+body.cashier-page .order-card > .cashier-safe-order-actions .btn {
+  box-sizing: border-box;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 40px !important;
+  max-width: 100%;
+  padding: 8px 10px !important;
+  gap: 5px !important;
+  border-radius: 10px !important;
+  font-size: clamp(9px, 2.7vw, 13px);
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+  text-align: center;
+}
+
+body.cashier-page .order-card > .cashier-safe-order-actions .btn > span {
+  display: inline !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+  white-space: nowrap !important;
+  line-height: 1.18;
+}
+
+body.cashier-page .order-card > .cashier-safe-order-actions .btn .app-icon {
+  flex: 0 0 auto;
+  width: 1em !important;
+  height: 1em !important;
+  margin: 0 !important;
+  font-size: 1.05em !important;
+  line-height: 1 !important;
+}
+
+/* Kitchen: cancellation stays left; status progression stays on the far
+ * right even when one side is absent or the card is narrow. */
+body.kitchen-page .order-card > .kitchen-safe-order-actions .kitchen-status-action,
+body.kitchen-page .order-card > .kitchen-safe-order-actions .kitchen-cancel-order-action {
+  box-sizing: border-box;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  max-width: 100%;
+  min-width: 0 !important;
+  min-height: 40px !important;
+  height: auto !important;
+  padding: 8px 10px !important;
+  gap: 5px !important;
+  border-radius: 10px !important;
+  font-size: clamp(9px, 2.7vw, 13px);
+  line-height: 1.18;
+  white-space: nowrap !important;
+}
+
+body.kitchen-page .order-card > .kitchen-safe-order-actions :is(.kitchen-status-action, .kitchen-cancel-order-action) > span {
+  display: inline !important;
+  white-space: nowrap !important;
+}
+
+body.kitchen-page .order-card > .kitchen-safe-order-actions :is(.kitchen-status-action, .kitchen-cancel-order-action) > .bi {
+  flex: 0 0 auto;
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+/* This reconciled-bank action has its OWN card, and must be a right-aligned
+ * button rather than a full-width bar. Keep it readable on every viewport. */
+body.cashier-page .order-card > .cashier-bank-alert-reconciliation .cashier-bank-review-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: nowrap;
+  grid-template-columns: none;
+  width: 100%;
+  min-width: 0;
+}
+
+body.cashier-page .order-card > .cashier-bank-alert-reconciliation .cashier-bank-review-actions > .btn {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  gap: 5px;
+  font-size: clamp(10px, 2.7vw, 13px);
+  line-height: 1.18;
+  white-space: nowrap;
+}
+
+body.cashier-page .order-card > .cashier-bank-alert-reconciliation .cashier-bank-review-actions > .btn > span {
+  white-space: nowrap;
+}
+
+/* Only this cashier bank-reconciliation confirmation uses compact, single-line
+ * action labels. Other Sweet Dialog confirmations keep their own layouts. */
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-actions {
+  gap: clamp(6px, 2vw, 10px) !important;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px clamp(5px, 1.8vw, 12px);
+  gap: clamp(3px, 1vw, 7px);
+  font-size: clamp(9.5px, 2.7vw, 13px);
+  line-height: 1.18;
+  white-space: nowrap;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button > span {
+  display: inline;
+  min-width: 0;
+  white-space: nowrap;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button > .bi {
+  flex: 0 0 auto;
+  font-size: 1em;
+}
+
+@media (max-width: 400px) {
+  body.cashier-page .order-card > .order-actions:is(.kitchen-safe-order-actions, .cashier-safe-order-actions) {
+    gap: 6px !important;
+  }
+  body.cashier-page .order-card > .order-actions:is(.kitchen-safe-order-actions, .cashier-safe-order-actions) > :is(.kitchen-primary-order-actions, .cashier-primary-order-actions) {
+    gap: 4px;
+  }
+  body.cashier-page .order-card > .cashier-safe-order-actions .btn,
+  body.kitchen-page .order-card > .kitchen-safe-order-actions :is(.kitchen-status-action, .kitchen-cancel-order-action) {
+    padding: 7px 5px !important;
+    gap: 3px !important;
+    font-size: clamp(8.5px, 2.55vw, 10px);
+  }
+  body.cashier-page .order-card > .cashier-bank-alert-reconciliation .cashier-bank-review-actions > .btn {
+    padding: 8px 9px;
+  }
+}
+
+/* Lalamove: keep quote / dispatch action text visible on small Cashier screens.
+ * Existing cashier-refresh.css makes every order-actions button a 40px icon.
+ * Restore label dimensions only within Lalamove's dedicated action rows.
+ */
+body.cashier-page .order-card .cashier-lalamove-quote-actions,
+body.cashier-page .order-card .cashier-lalamove-management-actions {
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center !important;
+  flex-flow: row nowrap !important;
+  justify-content: flex-end !important;
+  width: 100%;
+  min-width: 0;
+  gap: clamp(5px, 2vw, 12px);
+}
+
+body.cashier-page .order-card .cashier-lalamove-management-actions {
+  justify-content: space-between !important;
+  gap: clamp(8px, 3vw, 32px);
+}
+
+body.cashier-page .order-card .cashier-lalamove-management-actions > .cashier-lalamove-cancel-action {
+  flex: 0 0 auto !important;
+  order: 0;
+  margin-inline-end: auto !important;
+}
+
+body.cashier-page .order-card .cashier-lalamove-management-actions > .cashier-lalamove-management-primary-actions {
+  order: 1;
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-flow: row wrap;
+  justify-content: flex-end;
+  align-content: center;
+  gap: clamp(4px, 1.5vw, 8px);
+}
+
+body.cashier-page .order-card :is(.cashier-lalamove-quote-actions, .cashier-lalamove-management-actions) .btn {
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100%;
+  height: auto !important;
+  min-height: 38px !important;
+  padding: 8px 10px !important;
+  gap: 5px !important;
+  border-radius: 10px !important;
+  font-size: clamp(9px, 2.6vw, 13px);
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+  text-align: center;
+}
+
+body.cashier-page .order-card :is(.cashier-lalamove-quote-actions, .cashier-lalamove-management-actions) .btn > span {
+  display: inline !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  clip-path: none !important;
+  white-space: nowrap !important;
+  line-height: 1.18;
+}
+
+body.cashier-page .order-card :is(.cashier-lalamove-quote-actions, .cashier-lalamove-management-actions) .btn .app-icon,
+body.cashier-page .order-card :is(.cashier-lalamove-quote-actions, .cashier-lalamove-management-actions) .btn > .bi {
+  flex: 0 0 auto;
+  width: 1em !important;
+  height: 1em !important;
+  margin: 0 !important;
+  font-size: 1.05em !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 400px) {
+  body.cashier-page .order-card .cashier-lalamove-management-actions {
+    gap: 6px !important;
+  }
+  body.cashier-page .order-card :is(.cashier-lalamove-quote-actions, .cashier-lalamove-management-actions) .btn {
+    padding: 7px 5px !important;
+    gap: 3px !important;
+    font-size: clamp(8px, 2.45vw, 10px);
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions > .cashier-lalamove-management-primary-actions {
+    gap: 4px;
+  }
+}
+
+/* Bank approval dialogs: readable single-line labels without cramming.
+ * Use the free space in the modal, retain balanced tap targets, and truly
+ * center the Bootstrap icon glyph in both axes next to the text. */
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] {
+  padding: clamp(5px, 1.6vw, 12px) !important;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] > .sweet-dialog {
+  box-sizing: border-box;
+  width: min(460px, 100%) !important;
+  max-width: 100%;
+  padding: clamp(9px, 2.4vw, 20px) !important;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-actions.has-cancel {
+  grid-template-columns: minmax(0, 0.87fr) minmax(0, 1.13fr) !important;
+  gap: clamp(5px, 1.2vw, 10px) !important;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button {
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-flow: row nowrap !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px;
+  padding: 10px clamp(2px, .7vw, 9px) !important;
+  gap: clamp(5px, 1.5vw, 9px) !important;
+  font-size: clamp(11px, 3vw, 14px) !important;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+  white-space: nowrap !important;
+  overflow: visible;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 1 auto;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  line-height: 1.3 !important;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button > .bi {
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 1.15em !important;
+  width: 1.15em !important;
+  height: 1.15em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1em !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button > .bi::before {
+  display: block !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+/* A real fieldset groups every Lalamove state, including before quotation.
+ * The legend sits on the fieldset border, not as a duplicate bold heading. */
+body.cashier-page .order-card > .cashier-lalamove-fieldset {
+  container: cashier-lalamove-panel / inline-size;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 12px 0 0;
+  padding: 7px 12px 11px;
+  border: 1px solid #cfe4d6;
+  border-radius: 14px;
+  background: #f8fbf9;
+  box-shadow: none;
+}
+body.cashier-page .order-card > .cashier-lalamove-fieldset--success {
+  background: #f1fbf5;
+}
+body.cashier-page .order-card > .cashier-lalamove-fieldset--warning {
+  background: #fff7e8;
+  border-color: #efd9a4;
+}
+body.cashier-page .order-card > .cashier-lalamove-fieldset > .cashier-lalamove-legend {
+  display: block;
+  float: none;
+  box-sizing: border-box;
+  width: fit-content !important;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 7px;
+  color: #154a30;
+  font-size: clamp(12px, 1.6vw, 14px);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  background: transparent !important;
+  box-shadow: none;
+}
+/* Keep provider Order ID and dispatch status on a single line, across
+ * mobile and side-by-side desktop orders, with no number truncation. */
+body.cashier-page .order-card .cashier-lalamove-info-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-flow: row nowrap;
+  gap: clamp(3px, 1cqw, 10px);
+  width: 100%;
+  min-width: 0;
+  padding-top: 3px;
+}
+body.cashier-page .order-card .cashier-lalamove-info-row > .cashier-lalamove-order-id {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: clamp(8px, 1cqw + 6px, 11px);
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  font-variant-numeric: tabular-nums;
+  color: #52695c;
+}
+body.cashier-page .order-card .cashier-lalamove-info-row > .cashier-lalamove-status-badge {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 36%;
+  margin: 0;
+  padding: 3px clamp(4px, .85cqw, 8px);
+  font-size: clamp(8px, .8cqw + 6px, 10px);
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+body.cashier-page .order-card .cashier-lalamove-management-actions .btn > .cashier-lalamove-label-short {
+  display: none !important;
+}
+body.cashier-page .order-card .cashier-lalamove-management-actions .btn > .cashier-lalamove-label-full {
+  display: inline !important;
+}
+body.cashier-page .order-card .cashier-lalamove-management-actions .cashier-lalamove-update-action {
+  background: #087c44 !important;
+  border-color: #087c44 !important;
+  color: #fff !important;
+}
+body.cashier-page .order-card .cashier-lalamove-management-actions .cashier-lalamove-update-action:not(:disabled):hover {
+  background: #066a39 !important;
+  border-color: #066a39 !important;
+}
+
+/* Compact management by ACTUAL card width rather than screen width:
+ * at tablet sizes two order cards can sit side by side in a narrow grid.
+ * Preserve all three labelled actions in one row regardless of viewport.
+ * Full desktop labels remain via title / aria-label if compacted. */
+@container cashier-lalamove-panel (max-width: 460px) {
+  body.cashier-page .order-card > .cashier-lalamove-fieldset {
+    padding: 6px clamp(7px, 2.5vw, 12px) 10px;
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    gap: clamp(5px, 1.6vw, 10px) !important;
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions > .cashier-lalamove-cancel-action {
+    flex: 0 0 auto !important;
+    margin-inline-end: auto !important;
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions > .cashier-lalamove-management-primary-actions {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    flex-flow: row nowrap !important;
+    justify-content: flex-end !important;
+    gap: clamp(3px, 1.1vw, 7px) !important;
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions .btn {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 clamp(5px, 1.4vw, 8px) !important;
+    gap: clamp(3px, .85vw, 5px) !important;
+    border-radius: 9px !important;
+    font-size: clamp(11px, 2.85vw, 12.5px) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions .btn > .cashier-lalamove-label-full {
+    display: none !important;
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions .btn > .cashier-lalamove-label-short {
+    display: inline !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+  }
+  body.cashier-page .order-card .cashier-lalamove-management-actions .btn > .bi,
+  body.cashier-page .order-card .cashier-lalamove-management-actions .btn > .app-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 1em !important;
+    width: 1em !important;
+    height: 1em !important;
+    font-size: 1.05em !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+  }
+}

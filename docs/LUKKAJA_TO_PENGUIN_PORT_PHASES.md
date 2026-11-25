@@ -1,5 +1,14 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P3.1 Cashier latest Source JSX with signed Firebase transitions
+
+**P3.1 local core complete:** Source 7bf9d159 Cashier bill/recipient/status, courier action and cancellation guard, re-quote consent, historical pricing, Telegram focus and prepaid Takeaway handover ported to existing Firebase. Three new signed Server Callables implement cash-only physical receipt with immutable audit and idempotent retries, already-paid Takeaway pickup and eligible never-started cancellation. Bank/LINE/Stripe/COD cannot be manually inferred as paid. Pure Source policy **8/8 PASS**, signed Firebase Auth+Firestore+Functions Chrome with 9 seeded orders/three signed roles/four widths **1/1 PASS**. Complete serial React Parity EXIT 0 and React Build/Hosting Contract EXIT 0 (2026.11.09.535, index-CbPKGrba.js); final receipts in Worklog. See P3.1 Cashier report.
+
+**Master 65-Source-page audit:** **10/65 (15.4%) accepted or dispositioned locally**, **55/65 (84.6%) pending formal latest-Source acceptance**, including 7 Cashier/Kitchen/Queue. Existing 52/65 shared Target JSX filename presence is not functional acceptance. Live provider Staging/Production readiness remains a separate gate.
+
+---
+
+
 ## 2026-11-25 — P2.4 Merchant Sales Report and Master Checklist
 
 **P2.4 local feature complete.** Latest Source 7bf9d159 sales report now verifies one complete real Firebase server read, refuses cached/pending/invalid financial numbers, uses explicit Bangkok report periods, preserves cancelled historical receipts without overstating sales, and scrolls properly on 320/390/768/1440. Signed Auth+Firestore Chrome with 261 orders **1/1 PASS**, pure data/Source contracts **5/5 PASS**, full serial React Parity and Build/Hosting Contract **PASS**. Detailed report: docs/LUKKAJA_P2_4_MERCHANT_SALES_REPORT_20261125.md.

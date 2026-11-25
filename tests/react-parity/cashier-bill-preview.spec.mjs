@@ -24,7 +24,7 @@ test("Cashier bill preview retains independent printing and original payment app
   assert.match(page, /const receiptUrl = cashierRoute\(/);
   assert.doesNotMatch(page, /await approveDeliveryPaymentReview\(/);
   assert.match(page, /data-delivery-superadmin-review=\{order.id\}/);
-  assert.match(page, /await updateOrder\(order.id, patch\)/);
+  assert.match(page, /cashierRecordCashReceipt\(tenant.id,\[order.id\]/);
   assert.match(page, /printOrder\(printWindow, order.id\)/);
   assert.match(page, /if \(event\.key === "Escape"\)/);
 });
@@ -63,7 +63,7 @@ test("Cashier Delivery card shows Kitchen matching food and delivery fee breakdo
   assert.match(delivery, /order\.subtotalAmount \?\? \(Number\(order\.totalAmount \|\| 0\) - Number\(order\.deliveryFee \|\| 0\)\)/);
   assert.match(delivery, /t\("cashier\.bill_preview\.delivery_fee"\)/);
   assert.match(delivery, /money\(order\.deliveryFee \|\| 0\)/);
-  assert.match(delivery, /money\(order\.totalAmount\)/);
+  assert.match(delivery, /<RevisedOrderNet order=\{order\} current=\{order\.totalAmount\}/);
   assert.ok(delivery.indexOf("cashier-delivery-fee-summary") < delivery.indexOf('t("cashier.delivery.net_total")'));
   assert.ok(delivery.indexOf('t("cashier.delivery.net_total")') < delivery.indexOf("<LalamoveDispatch"));
   // A paid 354 THB Delivery order must remain 295 food + 59 delivery = 354 total.

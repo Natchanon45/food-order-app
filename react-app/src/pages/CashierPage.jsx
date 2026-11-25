@@ -1,4 +1,16 @@
 import { CompanionCashierReview } from "@/components/CompanionCashierReview";
+import { placeWithFreshLalamoveQuote, lalamoveFeeChanged } from "@/data/cashierLalamoveRequote.mjs";
+import { DeliveryOrderHeading } from "@/components/DeliveryOrderHeading";
+import { TelegramOrderFocus } from "@/components/TelegramOrderFocus";
+import { OriginalItemLine, RevisedOrderNet } from "@/components/OrderRevisionDisplay";
+import { originalItemRevision } from "@/data/orderRevision.mjs";
+import { paidTakeawayAwaitingHandover } from "@/data/cashierPickupState.js";
+import { cashierCancellationErrorKey } from "@/data/cashierCancellationError.mjs";
+import { hideCashierWholeOrderCancel } from "@/utils/cashierLalamoveCancelVisibility.mjs";
+import { deliveryReceiptTotals } from "@/utils/deliveryReceiptTotal.mjs";
+import "@/ui/cashier-source-safe-actions.css";
+import "@/ui/cashier-source-delivery-heading.css";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getDownloadURL, ref as storageRef } from "firebase/storage";
@@ -15,7 +27,10 @@ import {
   assignWalkInTable,
   cancelLalamoveDispatch,
   getOperationalStoreSettings,
-  cancelOperationalOrder,
+  getOperationalOrderFromServer,
+  cashierRecordCashReceipt,
+  cashierPickupAction,
+  cashierCancelOrderSafely,
   cancelUnpaidWalkIn,
   cancelReviewedWalkIn,
   settleUnpaidWalkIn,
@@ -121,6 +136,11 @@ function activeOrders(orders, tables = []) {
   return orders.filter(order => {
     if (isWaitingQueuePlaceholder(order) || order.status === "cancelled") return false;
     if (lalamoveCodAwaitingSettlement(order)) return true;
+    if (order.status === "delivered" && order.paymentStatus === "paid") return false;
+    // A legacy picked-up Takeaway might still have status "ready"; the
+    // pickupStatus and signed completed transition must both hide it.
+    if (order.orderType === "takeaway" && order.pickupStatus === "picked_up") return false;
+    if (paidTakeawayAwaitingHandover(order)) return true;
     if (order.status === "completed" || lalamoveDeliveryCompleted(order)) return false;
     if (order.orderType === "walkin") return walkInCashierPending(order, tables);
     if (order.status !== "paid") return true;
@@ -152,23 +172,24 @@ function normalizeCashierOrders(orders = []) {
 
 function QueueHeading({ order, title, t, formatTime }) {
   return <div className="order-heading-with-queue">
-    <span className="order-queue-badge"><small>{t("cashier.queue.number")}</small><strong>{order.queueNo || "-"}</strong></span>
-    <div><h2 style={{ margin: 0 }}>{title}</h2><small>{formatTime(displayTime(order))}</small></div>
+    <span className="order-queue-badge"><small>{t("cashier_documents.receipt.bill_number")}</small><strong>{order.billNo || order.billId || "-"}</strong></span>
+    <div><h2 style={{ margin: 0 }}>{title}</h2><small>{formatTime(displayTime(order))}{order.queueNo ? " · " + t("cashier.queue.number") + ": " + order.queueNo : ""}</small></div>
   </div>;
 }
 function ItemRows({ order, t, money }) {
   return <ul className="order-items">{(order.items || []).map((item, index) => (
     <li key={`${order.id}-${index}`} style={item.cancelled ? { opacity: .5, textDecoration: "line-through" } : undefined}>
+      <OriginalItemLine item={item} money={money} showAmount />
       <div>{Number(item.qty || 0)} × {String(item.name || "")}{item.isGift === true ? ` ${t("cashier.items.gift_suffix")}` : ""}
         <strong style={{ float: "right" }}>{item.cancelled ? t("cashier.items.cancelled") : money(Number(item.qty || 0) * Number(item.price || 0))}</strong>
       </div>
-      {item.note || item.replacedFromName || (item.originalQty && Number(item.originalQty) !== Number(item.qty)) ? (
+      {item.note || (!originalItemRevision(item) && (item.replacedFromName || (item.originalQty && Number(item.originalQty) !== Number(item.qty)))) ? (
         <div className="menu-category" style={{ marginTop: 3, lineHeight: 1.35 }}>
           {item.note ? <small><strong>{t("cashier.items.note_label")}</strong> {item.note}</small> : null}
-          {item.note && (item.replacedFromName || (item.originalQty && Number(item.originalQty) !== Number(item.qty))) ? <br /> : null}
-          {item.replacedFromName ? <small><strong>{t("cashier.items.changed_from_label")}</strong> {item.replacedFromName}</small> : null}
-          {item.replacedFromName && item.originalQty && Number(item.originalQty) !== Number(item.qty) ? <br /> : null}
-          {item.originalQty && Number(item.originalQty) !== Number(item.qty) ? <small><strong>{t("cashier.items.original_qty_label")}</strong> {item.originalQty}</small> : null}
+          {item.note && !originalItemRevision(item) && (item.replacedFromName || (item.originalQty && Number(item.originalQty) !== Number(item.qty))) ? <br /> : null}
+          {!originalItemRevision(item) && item.replacedFromName ? <small><strong>{t("cashier.items.changed_from_label")}</strong> {item.replacedFromName}</small> : null}
+          {!originalItemRevision(item) && item.replacedFromName && item.originalQty && Number(item.originalQty) !== Number(item.qty) ? <br /> : null}
+          {!originalItemRevision(item) && item.originalQty && Number(item.originalQty) !== Number(item.qty) ? <small><strong>{t("cashier.items.original_qty_label")}</strong> {item.originalQty}</small> : null}
         </div>
       ) : null}
     </li>
@@ -182,7 +203,24 @@ function OrderNote({ order, t }) {
 function paymentLabel(order, t) {
   if (order.paymentStatus === "paid" && order.status === "served") return t("cashier.payment.paid_waiting_close");
   if (order.paymentStatus === "paid") return t("cashier.payment.confirmed");
+  if(order.paymentMethod==="stripe_connect"&&order.paymentStatus==="pending_verification")
+    return "รอ Stripe Connect ยืนยันยอด (Sandbox)";
+  if(order.paymentMethod==="stripe_connect"&&order.paymentStatus==="unpaid")
+    return "Stripe Connect ยังไม่ชำระเงิน (Sandbox)";
   if (order.paymentStatus === "pending_verification") {
+    if (order.bankTransferReviewFlow === "notification_first" && order.bankSlipRecheck === "requested" && !order.companionKitchenRelease)
+      return "Android/LINE จับคู่ไม่ได้ • รอแคชเชียร์ตรวจเงินจริงและอนุมัติ";
+    if (order.bankTransferReviewFlow === "notification_first" && !order.paymentSlipPath && !order.companionKitchenRelease)
+      return "รอเงินเข้าจาก Android/LINE • ลูกค้าต้องแนบสลิปหากไม่จับคู่";
+    if (order.companionKitchenRelease?.status === "admitted_unverified")
+      return "Android/LINE จับคู่ผ่านและส่งครัวแล้ว • รอแคชเชียร์ตรวจรับเงินจริง";
+    if (order.companionAutoOCRReview?.status === "matched_unverified")
+      return "Google Vision OCR เทียบยอด/บัญชี/เวลาแล้ว • ยังรอตรวจรับชำระ";
+    if (order.cashierSlipUnavailableManualEligible === true) return "ระบบตรวจสลิปยังไม่พร้อม — รอแคชเชียร์ยืนยันหรือยกเลิก";
+    const review = cashierSlipReviewSummary(order, t);
+    if (review?.rejected) return review.text;
+    if (order.orderType === "delivery" && order.paymentMethod === "promptpay")
+      return t("cashier.payment.slip_pending_system");
     if (order.paymentReviewRequired === true) return t("cashier.payment.slip_manual_pending");
     if (order.slipCheckStatus === "matched") return t("cashier.payment.slip_auto_pending");
     return t("cashier.payment.slip_pending");
@@ -194,6 +232,14 @@ function statusLabel(order, t) {
   const key = `shared.status.${order?.status || "pending"}`;
   return t(key);
 }
+// One semantic delivery group across quotation and live courier states.
+function CashierLalamoveFieldset({ t, tone = "neutral", children }) {
+  return <fieldset className={"card cashier-lalamove-fieldset cashier-lalamove-fieldset--" + tone}>
+    <legend className="cashier-lalamove-legend">{t("cashier.lalamove.title")}</legend>
+    {children}
+  </fieldset>;
+}
+
 function LalamoveDispatch({ order, t, money, busy, onQuote, onPlace, onRefresh, onCancel }) {
   if (!isLalamoveDelivery(order)) return null;
   const id = String(order.lalamoveOrderId || "");
@@ -206,57 +252,123 @@ function LalamoveDispatch({ order, t, money, busy, onQuote, onPlace, onRefresh, 
     const shareLink = String(order.lalamoveShareLink || "");
     const canTrack = shareLink && !["CANCELED", "CANCELLED", "REJECTED", "EXPIRED"].includes(status);
     const statusKey = status ? `cashier.lalamove.statuses.${status.toLowerCase()}` : "cashier.lalamove.status_waiting";
-    return <div className="card" style={{ marginTop: 10, padding: "10px 12px", boxShadow: "none", background: "#f1fbf5" }}>
-      <div className="order-head"><strong>{t("cashier.lalamove.title")}</strong><span className="badge">{t(statusKey)}</span></div>
-      <div className="menu-category" style={{ marginTop: 4 }}>{t("cashier.lalamove.order_id")}: {id}</div>
+    return <CashierLalamoveFieldset t={t} tone="success">
+      <div className="cashier-lalamove-info-row">
+        <span className="cashier-lalamove-order-id" title={"Order ID: " + id}>Order ID: {id}</span>
+        <span className="badge cashier-lalamove-status-badge">{t(statusKey)}</span>
+      </div>
       {codLine}
       {lalamoveCodAwaitingSettlement(order) ? <div className="menu-category" style={{ marginTop: 6, fontWeight: 800, color: "#9a6700" }}>{t("cashier.lalamove.cod_waiting_settlement")}</div> : null}
-      <div className="order-actions" style={{ marginTop: 8 }}>
-        {canTrack ? <a className={status === "COMPLETED" ? "btn btn-sm" : "btn btn-warning btn-sm"} href={shareLink} target="_blank" rel="noopener noreferrer"><i className={status === "COMPLETED" ? "bi bi-receipt" : "bi bi-geo-alt"}></i><span>{t(status === "COMPLETED" ? "cashier.lalamove.delivery_details" : "cashier.lalamove.tracking")}</span></a> : null}
-        {!lalamoveCanRetry(order) && !lalamoveDispatchFinished(order) ? <button className="btn btn-sm" type="button" disabled={busy} onClick={() => onRefresh(order)}><i className="bi bi-arrow-clockwise app-icon"></i><span>{t("cashier.lalamove.refresh")}</span></button> : null}
-        {lalamoveCanRetry(order) ? <button className="btn btn-primary btn-sm" type="button" disabled={busy} onClick={() => onQuote(order)}><i className="bi bi-arrow-clockwise app-icon"></i><span>{t("cashier.lalamove.retry")}</span></button> : null}
-        {lalamoveCanCancel(order) ? <button className="btn btn-danger btn-sm" type="button" disabled={busy} onClick={() => onCancel(order)}><i className="bi bi-x-circle app-icon"></i><span>{t("cashier.lalamove.cancel")}</span></button> : null}
+      <div className="order-actions cashier-lalamove-management-actions" style={{ marginTop: 8 }}>
+        <button className="btn btn-danger btn-sm cashier-lalamove-cancel-action" type="button"
+          disabled={busy || !lalamoveCanCancel(order)}
+          aria-label={t("cashier.lalamove.cancel")} title={t("cashier.lalamove.cancel")}
+          onClick={() => onCancel(order)}>
+          <i className="bi bi-x-circle app-icon" aria-hidden="true" />
+          <span className="cashier-lalamove-label-full">{t("cashier.lalamove.cancel")}</span>
+          <span className="cashier-lalamove-label-short" aria-hidden="true">ยกเลิก</span>
+        </button>
+        <div className="cashier-lalamove-management-primary-actions">
+          {canTrack ? <a className={status === "COMPLETED" ? "btn btn-sm" : "btn btn-warning btn-sm"} href={shareLink}
+            target="_blank" rel="noopener noreferrer"
+            aria-label={t(status === "COMPLETED" ? "cashier.lalamove.delivery_details" : "cashier.lalamove.tracking")}
+            title={t(status === "COMPLETED" ? "cashier.lalamove.delivery_details" : "cashier.lalamove.tracking")}>
+            <i className={status === "COMPLETED" ? "bi bi-receipt" : "bi bi-geo-alt"} aria-hidden="true" />
+            <span className="cashier-lalamove-label-full">{t(status === "COMPLETED" ? "cashier.lalamove.delivery_details" : "cashier.lalamove.tracking")}</span>
+            <span className="cashier-lalamove-label-short" aria-hidden="true">ติดตาม</span>
+          </a> : <button className="btn btn-warning btn-sm" type="button" disabled
+            title="ยังไม่มีลิงก์ติดตามจาก Lalamove" aria-label="ยังไม่มีลิงก์ติดตามจาก Lalamove">
+            <i className="bi bi-geo-alt app-icon" aria-hidden="true" />
+            <span className="cashier-lalamove-label-full">{t("cashier.lalamove.tracking")}</span>
+            <span className="cashier-lalamove-label-short" aria-hidden="true">ติดตาม</span>
+          </button>}
+          {lalamoveCanRetry(order) ? <button className="btn btn-primary btn-sm cashier-lalamove-update-action" type="button" disabled={busy}
+            aria-label={t("cashier.lalamove.retry")} title={t("cashier.lalamove.retry")} onClick={() => onQuote(order)}>
+            <i className="bi bi-arrow-clockwise app-icon" aria-hidden="true" />
+            <span className="cashier-lalamove-label-full">{t("cashier.lalamove.retry")}</span>
+            <span className="cashier-lalamove-label-short" aria-hidden="true">เช็คราคา</span>
+          </button> : <button className="btn btn-primary btn-sm cashier-lalamove-update-action" type="button"
+            disabled={busy || lalamoveDispatchFinished(order)}
+            aria-label={t("cashier.lalamove.refresh")} title={t("cashier.lalamove.refresh")}
+            onClick={() => onRefresh(order)}>
+            <i className="bi bi-arrow-clockwise app-icon" aria-hidden="true" />
+            <span className="cashier-lalamove-label-full">{t("cashier.lalamove.refresh")}</span>
+            <span className="cashier-lalamove-label-short" aria-hidden="true">อัปเดท</span>
+          </button>}
+        </div>
       </div>
-    </div>;
+    </CashierLalamoveFieldset>;
   }
 
+  if (order.lalamoveDispatchStatus === "cod_manual_arrangement_required") {
+    return <CashierLalamoveFieldset t={t} tone="warning">
+      {codLine}
+      <div style={{fontSize:12,lineHeight:1.6,marginTop:5}}>กรุณาประสานกับ Lalamove เพื่อยืนยันยอดเก็บเงินและบัญชีรับเงินของร้านก่อนจัดส่ง ระบบยังไม่รองรับการเรียกรถ COD อัตโนมัติ และยังไม่ได้ยืนยันการชำระเงิน</div>
+    </CashierLalamoveFieldset>;
+  }
+  if (isLalamoveCod(order)) {
+    return <CashierLalamoveFieldset t={t} tone="warning">
+      {codLine}
+      <div role="status" className="menu-category" style={{ marginTop: 5 }}>
+        COD ยังไม่ได้เปิดใช้งาน กรุณาตรวจสอบบัญชีรับเงินและประสาน Lalamove ก่อนดำเนินการ
+      </div>
+    </CashierLalamoveFieldset>;
+  }
   if (!lalamoveDispatchReady(order)) {
-    return <div className="card" style={{ marginTop: 10, padding: "10px 12px", boxShadow: "none", background: "#f8fbf9" }}>
-      <strong>{t("cashier.lalamove.title")}</strong>
+    return <CashierLalamoveFieldset t={t}>
       <div className="menu-category" style={{ marginTop: 4 }}>{t(isLalamoveCod(order) ? "cashier.lalamove.waiting_ready_cod" : "cashier.lalamove.waiting_ready")}</div>
-    </div>;
+    </CashierLalamoveFieldset>;
   }
 
   const quote = order.lalamoveDispatchQuote || {};
   const quoteFee = Number(quote.fee ?? order.lalamoveDispatchFee);
   const difference = Math.max(0, Number(order.lalamoveDispatchPriceDifference || 0));
   const hasQuote = Boolean(String(quote.quotationId || "")) && Number.isFinite(quoteFee);
-  if (!hasQuote) return <div className="card" style={{ marginTop: 10, padding: "10px 12px", boxShadow: "none", background: "#f8fbf9" }}>
-    <strong>{t("cashier.lalamove.title")}</strong>{codLine}
-    <div className="order-actions" style={{ marginTop: 8 }}><button className="btn btn-warning" type="button" disabled={busy} onClick={() => onQuote(order)}><i className="bi bi-search app-icon"></i><span>{t("cashier.lalamove.quote_latest")}</span></button></div>
-  </div>;
+  if (!hasQuote) return <CashierLalamoveFieldset t={t}>
+    {codLine}
+    <div className="order-actions cashier-lalamove-quote-actions" style={{ marginTop: 8 }}><button className="btn btn-warning" type="button" disabled={busy} onClick={() => onQuote(order)}><i className="bi bi-search app-icon"></i><span>{t("cashier.lalamove.quote_latest")}</span></button></div>
+  </CashierLalamoveFieldset>;
 
   const checkoutFee = Number(order.deliveryBaseFee || 0);
-  return <div className="card" style={{ marginTop: 10, padding: "10px 12px", boxShadow: "none", background: "#f1fbf5" }}>
-    <strong>{t("cashier.lalamove.title")}</strong>{codLine}
+  const lower = quoteFee < checkoutFee - .009;
+  return <CashierLalamoveFieldset t={t} tone="success">
+    {codLine}
     <div style={{ marginTop: 5 }}>{t("cashier.lalamove.quote_summary", { checkout: money(checkoutFee), current: money(quoteFee) })}</div>
     <div className="menu-category" style={{ marginTop: 5, ...(difference > .009 ? { color: "#9a3412" } : {}) }}>
-      {difference > .009 ? t("cashier.lalamove.difference_warning", { amount: money(difference) }) : t("cashier.lalamove.no_difference")}
+      {difference > .009 ? t("cashier.lalamove.difference_warning", { amount: money(difference) }) : lower ? t("cashier.lalamove.lower_fee", { amount: money(checkoutFee - quoteFee) }) : t("cashier.lalamove.no_difference")}
     </div>
-    <div className="order-actions" style={{ marginTop: 8 }}>
+    <div className="order-actions cashier-lalamove-quote-actions" style={{ marginTop: 8 }}>
       <button className="btn btn-warning" type="button" disabled={busy} onClick={() => onQuote(order)}><i className="bi bi-search app-icon"></i><span>{t("cashier.lalamove.requote")}</span></button>
       <button className="btn btn-primary" type="button" disabled={busy} onClick={() => onPlace(order, quoteFee)}><i className="bi bi-check-circle app-icon"></i><span>{t(difference > .009 ? "cashier.lalamove.approve_and_call" : "cashier.lalamove.call")}</span></button>
     </div>
+  </CashierLalamoveFieldset>;
+}
+
+// Keep the destructive whole-order action on the opposite edge from the
+// frequently-used cashier actions, on desktop AND on narrow phone screens.
+function CashierSafeOrderActions({ order, t, busy, actions, children, placingLalamove = false }) {
+  const hideCancel = hideCashierWholeOrderCancel(order, placingLalamove);
+  return <div className="order-actions cashier-safe-order-actions" style={{ marginTop: 12 }}>
+    {!hideCancel ? <button className="btn btn-danger cashier-cancel-order-action" type="button"
+      data-cancel-order={order.id} disabled={busy} onClick={() => actions.cancelOrder(order)}>
+      <i className="bi bi-x-circle app-icon" aria-hidden="true" />
+      <span>{t("cashier.actions.cancel_all")}</span>
+    </button> : null}
+    <div className="cashier-primary-order-actions">{children}</div>
   </div>;
 }
 
-function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onShareDriver, storeLocation }) {
-  const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order);
+function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, busyKey, actions, onShareDriver, storeLocation }) {
   const selfDelivery = isSelfDeliveryOrder(order);
   const driverMapsUrl = selfDelivery ? deliveryDriverMapsUrl(order, storeLocation) : "";
-  return <article className="card order-card">
-    <div className="order-head"><QueueHeading order={order} title={`Delivery: ${order.recipientName || t("cashier.delivery.recipient_fallback")}`} t={t} formatTime={formatTime} /><span className="badge">{statusLabel(order, t)}</span></div>
-    <p><span className={"badge" + (order.paymentStatus === "paid" ? "" : " warning")}>{paymentLabel(order, t)}</span><br /><strong>{t("cashier.delivery.phone")}</strong> {order.recipientPhone || "-"}<br /><strong>{t("cashier.delivery.address")}</strong> {order.deliveryAddress || "-"}</p>
+  return <article className="card order-card cashier-delivery-order-card" data-telegram-order-id={order.id}>
+    <DeliveryOrderHeading order={order} t={t} date={formatTime(displayTime(order))} status={statusLabel(order,t)} />
+    {order.paymentStatus !== "paid"
+      ? <p className="delivery-staff-payment-detail"><span className="badge warning">{paymentLabel(order,t)}</span></p>
+      : null}
+    <p><strong>{t("cashier.delivery.phone")}</strong> {order.recipientPhone || "-"}<br />
+      <strong>{t("cashier.delivery.address")}</strong> {order.deliveryAddress || "-"}
+    </p>
     {selfDelivery ? <div className="cashier-driver-panel" data-self-delivery-driver-share>
       <div className="cashier-driver-heading"><i className="bi bi-geo-alt app-icon" aria-hidden="true"></i><strong>{t("cashier.delivery.driver_location_title")}</strong></div>
       <div className="cashier-driver-actions">
@@ -271,16 +383,18 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
       <div className="receipt-row"><span>{t("kitchen.order.delivery_zone")}</span><strong>{order.deliveryZoneLabel || "-"}</strong></div>
       <div className="receipt-row"><span>{t("cashier.bill_preview.subtotal")}</span><strong>{money(order.subtotalAmount ?? (Number(order.totalAmount || 0) - Number(order.deliveryFee || 0)))} {t("cashier.common.baht")}</strong></div>
       <div className="receipt-row"><span>{t("cashier.bill_preview.delivery_fee")}</span><strong>{money(order.deliveryFee || 0)} {t("cashier.common.baht")}</strong></div>
+      <div className="receipt-row delivery-before-discount-total"><span>ยอดรวมก่อนส่วนลด</span><strong data-cashier-before-discount-total>{money(deliveryReceiptTotals(order).beforeDiscount)} {t("cashier.common.baht")}</strong></div>
+      {Number(order.deliveryPromotionDiscount || 0)>0 ? <div className="receipt-row delivery-promotion-discount-row"><span>ส่วนลดค่าจัดส่ง</span><strong>−{money(order.deliveryPromotionDiscount)} {t("cashier.common.baht")}</strong></div> : null}
     </div>
-    <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.delivery.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
+    <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.delivery.net_total")}</strong><strong className="price"><RevisedOrderNet order={order} current={order.totalAmount} money={money} unit={t("cashier.common.baht")} /></strong></div>
     {order.paymentStatus === "pending_verification" && order.paymentMethod === "promptpay" && <CompanionCashierReview key={order.id} orderId={order.id} notify={showToast} />}
     {order.companionKitchenRelease?.status==="admitted_unverified"&&order.paymentStatus!=="paid"&&
       <div className="card" role="status" style={{marginTop:10,padding:"10px 12px",background:"#fff8e9",border:"1px solid #efd9a8",boxShadow:"none"}}>
-        <strong>BankAlert UAT · ส่งเข้าครัวแล้ว (ยังไม่ยืนยันชำระ)</strong>
+        <strong>ส่งเข้าครัวจากรายการแจ้งเงินเข้าแล้ว (ยังไม่ยืนยันชำระ)</strong>
         <div className="menu-category">ตรวจการรับเงินจริงแยกต่างหาก Lalamove ยังไม่สามารถเรียกจัดส่งได้</div>
       </div>}
     <LalamoveDispatch order={order} t={t} money={money} busy={busy} onQuote={actions.quote} onPlace={actions.place} onRefresh={actions.refresh} onCancel={actions.cancelLalamove} />
-    <div className="order-actions" style={{ marginTop: 12 }}>
+    <CashierSafeOrderActions order={order} t={t} busy={busy} actions={actions} placingLalamove={busyKey === ("ll-place:" + order.id)}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       <button className="btn btn-warning cashier-view-bill-action" type="button" aria-label={t("cashier.bill_preview.view")} onClick={() => actions.viewBill(order, slipUrl)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
       {order.paymentStatus !== "paid" && order.paymentMethod === "promptpay"
@@ -293,11 +407,8 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, actions, onS
               <i className="bi bi-cash-coin app-icon" aria-hidden="true"></i>
               <span>{t("cashier.payment.receive")}</span>
             </button> : null}
-      {lalamoveCodAwaitingSettlement(order) ? <button className="btn btn-primary cashier-payment-action cashier-cod-settlement-action" type="button" disabled={busy} onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon" aria-hidden="true"></i><span>{t("cashier.lalamove.cod_receive")}</span></button> : null}
-      {lalamoveDeliveryCompleted(order) ? null : dispatchedLocked
-        ? <button className="btn btn-primary" type="button" disabled title={t("cashier.lalamove.local_cancel_locked")}><i className="bi bi-truck app-icon"></i><span>{t("cashier.lalamove.dispatched")}</span></button>
-        : <button className="btn btn-danger" type="button" disabled={busy} onClick={() => actions.cancelOrder(order)}><i className="bi bi-x-circle app-icon"></i><span>{t("cashier.actions.cancel_all")}</span></button>}
-    </div>
+      {lalamoveCodAwaitingSettlement(order) ? <span className="badge warning" role="status" data-cod-unreconciled={order.id}>{t("cashier.lalamove.cod_waiting_settlement")}</span> : null}
+    </CashierSafeOrderActions>
   </article>;
 }
 
@@ -308,7 +419,7 @@ function TakeawayCard({ order, t, money, formatTime, busy, actions }) {
     <div className="order-head"><QueueHeading order={order} title="Take Away" t={t} formatTime={formatTime} /><span className={"badge" + (order.pickupStatus === "called" ? " warning" : "")}>{order.pickupStatus === "called" ? t("cashier.takeaway.queue_called") : statusLabel(order, t)}</span></div>
     <p><strong>{t("cashier.takeaway.customer")}</strong> {order.customerName || "-"}<br /><strong>{t("cashier.takeaway.phone")}</strong> {order.customerPhone || "-"}<br /><span className={"badge" + (paid ? "" : " warning")}>{paid ? t("cashier.payment.paid") : t("cashier.payment.waiting")}</span></p>
     <ItemRows order={order} t={t} money={money} /><OrderNote order={order} t={t} />
-    <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.takeaway.net_total")}</strong><strong className="price">{money(order.totalAmount)} {t("cashier.common.baht")}</strong></div>
+    <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.takeaway.net_total")}</strong><strong className="price"><RevisedOrderNet order={order} current={order.totalAmount} money={money} unit={t("cashier.common.baht")} /></strong></div>
     <div className="order-actions" style={{ marginTop: 12 }}>
       <a className="btn btn-dark" href={cashierRoute(`/receipt/?order=${encodeURIComponent(order.id)}`)} target="_blank" rel="noopener noreferrer"><i className="bi bi-printer app-icon"></i><span>{t("cashier.common.print")}</span></a>
       <button className="btn btn-warning cashier-view-bill-action" type="button" onClick={() => actions.viewBill(order)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
@@ -605,8 +716,6 @@ export function CashierPage() {
   const [moveGroup, setMoveGroup] = useState(null);
   const [moveTargetId, setMoveTargetId] = useState("");
   const refreshAt = useRef(new Map());
-  const completionRepairRef = useRef(new Set());
-  const tableSettlementRepairRef = useRef(new Set());
   const allowedRole = ["owner", "admin", "manager", "cashier"].includes(profile?.role);
   useLalamoveAutoRefresh(tenant?.id, orders, allowedRole && ordersSynced);
 
@@ -651,37 +760,8 @@ export function CashierPage() {
     ? new URL(`/s/${encodeURIComponent(tenant.slug)}/takeaway/`, location.origin).toString()
     : "";
 
-  useEffect(() => {
-    if (!tenant?.id || !allowedRole) return;
-    normalizedOrders.filter(lalamoveCompletionStale).forEach(order => {
-      const orderId = String(order.id || "");
-      if (!orderId || completionRepairRef.current.has(orderId)) return;
-      completionRepairRef.current.add(orderId);
-      refreshLalamoveDispatch(tenant.id, orderId).catch(error => {
-        console.warn("CASHIER_LALAMOVE_COMPLETION_REPAIR_FAILED", orderId, error);
-        window.setTimeout(() => completionRepairRef.current.delete(orderId), LALAMOVE_STATUS_COOLDOWN_MS);
-      });
-    });
-  }, [tenant?.id, allowedRole, normalizedOrders]);
-
-  useEffect(() => {
-    if (!tenant?.id || !allowedRole) return;
-    normalizedOrders.filter(order => isTableOrder(order)
-      && String(order?.paymentStatus || "").toLowerCase() === "paid"
-      && ["served", "paid"].includes(String(order?.status || "").toLowerCase())
-      && String(order?.tableCode || "").trim()
-    ).forEach(order => {
-      const orderId = String(order.id || "");
-      if (!orderId || tableSettlementRepairRef.current.has(orderId)) return;
-      tableSettlementRepairRef.current.add(orderId);
-      settleTableSession(tenant.id, orderId)
-        .catch(error => {
-          console.warn("CASHIER_TABLE_SETTLEMENT_REPAIR_FAILED", orderId, error);
-          window.setTimeout(() => tableSettlementRepairRef.current.delete(orderId), 10000);
-        });
-    });
-  }, [tenant?.id, allowedRole, normalizedOrders]);
-
+  // Source P3.1: page opening NEVER repairs financial/table state.
+  // The bounded provider status fallback remains in useLalamoveAutoRefresh.
   useEffect(() => {
     if (!tenant?.id || !allowedRole) return undefined;
     let alive = true;
@@ -771,38 +851,10 @@ export function CashierPage() {
       || (valueToDate(displayTime(b.order))?.getTime() || 0) - (valueToDate(displayTime(a.order))?.getTime() || 0));
   }, [active]);
 
-  useEffect(() => {
-    if (!tenant?.id || !tables.length) return;
-    const byToken = new Map();
-    normalizedOrders.filter(order => isTableOrder(order)
-      && !["paid", "cancelled"].includes(order.status)
-      && order.tableToken).forEach(order => {
-      if (!byToken.has(order.tableToken)) byToken.set(order.tableToken, []);
-      byToken.get(order.tableToken).push(order.id);
-    });
-    tables.filter(table => table.status === "occupied" && table.orderToken).forEach(table => {
-      const ids = (byToken.get(table.orderToken) || []).map(String).sort();
-      const current = (table.orderIds || []).map(String).sort();
-      if (ids.length && ids.join("|") !== current.join("|")) {
-        updateOperationalTable(tenant.id, table.id, { orderIds: ids }).catch(error => console.error("CASHIER_TABLE_ORDER_IDS_SYNC_FAILED", error));
-      }
-    });
-  }, [tenant?.id, normalizedOrders, tables]);
-
   const updateOrder = async (orderId, patch) => {
     const updated = await updateOperationalOrder(tenant.id, orderId, patch);
     setOrders(current => current.map(row => row.id === orderId ? updated : row));
     return updated;
-  };
-  const closeTableAfterPayment = async rounds => {
-    const first = rounds[0];
-    if (!first?.tableCode || first.orderType === "takeaway") return;
-    const table = tables.find(row => String(row.code || row.id).toUpperCase() === String(first.tableCode).toUpperCase());
-    if (table && (!first.tableToken || table.orderToken === first.tableToken)) {
-      await updateOperationalTable(tenant.id, table.id, {
-        status: "available", orderToken: "", sessionStartedAt: null, currentRound: 0, orderIds: [],
-      });
-    }
   };
   const openReceiptPrintWindow = () => openReceiptPrintLoading({
     title: t("cashier.loading.payment_review"),
@@ -833,6 +885,11 @@ export function CashierPage() {
   };
 
   const deferredSettlementIds = useRef(new Map());
+  // Keep the operation ID after an uncertain transport response. Cash receipt
+  // retries are idempotent on the canonical server document, not browser state.
+  const cashierCashOperationIds = useRef(new Map());
+  const lalamovePlacementFlight = useRef(new Set());
+  const lalamoveUnknownOutcomes = useRef(new Set());
   const pay = async order => {
     if (!order || busyKey) return;
     if (isWalkIn(order) && order.paymentTiming === "after") {
@@ -868,180 +925,178 @@ export function CashierPage() {
       } finally { setBusyKey(""); }
       return;
     }
-    // Merchant cashiers must not mark an unverified PromptPay bank transfer
-    // as paid. Only Super Admin may inspect the technical Slip2Go failure.
-    if (order.orderType === "delivery" && order.paymentMethod === "promptpay") {
-      showToast(t("cashier.payment.slip_manual_superadmin"), "error");
+    // Only physical cash on a single Takeaway is eligible for cashier
+    // confirmation. Delivery, COD, PromptPay, Stripe and notification-first
+    // orders must be verified by their separate trusted provider workflow.
+    if (order.orderType !== "takeaway" ||
+        !["","cash"].includes(String(order.paymentMethod || "").trim().toLowerCase()) ||
+        order.paymentStatus !== "unpaid" || order.bankTransferReviewFlow ||
+        order.paymentSlipPath || order.slipEvidenceSha256 ||
+        order.companionKitchenRelease || order.paymentReviewRequired) {
+      showToast("รายการนี้ยังไม่อยู่ในเงื่อนไขรับเงินสด กรุณาตรวจสอบการชำระเงินผ่านช่องทางเดิม", "error");
       return;
     }
-    const codSettlement = isLalamoveCod(order);
-    if (codSettlement && !lalamoveDeliveryCompleted(order)) {
-      showToast(t("cashier.lalamove.cod_before_delivery"), "error");
-      return;
-    }
-    const ok = await sweetConfirm(
-      codSettlement ? t("cashier.lalamove.cod_settlement_confirm") : t("cashier.payment.confirm_message"),
-      {
-      title: t("cashier.payment.confirm_title"),
-      confirmText: t("cashier.common.confirm"),
-      cancelText: t("cashier.common.cancel"),
-      type: "warning",
+    const ok = await sweetConfirm(t("cashier.payment.confirm_message"), {
+      title:t("cashier.payment.confirm_title"),confirmText:t("cashier.common.confirm"),
+      cancelText:t("cashier.common.cancel"),type:"warning",
     });
     if (!ok) return;
+    const operationId = cashierCashOperationIds.current.get(order.id) ||
+      ("cash-" + crypto.randomUUID());
+    cashierCashOperationIds.current.set(order.id,operationId);
     const printWindow = openReceiptPrintWindow();
-    setBusyKey(`pay:${order.id}`);
+    setBusyKey("pay:" + order.id);
     try {
-      const now = new Date().toISOString();
-      const patch = { paymentStatus: "paid", paidAt: now };
-      if (codSettlement) {
-        patch.status = "paid";
-        patch.completedAt = order.completedAt || now;
-        patch.lalamoveCodSettlementStatus = "received";
-        patch.lalamoveCodSettledAt = now;
-      } else if (order.orderType === "delivery" && order.status === "served") {
-        patch.status = "paid";
-        patch.completedAt = now;
-      }
-      await updateOrder(order.id, patch);
-      showToast(codSettlement
-        ? t("cashier.lalamove.cod_settlement_saved")
-        : order.orderType === "takeaway"
-        ? t("cashier.toasts.takeaway_payment_saved")
-        : patch.status === "paid" && isLalamoveDelivery(order)
-          ? t("cashier.lalamove.payment_ready_dispatch")
-          : patch.status === "paid"
-            ? t("cashier.toasts.delivery_paid_closed")
-            : t("cashier.toasts.payment_saved_waiting_rider"));
-      printOrder(printWindow, order.id);
-    } catch (error) {
+      const result = await cashierRecordCashReceipt(tenant.id,[order.id],"order",operationId);
+      if (result?.confirmed !== true || !Array.isArray(result.items) ||
+          result.items[0]?.paymentStatus !== "paid") throw new Error("CASHIER_CASH_READBACK_UNCONFIRMED");
+      setOrders(current=>current.map(row=>row.id===order.id?{...row,...result.items[0]}:row));
+      cashierCashOperationIds.current.delete(order.id);
+      showToast(t("cashier.toasts.takeaway_payment_saved"));
+      printOrder(printWindow,order.id);
+    }catch(error){
       closePrintWindow(printWindow);
-      console.error("CASHIER_PAYMENT_FAILED", error);
-      showToast(error?.message?.includes("DELIVERY_MANUAL_REVIEW_NOT_ALLOWED")
-        ? "สลิปนี้ไม่อยู่ในเงื่อนไขอนุมัติ กรุณาตรวจสอบหลักฐานหรือสถานะการชำระอีกครั้ง"
-        : t("cashier.toasts.payment_failed"), "error");
-    } finally {
-      setBusyKey("");
-    }
+      console.error("CASHIER_CASH_RECEIPT_FAILED",error?.code||error?.message||"UNKNOWN");
+      showToast(t("cashier.toasts.payment_failed"),"error");
+    }finally{setBusyKey("");}
   };
 
   const payTable = async rounds => {
-    const payable = rounds.filter(order => order.paymentStatus !== "paid");
-    if (!payable.length || busyKey) return;
-    const total = payable.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
-    const ok = await sweetConfirm(
-      `${t("cashier.table.confirm_payment", { table: rounds[0].tableCode, amount: money(total) })}\n\n${t("cashier.table.payment_serving_help")}`,
-      {
-        title: t("cashier.table.payment_title"),
-        confirmText: t("cashier.common.confirm"),
-        cancelText: t("cashier.common.cancel"),
-        type: "warning",
-      },
-    );
-    if (!ok) return;
-    const printWindow = openReceiptPrintWindow();
-    setBusyKey(`table-pay:${tableGroupKey(rounds[0])}`);
-    try {
-      const now = new Date().toISOString();
-      await Promise.all(payable.map(order => {
-        const patch = { paymentStatus: "paid", paidAt: now };
-        if (isServed(order)) { patch.status = "paid"; patch.completedAt = now; }
-        return updateOperationalOrder(tenant.id, order.id, patch);
-      }));
-      let allWillClose = false;
-      try {
-        const settlement = await settleTableSession(tenant.id, rounds[0].id);
-        allWillClose = settlement?.closed === true;
-      } catch (settlementError) {
-        console.warn("CASHIER_TABLE_SETTLEMENT_AFTER_PAYMENT_FAILED", settlementError);
-      }
-      showToast(t(allWillClose ? "cashier.toasts.table_paid_closed" : "cashier.toasts.table_paid_waiting_kitchen", { table: rounds[0].tableCode }));
-      printTable(printWindow, rounds);
-    } catch (error) {
-      closePrintWindow(printWindow);
-      console.error("CASHIER_TABLE_PAYMENT_FAILED", error);
-      showToast(t("cashier.toasts.table_payment_failed"), "error");
-    } finally {
-      setBusyKey("");
+    if (busyKey || !Array.isArray(rounds) || !rounds.length) return;
+    const payable = rounds.filter(row=>row.paymentStatus!=="paid");
+    if (!payable.length) return;
+    if (payable.some(order=> !["","cash"].includes(String(order.paymentMethod||"").trim().toLowerCase()) ||
+      order.paymentSlipPath || order.bankTransferReviewFlow || order.paymentReviewRequired)) {
+      showToast("ไม่สามารถยืนยันยอดโอนธนาคารด้วยปุ่มเงินสดได้", "error");return;
     }
+    const total=payable.reduce((sum,row)=>sum+Number(row.totalAmount||0),0);
+    const ok=await sweetConfirm(
+      t("cashier.table.confirm_payment",{table:rounds[0].tableCode,amount:money(total)})
+      +"\n\n"+t("cashier.table.payment_serving_help"),{
+       title:t("cashier.table.payment_title"),
+       confirmText:t("cashier.common.confirm"),
+       cancelText:t("cashier.common.cancel"),type:"warning",
+      });
+    if(!ok)return;
+    const key="table:"+tableGroupKey(rounds[0]);
+    const operationId=cashierCashOperationIds.current.get(key)||
+      ("cash-table-"+crypto.randomUUID());
+    cashierCashOperationIds.current.set(key,operationId);
+    const printWindow=openReceiptPrintWindow();
+    setBusyKey("table-pay:"+tableGroupKey(rounds[0]));
+    try {
+      const result=await cashierRecordCashReceipt(
+        tenant.id,payable.map(row=>row.id),"table",operationId);
+      if(result?.confirmed!==true ||
+          !Array.isArray(result.items) ||
+          result.items.some(row=>row.paymentStatus!=="paid"))
+        throw new Error("CASHIER_TABLE_CASH_READBACK_UNCONFIRMED");
+      cashierCashOperationIds.current.delete(key);
+      setOrders(current=>current.map(row=>{
+        const confirmed=result.items.find(item=>item.id===row.id);
+        return confirmed?{...row,...confirmed}:row;
+      }));
+      // A separate signed transaction closes the table only when every
+      // paid round has actually been served; no browser table release.
+      let closed=false;
+      try {
+        closed=(await settleTableSession(tenant.id,rounds[0].id))?.closed===true;
+      }catch(error){
+        console.warn("CASHIER_TABLE_SETTLEMENT_AFTER_PAYMENT_FAILED",error?.code||error?.message);
+      }
+      showToast(t(closed?"cashier.toasts.table_paid_closed":
+        "cashier.toasts.table_paid_waiting_kitchen",{table:rounds[0].tableCode}));
+      printTable(printWindow,rounds);
+    }catch(error){
+      closePrintWindow(printWindow);
+      console.error("CASHIER_TABLE_CASH_RECEIPT_FAILED",error?.code||error?.message||"UNKNOWN");
+      showToast(t("cashier.toasts.table_payment_failed"),"error");
+    }finally{setBusyKey("");}
   };
 
   const callPickup = async order => {
-    setBusyKey(`pickup-call:${order.id}`);
+    if (!order?.id || busyKey || order.paymentStatus!=="paid") {
+      showToast("ยังไม่ยืนยันรับชำระเงิน จึงไม่สามารถเรียกรับอาหารได้", "error");
+      return;
+    }
+    setBusyKey("pickup-call:"+order.id);
     try {
-      await updateOrder(order.id, { pickupStatus: "called", pickupCalledAt: new Date().toISOString() });
+      const result=await cashierPickupAction(tenant.id,order.id,"call");
+      if (!result?.item?.id) throw new Error("CASHIER_PICKUP_CALL_UNCONFIRMED");
+      setOrders(current=>current.map(row=>row.id===order.id?{...row,...result.item}:row));
       showToast(t("cashier.toasts.pickup_called"));
-    } catch (error) {
-      console.error(error);
-      showToast(t("cashier.toasts.status_update_failed"), "error");
-    } finally { setBusyKey(""); }
+    }catch(error){
+      console.error("CASHIER_PICKUP_CALL_FAILED",error?.code||error?.message);
+      showToast(t("cashier.toasts.status_update_failed"),"error");
+    }finally{setBusyKey("");}
   };
   const pickupDone = async order => {
-    setBusyKey(`pickup-done:${order.id}`);
+    if (!order?.id || busyKey || order.paymentStatus!=="paid") {
+      showToast("ยังไม่ยืนยันรับชำระเงิน จึงไม่สามารถส่งมอบอาหารได้", "error");
+      return;
+    }
+    setBusyKey("pickup-done:"+order.id);
     try {
-      const now = new Date().toISOString();
-      await updateOrder(order.id, {
-        status: "paid", paymentStatus: "paid", paidAt: now, completedAt: now,
-        pickupStatus: "picked_up", pickedUpAt: now,
-      });
+      const result=await cashierPickupAction(tenant.id,order.id,"handover");
+      if (!result?.item?.id || result.item.pickupStatus!=="picked_up")
+        throw new Error("CASHIER_PICKUP_HANDOVER_UNCONFIRMED");
+      setOrders(current=>current.map(row=>row.id===order.id?{...row,...result.item}:row));
       showToast(t("cashier.toasts.takeaway_handed_over"));
-    } catch (error) {
-      console.error(error);
-      showToast(t("cashier.toasts.status_update_failed"), "error");
-    } finally { setBusyKey(""); }
+    }catch(error){
+      console.error("CASHIER_PICKUP_HANDOVER_FAILED",error?.code||error?.message);
+      showToast(t("cashier.toasts.status_update_failed"),"error");
+    }finally{setBusyKey("");}
   };
 
   const cancelOrder = async order => {
-    if (!order || busyKey) return;
-    const targetLabel = order.orderType === "delivery"
-      ? t("cashier.cancel_order.delivery_target", { customer: order.recipientName || t("cashier.cancel_order.customer_fallback") })
-      : order.orderType === "takeaway"
-        ? t("cashier.cancel_order.takeaway_target", { queue: order.queueNo || "" })
-        : isWalkIn(order)
-          ? t(order.serviceType === "dine_in" ? "quick_order.cashier.dine_in_title" : "quick_order.cashier.takeaway_title")
-          : t("cashier.cancel_order.table_target", { table: order.tableCode || "-", round: order.roundNumber || 1 });
-    const ok = await sweetConfirm(
-      `${t("cashier.cancel_order.message", { target: targetLabel })}\n\n${t("cashier.cancel_order.warning")}`,
-      {
-        title: t("cashier.cancel_order.title"),
-        confirmText: t("cashier.common.confirm"),
-        cancelText: t("cashier.common.cancel"),
-        type: "warning",
-      },
-    );
-    if (!ok) return;
-    setBusyKey(`cancel:${order.id}`);
-    try {
-      if (isWalkIn(order) && order.paymentStatus === "paid") {
-        const result = await cancelReviewedWalkIn(tenant.id, order.id);
-        if (result?.item) setOrders(current => current.map(row => row.id === order.id ? result.item : row));
-        showToast(t("cashier.cancel_order.review_recorded"));
-        return;
-      } else if (isWalkIn(order) && order.paymentTiming === "after") {
-        const result = await cancelUnpaidWalkIn(tenant.id, order.id, "cashier");
-        if (result?.item) setOrders(current => current.map(row => row.id === order.id ? result.item : row));
-      } else if (order.orderType === "takeaway") {
-        await updateOrder(order.id, { status: "cancelled" });
-      } else {
-        const optimistic = {
-          status: "cancelled",
-          cancelledAt: new Date().toISOString(),
-        };
-        setOrders(current => current.map(row => row.id === order.id ? { ...row, ...optimistic } : row));
-        const cancelled = await cancelOperationalOrder(tenant.id, order.id);
-        setOrders(current => current.map(row => row.id === order.id ? { ...row, ...cancelled } : row));
+    if (!order?.id || busyKey) return;
+    // The live provider/attempt state is authoritative at cancellation time.
+    // An uncertain courier job can NEVER be silently cancelled by the UI.
+    if (hideCashierWholeOrderCancel(order)) {
+      showToast(t("cashier.cancel_order.dispatched"),"error");return;
+    }
+    if (order.orderType!=="walkin" &&
+      (order.paymentStatus!=="unpaid" || order.paymentReviewRequired ||
+       order.paymentSlipPath || order.bankTransferReviewFlow)) {
+      showToast(t("cashier.cancel_order.review_required"),"error");return;
+    }
+    const targetLabel=order.orderType==="delivery"
+      ?t("cashier.cancel_order.delivery_target",{customer:order.recipientName||t("cashier.cancel_order.customer_fallback")})
+      :order.orderType==="takeaway"
+        ?t("cashier.cancel_order.takeaway_target",{queue:order.queueNo||""})
+        :isWalkIn(order)
+          ?t(order.serviceType==="dine_in"?"quick_order.cashier.dine_in_title":"quick_order.cashier.takeaway_title")
+          :t("cashier.cancel_order.table_target",{table:order.tableCode||"-",round:order.roundNumber||1});
+    const ok=await sweetConfirm(
+      t("cashier.cancel_order.message",{target:targetLabel})+"\n\n"+
+      t("cashier.cancel_order.warning")+
+      (order.paymentStatus!=="unpaid"?"\n\n"+t("cashier.cancel_order.review_confirm_warning"):""),{
+        title:t("cashier.cancel_order.title"),
+        confirmText:t("cashier.common.confirm"),
+        cancelText:t("cashier.common.cancel"),type:"warning",
+      });
+    if(!ok)return;
+    setBusyKey("cancel:"+order.id);
+    try{
+      let updated;
+      if(isWalkIn(order)&&order.paymentStatus==="paid"){
+        const result=await cancelReviewedWalkIn(tenant.id,order.id);
+        updated=result?.item;
+      }else if(isWalkIn(order)&&order.paymentTiming==="after"){
+        const result=await cancelUnpaidWalkIn(tenant.id,order.id,"cashier");
+        updated=result?.item;
+      }else{
+        const result=await cashierCancelOrderSafely(tenant.id,order.id);
+        updated=result?.item;
       }
-      if (isTableOrder(order) && order.tableCode) {
-        const hasOther = normalizedOrders.some(row => row.id !== order.id
-          && row.tableToken === order.tableToken
-          && !["paid", "cancelled"].includes(row.status));
-        if (!hasOther) await closeTableAfterPayment([order]);
-      }
-      showToast(t("cashier.toasts.order_cancelled"));
-    } catch (error) {
-      setOrders(current => current.map(row => row.id === order.id ? order : row));
-      console.error("CASHIER_CANCEL_ORDER_FAILED", error);
-      showToast(t("cashier.toasts.status_update_failed"), "error");
-    } finally { setBusyKey(""); }
+      if(!updated?.id || updated.status!=="cancelled")throw new Error("CASHIER_CANCEL_UNCONFIRMED");
+      setOrders(current=>current.map(row=>row.id===order.id?{...row,...updated}:row));
+      showToast(t(isWalkIn(order)&&order.paymentStatus==="paid"?
+        "cashier.cancel_order.review_recorded":"cashier.toasts.order_cancelled"));
+    }catch(error){
+      console.error("CASHIER_CANCEL_ORDER_FAILED",error?.code||error?.message||"UNKNOWN");
+      showToast(t(cashierCancellationErrorKey(error)),"error");
+    }finally{setBusyKey("");}
   };
 
   const assignTable = async (order, tableCode) => {
@@ -1061,66 +1116,106 @@ export function CashierPage() {
   };
 
   const quoteLalamove = async order => {
-    setBusyKey(`ll-quote:${order.id}`);
-    const legacyCodBackfill = isLalamoveCod(order) && order.lalamoveCodEnabled !== true;
+    if(!order?.id || !tenant?.id || busyKey) return;
+    if(isLalamoveCod(order)){
+      showToast("COD ยังไม่ได้เปิดใช้งาน กรุณาตรวจสอบบัญชีผู้รับเงินก่อนเรียกรถ","error");
+      return;
+    }
+    if(lalamoveUnknownOutcomes.current.has(order.id)){
+      showToast("ผลเรียกรถครั้งก่อนยังไม่ยืนยัน กรุณาตรวจสอบสถานะก่อนเรียกรถใหม่","error");
+      return;
+    }
+    setBusyKey("ll-quote:"+order.id);
     try {
-      if (legacyCodBackfill) {
-        await updateOrder(order.id, {
-          lalamoveCodEnabled: true,
-          lalamoveCodAmount: Number(order.totalAmount || 0),
-          lalamoveCodSettlementStatus: order.lalamoveCodSettlementStatus || "pending",
-        });
+      const result=await quoteLalamoveDispatch(tenant.id,order.id);
+      const state=result?.item;
+      if(result?.alreadyPlaced || state?.lalamoveOrderId){
+        showToast("มีงานจัดส่ง Lalamove สำหรับบิลนี้อยู่แล้ว ระบบจะไม่เรียกรถซ้ำ");
+        return;
       }
-      const result = await quoteLalamoveDispatch(tenant.id, order.id);
-      const dispatch = result?.item || result || {};
-      showToast(t("cashier.lalamove.quote_ready", { amount: money(dispatch.quoteFee || 0) }));
-    } catch (error) {
-      if (legacyCodBackfill) {
-        try {
-          await updateOrder(order.id, {
-            lalamoveCodEnabled: false,
-            lalamoveCodAmount: 0,
-          });
-        } catch (rollbackError) {
-          console.error("CASHIER_LALAMOVE_COD_BACKFILL_ROLLBACK_FAILED", rollbackError);
-        }
-      }
-      console.error("CASHIER_LALAMOVE_QUOTE_FAILED", error);
-      showToast(lalamoveErrorText(error, t, money), "error");
-    } finally { setBusyKey(""); }
+      if(!state?.quotationId || !Number.isFinite(Number(state.quoteFee))||
+        Number(state.quoteFee)<0)throw new Error("CASHIER_LALAMOVE_QUOTE_RESPONSE_INVALID");
+      // Firestore onSnapshot remains canonical, not an optimistic guessed fee.
+      showToast(t("cashier.lalamove.quote_ready",{amount:money(state.quoteFee)}));
+    }catch(error){
+      console.error("CASHIER_LALAMOVE_QUOTE_FAILED",error?.code||error?.message||"UNKNOWN");
+      showToast(lalamoveErrorText(error,t,money),"error");
+    }finally{setBusyKey("");}
   };
 
   const placeLalamove = async (order, approvedFee) => {
-    const checkoutFee = Number(order.deliveryBaseFee || 0);
-    const currentFee = Number(approvedFee || 0);
-    const difference = Math.max(0, currentFee - checkoutFee);
-    const ok = await sweetConfirm(
-      difference > .009
-        ? t("cashier.lalamove.confirm_difference", { checkout: money(checkoutFee), current: money(currentFee), difference: money(difference) })
-        : t("cashier.lalamove.confirm_call", { amount: money(currentFee) }),
-      {
-        title: t("cashier.lalamove.confirm_title"),
-        confirmText: t("cashier.common.confirm"),
-        cancelText: t("cashier.common.cancel"),
-        type: difference > .009 ? "warning" : "info",
-      },
-    );
-    if (!ok) return;
-    setBusyKey(`ll-place:${order.id}`);
-    try {
-      const result = await placeLalamoveDispatch(tenant.id, order.id, {
-        approveDifference: difference > .009,
-        approvedFee: currentFee,
-      });
-      const dispatch = result?.item || result || {};
-      showToast(
-        dispatch.walletDebitPending ? t("cashier.lalamove.fod_wallet_debit_pending") : t("cashier.lalamove.placed"),
-        dispatch.walletDebitPending ? "error" : "success",
-      );
-    } catch (error) {
-      console.error("CASHIER_LALAMOVE_PLACE_FAILED", error);
-      showToast(lalamoveErrorText(error, t, money), "error");
-    } finally { setBusyKey(""); }
+    if(!order?.id || !tenant?.id || busyKey ||
+      lalamovePlacementFlight.current.has(order.id))return;
+    if(isLalamoveCod(order)){
+      showToast("COD ยังไม่เปิดใช้งาน จึงไม่เรียกรถโดยอัตโนมัติ","error");return;
+    }
+    if(lalamoveUnknownOutcomes.current.has(order.id)){
+      showToast("การเรียกรถครั้งก่อนยังรอตรวจสอบ กรุณาอัปเดทสถานะก่อน","error");return;
+    }
+    const checkoutFee=Number(order.deliveryBaseFee||0);
+    const fee=Number(approvedFee);
+    if(!Number.isFinite(fee)||fee<0){
+      showToast(t("cashier.lalamove.generic_error"),"error");return;
+    }
+    const difference=Math.max(0,fee-checkoutFee);
+    lalamovePlacementFlight.current.add(order.id);
+    try{
+      const ok=await sweetConfirm(difference>.009
+        ?t("cashier.lalamove.confirm_difference",{
+          checkout:money(checkoutFee),current:money(fee),difference:money(difference)})
+        :t("cashier.lalamove.confirm_call",{amount:money(fee)}),{
+         title:t("cashier.lalamove.confirm_title"),
+         confirmText:t("cashier.common.confirm"),
+         cancelText:t("cashier.common.cancel"),
+         type:difference>.009?"warning":"info",
+        });
+      if(!ok)return;
+      setBusyKey("ll-place:"+order.id);
+      try{
+        const outcome=await placeWithFreshLalamoveQuote({
+          order,approval:{approveDifference:difference>.009,approvedFee:fee},
+          // A fresh Firebase provider quotation is always compared with the
+          // amount staff just confirmed. Never inherit price approval when
+          // a new quote is higher OR lower.
+          forceRefresh:true,
+          quote:async()=>{
+            const response=await quoteLalamoveDispatch(tenant.id,order.id);
+            const fresh=await getOperationalOrderFromServer(tenant.id,order.id);
+            if(!fresh||fresh.id!==order.id)throw new Error("CASHIER_LALAMOVE_ORDER_READBACK_FAILED");
+            const item=response?.item||{};
+            return {item,order:fresh,alreadyPlaced:response?.alreadyPlaced===true};
+          },
+          place:approval=>placeLalamoveDispatch(tenant.id,order.id,approval),
+          onQuote:fresh=>setOrders(current=>current.map(row=>
+            row.id===fresh.id?{...row,...fresh}:row)),
+        });
+        if(outcome.kind==="priceChanged"){
+          const latestFee=Number(outcome.result.item.quoteFee);
+          showToast(t(lalamoveFeeChanged(latestFee,checkoutFee)?
+            "cashier.lalamove.price_changed":"cashier.lalamove.quote_ready",{
+              amount:money(latestFee)}),"warning");
+          return; // the new price needs an explicit SECOND click/approval.
+        }
+        if(outcome.kind==="alreadyPlaced"){
+          showToast("มีงานจัดส่ง Lalamove สำหรับบิลนี้อยู่แล้ว ระบบไม่เรียกรถซ้ำ");
+          return;
+        }
+        const state=outcome.result?.item||{};
+        if(!state.lalamoveOrderId){
+          lalamoveUnknownOutcomes.current.add(order.id);
+          throw new Error("LALAMOVE_DISPATCH_CONFIRMATION_UNKNOWN");
+        }
+        showToast(state.walletDebitPending?
+          t("cashier.lalamove.fod_wallet_debit_pending"):
+          t("cashier.lalamove.placed"),state.walletDebitPending?"error":"success");
+      }catch(error){
+        const code=String(error?.details?.code||error?.message||error?.code||"");
+        if(/CONFIRMATION_UNKNOWN|RECONCILIATION_REQUIRED|ORDER_CREATE_FAILED|UNKNOWN_ERROR|UNAVAILABLE|DEADLINE_EXCEEDED/i.test(code))
+          lalamoveUnknownOutcomes.current.add(order.id);
+        console.error("CASHIER_LALAMOVE_PLACE_FAILED",error?.code||error?.message||"UNKNOWN");
+        showToast(lalamoveErrorText(error,t,money),"error");
+      }finally{setBusyKey("");}
+    }finally{lalamovePlacementFlight.current.delete(order.id);}
   };
 
   const refreshLalamove = async order => {
@@ -1134,6 +1229,12 @@ export function CashierPage() {
     setBusyKey(`ll-refresh:${order.id}`);
     try {
       await refreshLalamoveDispatch(tenant.id, order.id);
+      const current=await getOperationalOrderFromServer(tenant.id,order.id);
+      const provider=String(current?.lalamoveOrderStatus||"").toUpperCase();
+      if(current?.lalamoveOrderId ||
+        ["CANCELED","CANCELLED","REJECTED","EXPIRED"].includes(provider)){
+        lalamoveUnknownOutcomes.current.delete(order.id);
+      }
       showToast(t("cashier.lalamove.status_refreshed"));
     } catch (error) {
       console.error("CASHIER_LALAMOVE_REFRESH_FAILED", error);
@@ -1298,6 +1399,7 @@ export function CashierPage() {
         <div className="brand"><span className="brand-mark">PG</span>{t("cashier.header.title")}</div>
         <div className="app-header-actions" data-header-actions>
           <LocaleSwitcher style={{ marginLeft: 0, marginRight: 0 }} />
+          {ordersSynced ? <TelegramOrderFocus orders={active.filter(order => order.orderType === "delivery")} role="cashier" /> : null}
           {ordersSynced ? <CashierOrderNotifier orders={orders} onToast={showToast} surface="cashier" /> : null}
           <UserMenu profile={profile} />
         </div>
@@ -1346,7 +1448,7 @@ export function CashierPage() {
               if (card.type === "table") return <TableBillCard key={card.key} group={card.group} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
               if (card.type === "walkin") return <WalkInCard key={card.key} order={card.order} tables={tables} active={active} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
               if (card.type === "takeaway") return <TakeawayCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} busy={busy} actions={actions} />;
-              return <DeliveryCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} slipUrl={card.order.paymentSlipUrl || slipUrls[card.order.id] || ""} busy={busy} actions={actions} onShareDriver={shareDriverLocation} storeLocation={storeLocation} />;
+              return <DeliveryCard key={card.key} order={card.order} t={t} money={money} formatTime={formatTime} busyKey={busyKey} slipUrl={card.order.paymentSlipUrl || slipUrls[card.order.id] || ""} busy={busy} actions={actions} onShareDriver={shareDriverLocation} storeLocation={storeLocation} />;
             }) : <div className="cashier-empty"><span className="cashier-empty-mark" aria-hidden="true"></span><strong>{t("cashier.queue.empty_title")}</strong><span>{t("cashier.queue.empty_help")}</span></div>}
           </div>
         </section>

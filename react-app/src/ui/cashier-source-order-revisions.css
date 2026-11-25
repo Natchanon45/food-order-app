@@ -1,0 +1,256 @@
+/* Added outside immutable SOURCE CSS. Applies only to signed edit-history markup. */
+.order-revision-original {
+  color: #b91c1c;
+  font-size: .78em;
+  font-weight: 500;
+  text-decoration-thickness: 1px;
+  text-decoration-color: #b91c1c;
+  overflow-wrap: anywhere;
+}
+.order-revision-item-row {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+  line-height: 1.35;
+}
+.order-revision-original-amount {
+  flex-shrink: 0;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+}
+.order-revision-total {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  text-align: right;
+  vertical-align: middle;
+}
+.order-revision-total > strong {
+  color: inherit;
+  font-size: inherit;
+  white-space: nowrap;
+}
+.receipt-line-revision {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.receipt-line-revision .order-revision-original {
+  text-align: right;
+}
+@media print {
+  .order-revision-original { color: #b91c1c !important; text-decoration-color: #b91c1c !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+
+/* Use the existing receipt cancellation-actor watermark only for whole voids. */
+.order-revision-watermark-host { position: relative; }
+.order-revision-cancel-watermark {
+  position: absolute;
+  top: 44%; left: 50%;
+  z-index: 8;
+  max-width: 90%;
+  box-sizing: border-box;
+  padding: 12px 18px;
+  border: 3px solid #ad1717;
+  border-radius: 13px;
+  color: #ad1717;
+  background: rgba(255, 255, 255, .12);
+  opacity: .28;
+  font-weight: 900;
+  font-size: clamp(18px, 4vw, 30px);
+  text-align: center;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  pointer-events: none;
+  user-select: none;
+}
+@media print {
+  .order-revision-cancel-watermark {
+    color: #ad1717 !important;
+    border-color: #ad1717 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+#customerReceipt { position: relative; }
+#customerReceipt > .order-revision-cancel-watermark + .receipt-header {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+
+/* Receipt-only visual alignment for revised items (80mm/58mm/A4). */
+/* Keep the pinned original receipt table and all three columns unchanged. */
+body.od-receipt-page #receipt .receipt-item-name,
+body.delivery-success-page #customerReceipt .receipt-item-name {
+  min-width: 0;
+  white-space: normal;
+}
+body.od-receipt-page #receipt .receipt-item-name .order-revision-item-row,
+body.delivery-success-page #customerReceipt .receipt-item-name .order-revision-item-row {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  margin-bottom: 3px;
+  line-height: 1.35;
+}
+body.od-receipt-page #receipt .receipt-item-name .order-revision-item-row del,
+body.delivery-success-page #customerReceipt .receipt-item-name .order-revision-item-row del {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+body.od-receipt-page #receipt .receipt-item-line,
+body.delivery-success-page #customerReceipt .receipt-item-line {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+body.od-receipt-page #receipt .receipt-item-text,
+body.delivery-success-page #customerReceipt .receipt-item-text {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+body.od-receipt-page #receipt .receipt-item-qty {
+  white-space: nowrap;
+}
+body.od-receipt-page #receipt .receipt-item-note,
+body.delivery-success-page #customerReceipt .receipt-item-note {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+body.od-receipt-page #receipt .receipt-items-3col .receipt-line-total,
+body.delivery-success-page #customerReceipt .receipt-items-3col .receipt-line-total {
+  text-align: right;
+}
+body.od-receipt-page #receipt .receipt-line-revision,
+body.delivery-success-page #customerReceipt .receipt-line-revision {
+  display: flex;
+  width: 100%;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 3px;
+  text-align: right;
+  white-space: nowrap;
+}
+body.od-receipt-page #receipt .receipt-line-revision > *,
+body.delivery-success-page #customerReceipt .receipt-line-revision > * {
+  display: block;
+  max-width: 100%;
+  text-align: right;
+}
+body.od-receipt-page #receipt .receipt-row.receipt-total,
+body.delivery-success-page #customerReceipt .receipt-row.receipt-total {
+  align-items: flex-start;
+}
+body.od-receipt-page #receipt .receipt-row.receipt-total > span:last-child,
+body.delivery-success-page #customerReceipt .receipt-row.receipt-total > span:last-child {
+  display: inline-flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  max-width: 74%;
+  text-align: right;
+}
+body.od-receipt-page #receipt #receiptTotal,
+body.delivery-success-page #customerReceipt #receiptTotal {
+  display: inline-block;
+  text-align: right;
+  white-space: nowrap;
+}
+body.od-receipt-page #receipt #receiptTotal .order-revision-total,
+body.delivery-success-page #customerReceipt #receiptTotal .order-revision-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+body.od-receipt-page #receipt #receiptTotal [data-current-net-total],
+body.delivery-success-page #customerReceipt #receiptTotal [data-current-net-total] {
+  font-weight: 700;
+  white-space: nowrap;
+}
+/* The base print stylesheet forces all text black. Preserve only the
+ * old-value strike-through in red without changing present payable figures. */
+@media print {
+  body.od-receipt-page #receipt .order-revision-original,
+  body.od-receipt-page #receipt .order-revision-original del,
+  body.od-receipt-page #receipt del.order-revision-original,
+  body.delivery-success-page #customerReceipt .order-revision-original,
+  body.delivery-success-page #customerReceipt .order-revision-original del,
+  body.delivery-success-page #customerReceipt del.order-revision-original {
+    color: #b91c1c !important;
+    text-decoration-color: #b91c1c !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+
+/* Full-width ORIGINAL row above a normal unchanged price/amount row. */
+/* The old name and old total share one table baseline; the following row
+ * remains the ordinary 3-column SOURCE layout (name | unit price | total). */
+body.od-receipt-page #receipt tr.receipt-revision-history-row > td,
+body.delivery-success-page #customerReceipt tr.receipt-revision-history-row > td {
+  padding-top: 5px;
+  padding-bottom: 0;
+  vertical-align: bottom;
+  line-height: 1.2;
+}
+body.od-receipt-page #receipt tr.receipt-revision-history-row + tr > td,
+body.delivery-success-page #customerReceipt tr.receipt-revision-history-row + tr > td {
+  padding-top: 1px;
+}
+body.od-receipt-page #receipt tr.receipt-revision-history-row .order-revision-item-row,
+body.delivery-success-page #customerReceipt tr.receipt-revision-history-row .order-revision-item-row {
+  display: block;
+  margin: 0;
+  line-height: inherit;
+}
+body.od-receipt-page #receipt tr.receipt-revision-history-row del,
+body.delivery-success-page #customerReceipt tr.receipt-revision-history-row del {
+  color: #b91c1c;
+  text-decoration-color: #b91c1c;
+  font-size: .78em;
+  font-weight: 500;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+/* The name wrapper is already 0.78em; avoid shrinking its <del> twice. */
+body.od-receipt-page #receipt tr.receipt-revision-history-row td.receipt-item-name del,
+body.delivery-success-page #customerReceipt tr.receipt-revision-history-row td.receipt-item-name del {
+  font-size: 1em;
+}
+body.od-receipt-page #receipt tr.receipt-revision-history-row td.receipt-line-total,
+body.delivery-success-page #customerReceipt tr.receipt-revision-history-row td.receipt-line-total {
+  white-space: nowrap;
+  text-align: right;
+}
+body.od-receipt-page #receipt tr.receipt-revision-history-row td.receipt-line-total del,
+body.delivery-success-page #customerReceipt tr.receipt-revision-history-row td.receipt-line-total del {
+  display: inline;
+  white-space: nowrap;
+}
+@media print {
+  body.od-receipt-page #receipt tr.receipt-revision-history-row del,
+  body.delivery-success-page #customerReceipt tr.receipt-revision-history-row del {
+    color: #b91c1c !important;
+    text-decoration-color: #b91c1c !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -1,3 +1,12 @@
+## 2026-11-25 — P3.1 Cashier latest Source and three signed Firebase transactions
+
+- Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159 READ ONLY, Target Natchanon45/food-order-app feature/react-firebase-port starting f83c25f8.
+- Ported compact Source delivery header, revision history, Telegram focus, courier action fieldset and safe whole-order cancellation, never-stale fee approval and paid Takeaway physical pickup. Replaced unsafe browser Cashier cash, COD, pickup and cancellation writes and on-page financial/table repair with three signed Tenant/uid/role-scoped Firebase Callables, current-state transactions, immutable cash audits and repeated-operation idempotency. BankAlert never confirms paid and COD is disabled.
+- Local QA: pure P3.1 **8/8 PASS**, signed Auth+Firestore+Functions Chrome with ten mixed orders and Owner/foreign Owner/Kitchen **1/1 PASS**, 320/390/768/1440 and all negative payment/cancel/booking guards. Existing React Foundation and P0 PASS; shared Auth gate audits **149** Cloud Callables PASS. Complete npm run test:react-parity EXIT 0; final npm run build:react + generated Hosting Contract EXIT 0, 2026.11.09.535 bundle index-CbPKGrba.js. Temporary public assets/demo config cleaned. No live provider/Production calls or source change.
+- Master 65 JSX Source: **10/65 (15.4%)** accepted/dispositioned local; **55/65 (84.6%)** pending; old Target presence 52/65 (80.0%) is NOT functional completion. Next P3.2 Kitchen. See docs/LUKKAJA_P3_1_CASHIER_SOURCE_PORT_20261125.md.
+
+---
+
 ## 2026-11-25 — P2.4 Merchant Sales Report, verified history and strict whole-project %
 
 - Pinned Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7bf9d159 READ ONLY; Target Natchanon45/food-order-app feature/react-firebase-port base 5b755188.

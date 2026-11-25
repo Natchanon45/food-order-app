@@ -1618,19 +1618,17 @@ assert(
 const layerCss=read("react-app/public/parity/css/ui-layer-stack.css");
 assert(layerCss.includes(".owner-password-backdrop,")&&layerCss.includes("--ui-layer-modal-z: 2147483000;")&&layerCss.includes("--ui-layer-dialog-z: 2147483600;")&&layerCss.includes("--ui-layer-toast-z: 2147483647;"),"Owner password modal must remain below SweetAlert and Toast layers");
 assert(cashierPage.includes("bi bi-printer app-icon")&&cashierPage.includes("bi bi-x-circle app-icon"),"Cashier order action icons must use Laravel MASTER app-icon markup");
+// P3.1: COD is user-disabled. Keep unsettled history in the queue but no
+// self-certified settlement/backfill/dispatch via a Cashier browser click.
 assert(
   cashierPage.includes("function lalamoveCodAwaitingSettlement(order)")
-  && cashierPage.includes("if (lalamoveCodAwaitingSettlement(order)) return true;")
-  && cashierPage.includes('cashier-cod-settlement-action')
-  && cashierPage.includes('patch.lalamoveCodSettlementStatus = "received";')
-  && cashierPage.includes('patch.lalamoveCodSettledAt = now;')
-  && deliveryPage.includes("payload.lalamoveCodEnabled = cod;")
-  && deliveryPage.includes("payload.lalamoveCodAmount = cod ? total : 0;")
-  && deliveryPage.includes('throw new Error("LALAMOVE_COD_UNAVAILABLE")')
-  && cashierPage.includes("const legacyCodBackfill = isLalamoveCod(order) && order.lalamoveCodEnabled !== true;")
-  && cashierPage.includes('lalamoveCodSettlementStatus: order.lalamoveCodSettlementStatus || "pending"')
-  && cashierPage.includes("CASHIER_LALAMOVE_COD_BACKFILL_ROLLBACK_FAILED"),
-  "Lalamove COD must be marked at checkout and remain unpaid until completed delivery plus manual settlement confirmation",
+  &&cashierPage.includes("if (lalamoveCodAwaitingSettlement(order)) return true;")
+  &&cashierPage.includes("data-cod-unreconciled={order.id}")
+  &&cashierPage.includes("if(isLalamoveCod(order))")
+  &&!cashierPage.includes("cashier-cod-settlement-action")
+  &&!cashierPage.includes('patch.lalamoveCodSettlementStatus = "received";')
+  &&!cashierPage.includes("const legacyCodBackfill = isLalamoveCod(order)"),
+  "Disabled COD must never be marked paid or quoted with false merchant-bank evidence"
 );
 for (const locale of ["th","en","my","lo","km"]) {
   const cod = dict[locale]?.cashier?.lalamove;
@@ -1639,25 +1637,25 @@ for (const locale of ["th","en","my","lo","km"]) {
   }
 }
 assert(
-  cashierPage.includes("const dispatchedLocked = order.lalamoveOrderId && !lalamoveDispatchFinished(order);")
-  && cashierPage.includes('title={t("cashier.lalamove.local_cancel_locked")}')
-  && !cashierPage.includes("PENGUIN_CASHIER_ORDER_CANCEL"),
-  "Cashier must preserve the original Lalamove local-cancel lock and keep provider cancellation separate",
+  cashierPage.includes("const hideCancel = hideCashierWholeOrderCancel(order, placingLalamove)")
+  &&cashierPage.includes("if (hideCashierWholeOrderCancel(order))")
+  &&cashierPage.includes("cashierCancelOrderSafely(tenant.id,order.id)")
+  &&!cashierPage.includes("PENGUIN_CASHIER_ORDER_CANCEL"),
+  "Whole-order cancellation must be hidden on unknown Lalamove placement and checked server-side"
 );
 assert(
-  cashierPage.includes('if (order.orderType === "takeaway")')
-  && cashierPage.includes('await updateOrder(order.id, { status: "cancelled" });'),
-  "Cashier takeaway cancellation must use the proven operational status-update path",
+  cashierPage.includes("cashierRecordCashReceipt(tenant.id,[order.id]")
+  &&cashierPage.includes('cashierPickupAction(tenant.id,order.id,"handover")')
+  &&!cashierPage.includes('await updateOrder(order.id, { status: "cancelled" });'),
+  "Takeaway cash, prepaid handover and cancellation use canonical server transactions"
 );
 assert(
-  (cashierPage.match(/bi bi-cash-coin app-icon/g)||[]).length===5
-  &&(cashierPage.match(/cashier-payment-action/g)||[]).length===5
-  &&cashierPage.includes('data-walkin-pay={order.id}')
+  cashierPage.includes('data-walkin-pay={order.id}')
   &&cashierPage.includes('onClick={() => actions.pay(order)}><i className="bi bi-cash-coin app-icon"')
   &&cashierPage.includes('onClick={() => actions.payTable(sorted)}><i className="bi bi-cash-coin app-icon"')
   &&cashierRefreshCss.includes(".cashier-payment-action .bi-cash-coin.app-icon::before")
   &&cashierRefreshCss.includes("transform: translateY(0);"),
-  "Cashier receive-payment actions must use the centered cash/coin icon while non-payment confirmation actions retain their semantic icons"
+  "Cashier physical cash actions retain semantic icon and use trusted payment transitions"
 );
 const kitchenPage=read("react-app/src/pages/KitchenPage.jsx");
 const kitchenItemEditorCss=read("react-app/public/parity/css/kitchen-item-editor.css");
@@ -1709,9 +1707,10 @@ assert(
   "React Kitchen must restore per-item serving for table/Walk-in orders and settle a paid table after the final served item"
 );
 assert(
-  cashierPage.includes("tableSettlementRepairRef")
-  &&cashierPage.includes("CASHIER_TABLE_SETTLEMENT_REPAIR_FAILED")
-  &&cashierPage.includes("const settlement = await settleTableSession(tenant.id, rounds[0].id)")
+  !cashierPage.includes("tableSettlementRepairRef")
+  &&!cashierPage.includes("CASHIER_TABLE_SETTLEMENT_REPAIR_FAILED")
+  &&cashierPage.includes("settleTableSession(tenant.id,rounds[0].id)")
+  &&cashierPage.includes("cashierRecordCashReceipt(")
   &&operationalData.includes('httpsCallable(functions, "settleTableSession")')
   &&operationalOrdersFunctions.includes("exports.settleTableSession = onCall")
   &&operationalOrdersFunctions.includes('const TABLE_SETTLEMENT_ROLES = new Set(["owner", "admin", "manager", "cashier", "kitchen", "super_admin"])')
@@ -1719,7 +1718,7 @@ assert(
   &&operationalOrdersFunctions.includes("orderFullyServed(row)")
   &&operationalOrdersFunctions.includes("releasedQrTablePatch()")
   &&functionsIndex.includes("exports.settleTableSession = operationalOrders.settleTableSession;"),
-  "Table settlement must be order-independent: serving then payment or payment then serving must close completed table sessions"
+  "Source cashier page opening is read-only; table settlement is a signed action after cash receipt or kitchen serving"
 );
 for(const locale of ["th","en","my","lo","km"]){
   const kitchen=dict[locale]?.kitchen;

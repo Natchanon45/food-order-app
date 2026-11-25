@@ -75,12 +75,12 @@ test("Popup blocked or failing to initialize returns a safe same-tab fallback", 
 
 test("Cashier preserves successful Firebase payment gate, print navigation and error cleanup", () => {
   const src = fs.readFileSync("react-app/src/pages/CashierPage.jsx", "utf8");
-  assert.match(src, /const printWindow = openReceiptPrintWindow\(\);\s+setBusyKey\(`pay:/);
+  assert.match(src, /const printWindow = openReceiptPrintWindow\(\);[\s\S]{0,120}setBusyKey/);
   assert.doesNotMatch(src, /await approveDeliveryPaymentReview\(/);
-  assert.match(src, /showToast\(t\("cashier.payment.slip_manual_superadmin"\), "error"\);/);
+  assert.match(src, /data-delivery-superadmin-review=\{order.id\}/);
   assert.match(src, /const printOrder = \(printWindow, orderId\) => \{[\s\S]*?updateReceiptPrintLoading\(printWindow,[\s\S]*?location.replace\(url\)/);
   assert.match(src, /const printTable = \(printWindow, rounds\) => \{[\s\S]*?updateReceiptPrintLoading\(printWindow,/);
-  assert.match(src, /catch \(error\) \{\s+closePrintWindow\(printWindow\);\s+console.error\("CASHIER_PAYMENT_FAILED"/);
+  assert.match(src, /catch\(error\)\{\s+closePrintWindow\(printWindow\);\s+console.error\("CASHIER_CASH_RECEIPT_FAILED"/);
   assert.match(src, /else location.assign\(url\)/);
 });
 

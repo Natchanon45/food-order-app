@@ -168,29 +168,40 @@ requireAll("Cashier Table QR actions", cashierTableQrPage, [
   "sweetConfirm(",
 ]);
 
-requireAll("Cashier payment", cashier, [
-  'paymentStatus: "paid"',
-  'await updateOrder(order.id, patch)',
-  "printOrder(printWindow, order.id)",
+requireAll("Cashier payment now signed and cash-only", cashier, [
+  "cashierRecordCashReceipt(tenant.id,[order.id]",
+  "CASHIER_CASH_READBACK_UNCONFIRMED",
+  "printOrder(printWindow,order.id)",
 ]);
-requireAll("Cashier table payment", cashier, [
-  "await Promise.all(payable.map(order =>",
-  "updateOperationalOrder(tenant.id, order.id, patch)",
-  "settleTableSession(tenant.id, rounds[0].id)",
+requireAll("Cashier table payment now signed and atomic", cashier, [
+  "cashierRecordCashReceipt(",
+  "settleTableSession(tenant.id,rounds[0].id)",
   "CASHIER_TABLE_SETTLEMENT_AFTER_PAYMENT_FAILED",
-  "printTable(printWindow, rounds)",
+  "printTable(printWindow,rounds)",
 ]);
-requireAll("Cashier cancellation", cashier, [
+requireAll("Cashier cancellation guarded by signed server and provider uncertainty", cashier, [
   "const cancelOrder = async order =>",
-  "await cancelOperationalOrder(tenant.id, order.id)",
-  'status: "cancelled"',
+  "cashierCancelOrderSafely(tenant.id,order.id)",
+  "hideCashierWholeOrderCancel(order)",
   "sweetConfirm(",
 ]);
-requireAll("Cashier pickup", cashier, [
-  'pickupStatus: "called"',
-  'pickupStatus: "picked_up"',
-  'status: "paid", paymentStatus: "paid"',
+requireAll("Cashier pickup never modifies money on handover", cashier, [
+  'cashierPickupAction(tenant.id,order.id,"call")',
+  'cashierPickupAction(tenant.id,order.id,"handover")',
+  'result.item.pickupStatus!=="picked_up"',
 ]);
+const cashierBackend=read("functions/operational-orders.js");
+requireAll("Cashier authoritative server transitions",cashierBackend,[
+  "exports.cashierRecordCashReceipt=onCall",
+  "exports.cashierPickupAction=onCall",
+  "exports.cashierCancelOrderSafely=onCall",
+  "cashierActionAudit",
+]);
+if (cashier.includes('await updateOrder(order.id, { status: "cancelled" });') ||
+    cashier.includes('patch.lalamoveCodSettlementStatus = "received";') ||
+    cashier.includes('await Promise.all(payable.map(order =>')) {
+  fail("Cashier retains unsafe client financial mutation");
+}
 requireAll("Cashier table/walk-in operations", cashier, [
   "assignWalkInTable(tenant.id, order.id, tableCode)",
   "moveTableSession(tenant.id",
@@ -226,13 +237,15 @@ requireAll("Cashier Takeaway tools mobile single row", read("react-app/public/pa
   ".cashier-action-title span {",
   "display: none;",
 ]);
-requireAll("Cashier Lalamove actions", cashier, [
-  "quoteLalamoveDispatch(tenant.id, order.id)",
-  "placeLalamoveDispatch(tenant.id, order.id",
+requireAll("Cashier Source safe Lalamove actions and fresh quote", cashier, [
+  "quoteLalamoveDispatch(tenant.id,order.id)",
+  "placeLalamoveDispatch(tenant.id,order.id,approval)",
   "refreshLalamoveDispatch(tenant.id, order.id)",
   "cancelLalamoveDispatch(tenant.id, order.id)",
+  "placeWithFreshLalamoveQuote({",
+  "forceRefresh:true",
+  "getOperationalOrderFromServer(tenant.id,order.id)",
 ]);
-
 requireAll("Operational tenant scoping", operational, [
   'doc(db, "tenants", requireTenantId(tenantId), collectionName, String(id))',
   "tenantId: requireTenantId(tenantId)",

@@ -1,5 +1,5 @@
 import {
-  collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query,
+  collection, deleteDoc, doc, getDoc, getDocFromServer, getDocs, onSnapshot, orderBy, query,
   serverTimestamp, setDoc
 } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
@@ -20,6 +20,9 @@ const quoteLalamoveCallable = httpsCallable(functions, "quoteTenantLalamoveDispa
 const placeLalamoveCallable = httpsCallable(functions, "placeTenantLalamoveDispatch");
 const refreshLalamoveCallable = httpsCallable(functions, "refreshTenantLalamoveDispatch");
 const cancelLalamoveCallable = httpsCallable(functions, "cancelTenantLalamoveDispatch");
+const cashierCashReceiptCallable = httpsCallable(functions, "cashierRecordCashReceipt");
+const cashierPickupCallable = httpsCallable(functions, "cashierPickupAction");
+const cashierCancelCallable = httpsCallable(functions, "cashierCancelOrderSafely");
 
 function requireTenantId(value) {
   const id = String(value || "").trim();
@@ -145,6 +148,16 @@ export async function getOperationalOrder(tenantId, orderId) {
   if (!id) return null;
   const snapshot = await getDoc(tenantDoc(tenantId, "orders", id));
   return snapshot.exists() ? documentRow(snapshot) : null;
+}
+
+// Explicit server read after a fresh Lalamove quote/status: never compare
+// a cached local order to a provider quotation for paid dispatch consent.
+export async function getOperationalOrderFromServer(tenantId, orderId) {
+  const id=String(orderId||"").trim();
+  if(!id)throw new Error("ORDER_REQUIRED");
+  const snap=await getDocFromServer(tenantDoc(tenantId,"orders",id));
+  if(!snap.exists())throw new Error("ORDER_NOT_FOUND");
+  return documentRow(snap);
 }
 
 export async function getOperationalStoreSettings(tenantId) {
@@ -343,6 +356,18 @@ export function refreshLalamoveDispatch(tenantId, orderId) {
 }
 export function cancelLalamoveDispatch(tenantId, orderId) {
   return dispatchCall(cancelLalamoveCallable, tenantId, orderId);
+}
+
+export function cashierRecordCashReceipt(tenantId, orderIds, kind, operationId) {
+  return dispatchCall(cashierCashReceiptCallable, tenantId, "", {
+    orderIds, kind, operationId,
+  });
+}
+export function cashierPickupAction(tenantId, orderId, action) {
+  return dispatchCall(cashierPickupCallable, tenantId, orderId, {action});
+}
+export function cashierCancelOrderSafely(tenantId, orderId) {
+  return dispatchCall(cashierCancelCallable, tenantId, orderId);
 }
 
 export async function saveQuickOrderHeldBill(tenantId, bill) {
