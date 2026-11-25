@@ -1,3 +1,16 @@
+## 2026-11-25 — P2.2 Merchant Store Master / Branding / QR from latest JSX
+
+- **Source read-only:** cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7bf9d159. **Target:** Natchanon45/food-order-app, feature/react-firebase-port starting at P2.1 commit a5393505.
+- Source-only 364-line AdminStoreMasterPage is NOT routed in Source; Target maintains the same ten feature groups inside the existing AdminPage and its original Firebase tenant-scoped Store adapter. Added source-compatible storeMasterCard ID only. No duplicate route or project.
+- Ported Source ONE cover crop frame with Y-only physical image dragging, X=50 on explicit focus edits, role=slider + keyboard and Reset, Source CSS, preview cleanup, and retained actual Firebase WebP image upload/readback. StoreBrandMark hero shares persisted logo and cover on Delivery, Takeaway, PublicOrder, QuickOrder.
+- Ported QR from external quickchart.io to the existing bundled Source localQr encoder and local PNG canvas generation, ensuring Delivery and Takeaway can preview, copy, download and print with no third-party QR API call.
+- Emulator demonstrates Owner/Admin allowed same-Tenant Firestore settings+Storage images; Cashier/other Owner/anonymous denied, persisted Y and bank/merchant fields reread. Mobile Chrome fixture at 320/390/768/1440 tests crop, PNG QR and download. Existing Store/Focus policies adapted to latest Source; print test included separately.
+- **P2.2 complete local QA:** npm run test:p22-merchant-store-master **16/16 PASS**; npm run test:p22-merchant-store-master-local **EXIT 0** (Auth+Firestore+Storage emulator 1/1, real Chrome UI at 320/390/768/1440 with crop/QR download/printHtml 1/1); full npm run test:react-parity **EXIT 0**; npm run build:react + generated Hosting Contract **EXIT 0** (2026.11.09.535, bundle index-CIkIr1RM.js). Print document HTML verified, real physical printer not tested. No Production deployment, actual bank/Stripe authority, main merge or APK/IPA.
+- Next P2.3: Merchant onboarding / Auth / QR management / Sales Report deeper Source parity. Full P2 is not complete; do not open Go-only LINE wallet request without authoritative Firebase reconciliation.
+- Report: docs/LUKKAJA_P2_2_MERCHANT_STORE_MASTER_QR_BRANDING_20261125.md.
+
+---
+
 ## 2026-11-25 — P2.1 Merchant Admin Owner Payment Observer (latest Source)
 
 - **Source read-only:** `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159`; **Target:** `Natchanon45/food-order-app`, `feature/react-firebase-port`, starting from P1.5 commit `c56d6d3d`.

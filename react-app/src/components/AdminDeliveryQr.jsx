@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { AdminCollapsibleCard } from "@/components/AdminCollapsibleCard";
 import { printFaviconLink } from "@/utils/printFavicon";
+import { qrPngDataUrl } from "@/utils/localQr";
 
 function toast(message, type = "success") {
   const el = document.createElement("div");
@@ -18,7 +19,9 @@ function toast(message, type = "success") {
 }
 
 function qrImageUrl(value) {
-  return `https://quickchart.io/qr?text=${encodeURIComponent(value)}&size=720&margin=2&ecLevel=H`;
+  // Render on-device; never disclose the store URL or Tenant slug to a
+  // third-party QR API. The PNG file, paper preview and print share bytes.
+  return qrPngDataUrl(value, { size: 720, margin: 4 });
 }
 
 function legacyCopy(input, value) {
@@ -74,7 +77,7 @@ function waitForImage(image) {
   });
 }
 
-function printHtml(paper, title) {
+export function printHtml(paper, title) {
   const clone = paper.cloneNode(true);
   clone.removeAttribute("style");
   clone.querySelectorAll("[hidden]").forEach(node => node.removeAttribute("hidden"));

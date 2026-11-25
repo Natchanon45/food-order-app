@@ -1,3 +1,12 @@
+## 2026-11-25 — P2.2 latest Source Merchant Store Master, Branding and QR
+
+- Pinned Source cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios @ 7bf9d159 read-only. Target Natchanon45/food-order-app feature/react-firebase-port base a5393505.
+- Reconciled Source AdminStoreMasterPage (no source router route) with original AdminPage: one Store card, same Tenant Firebase adapters. New StoreBrandingEditor and CSS show one actual cropped cover image, Y-only drag and keyboard; logo continues as circular public hero; uploads remain tenant-scoped compressed WebP with canonical store readback. QR now uses bundled local source generator for PNG preview, print and download; no third-party QuickChart request.
+- **FINAL ACCEPTANCE P2.2:** Source/legacy Store+QR+Focus contract **16/16 PASS**; isolated Auth+Firestore+Storage Emulator **1/1 PASS**, authorized same-Tenant Owner/Admin persistence and blob upload/readback, cashier/foreign/anonymous denied; real Chrome **1/1 PASS** across 320/390/768/1440 with one cover crop, Y drag, keyboard/reset/remove, local PNG QR previews and actual file download; real printHtml paper tested with PNG and PENGUIN branding (physical printer NOT tested). Full serial npm run test:react-parity **EXIT 0**; npm run build:react and Hosting Contract **EXIT 0** (version 2026.11.09.535, index-CIkIr1RM.js). No external QR API calls, no Source changes, no deploy. Generated public assets removed, Emulator config cleaned.
+- No new route/permission, money or provider flow, Source mutation, Production deploy, main merge or mobile build. Full report docs/LUKKAJA_P2_2_MERCHANT_STORE_MASTER_QR_BRANDING_20261125.md.
+
+---
+
 ## 2026-11-25 — P2.1 Owner Android/LK Shop Payment Observer
 
 - Source confirmed `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159` read-only, Target `Natchanon45/food-order-app` feature/react-firebase-port initially `c56d6d3d`.

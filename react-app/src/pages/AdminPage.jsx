@@ -1687,6 +1687,7 @@ export function AdminPage() {
 
         <AdminCollapsibleCard
           style={{ marginBottom: 16 }}
+          id="storeMasterCard"
           cardKey="store"
           icon="building-gear"
           accent="violet"

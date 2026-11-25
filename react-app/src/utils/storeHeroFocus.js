@@ -18,3 +18,18 @@ export function pointerHeroFocus(event, element) {
     y: normalizeHeroFocus((event.clientY - rectangle.top) * 100 / rectangle.height),
   };
 }
+
+// Translate physically dragging the rendered image inside a fixed cover
+// viewport into the persisted CSS object-position Y percentage.
+// A downward drag moves the image down (toward its top), so its object
+// position percent DECREASES. Clamp at the image's natural crop limits.
+export function dragCoverFocusY(startFocusY, startPointerY, pointerY, overflowPx) {
+  const overflow = Number(overflowPx);
+  const travel = Number(pointerY) - Number(startPointerY);
+  // A source wider than the preview has no vertical crop to drag. Keep the
+  // persisted position unchanged instead of moving a visually static image.
+  if (!Number.isFinite(overflow) || overflow <= 0 || !Number.isFinite(travel)) {
+    return normalizeHeroFocus(startFocusY);
+  }
+  return normalizeHeroFocus(Number(startFocusY) - travel * 100 / overflow);
+}

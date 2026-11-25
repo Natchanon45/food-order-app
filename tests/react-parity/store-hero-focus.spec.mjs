@@ -32,20 +32,23 @@ test("cover focus is loaded, persisted and verified with store settings",()=>{
  assert.match(admin,/shopHeroFocusX: normalizeHeroFocus\(saved.shopHeroFocusX\)/);
  assert.match(hero,/backgroundPosition: heroFocusPosition\(settings\)\.css/);
 });
-test("cover admin focus supports mouse touch pen keyboard reset and live crop",()=>{
+test("Source cover admin focus drags image vertically in a single crop frame",()=>{
  assert.match(ui,/data-cover-focus-stage/);
- assert.match(ui,/data-cover-focus-marker/);
+ assert.doesNotMatch(ui,/data-cover-focus-marker/);
  assert.match(ui,/onPointerDown=\{onFocusPointerDown\}/);
  assert.match(ui,/onPointerMove=\{onFocusPointerMove\}/);
  assert.match(ui,/setPointerCapture\(event.pointerId\)/);
  assert.match(ui,/onLostPointerCapture/);
- assert.match(ui,/event.key === "ArrowLeft"/);
+ assert.match(ui,/event.key === "ArrowUp"/);
+ assert.match(ui,/event.key === "ArrowDown"/);
  assert.match(ui,/event.key === "Home"/);
  assert.match(ui,/data-cover-focus-reset/);
- assert.match(ui,/style=\{\{ left: focus.x \+ "%", top: focus.y \+ "%" \}\}/);
- assert.match(ui,/objectPosition: focus.css/);
+ assert.match(ui,/dragCoverFocusY\(/);
+ assert.match(ui,/objectPosition: "50% " \+ focus.y \+ "%"/);
  assert.match(ui,/shopHeroFocusX: 50, shopHeroFocusY: 50/);
  assert.match(focusCss,/touch-action: none/);
+ assert.match(focusCss,/cursor: grab/);
+ assert.match(focusCss,/ONE framed cover preview/);
 });
 test("Hero shop logo is a large circular mark across four surfaces",()=>{
  assert.match(logoCss,/--store-hero-logo-size: 112px/);

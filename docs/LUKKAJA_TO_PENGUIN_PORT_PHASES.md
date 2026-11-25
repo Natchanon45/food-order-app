@@ -1,5 +1,12 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P2.2 Store Master / Branding / QR (latest Source)
+
+**P2.2 Store Master/QR COMPLETE locally, ALL QA PASS:** Source branch feature/react-golang-vite-tailwind-axios @ 7bf9d159, read-only. Source-only AdminStoreMasterPage is not a router page; existing PENGUIN AdminPage retains ONE Store Master workspace with own Firebase settings. New Source cover image uses ONE crop frame, vertical physical drag with Y focus and centre X, keyboard + reset, tenant Storage upload. Both Delivery/Takeaway QR encode 100% locally to PNG, no third-party QR requests. Owner/Admin Firestore+Storage permissions and 4 responsive Chrome widths independently tested. Full serial React Parity **EXIT 0**; React Build/Hosting Contract **PASS**; native-print document markup verified, physical printer not tested. No new payment channel, no provider authority. Full scope and exact acceptance: [P2.2 report](./LUKKAJA_P2_2_MERCHANT_STORE_MASTER_QR_BRANDING_20261125.md). P2's other page modules remain.
+
+---
+
+
 ## 2026-11-25 — P2.1 Merchant Owner Payment Observer from latest Source
 
 **Partial P2 Merchant Admin Module 1/next:** Source `feature/react-golang-vite-tailwind-axios@7bf9d159` adds collapsed Owner Android/LK Shop observer after Sales Report. Ported into existing PENGUIN `AdminPage` using tenant-scoped Firebase `getPaymentCompanionDashboard`, owner-only read guard, strict unverified projections and Source responsive summary/history. Original pairing/settings now omits duplicate observer summary, while preserving device/receiver/UAT actions. Missing Firebase LK Shop Outbox and Go `PlatformLineWalletTopup` are explicitly **not** presented as live payment support. See [P2.1 module report](./LUKKAJA_P2_1_MERCHANT_PAYMENT_OBSERVER_20261125.md). The P2 merchant/onboarding phase has **not** been fully ported; next P2.2 Store Master/QR controls.

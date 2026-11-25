@@ -469,3 +469,27 @@ export function qrSvg(text, { size = 320, margin = 4, dark = "#000000", light = 
 export function qrDataUrl(text, options = {}) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qrSvg(text, options))}`;
 }
+
+
+// Render the same QR matrix directly to PNG, with whole-pixel modules and
+// the standard four-module quiet zone. No SVG conversion or network request.
+export function qrPngDataUrl(text, { size = 1024, margin = 4 } = {}) {
+  const matrix = qrMatrix(text);
+  const dimension = matrix.length + 2 * margin;
+  const scale = Math.max(1, Math.ceil(size / dimension));
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = dimension * scale;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("QR_CANVAS_UNAVAILABLE");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#000000";
+  for (let row = 0; row < matrix.length; row += 1) {
+    for (let col = 0; col < matrix.length; col += 1) {
+      if (matrix[row][col]) ctx.fillRect((col + margin) * scale, (row + margin) * scale, scale, scale);
+    }
+  }
+  const url = canvas.toDataURL("image/png");
+  if (!url.startsWith("data:image/png;base64,")) throw new Error("QR_PNG_EXPORT_FAILED");
+  return url;
+}

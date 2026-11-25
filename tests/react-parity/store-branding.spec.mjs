@@ -19,7 +19,12 @@ test("Store Basics owns one shared logo and hero-cover upload editor",()=>{
  assert.match(admin,/setStoreBrandFiles\(\{ logo: null, cover: null \}\)/);
  assert.match(editor,/data-store-brand-file=\{field\.kind\}/);
  assert.match(editor,/data-store-brand-remove=\{field\.kind\}/);
- assert.match(editor,/previewUrls\[field\.kind\] \|\| values\[field\.key\]/);
+ assert.match(editor,/previewUrls\[field\.kind\] \|\| \(isPublicImageUrl\(values\[field\.key\]\)/);
+ assert.match(editor,/\^https:/);
+ assert.match(editor,/dragCoverFocusY\(/);
+ assert.match(editor,/role="slider"/);
+ assert.match(editor,/objectPosition: "50% " \+ focus\.y \+ "%"/);
+ assert.doesNotMatch(editor,/data-cover-focus-marker/);
  assert.match(admin,/shopLogoUrl: nextLogoUrl/);
  assert.match(admin,/shopHeroImageUrl: nextCoverUrl/);
  assert.match(admin,/setStoreForm\(current => \(\{ \.\.\.current, shopLogoUrl: saved\.shopLogoUrl/);
