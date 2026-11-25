@@ -1,8 +1,6 @@
-import { useMemo } from "react";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { AppDeveloperPanel } from "@/components/AppDeveloperPanel";
 import { Link } from "react-router-dom";
-import { getRetailPosSession } from "@/auth/retailPosSession";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PosNavigation } from "@/components/PosNavigation";
 import { useAuth } from "@/auth/AuthProvider";
@@ -10,16 +8,16 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 
 export function PosForbiddenPage() {
-  const { profile } = useAuth();
+  const { profile,status } = useAuth();
   const { t } = useI18n();
   const stylesReady = useParityPage({
     title: t("pos_forbidden.meta_title"),
     bodyClass: "pos-forbidden-page",
     styles: ["app-version-badge-runtime.css", "retail-pos.css", "retail-pos-navigation.css", "icons.css"],
   });
-  const session = useMemo(() => getRetailPosSession(), []);
-  const posProfile = session || profile || {};
-  if (!stylesReady) return <PageReadyOverlay />;
+  const posProfile = profile || {};
+  if (!stylesReady || status==="loading") return <PageReadyOverlay />;
+  if(status==="error")return <PageReadyOverlay error title="ตรวจสอบสิทธิ์ไม่สำเร็จ" onRetry={()=>location.reload()}/>;
   return (
     <>
       <header className="pos-header">

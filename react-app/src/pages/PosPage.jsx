@@ -26,6 +26,7 @@ import { updateCustomerDisplay } from "@/data/operationalData";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
+import { qrDataUrl } from "@/utils/localQr";
 import { generatePromptPayPayload } from "@/utils/promptPay";
 
 const safeDisplayId = value => {
@@ -151,6 +152,11 @@ export function PosPage() {
   const [numericTarget, setNumericTarget] = useState("received");
   const [paymentError, setPaymentError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [readError,setReadError]=useState(false);
+  const [failedImages,setFailedImages]=useState(()=>new Set());
+  const activeRef=useRef(true);
+  const refreshGeneration=useRef(0);
+  useEffect(()=>{activeRef.current=true;return()=>{activeRef.current=false;refreshGeneration.current+=1;};},[]);
   const [initialDataReady, setInitialDataReady] = useState(false);
   const [savingSale, setSavingSale] = useState(false);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
@@ -166,9 +172,8 @@ export function PosPage() {
   ]);
   const posAccessProfile = useMemo(() => ({
     ...(profile || {}),
-    ...(posSession || {}),
-    role: posSession?.role || profile?.role || profile?.roleId || "",
-    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, posSession]);
   const posPermissions = useMemo(() => getPosPermissions(posAccessProfile), [posAccessProfile]);
   const hasSaleAccess = posPermissions.has("pos.sale");
@@ -224,20 +229,22 @@ export function PosPage() {
 
   const refresh = async () => {
     if (!tenant?.id) return;
-    setLoading(true);
+    const generation=++refreshGeneration.current;
+    setLoading(true);setReadError(false);
     try {
       const [nextProducts, nextSales, nextCatalogOrder, nextTax, nextHeld, activeShift, nextCustomers, nextLoyalty, nextPaymentSettings, nextReceiptSettings] = await Promise.all([
         listPosProducts(tenant.id),
-        listPosSales(tenant.id).catch(() => []),
+        listPosSales(tenant.id),
         loadPosCatalogOrder(tenant.id).catch(() => []),
-        loadPosTaxSettings(tenant.id).catch(() => EMPTY_TAX),
-        listHeldPosBills(tenant.id).catch(() => []),
-        loadActivePosShift(tenant.id).catch(() => null),
-        listPosCustomers(tenant.id).catch(() => []),
-        loadPosLoyaltySettings(tenant.id).catch(() => ({ enabled: true, spendPerPoint: 10, pointValue: 1 })),
-        loadPosPaymentSettings(tenant.id).catch(() => ({ shopName: "", promptPayId: "", promptPayAccountName: "", promptPayEnabled: false })),
+        loadPosTaxSettings(tenant.id),
+        listHeldPosBills(tenant.id),
+        loadActivePosShift(tenant.id),
+        listPosCustomers(tenant.id),
+        loadPosLoyaltySettings(tenant.id),
+        loadPosPaymentSettings(tenant.id),
         loadPosReceiptSettings(tenant.id).catch(() => ({ autoPrint: false, paperSize: "80" })),
       ]);
+      if(!activeRef.current||generation!==refreshGeneration.current)return;
       setProducts(nextProducts);
       setSales(nextSales);
       setCatalogOrder(nextCatalogOrder);
@@ -250,11 +257,12 @@ export function PosPage() {
       setHeldBills(nextHeld);
       setShift(activeShift);
     } catch (error) {
+      if(!activeRef.current||generation!==refreshGeneration.current)return;
+      setReadError(true);
       console.error("POS_LOAD_FAILED", error);
       showToast(t("pos.catalog.load_failed"), "error");
     } finally {
-      setLoading(false);
-      setInitialDataReady(true);
+      if(activeRef.current&&generation===refreshGeneration.current){setLoading(false);setInitialDataReady(true);}
     }
   };
 
@@ -433,7 +441,7 @@ export function PosPage() {
         accountName,
         error: "",
         payload,
-        qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(payload)}`,
+        qrImageUrl: qrDataUrl(payload,{size:260,margin:4}),
       };
     } catch (error) {
       console.warn("POS_PROMPTPAY_QR_FAILED", error);
@@ -446,7 +454,7 @@ export function PosPage() {
   }, [totals.total, cashPayment]);
 
   useEffect(() => {
-    if (!tenant?.id || !authUser?.uid) return undefined;
+    if (!tenant?.id || !authUser?.uid || !initialDataReady || readError) return undefined;
     window.clearTimeout(displayTimerRef.current);
     displayTimerRef.current = window.setTimeout(async () => {
       const hasItems = cart.length > 0 && itemCount > 0;
@@ -487,7 +495,7 @@ export function PosPage() {
         status: hasItems ? "editing" : "idle",
         customerId: selectedCustomer?.id || "",
         customerName: selectedCustomer?.name || "",
-        customerPhone: selectedCustomer?.phone || "",
+        customerPhone: "",
         customerDisplayName: selectedCustomer?.name || "",
         customerDisplayPhone: maskCustomerPhone(selectedCustomer?.phone || ""),
         itemCount,
@@ -515,12 +523,6 @@ export function PosPage() {
       if (signature === displaySignatureRef.current) return;
       displaySignatureRef.current = signature;
       try {
-        localStorage.setItem(`retail_pos_customer_display_${displayConfig.displayId}`, JSON.stringify(snapshot));
-        if (displayConfig.displayId === "main-register") {
-          localStorage.setItem("retail_pos_customer_display_main", JSON.stringify(snapshot));
-        }
-      } catch {}
-      try {
         await updateCustomerDisplay(tenant.id, displayConfig.displayId, snapshot);
       } catch (error) {
         displaySignatureRef.current = "";
@@ -529,7 +531,7 @@ export function PosPage() {
     }, 180);
     return () => window.clearTimeout(displayTimerRef.current);
   }, [
-    tenant?.id, tenant?.name, authUser?.uid, cart, itemCount, totals, paymentMethod,
+    tenant?.id, tenant?.name, authUser?.uid, initialDataReady, readError, cart, itemCount, totals, paymentMethod,
     paymentSettings, promptPayInfo, selectedCustomer, displayConfig, displaySessionId, t,
   ]);
 
@@ -753,7 +755,7 @@ export function PosPage() {
   };
 
   const openPayment = () => {
-    if (!cart.length || totals.total <= 0 || savingSale) return;
+    if (!cart.length || totals.total <= 0 || savingSale || readError || loading) return;
     setSelectedCustomerId("");
     setCustomerSearch("");
     setRedeemPoints(0);
@@ -789,7 +791,7 @@ export function PosPage() {
   };
 
   const confirmPayment = async () => {
-    if (savingSale || !tenant?.id) return;
+    if (savingSale || !tenant?.id || readError || loading) return;
     if (cashPayment && effectiveReceived < totals.total) {
       setPaymentError(t("pos.runtime.insufficient_payment"));
       return;
@@ -806,6 +808,7 @@ export function PosPage() {
         customer: selectedCustomer,
         shift,
       });
+      if(!activeRef.current)return;
       if (selectedCustomer) {
         try {
           await applyPosLoyalty({
@@ -819,6 +822,7 @@ export function PosPage() {
           console.error("POS_LOYALTY_APPLY_FAILED", loyaltyError);
         }
       }
+      if(!activeRef.current)return;
       paymentDialogRef.current?.close?.();
       showToast(t("pos.runtime.sale_success", { number: sale?.saleNumber || sale?.id || "-" }));
       resetSaleState();
@@ -986,6 +990,8 @@ export function PosPage() {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
 
+  if(readError)return <PageReadyOverlay error title="ไม่สามารถโหลดข้อมูล POS ได้"
+    message="กรุณาลองใหม่ก่อนเริ่มขายหรือรับชำระเงิน" onRetry={refresh}/>;
   return (
     <>
       <header className="pos-header tw:w-full tw:min-w-0 tw:flex-wrap tw:sm:flex-nowrap" data-pos-tailwind-header>
@@ -1034,7 +1040,7 @@ export function PosPage() {
                 const productCode = [product.id, product.barcode].filter(Boolean).join(" • ");
                 return (
                   <button
-                    className={`product-card visual-card${imageUrl ? " pos-product-card-image" : ""}${soldOut ? " is-sold-out" : ""}`}
+                    className={`product-card visual-card${imageUrl && !failedImages.has(imageUrl) ? " pos-product-card-image" : ""}${soldOut ? " is-sold-out" : ""}`}
                     type="button"
                     data-product-id={product.id}
                     disabled={savingSale || soldOut}
@@ -1043,9 +1049,9 @@ export function PosPage() {
                     onClick={() => addProduct(product.id)}
                     key={product.id}
                   >
-                    {imageUrl ? (
+                    {imageUrl && !failedImages.has(imageUrl) ? (
                       <>
-                        <span className="pos-card-image-wrap"><img src={imageUrl} alt={product.name || ""} loading="lazy" decoding="async" /></span>
+                        <span className="pos-card-image-wrap"><img src={imageUrl} alt={product.name || ""} loading="lazy" decoding="async" onError={()=>setFailedImages(current=>new Set([...current,imageUrl]))}/></span>
                         <span className="pos-card-title">{productName}</span>
                         <span className="pos-card-code">{productCode}</span>
                         <span className="pos-card-stock">{stockLabel}</span>

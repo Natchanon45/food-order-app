@@ -1,3 +1,4 @@
+import { Fragment as PosScopeFragment } from "react";
 import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { signOut } from "firebase/auth";
@@ -169,11 +170,23 @@ function ManagedEmailGuard({ children }) {
   return children;
 }
 
+function PosSessionScope({children}) {
+  const auth=useAuth(),tenancy=useTenant();
+  const {pathname,search}=useLocation();
+  if(!/^\/pos(?:\/|$)/.test(pathname)&&pathname!=="/cashier/customer-display")return children;
+  const profile=auth.profile,tenant=tenancy.tenant;
+  const key=JSON.stringify([auth.status,tenancy.status,auth.user?.uid||"",profile?.uid||profile?.id||"",
+    profile?.role||"",profile?.roleId||"",tenant?.id||"",tenant?.businessType||"",
+    pathname,search]);
+  return <PosScopeFragment key={key}>{children}</PosScopeFragment>;
+}
+
 export default function App() {
   return (
     <ManagedEmailGuard>
     <RevenueShareSuspensionGuard>
       <MasterBusinessGuard>
+      <PosSessionScope>
       <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -242,6 +255,7 @@ export default function App() {
       <Route path="/s/:slug/react/delivery/success" element={<StorefrontAliasRedirect target="delivery/success" />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
+      </PosSessionScope>
       </MasterBusinessGuard>
     </RevenueShareSuspensionGuard>
     </ManagedEmailGuard>

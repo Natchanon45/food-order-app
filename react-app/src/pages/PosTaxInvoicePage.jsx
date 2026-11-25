@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { useAuth } from "@/auth/AuthProvider";
@@ -26,9 +26,11 @@ export function PosTaxInvoicePage() {
   const autoPrint = params.get("auto") === "1";
   const [invoice, setInvoice] = useState(null);
   const [ready, setReady] = useState(false);
+  const [loadError,setLoadError]=useState(false);
   const [printReady, setPrintReady] = useState(false);
 
   useEffect(() => {
+    setInvoice(null);setReady(false);setLoadError(false);setPrintReady(false);
     if (!tenant?.id || !invoiceId) {
       if (tenant?.id) setReady(true);
       return undefined;
@@ -36,7 +38,7 @@ export function PosTaxInvoicePage() {
     let alive = true;
     getPosTaxInvoice(tenant.id, invoiceId)
       .then(row => { if (alive) setInvoice(row); })
-      .catch(error => console.error("POS_TAX_INVOICE_LOAD_FAILED", error))
+      .catch(error => {console.error("POS_TAX_INVOICE_LOAD_FAILED", error);if(alive)setLoadError(true);})
       .finally(() => { if (alive) setReady(true); });
     return () => { alive = false; };
   }, [tenant?.id, invoiceId]);
@@ -46,9 +48,12 @@ export function PosTaxInvoicePage() {
     try { if (document.fonts?.ready) await document.fonts.ready; } catch {}
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   };
+  const mounted=useRef(true);
+  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   const printInvoice = async () => {
     setPrintReady(false);
     await waitForPrintReady();
+    if(!mounted.current)return;
     setPrintReady(true);
     window.print();
   };
@@ -67,8 +72,9 @@ export function PosTaxInvoicePage() {
   if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (tenant?.id && !ready)) {
     return <PageReadyOverlay context={t("pos_tax_invoice.title")} title={t("pos_tax_invoice.loading")} message={t("shared.state.please_wait")} />;
   }
-  if (!profile) return <NavigAte to="/login?next=%2Fpos%2Ftax-invoice" replace />;
-  if (!tenant) return <NavigAte to="/" replace />;
+  if (!profile) return <Navigate to="/login?next=%2Fpos%2Ftax-invoice" replace />;
+  if (!tenant) return <Navigate to="/" replace />;
+  if(loadError)return <PageReadyOverlay error title={t("pos_tax_invoice.title")} message="ไม่สามารถโหลดใบกำกับภาษีได้" onRetry={()=>location.reload()}/>;
 
   const items = Array.isArray(invoice?.items) ? invoice.items : [];
   const chunks = [];

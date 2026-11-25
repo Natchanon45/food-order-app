@@ -16,8 +16,6 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 
-const SALES_KEY = "retail_pos_sales_v1";
-const LEDGER_KEY = "retail_pos_loyalty_ledger_v1";
 const round2 = value => Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
 const asDate = value => {
   if (value?.toDate) return value.toDate();
@@ -42,9 +40,6 @@ const beforeVatOf = sale => isVatSale(sale)
   : 0;
 const saleDiscount = sale => Number(sale?.discount || 0) + Number(sale?.pointDiscount || 0);
 const saleQty = sale => (sale?.items || []).reduce((sum, item) => sum + Number(item?.qty || 0), 0);
-const readJson = (key, fallback) => {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
-};
 const maskHead = value => {
   const chars = Array.from(String(value || "").trim());
   if (!chars.length) return "";
@@ -69,19 +64,7 @@ const maskReceiptPhone = phone => {
   if (digits.length < 10) return digits.length <= 2 ? digits : `${digits.slice(0, Math.min(3, digits.length))}-xxx`;
   return `${digits.slice(0, 3)}-xxx-xx${digits.slice(-2)}`;
 };
-const loyaltyForSale = sale => {
-  if (sale?.loyalty) return sale.loyalty;
-  const rows = readJson(LEDGER_KEY, []);
-  const id = String(sale?.id || "");
-  const number = String(sale?.saleNumber || "");
-  const entry = Array.isArray(rows) ? rows.find(row => (id && String(row?.saleId || "") === id) || (number && String(row?.saleNumber || "") === number)) : null;
-  return entry ? {
-    pointsBefore: entry.pointsBefore ?? entry.balanceBefore,
-    pointsUsed: entry.pointsUsed,
-    pointsEarned: entry.pointsEarned,
-    pointsAfter: entry.pointsAfter ?? entry.balanceAfter,
-  } : null;
-};
+const loyaltyForSale = sale => sale?.loyalty || null;
 
 export function PosSalesPage() {
   const authState = useAuth();
@@ -128,9 +111,8 @@ export function PosSalesPage() {
   ]);
   const posAccessProfile = useMemo(() => ({
     ...(profile || {}),
-    ...(posSession || {}),
-    role: posSession?.role || profile?.role || profile?.roleId || "",
-    roleId: posSession?.roleId || posSession?.role || profile?.roleId || profile?.role || "",
+    role: profile?.role || profile?.roleId || "",
+    roleId: profile?.roleId || profile?.role || "",
   }), [profile, posSession]);
   const posPermissions = useMemo(() => getPosPermissions(posAccessProfile), [posAccessProfile]);
   const hasSalesAccess = posPermissions.has("pos.sales");
@@ -169,23 +151,21 @@ export function PosSalesPage() {
     setLoadError("");
     Promise.all([
       listPosSales(tenant.id),
-      listPosCustomers(tenant.id).catch(() => []),
-      loadPosReceiptSettings(tenant.id).catch(() => ({})),
+      listPosCustomers(tenant.id),
+      loadPosReceiptSettings(tenant.id),
     ]).then(([rows, nextCustomers, settings]) => {
       if (!alive) return;
       setSales(rows);
       setCustomers(nextCustomers);
       setReceiptSettings(settings);
-      try { localStorage.setItem(SALES_KEY, JSON.stringify(rows)); } catch {}
       stopSalesWatch = watchPosSales(tenant.id, nextRows => {
         if (!alive) return;
         setSales(nextRows);
-        try { localStorage.setItem(SALES_KEY, JSON.stringify(nextRows)); } catch {}
         document.documentElement.dataset.salesSource = "firestore";
-      });
+      },()=>{if(alive){setSales([]);setCustomers([]);setLoadError("ไม่สามารถโหลดรายการขายจาก Firebase ได้");}});
     }).catch(error => {
       console.error("POS_SALES_LOAD_FAILED", error);
-      if (alive) setLoadError(String(error?.message || "POS_SALES_LOAD_FAILED"));
+      if (alive){setSales([]);setCustomers([]);setLoadError("ไม่สามารถโหลดรายการขายจาก Firebase ได้");}
     }).finally(() => {
       if (alive) setInitialDataReady(true);
     });

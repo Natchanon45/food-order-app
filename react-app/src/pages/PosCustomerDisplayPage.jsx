@@ -50,20 +50,23 @@ export function PosCustomerDisplayPage() {
   const registerId = useMemo(() => safeId(params.get("registerId") || "iphone-01", "iphone-01"), [params]);
   const [snapshot, setSnapshot] = useState(null);
   const [ready, setReady] = useState(false);
+  const [watchError,setWatchError]=useState(false);
+  const [retry,setRetry]=useState(0);
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [pairingOpen, setPairingOpen] = useState(false);
 
   useEffect(() => {
-    if (!tenant?.id) return undefined;
-    setReady(false);
+    if (!tenant?.id || authState.status!=="ready" || tenantState.status!=="ready" || !profile) return undefined;
+    let alive=true;
+    setReady(false);setSnapshot(null);setWatchError(false);
     const stop = watchCustomerDisplay(
       tenant.id,
       displayId,
-      value => { setSnapshot(value || null); setReady(true); },
-      error => { console.error("POS_CUSTOMER_DISPLAY_WATCH_FAILED", error); setReady(true); },
+      value => { if(alive){setSnapshot(value || null);setReady(true);setWatchError(false);} },
+      error => { console.error("POS_CUSTOMER_DISPLAY_WATCH_FAILED", error); if(alive){setSnapshot(null);setWatchError(true);setReady(true);} },
     );
-    return stop;
-  }, [tenant?.id, displayId]);
+    return ()=>{alive=false;stop?.();};
+  }, [tenant?.id, displayId,retry,authState.status,tenantState.status,profile?.uid]);
 
   useEffect(() => {
     const handler = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -106,11 +109,12 @@ export function PosCustomerDisplayPage() {
   }, [registerId, displayId]);
   const pairingQr = useMemo(() => qrDataUrl(pairingUrl, { size: 260, margin: 4 }), [pairingUrl]);
 
-  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (tenant?.id && !ready)) {
+  if (authState.status === "loading" || tenantState.status === "loading" || !stylesReady || (tenant?.id && profile && authState.status==="ready" && tenantState.status==="ready" && !ready)) {
     return <PageReadyOverlay context={t("pos_customer_display.header.title")} title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (!profile) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   if (!tenant) return <Navigate to="/" replace />;
+  if(watchError)return <PageReadyOverlay error title={t("pos_customer_display.header.title")} message="ไม่สามารถเชื่อมต่อหน้าจอลูกค้าได้" onRetry={()=>setRetry(v=>v+1)}/>;
 
   return (
     <div className="display-shell">
@@ -181,7 +185,7 @@ export function PosCustomerDisplayPage() {
               </div>
             </div>
           </section>
-          <div id="paidState" className="paid-state">{t("pos_customer_display.payment.thanks")}</div>
+          <div id="paidState" className="paid-state" hidden={snapshot?.status !== "paid"}>{t("pos_customer_display.payment.thanks")}</div>
         </section>
       </main>
       <footer className="display-footer"><span></span><span id="updatedAt">{updatedAt ? t("pos_customer_display.status.updated", { time: new Date(updatedAt).toLocaleTimeString("th-TH") }) : ""}</span></footer>

@@ -72,6 +72,7 @@ export function PosReceiptPage() {
   const [buyer, setBuyer] = useState({ buyerTaxId: "", buyerName: "", buyerBranchName: "สำนักงานใหญ่", buyerAddress: "" });
 
   useEffect(() => {
+    setSale(null);setSettings(null);setReady(false);setError("");setPrintReady(false);
     if (!tenant?.id || !saleId) {
       if (tenant?.id) setReady(true);
       return undefined;
@@ -113,9 +114,12 @@ export function PosReceiptPage() {
     })));
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   };
+  const mounted=useRef(true);
+  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   const printReceipt = async () => {
     setPrintReady(false);
     await waitForPrintReady();
+    if(!mounted.current)return;
     setPrintReady(true);
     window.print();
   };
