@@ -31,7 +31,7 @@ export function PublicAppDownloads() {
           <span className="lk-app-downloads-product-icon" aria-hidden="true"><i className="bi bi-bell-fill"/></span>
           <div className="lk-app-downloads-product-copy">
             <span className="lk-app-downloads-product-name">PG Notify <span className="lk-app-downloads-status">Android · รุ่นทดสอบ</span></span>
-            <p>แอปรับแจ้งเตือนสำหรับ Superadmin, Admin ร้านค้า, แคชเชียร์ และครัว ไม่ต้องล็อกอิน เพียงสแกน QR เพื่อจับคู่กับร้าน</p>
+            <p>แอปรับแจ้งเตือนสำหรับผู้ดูแลระบบ , เจ้าของร้านค้า, แคชเชียร์ และครัว ไม่ต้องล็อกอิน เพียงสแกน QR เพื่อจับคู่กับร้าน</p>
           </div>
         </div>
         {apk ? <a className="lk-app-downloads-apk-button" href={apk.path} download={apk.path.split("/").pop()} type="application/vnd.android.package-archive">
