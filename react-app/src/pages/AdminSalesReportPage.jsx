@@ -99,7 +99,8 @@ export function AdminSalesReportPage() {
     styles: [
       "app.css", "icons.css", "sales-report.css", "order-delivery-workspace-theme.css",
       "sales-report-modern.css", "admin-sales-report-retail-pos-parity.css", "sales-report-period-tabs.css",
-      "super-admin-header.css", "sales-report-cancellation-port.css",
+      "super-admin-header.css", "sales-report-source-wrapper.css", "sales-report-cancellation-port.css",
+      "admin-sales-source-polish.css",
 
     ],
     attributes: { "data-roles": "admin,owner", "data-admin-workspace-refresh": "1" },

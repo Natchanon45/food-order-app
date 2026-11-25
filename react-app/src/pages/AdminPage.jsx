@@ -11,6 +11,7 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
+import { DynamicField } from "@/components/DynamicField";
 import { AdminDeliveryQr } from "@/components/AdminDeliveryQr";
 import { DeliveryHoursEditor } from "@/components/DeliveryHoursEditor";
 import { StoreBrandingEditor } from "@/components/StoreBrandingEditor";
@@ -460,46 +461,60 @@ function DeliveryFeeEditor({ fees, setFees, readonly = false, embedded = false, 
             return (
               <div className={"delivery-fee-row" + (pickup ? " is-pickup" : "")} data-delivery-fee-row data-option-id={item.id} data-delivery-fee-pickup={pickup ? "true" : "false"} role="row" key={item.id}>
                 <div className="delivery-fee-index" data-delivery-fee-index role="cell">{index + 1}</div>
-                <input
-                  className="input delivery-fee-description delivery-fee-description-input"
-                  data-delivery-fee-label
-                  type="text"
-                  maxLength="120"
-                  disabled={readonly}
-                  aria-label={t("admin.delivery_fee.description_aria")}
-                  value={item.label}
-                  onChange={e => update(index, { label: e.target.value })}
-                  placeholder={descriptionPlaceholder}
-                />
-                <div className="delivery-fee-cell delivery-fee-distance-cell" role="cell" data-mobile-label={t("admin.delivery_fee.table_headers.distance")}>
-                  {pickup ? <span className="delivery-fee-static-value" data-delivery-fee-distance-static>—</span> : <input
-                    className="input"
-                    data-delivery-fee-distance
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    required
-                    inputMode="decimal"
+                <DynamicField id={`deliveryFeeLabel-${item.id}`} label={t("admin.delivery_fee.table_headers.description")}
+                  value={item.label} className="admin-delivery-fee-dynamic-field admin-delivery-fee-description-field"
+                  description={descriptionPlaceholder}>
+                  <input
+                    className="input delivery-fee-description delivery-fee-description-input"
+                    id={`deliveryFeeLabel-${item.id}`}
+                    data-delivery-fee-label
+                    type="text"
+                    maxLength="120"
                     disabled={readonly}
-                    aria-label={t("admin.delivery_fee.distance_aria")}
-                    value={item.maxDistanceKm ?? ""}
-                    onChange={e => update(index, { maxDistanceKm: Math.max(0.1, Number(e.target.value || 0.1)) })}
-                  />}
+                    aria-label={t("admin.delivery_fee.description_aria")}
+                    value={item.label}
+                    onChange={e => update(index, { label: e.target.value })}
+                  />
+                </DynamicField>
+                <div className="delivery-fee-cell delivery-fee-distance-cell" role="cell" data-mobile-label={t("admin.delivery_fee.table_headers.distance")}>
+                  {pickup ? <span className="delivery-fee-static-value" data-delivery-fee-distance-static>—</span> : <DynamicField
+                    id={`deliveryFeeDistance-${item.id}`} label={t("admin.delivery_fee.table_headers.distance")}
+                    value={item.maxDistanceKm ?? ""} className="admin-delivery-fee-dynamic-field">
+                    <input
+                      className="input"
+                      id={`deliveryFeeDistance-${item.id}`}
+                      data-delivery-fee-distance
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      required
+                      inputMode="decimal"
+                      disabled={readonly}
+                      aria-label={t("admin.delivery_fee.distance_aria")}
+                      value={item.maxDistanceKm ?? ""}
+                      onChange={e => update(index, { maxDistanceKm: Math.max(0.1, Number(e.target.value || 0.1)) })}
+                    />
+                  </DynamicField>}
                 </div>
                 <div className="delivery-fee-cell delivery-fee-amount-cell" role="cell" data-mobile-label={t("admin.delivery_fee.table_headers.fee")}>
-                  {pickup ? <><span className="delivery-fee-static-value" data-delivery-fee-amount-static>0</span><input type="hidden" data-delivery-fee-amount value="0" /></> : <input
-                    className="input"
-                    data-delivery-fee-amount
-                    type="number"
-                    min="0"
-                    step="1"
-                    required
-                    inputMode="decimal"
-                    disabled={readonly}
-                    aria-label={t("admin.delivery_fee.amount_aria")}
-                    value={item.fee}
-                    onChange={e => update(index, { fee: Math.max(0, Number(e.target.value || 0)) })}
-                  />}
+                  {pickup ? <><span className="delivery-fee-static-value" data-delivery-fee-amount-static>0</span><input type="hidden" data-delivery-fee-amount value="0" /></> : <DynamicField
+                    id={`deliveryFeeAmount-${item.id}`} label={t("admin.delivery_fee.table_headers.fee")}
+                    value={item.fee} className="admin-delivery-fee-dynamic-field">
+                    <input
+                      className="input"
+                      id={`deliveryFeeAmount-${item.id}`}
+                      data-delivery-fee-amount
+                      type="number"
+                      min="0"
+                      step="1"
+                      required
+                      inputMode="decimal"
+                      disabled={readonly}
+                      aria-label={t("admin.delivery_fee.amount_aria")}
+                      value={item.fee}
+                      onChange={e => update(index, { fee: Math.max(0, Number(e.target.value || 0)) })}
+                    />
+                  </DynamicField>}
                 </div>
                 <div className="delivery-fee-action" role="cell">
                   {pickup ? <span className="delivery-fee-lock" title={t("admin.delivery_fee.pickup_locked")} aria-label={t("admin.delivery_fee.pickup_locked")} role="img"><i className="bi bi-lock-fill app-icon" aria-hidden="true"></i></span> : <button className="btn delivery-fee-remove" type="button" data-remove-delivery-fee disabled={readonly} aria-label={t("admin.delivery_fee.remove")} title={t("admin.delivery_fee.remove")} onClick={() => remove(index)}><i className="bi bi-x-lg app-icon" aria-hidden="true"></i></button>}
@@ -532,7 +547,8 @@ function PromotionEditor({ value, onChange, menus, t, formatMoney, embedded = fa
           <span><strong>{t("admin.delivery_promotion.free_shipping_title")}</strong><small>{t("admin.delivery_promotion.free_shipping_help")}</small></span>
         </label>
         <div className="admin-promotion-fields">
-          <div className="field"><label htmlFor="deliveryFreeShippingMinimumSubtotal">{t("admin.delivery_promotion.minimum_subtotal")}</label><div className="admin-promotion-money-input"><input className="input" id="deliveryFreeShippingMinimumSubtotal" type="number" min="0" step="0.01" disabled={!value.freeShippingEnabled} value={value.freeShippingMinimumSubtotal} onChange={e => patch({ freeShippingMinimumSubtotal: Math.max(0, Number(e.target.value || 0)) })} /><span>{t("admin.common.baht")}</span></div></div>
+          <div className="field"><div className="admin-promotion-money-input"><DynamicField id="deliveryFreeShippingMinimumSubtotal" label={t("admin.delivery_promotion.minimum_subtotal")}
+            value={value.freeShippingMinimumSubtotal} className="admin-delivery-promotion-dynamic-field"><input className="input" id="deliveryFreeShippingMinimumSubtotal" type="number" min="0" step="0.01" disabled={!value.freeShippingEnabled} value={value.freeShippingMinimumSubtotal} onChange={e => patch({ freeShippingMinimumSubtotal: Math.max(0, Number(e.target.value || 0)) })} /></DynamicField><span>{t("admin.common.baht")}</span></div></div>
         </div>
       </div>
       <div className="admin-delivery-promotion-block">
@@ -542,9 +558,14 @@ function PromotionEditor({ value, onChange, menus, t, formatMoney, embedded = fa
           <span><strong>{t("admin.delivery_promotion.free_gift_title")}</strong><small>{t("admin.delivery_promotion.free_gift_help")}</small></span>
         </label>
         <div className="admin-promotion-fields admin-promotion-fields-three">
-          <div className="field"><label htmlFor="deliveryFreeGiftMaxSelectableItems">{t("admin.delivery_promotion.max_gifts")}</label><div className="admin-promotion-number-input"><input className="input" id="deliveryFreeGiftMaxSelectableItems" type="number" min="1" max="20" step="1" disabled={!value.freeGiftEnabled} value={value.freeGiftMaxSelectableItems} onChange={e => patch({ freeGiftMaxSelectableItems: Math.max(1, Math.min(20, Number.parseInt(e.target.value || 1, 10) || 1)) })} /><span>{t("admin.delivery_promotion.item_unit")}</span></div></div>
-          <div className="field"><label htmlFor="deliveryFreeGiftValidFrom">{t("admin.delivery_promotion.valid_from")}</label><input className="input" id="deliveryFreeGiftValidFrom" type="date" disabled={!value.freeGiftEnabled} value={value.freeGiftValidFrom} onChange={e => patch({ freeGiftValidFrom: e.target.value })} /><small className="admin-promotion-help">{t("admin.delivery_promotion.valid_from_help")}</small></div>
-          <div className="field"><label htmlFor="deliveryFreeGiftValidUntil">{t("admin.delivery_promotion.valid_until")}</label><input className="input" id="deliveryFreeGiftValidUntil" type="date" disabled={!value.freeGiftEnabled} value={value.freeGiftValidUntil} onChange={e => patch({ freeGiftValidUntil: e.target.value })} /><small className="admin-promotion-help">{t("admin.delivery_promotion.valid_until_help")}</small></div>
+          <div className="field"><div className="admin-promotion-number-input"><DynamicField id="deliveryFreeGiftMaxSelectableItems" label={t("admin.delivery_promotion.max_gifts")}
+            value={value.freeGiftMaxSelectableItems} className="admin-delivery-promotion-dynamic-field"><input className="input" id="deliveryFreeGiftMaxSelectableItems" type="number" min="1" max="20" step="1" disabled={!value.freeGiftEnabled} value={value.freeGiftMaxSelectableItems} onChange={e => patch({ freeGiftMaxSelectableItems: Math.max(1, Math.min(20, Number.parseInt(e.target.value || 1, 10) || 1)) })} /></DynamicField><span>{t("admin.delivery_promotion.item_unit")}</span></div></div>
+          <div className="field"><DynamicField id="deliveryFreeGiftValidFrom" label={t("admin.delivery_promotion.valid_from")} value={value.freeGiftValidFrom}
+            className="admin-native-date-dynamic-field"
+            description={t("admin.delivery_promotion.valid_from_help")}><input className="input" id="deliveryFreeGiftValidFrom" type="date" disabled={!value.freeGiftEnabled} value={value.freeGiftValidFrom} onChange={e => patch({ freeGiftValidFrom: e.target.value })} /></DynamicField></div>
+          <div className="field"><DynamicField id="deliveryFreeGiftValidUntil" label={t("admin.delivery_promotion.valid_until")} value={value.freeGiftValidUntil}
+            className="admin-native-date-dynamic-field"
+            description={t("admin.delivery_promotion.valid_until_help")}><input className="input" id="deliveryFreeGiftValidUntil" type="date" disabled={!value.freeGiftEnabled} value={value.freeGiftValidUntil} onChange={e => patch({ freeGiftValidUntil: e.target.value })} /></DynamicField></div>
         </div>
         <div className="admin-promotion-gifts">
           <div className="admin-promotion-gifts-head"><div><strong>{t("admin.delivery_promotion.gift_items_title")}</strong><small>{t("admin.delivery_promotion.gift_items_help")}</small></div><span className="badge" id="deliveryFreeGiftSelectedCount">{t("admin.delivery_promotion.selected_count", { count: value.freeGiftMenuIds.length })}</span></div>
@@ -662,7 +683,7 @@ export function AdminPage() {
   const { t, intlLocale } = useI18n();
   const stylesReady = useParityPage({
     title: t("admin.meta.title"),
-    bodyClass: "order-delivery-workspace admin-vr-page admin-vr-dashboard",
+    bodyClass: "order-delivery-workspace admin-vr-page admin-vr-dashboard admin-react-store-master",
     styles: [
       "app.css", "menu-pagination.css", "admin-sort.css", "icons.css", "admin-workspace.css",
       "admin-icon-polish.css", "sweet-dialog.css", "order-delivery-workspace-theme.css", "admin-retail-pos-parity.css",
@@ -670,6 +691,9 @@ export function AdminPage() {
       "admin-modal-retail-pos-parity.css", "admin-delivery-fee-row-alignment.css",
       "admin-store-location.css", "admin-store-settings-workspace.css", "admin-store-branding.css", "admin-opening-hours.css", "admin-delivery-providers.css", "admin-delivery-promotions.css",
       "admin-upload.css", "admin-mobile-table.css",
+      "admin-wallet-source-wrapper.css", "admin-store-source-wrapper.css",
+      "admin-fee-source-wrapper.css", "admin-branding-source-wrapper.css",
+      "admin-store-source-dynamic.css", "admin-sales-source-polish.css",
     ],
     attributes: { "data-roles": "admin", "data-admin-workspace-refresh": "1" },
   });
@@ -1724,9 +1748,9 @@ export function AdminPage() {
               defaultOpen
             >
               <div className="admin-store-basic-grid">
-                <div className="field"><label htmlFor="shopName">{t("admin.store.shop_name")}</label><input className="input" id="shopName" required value={storeForm.shopName} onChange={e => patchStore({ shopName: e.target.value })} /></div>
-                <div className="field"><label htmlFor="shopPhone">{t("admin.store.shop_phone")}</label><input className="input" id="shopPhone" type="tel" value={storeForm.shopPhone} onChange={e => patchStore({ shopPhone: e.target.value })} /></div>
-                <div className="field admin-store-address-field"><label htmlFor="shopAddress">{t("admin.store.shop_address")}</label><textarea className="input" id="shopAddress" required value={storeForm.shopAddress} onChange={e => patchStore({ shopAddress: e.target.value })}></textarea></div>
+                <div className="field"><DynamicField id="shopName" label={t("admin.store.shop_name")} value={storeForm.shopName} className="admin-store-dynamic-field"><input className="input" id="shopName" required value={storeForm.shopName} onChange={e => patchStore({ shopName: e.target.value })} /></DynamicField></div>
+                <div className="field"><DynamicField id="shopPhone" label={t("admin.store.shop_phone")} value={storeForm.shopPhone} className="admin-store-dynamic-field"><input className="input" id="shopPhone" type="tel" value={storeForm.shopPhone} onChange={e => patchStore({ shopPhone: e.target.value })} /></DynamicField></div>
+                <div className="field admin-store-address-field"><DynamicField id="shopAddress" label={t("admin.store.shop_address")} value={storeForm.shopAddress} kind="textarea" className="admin-store-dynamic-field"><textarea className="input" id="shopAddress" required value={storeForm.shopAddress} onChange={e => patchStore({ shopAddress: e.target.value })}></textarea></DynamicField></div>
               </div>
               <StoreBrandingEditor values={storeForm} files={storeBrandFiles} busy={storeSaving}
                 t={t} onChange={patchStore} onFile={changeStoreBrandFile} />
@@ -1795,14 +1819,14 @@ export function AdminPage() {
               <div className="admin-payment-method-grid" style={{ marginTop: 16 }}>
                 <section className="admin-payment-method-card">
                   <div className="admin-payment-method-head"><i className="bi bi-qr-code" aria-hidden="true"></i><strong>PromptPay</strong></div>
-                  <div className="field"><label htmlFor="promptPayId">{t("admin.store.promptpay_id")}</label><input className="input" id="promptPayId" inputMode="numeric" value={storeForm.promptPayId} onChange={e => patchStore({ promptPayId: e.target.value })} /></div>
-                  <div className="field"><label htmlFor="promptPayName">{t("admin.store.promptpay_name")}</label><input className="input" id="promptPayName" value={storeForm.promptPayName} onChange={e => patchStore({ promptPayName: e.target.value })} /></div>
+                  <div className="field"><DynamicField id="promptPayId" label={t("admin.store.promptpay_id")} value={storeForm.promptPayId} className="admin-store-dynamic-field"><input className="input" id="promptPayId" inputMode="numeric" value={storeForm.promptPayId} onChange={e => patchStore({ promptPayId: e.target.value })} /></DynamicField></div>
+                  <div className="field"><DynamicField id="promptPayName" label={t("admin.store.promptpay_name")} value={storeForm.promptPayName} className="admin-store-dynamic-field"><input className="input" id="promptPayName" value={storeForm.promptPayName} onChange={e => patchStore({ promptPayName: e.target.value })} /></DynamicField></div>
                 </section>
                 <section className="admin-payment-method-card">
                   <div className="admin-payment-method-head"><i className="bi bi-bank" aria-hidden="true"></i><strong>{t("admin.store.bank_name")}</strong></div>
-                  <div className="field"><label htmlFor="bankName">{t("admin.store.bank_name")}</label><input className="input" id="bankName" value={storeForm.bankName} onChange={e => patchStore({ bankName: e.target.value })} /></div>
-                  <div className="field"><label htmlFor="bankAccountNumber">{t("admin.store.bank_account_number")}</label><input className="input" id="bankAccountNumber" inputMode="numeric" value={storeForm.bankAccountNumber} onChange={e => patchStore({ bankAccountNumber: e.target.value })} /></div>
-                  <div className="field"><label htmlFor="bankAccountName">{t("admin.store.bank_account_name")}</label><input className="input" id="bankAccountName" value={storeForm.bankAccountName} onChange={e => patchStore({ bankAccountName: e.target.value })} /></div>
+                  <div className="field"><DynamicField id="bankName" label={t("admin.store.bank_name")} value={storeForm.bankName} className="admin-store-dynamic-field"><input className="input" id="bankName" value={storeForm.bankName} onChange={e => patchStore({ bankName: e.target.value })} /></DynamicField></div>
+                  <div className="field"><DynamicField id="bankAccountNumber" label={t("admin.store.bank_account_number")} value={storeForm.bankAccountNumber} className="admin-store-dynamic-field"><input className="input" id="bankAccountNumber" inputMode="numeric" value={storeForm.bankAccountNumber} onChange={e => patchStore({ bankAccountNumber: e.target.value })} /></DynamicField></div>
+                  <div className="field"><DynamicField id="bankAccountName" label={t("admin.store.bank_account_name")} value={storeForm.bankAccountName} className="admin-store-dynamic-field"><input className="input" id="bankAccountName" value={storeForm.bankAccountName} onChange={e => patchStore({ bankAccountName: e.target.value })} /></DynamicField></div>
                 </section>
               </div>
             </AdminSettingsGroup>
@@ -1847,7 +1871,8 @@ export function AdminPage() {
                                   </div>
                                 </div>
                               </div>
-                              <div className="field"><label htmlFor="deliveryMaxDistanceKm">{t("admin.delivery_settings.max_distance_label")}</label><input className="input" id="deliveryMaxDistanceKm" type="number" min="0" step="0.1" value={storeForm.deliveryMaxDistanceKm} onChange={e => patchStore({ deliveryMaxDistanceKm: e.target.value })} /></div>
+                              <div className="field"><DynamicField id="deliveryMaxDistanceKm" label={t("admin.delivery_settings.max_distance_label")}
+                                value={storeForm.deliveryMaxDistanceKm} className="admin-delivery-promotion-dynamic-field"><input className="input" id="deliveryMaxDistanceKm" type="number" min="0" step="0.1" value={storeForm.deliveryMaxDistanceKm} onChange={e => patchStore({ deliveryMaxDistanceKm: e.target.value })} /></DynamicField></div>
                             </div>
                             <div className="menu-category admin-delivery-distance-note">{t("admin.delivery_settings.distance_help")}</div>
                           </div>
@@ -1873,11 +1898,11 @@ export function AdminPage() {
                               </div>
                               {tenantLalamoveMode ? (
                                 <div className="field" id="lalamoveTenantEnvironmentField">
-                                  <label htmlFor="lalamoveTenantEnvironment">{t("admin.delivery_settings.lalamove_environment")}</label>
-                                  <select className="input" id="lalamoveTenantEnvironment" value={lalamoveForm.environment} onChange={e => patchLalamove({ environment: e.target.value })}>
+                                  <DynamicField id="lalamoveTenantEnvironment" label={t("admin.delivery_settings.lalamove_environment")}
+                                    value={lalamoveForm.environment} kind="select" className="admin-lalamove-dynamic-field"><select className="input" id="lalamoveTenantEnvironment" value={lalamoveForm.environment} onChange={e => patchLalamove({ environment: e.target.value })}>
                                     <option value="sandbox">Sandbox</option>
                                     <option value="production">Production</option>
-                                  </select>
+                                  </select></DynamicField>
                                 </div>
                               ) : null}
                             </div>
@@ -1885,12 +1910,14 @@ export function AdminPage() {
                             {tenantLalamoveMode ? (
                               <div className="grid grid-2" id="lalamoveTenantCredentials">
                               <div className="field">
-                                <label htmlFor="lalamoveTenantApiKey">{t("admin.delivery_settings.lalamove_api_key")}</label>
-                                <input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} placeholder={lalamoveApiKeyMask || "pk_..."} onChange={e => patchLalamove({ apiKey: e.target.value })} />
+                                <DynamicField id="lalamoveTenantApiKey" label={t("admin.delivery_settings.lalamove_api_key")} value={lalamoveForm.apiKey}
+                                  className="admin-lalamove-dynamic-field"
+                                  description={lalamoveApiKeyMask ? "มีรหัสตั้งค่าไว้แล้ว • เว้นช่องว่างเพื่อใช้รหัสเดิม (ไม่แสดงค่าจริง)" : "กรอกรหัสของบัญชี Lalamove Partner ที่ได้รับมา • ค่าจะไม่ถูกแสดงเป็นข้อความ"} ><input className="input" id="lalamoveTenantApiKey" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiKey} placeholder={lalamoveApiKeyMask || "pk_..."} onChange={e => patchLalamove({ apiKey: e.target.value })} /></DynamicField>
                               </div>
                               <div className="field">
-                                <label htmlFor="lalamoveTenantApiSecret">{t("admin.delivery_settings.lalamove_api_secret")}</label>
-                                <input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} placeholder={lalamoveApiSecretMask || "sk_..."} onChange={e => patchLalamove({ apiSecret: e.target.value })} />
+                                <DynamicField id="lalamoveTenantApiSecret" label={t("admin.delivery_settings.lalamove_api_secret")} value={lalamoveForm.apiSecret}
+                                  className="admin-lalamove-dynamic-field"
+                                  description={lalamoveApiSecretMask ? "มีรหัสตั้งค่าไว้แล้ว • เว้นช่องว่างเพื่อใช้รหัสเดิม (ไม่แสดงค่าจริง)" : "กรอกรหัสของบัญชี Lalamove Partner ที่ได้รับมา • ค่าจะไม่ถูกแสดงเป็นข้อความ"} ><input className="input" id="lalamoveTenantApiSecret" type="password" autoComplete="off" disabled={!tenantLalamoveMode} value={lalamoveForm.apiSecret} placeholder={lalamoveApiSecretMask || "sk_..."} onChange={e => patchLalamove({ apiSecret: e.target.value })} /></DynamicField>
                               </div>
                               </div>
                             ) : null}

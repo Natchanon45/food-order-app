@@ -1,0 +1,1112 @@
+/* Keep SOURCE AdminPage layer order in this stable Vite entry; no lazy CSS preload. */
+/* Exact pinned SOURCE CSS blobs already tracked in public/assets/css. */
+/* SOURCE has a hidden select and visual provider cards, not a dropdown.
+   Native button semantics retain keyboard operation without overriding Laravel checks. */
+.admin-react-store-master #deliveryProvider[hidden] { display: none !important; }
+.admin-react-store-master .admin-delivery-provider-card {
+  width: 100%; text-align: left; font: inherit; appearance: none;
+}
+.admin-react-store-master .admin-delivery-provider-card:focus-visible {
+  outline: 3px solid #16954b; outline-offset: 2px;
+}
+.admin-react-store-master .admin-delivery-provider-card:disabled { cursor: not-allowed; }
+.admin-react-store-master #storeLalamoveGroup { margin: 0; }
+.admin-react-store-master .admin-store-settings-actions{display:flex;justify-content:flex-end}
+
+.admin-react-store-master #lalamoveAccountCard { padding: 16px; }
+.admin-react-store-master .admin-lalamove-account-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; justify-content:flex-end; }
+.admin-react-store-master #storeLalamoveGroup .grid-2,
+.admin-react-store-master #storeLalamoveGroup .field { min-width:0; }
+.admin-react-store-master #storeLalamoveGroup .input { width:100%; min-width:0; }
+@media (max-width:480px) {
+  .admin-react-store-master .admin-lalamove-account-actions > button { flex:1 1 100%; }
+}
+
+.admin-react-store-master [data-admin-menu-master] .admin-list-actions { display:flex; justify-content:flex-end; margin-bottom:12px; }
+.admin-react-store-master [data-admin-menu-master] .admin-menu-table-scroll { width:100%; }
+.admin-react-store-master [data-admin-menu-master] .admin-table-scroll { max-width:100%; overflow-x:auto; }
+.admin-react-store-master [data-admin-menu-master] .table-list { min-width:620px; }
+.admin-menu-modal-overlay { position:fixed; inset:0; z-index:10000; padding:16px; background:rgba(15,23,42,.72); display:flex; justify-content:center; align-items:center; overflow-y:auto; }
+.admin-menu-modal { width:min(100%,570px); max-height:calc(100dvh - 32px); overflow-y:auto; margin:auto; background:var(--card-bg,#fff); }
+.admin-menu-modal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.admin-menu-modal .field { min-width:0; }
+.admin-menu-modal .input { width:100%; min-width:0; }
+.admin-menu-modal #menuImagePreviewWrap { margin:10px 0; overflow:hidden; border-radius:10px; }
+.admin-menu-modal .admin-store-settings-actions { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+@media(max-width:480px) {
+ .admin-menu-modal-overlay { padding:8px; }
+ .admin-menu-modal { max-height:calc(100dvh - 16px); }
+ .admin-menu-modal .admin-store-settings-actions > button { flex:1; }
+}
+
+.admin-react-store-master [data-admin-table-master] .admin-list-actions {display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.admin-react-store-master [data-admin-table-master] .admin-table-scroll {max-width:100%;overflow-x:auto}
+.admin-react-store-master [data-admin-table-master] .table-list {min-width:540px}
+
+/* Source promotion settings within the isolated React tenant-admin form */
+.admin-react-store-master #storePromotionGroup,
+.admin-react-store-master #storeLocationGroup { min-width:0; }
+.admin-react-store-master #storePromotionGroup .admin-promotion-gift-list { max-height:320px; overflow-y:auto; }
+.admin-react-store-master #storePromotionGroup .admin-delivery-promotion { min-width:0; }
+.admin-react-store-master #storePromotionGroup .admin-promotion-fields { min-width:0; }
+.admin-react-store-master #storeLocationGroup .admin-location-coordinates { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.admin-react-store-master #storeLocationGroup .input { width:100%; min-width:0; }
+.admin-react-store-master #storeLocationGroup .admin-store-location-footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+@media(max-width:600px) {
+ .admin-react-store-master #storeLocationGroup .admin-location-coordinates { grid-template-columns:1fr; }
+ .admin-react-store-master #storePromotionGroup .admin-promotion-fields-three { grid-template-columns:1fr; }
+ .admin-react-store-master #storeLocationGroup #adminUseCurrentLocation { max-width:100%; white-space:normal; }
+}
+
+/* Original source sort panels with touch-accessible alternate controls. */
+.admin-react-store-master [data-restaurant-menu-sorting] .sort-manager {min-width:0}
+.admin-react-store-master [data-restaurant-menu-sorting] .sort-panel {min-width:0}
+.admin-react-store-master [data-restaurant-menu-sorting] .sort-list {min-width:0}
+.admin-react-store-master [data-restaurant-menu-sorting] .sort-item {display:flex; align-items:center; gap:8px; min-width:0; }
+.admin-react-store-master [data-restaurant-menu-sorting] .admin-sort-name {flex:1 1 auto; min-width:0; overflow-wrap:anywhere;}
+.admin-react-store-master [data-restaurant-menu-sorting] .admin-sort-move-actions {display:inline-flex;gap:4px; flex:0 0 auto;}
+.admin-react-store-master [data-restaurant-menu-sorting] .admin-sort-move-actions button {min-width:32px; min-height:32px;}
+@media(max-width:480px){.admin-react-store-master [data-restaurant-menu-sorting] .sort-manager {grid-template-columns:1fr;}
+.admin-react-store-master [data-restaurant-menu-sorting] .sort-panel-head {flex-wrap:wrap; gap:8px;}}
+
+/* Source AdminPage responsive location map dimensions. */
+.admin-react-store-master #storeLocationGroup .admin-store-location-map{position:relative;display:block;width:100%;height:340px;min-height:340px;overflow:hidden;border:1px solid #d7e2dc;border-radius:13px;background:#edf2ef;z-index:0}
+.admin-react-store-master #storeLocationGroup .admin-store-location-map .leaflet-control-container{position:relative;z-index:10}
+.admin-react-store-master #storeLocationGroup .admin-store-location-map .leaflet-control-attribution{font-size:9px}
+.admin-react-store-master #storeLocationGroup #adminStoreLocationCoordinates{font-variant-numeric:tabular-nums}
+@media(max-width:640px){.admin-react-store-master #storeLocationGroup .admin-store-location-map{height:285px;min-height:285px}}
+
+.admin-react-store-master #storeLocationGroup #adminStoreLocationStatus.is-ready{color:#176b45;font-weight:700}
+.admin-react-store-master #storeLocationGroup #adminStoreLocationStatus.is-error{color:#b42318;font-weight:700}
+
+/* LIVE /admin: widen every inner settings card until it nearly reaches the
+ * "ข้อมูลร้านและการชำระ" parent border. AdminPage.jsx is the actual route,
+ * not the unused AdminStoreMasterPage component. Scope the changes to the
+ * store card: don't disturb menus, tables, reports or POS. */
+body.admin-vr-page :is(#storeMasterCard, [data-admin-card-key="store"]) {
+  padding: 8px 10px 10px 14px !important;
+}
+body.admin-vr-page :is(#storeMasterCard, [data-admin-card-key="store"]) > .admin-card-body {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 !important;
+  margin: 0;
+}
+body.admin-vr-page :is(#storeMasterCard, [data-admin-card-key="store"]) #storeForm {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+body.admin-vr-page :is(#storeMasterCard, [data-admin-card-key="store"]) #storeForm > :is(
+  .admin-store-settings-overview,
+  .admin-settings-group,
+  .admin-store-settings-actions,
+  .admin-settings-hidden-note
+) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  grid-column: 1 / -1;
+  justify-self: stretch;
+}
+@media (max-width: 680px) {
+  body.admin-vr-page :is(#storeMasterCard, [data-admin-card-key="store"]) {
+    padding: 8px 10px 10px 12px !important;
+  }
+  body.admin-vr-page :is(#storeMasterCard, [data-admin-card-key="store"]) .admin-settings-group-body {
+    padding: 4px !important;
+  }
+}
+
+/* SOURCE AdminPage: the primary store save action occupies its own full row. */
+.admin-react-store-master #storeMasterCard .admin-store-settings-primary-actions {
+  display: block;
+  width: 100%;
+}
+.admin-react-store-master #storeMasterCard .admin-store-settings-primary-actions > #saveStoreSettings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+}
+/* Desktop SOURCE SortableJS layout uses only drag handles. Preserve a
+   keyboard/touch alternative without displaying extra arrow pills at rest. */
+@media (hover:hover) and (pointer:fine) {
+  .admin-react-store-master [data-restaurant-menu-sorting] .admin-sort-move-actions {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .admin-react-store-master [data-restaurant-menu-sorting] .sort-item:focus-within .admin-sort-move-actions {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.admin-react-store-master #storeLocationGroup .admin-map-provider-notice {
+  color: #65746a;
+  margin: 4px 0 0;
+  font-size: 11px;
+}
+
+/* LUKKAJA multi-route entry imports pinned waiting-queue-customer.css.
+   Its @media(max-width:520px) rule uses unscoped body{padding:8px;
+   place-items:start center}, so Chrome's justify-items:center shrink-wraps
+   the entire Admin React root to the table's 600px min-content width.
+   Restore the SOURCE AdminPage body formatting only; the queue customer
+   route keeps its own mobile alignment. No SOURCE JSX/CSS modification. */
+@media (max-width: 520px) {
+  body.admin-vr-page {
+    padding: 0;
+    place-items: normal;
+  }
+}
+
+/* Lalamove account mode: balanced desktop choice cards, mobile single column. */
+.admin-vr-page .admin-lalamove-account-modes {margin:8px 0 20px}
+.admin-vr-page .admin-lalamove-account-modes-head {display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:12px}
+.admin-vr-page .admin-lalamove-account-modes-head > div {display:grid;gap:4px}
+.admin-vr-page .admin-lalamove-account-modes-head strong {font-size:15px;color:#183e2e}
+.admin-vr-page .admin-lalamove-account-modes-head small {color:#6c8077;font-size:12px}
+.admin-vr-page .admin-lalamove-account-modes-head > span {border-radius:99px;background:#e8f4ed;padding:6px 12px;color:#157347;white-space:nowrap;font-size:12px;font-weight:700}
+.admin-vr-page .admin-lalamove-mode-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.admin-vr-page .admin-lalamove-mode-card {position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:176px;width:100%;border:1px solid #dce8e0;border-radius:16px;padding:17px 19px;background:#fff;text-align:left;cursor:pointer;transition:background .16s,border-color .16s,box-shadow .16s}
+.admin-vr-page .admin-lalamove-mode-card:hover:not(:disabled) {border-color:#4b9873;box-shadow:0 4px 18px #174c2f14}
+.admin-vr-page .admin-lalamove-mode-card.is-selected {border:2px solid #168448;background:#f0f9f3;padding:16px 18px;box-shadow:0 2px 10px #16844812}
+.admin-vr-page .admin-lalamove-mode-card:focus-visible {outline:3px solid #168448;outline-offset:3px}
+.admin-vr-page .admin-lalamove-mode-card:disabled {opacity:.7;cursor:wait}
+.admin-vr-page .admin-lalamove-mode-card-top {display:flex;justify-content:space-between;width:100%;align-items:center}
+.admin-vr-page .admin-lalamove-mode-card-top > i {display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#e8f4ed;color:#1a8350;font-size:18px}
+.admin-vr-page .admin-lalamove-mode-tag {font-size:11px;background:#f0f2f1;border-radius:999px;padding:5px 10px;color:#66746b}
+.admin-vr-page .admin-lalamove-mode-card.is-selected .admin-lalamove-mode-tag {background:#d8f1e1;color:#167848}
+.admin-vr-page .admin-lalamove-mode-card strong {color:#173a29;font-size:14px;padding-right:14px}
+.admin-vr-page .admin-lalamove-mode-card > small {color:#60796a;line-height:1.55;font-size:12px;max-width:33ch}
+.admin-vr-page .admin-lalamove-mode-radio {position:absolute;right:16px;bottom:15px;width:17px;height:17px;border:2px solid #bfcfc5;border-radius:50%}
+.admin-vr-page .admin-lalamove-mode-card.is-selected .admin-lalamove-mode-radio {border:5px solid #12874a}
+.admin-vr-page .admin-lalamove-central-tip {display:flex;align-items:flex-start;gap:12px;background:#f3faf6;padding:13px 16px;border-radius:12px;margin:10px 0;color:#215b3d}
+.admin-vr-page .admin-lalamove-central-tip > i {font-size:19px}
+.admin-vr-page .admin-lalamove-central-tip > div {display:grid;gap:3px}
+.admin-vr-page .admin-lalamove-central-tip small {font-size:12px;line-height:1.5;color:#587866}
+.admin-vr-page .admin-lalamove-credentials-grid {background:#fafdfb;border:1px solid #e6ede7;border-radius:12px;padding:15px;margin-bottom:12px}
+.admin-vr-page .admin-delivery-discount-rules {display:flex;flex-direction:column;gap:12px;padding:12px 0 4px}
+.admin-vr-page .admin-delivery-discount-rule {display:grid;grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) auto;gap:12px;align-items:end;border:1px solid #e2ece5;border-radius:12px;padding:12px;background:#fbfdfb}
+.admin-vr-page .admin-delivery-discount-rule .field {margin:0;min-width:0;display:grid;gap:6px}
+.admin-vr-page .admin-delivery-discount-rule .input {width:100%;min-width:0}
+.admin-vr-page .admin-delivery-discount-number {width:30px;height:30px;display:grid;place-items:center;background:#e4f3e9;border-radius:9px;font-weight:700;color:#168448;align-self:center}
+.admin-vr-page .admin-delivery-discount-rule > button {white-space:nowrap}
+.admin-vr-page .admin-delivery-discount-add {align-self:flex-start;border:1px dashed #198754;color:#147346}
+@media(max-width:850px){.admin-vr-page .admin-lalamove-mode-grid{grid-template-columns:1fr}.admin-vr-page .admin-lalamove-mode-card{min-height:115px}}
+@media(max-width:560px){.admin-vr-page .admin-lalamove-account-modes-head{flex-direction:column;gap:8px}.admin-vr-page .admin-delivery-discount-rule{grid-template-columns:30px 1fr auto}.admin-vr-page .admin-delivery-discount-rule .field{grid-column:2/4}.admin-vr-page .admin-delivery-discount-rule >button{grid-column:3;grid-row:1}}
+
+/* Merchant account and promotion follow-up, 09/11/2026. */
+.admin-vr-page .admin-lalamove-environment-row,
+.admin-react-store-master .admin-lalamove-environment-row {display:block;width:100%;max-width:none}
+.admin-vr-page .admin-lalamove-environment-row > .field,
+.admin-react-store-master .admin-lalamove-environment-row > .field {display:block;width:100%;max-width:none}
+.admin-vr-page .admin-lalamove-environment-row .input,
+.admin-react-store-master .admin-lalamove-environment-row .input {display:block;width:100%;max-width:none}
+.admin-vr-page .admin-delivery-discount-toolbar,
+.admin-react-store-master .admin-delivery-discount-toolbar {display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.admin-vr-page .admin-delivery-discount-toolbar .admin-promotion-toggle,
+.admin-react-store-master .admin-delivery-discount-toolbar .admin-promotion-toggle {flex:1 1 390px;min-width:0;margin:0}
+.admin-vr-page .admin-delivery-discount-toolbar .admin-delivery-discount-add,
+.admin-react-store-master .admin-delivery-discount-toolbar .admin-delivery-discount-add {flex:none;margin-left:auto;border:1px solid #17854c;border-radius:9px;background:#f0f9f3;color:#117741;font-weight:700;white-space:nowrap}
+.admin-vr-page .admin-delivery-discount-delete,
+.admin-react-store-master .admin-delivery-discount-delete {background:#dc3545!important;border-color:#dc3545!important;color:white!important;border-radius:9px}
+.admin-vr-page .admin-delivery-discount-delete:hover,
+.admin-react-store-master .admin-delivery-discount-delete:hover {background:#b42334!important;border-color:#b42334!important}
+@media(max-width:620px){.admin-vr-page .admin-delivery-discount-toolbar,.admin-react-store-master .admin-delivery-discount-toolbar{align-items:flex-start}.admin-vr-page .admin-delivery-discount-toolbar .admin-promotion-toggle,.admin-react-store-master .admin-delivery-discount-toolbar .admin-promotion-toggle{flex:1 1 100%}}
+
+/* Android payment companion: same collapsible settings hierarchy as Telegram.
+   Scoped to the opt-in owner panel; no adjustments to billing or store forms. */
+body.admin-vr-page .payment-companion-pilot {
+ width:100%;min-width:0;margin:10px 0;box-sizing:border-box;
+}
+body.admin-vr-page .payment-companion-pilot > .admin-settings-group {
+ width:100%;min-width:0;box-sizing:border-box;
+}
+body.admin-vr-page .payment-companion-body {
+ display:grid;gap:16px;min-width:0;padding:2px;
+}
+body.admin-vr-page .payment-companion-intro {
+ display:flex;align-items:flex-start;gap:13px;padding:15px 16px;
+ border:1px solid #d9ebe0;background:#f2faf5;border-radius:14px;color:#1e4f33;
+}
+body.admin-vr-page .payment-companion-intro-icon,
+body.admin-vr-page .payment-companion-section-title > i {
+ display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+ width:35px;height:35px;border-radius:11px;background:#e1f3e7;color:#157443;font-size:17px;
+}
+body.admin-vr-page .payment-companion-intro > div {min-width:0;flex:1}
+body.admin-vr-page .payment-companion-intro strong {font-size:14px;font-weight:750}
+body.admin-vr-page .payment-companion-intro p {margin:5px 0 0;font-size:12px;line-height:1.65;color:#5c7767}
+body.admin-vr-page .payment-companion-pilot-tag {
+ flex-shrink:0;padding:4px 9px;border-radius:999px;background:#f0e8ff;color:#7253ae;font-size:11px;font-weight:750;
+}
+body.admin-vr-page .payment-companion-panel {
+ display:grid;gap:14px;padding:18px;border:1px solid #dfe9e2;border-radius:15px;background:#fff;min-width:0;
+}
+body.admin-vr-page .payment-companion-section-heading {
+ display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;
+}
+body.admin-vr-page .payment-companion-section-title {display:flex;align-items:center;gap:11px;min-width:0}
+body.admin-vr-page .payment-companion-section-title > div {min-width:0;display:grid;gap:3px}
+body.admin-vr-page .payment-companion-section-title strong {font-size:13px;color:#183c29;font-weight:800}
+body.admin-vr-page .payment-companion-section-title small {font-size:11px;line-height:1.5;color:#78877c}
+body.admin-vr-page .payment-companion-count {
+ flex-shrink:0;padding:6px 10px;background:#ebf6ef;color:#277248;border-radius:999px;font-size:11px;font-weight:800;
+}
+body.admin-vr-page .payment-companion-form {display:grid;gap:8px;min-width:0}
+body.admin-vr-page .payment-companion-form > label {font-size:12px;color:#4a6053;font-weight:750}
+/* The field has a separate help line below its 42px input.
+   Align the action with the INPUT, not the combined field+help height. */
+body.admin-vr-page .payment-companion-form-controls {display:flex;align-items:flex-start;gap:10px;min-width:0}
+body.admin-vr-page .payment-companion-form-controls > input {
+ flex:1;min-width:0;min-height:42px;max-width:none;box-sizing:border-box;border-radius:10px;
+}
+body.admin-vr-page .payment-companion-primary-button {
+ flex:0 0 auto;align-self:flex-start;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ box-sizing:border-box;height:42px;min-height:42px;max-height:42px;
+ border-radius:10px;padding:0 15px;font-size:12px;line-height:1.25;white-space:nowrap;
+}
+body.admin-vr-page .payment-companion-hint {margin:0;font-size:11px;line-height:1.5;color:#7a887e}
+body.admin-vr-page .payment-companion-token {
+ display:grid;gap:10px;background:#fffaf0;border:1px solid #ebd6a4;border-radius:12px;padding:14px;
+}
+body.admin-vr-page .payment-companion-token-title {display:flex;align-items:center;gap:8px;color:#805b19;font-size:12px}
+body.admin-vr-page .payment-companion-token-title > span {
+ margin-left:auto;font-size:10px;background:#fbeac5;padding:4px 8px;border-radius:999px;
+}
+body.admin-vr-page .payment-companion-token > p {margin:0;font-size:11px;color:#896e3f;line-height:1.5}
+body.admin-vr-page .payment-companion-token-controls {display:flex;flex-wrap:wrap;gap:8px}
+body.admin-vr-page .payment-companion-token-controls > input {flex:1;min-width:180px;font-family:ui-monospace,monospace;font-size:11px}
+body.admin-vr-page .payment-companion-token-controls > button,
+body.admin-vr-page .payment-companion-refresh,
+body.admin-vr-page .payment-companion-revoke {display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:9px;white-space:nowrap}
+body.admin-vr-page .payment-companion-copy-status {color:#745f32;font-size:11px}
+body.admin-vr-page .payment-companion-empty {
+ display:flex;align-items:center;gap:12px;min-height:65px;padding:14px;
+ border:1px dashed #d9e5dd;border-radius:12px;background:#fafcfb;color:#688173;font-size:12px;
+}
+body.admin-vr-page .payment-companion-empty > i {
+ font-size:22px;color:#95b6a0;flex-shrink:0;
+}
+body.admin-vr-page .payment-companion-empty > div {display:grid;gap:4px}
+body.admin-vr-page .payment-companion-empty strong {font-size:12px;color:#526a59}
+body.admin-vr-page .payment-companion-empty small {font-size:11px;color:#8a998e}
+body.admin-vr-page .payment-companion-device-list,
+body.admin-vr-page .payment-companion-notice-list {list-style:none;margin:0;padding:0;display:grid;gap:8px}
+body.admin-vr-page .payment-companion-device,
+body.admin-vr-page .payment-companion-notice {
+ display:flex;align-items:center;gap:10px;min-width:0;padding:12px;border:1px solid #e7eee9;
+ border-radius:11px;background:#fdfefd;
+}
+body.admin-vr-page .payment-companion-device-icon,
+body.admin-vr-page .payment-companion-notice-icon {
+ display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+ width:36px;height:36px;border-radius:10px;background:#edf5f0;color:#1c7847;font-size:17px;
+}
+body.admin-vr-page .payment-companion-device-info,
+body.admin-vr-page .payment-companion-notice-info {min-width:0;flex:1;display:grid;gap:4px}
+body.admin-vr-page .payment-companion-device-info strong,
+body.admin-vr-page .payment-companion-notice-info strong {font-size:12px;color:#1d432d;overflow-wrap:anywhere}
+body.admin-vr-page .payment-companion-device-info small,
+body.admin-vr-page .payment-companion-notice-info small {font-size:11px;color:#748679;line-height:1.5;overflow-wrap:anywhere}
+body.admin-vr-page .payment-companion-device-state {
+ flex-shrink:0;padding:5px 9px;background:#f0f2f0;color:#79867d;border-radius:999px;font-size:10px;font-weight:750;
+}
+body.admin-vr-page .payment-companion-device-state.is-active {background:#e5f7ed;color:#117441}
+body.admin-vr-page .payment-companion-revoke {flex-shrink:0;font-size:11px}
+body.admin-vr-page .payment-companion-unverified {
+ flex-shrink:0;padding:6px 10px;background:#fff4dd;color:#94651a;font-size:10px;font-weight:750;border-radius:999px;
+}
+body.admin-vr-page .payment-companion-footnote {
+ display:flex;align-items:flex-start;gap:8px;padding:11px 12px;border-radius:10px;
+ background:#f5f8f6;color:#718478;font-size:11px;line-height:1.6;
+}
+body.admin-vr-page .payment-companion-footnote i {flex-shrink:0;margin-top:2px}
+body.admin-vr-page .payment-companion-error {
+ display:flex;align-items:center;gap:9px;padding:12px;border-radius:10px;
+ background:#fff1f1;border:1px solid #f4cccc;color:#b32b33;font-size:12px;
+}
+@media(max-width:680px){
+ body.admin-vr-page .payment-companion-body {gap:10px}
+ body.admin-vr-page .payment-companion-intro {padding:12px;gap:9px;flex-wrap:wrap}
+ body.admin-vr-page .payment-companion-intro > div {flex-basis:calc(100% - 55px)}
+ body.admin-vr-page .payment-companion-pilot-tag {margin-left:45px}
+ body.admin-vr-page .payment-companion-panel {padding:12px;gap:12px}
+ body.admin-vr-page .payment-companion-section-heading {flex-wrap:wrap}
+ body.admin-vr-page .payment-companion-form-controls {flex-direction:column}
+ body.admin-vr-page .payment-companion-primary-button {width:100%}
+ body.admin-vr-page .payment-companion-token-controls > input {flex-basis:100%;width:100%}
+ body.admin-vr-page .payment-companion-device,
+ body.admin-vr-page .payment-companion-notice {flex-wrap:wrap}
+ body.admin-vr-page .payment-companion-device-info,
+ body.admin-vr-page .payment-companion-notice-info {flex-basis:calc(100% - 50px)}
+ body.admin-vr-page .payment-companion-device-state {margin-left:44px}
+ body.admin-vr-page .payment-companion-revoke {margin-left:auto}
+ body.admin-vr-page .payment-companion-unverified {margin-left:44px}
+}
+
+/* 8080-only key cleanup and compact status summary use the same original
+   owner Android settings panel; do not create a parallel layout. */
+body.admin-vr-page .payment-companion-dashboard{
+ display:grid;gap:9px;min-width:0;padding:12px;
+ border:1px solid #e7eee9;border-radius:11px;background:#fafcfb;
+}
+body.admin-vr-page .payment-companion-dashboard-title{
+ display:flex;align-items:center;gap:7px;color:#496d56;
+ font-size:12px;font-weight:800;line-height:1.5;
+}
+body.admin-vr-page .payment-companion-metrics{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+}
+body.admin-vr-page .payment-companion-metric{
+ display:grid;align-content:start;gap:5px;min-width:0;padding:10px;
+ border:1px solid #e7eee9;border-radius:10px;background:#fff;
+}
+body.admin-vr-page .payment-companion-metric span{
+ display:flex;align-items:center;gap:6px;color:#668073;
+ font-size:11px;font-weight:700;
+}
+body.admin-vr-page .payment-companion-metric strong{
+ font-size:19px;font-weight:800;line-height:1.15;color:#245b3c;
+}
+body.admin-vr-page .payment-companion-metric strong small{font-size:11px;font-weight:600}
+body.admin-vr-page .payment-companion-metric em{
+ font-size:10px;line-height:1.5;color:#718478;
+ font-style:normal;overflow-wrap:anywhere;
+}
+body.admin-vr-page .payment-companion-metric.is-amber strong{color:#94651a}
+body.admin-vr-page .payment-companion-metric.is-blue strong{color:#306a95}
+body.admin-vr-page .payment-companion-delete-key{
+ display:inline-flex;align-items:center;justify-content:center;gap:6px;
+ flex-shrink:0;border-radius:9px;color:#b22331;background:#fff4f4;
+ border:1px solid #efc7cc;font-size:11px;font-weight:750;white-space:nowrap;
+}
+body.admin-vr-page .payment-companion-delete-key:hover{background:#ffe5e7}
+@media(max-width:680px){
+ body.admin-vr-page .payment-companion-metrics{grid-template-columns:1fr 1fr}
+ body.admin-vr-page .payment-companion-delete-key{margin-left:auto}
+}
+
+
+/* COMPANION_ORIGINAL_8000_DASHBOARD_RESTORE */
+/* Extracted scoped selectors from the previously deployed port-8000 CSS.
+   Keeps the exact original dashboard typography, spacing, colors and responsive behavior. */
+body.admin-vr-page .payment-companion-panel{background:#fff;border:1px solid #dfe9e2;border-radius:15px;gap:14px;min-width:0;padding:18px;display:grid}
+body.admin-vr-page .payment-companion-device-list,body.admin-vr-page .payment-companion-notice-list{gap:8px;margin:0;padding:0;list-style:none;display:grid}
+body.admin-vr-page .payment-companion-device,body.admin-vr-page .payment-companion-notice{background:#fdfefd;border:1px solid #e7eee9;border-radius:11px;align-items:center;gap:10px;min-width:0;padding:12px;display:flex}
+body.admin-vr-page .payment-companion-device-icon,body.admin-vr-page .payment-companion-notice-icon{color:#1c7847;background:#edf5f0;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;width:36px;height:36px;font-size:17px;display:inline-flex}
+body.admin-vr-page .payment-companion-device-info,body.admin-vr-page .payment-companion-notice-info{flex:1;gap:4px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-device-info strong,body.admin-vr-page .payment-companion-notice-info strong{color:#1d432d;overflow-wrap:anywhere;font-size:12px}
+body.admin-vr-page .payment-companion-device-info small,body.admin-vr-page .payment-companion-notice-info small{color:#748679;overflow-wrap:anywhere;font-size:11px;line-height:1.5}
+body.admin-vr-page .payment-companion-unverified{color:#94651a;background:#fff4dd;border-radius:999px;flex-shrink:0;padding:6px 10px;font-size:10px;font-weight:750}
+body.admin-vr-page .payment-companion-unverified.is-possible-duplicate{color:#87551d;background:#fff0d5}
+body.admin-vr-page .payment-companion-notice-info .payment-companion-duplicate-note{color:#8c601e;font-weight:600;line-height:1.6}
+body.admin-vr-page .payment-companion-footnote{color:#718478;background:#f5f8f6;border-radius:10px;align-items:flex-start;gap:8px;padding:11px 12px;font-size:11px;line-height:1.6;display:flex}
+body.admin-vr-page .payment-companion-footnote i{flex-shrink:0;margin-top:2px}
+@media (width<=680px){
+body.admin-vr-page .payment-companion-panel{gap:12px;padding:12px}
+body.admin-vr-page .payment-companion-device,body.admin-vr-page .payment-companion-notice{flex-wrap:wrap}
+body.admin-vr-page .payment-companion-device-info,body.admin-vr-page .payment-companion-notice-info{flex-basis:calc(100% - 50px)}
+body.admin-vr-page .payment-companion-unverified{margin-left:44px}
+}
+body.admin-vr-page .payment-companion-dashboard{gap:16px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-overview{background:#fbfdfb;border:1px solid #d9e8dd;border-radius:16px;min-width:0;overflow:hidden;box-shadow:0 4px 22px #0f43240b}
+body.admin-vr-page .payment-companion-overview-hero{color:#fff;background:linear-gradient(115deg,#14382a 0%,#1f6042 66%,#2c7c50 100%);justify-content:space-between;align-items:flex-start;gap:18px;padding:23px 24px;display:flex;position:relative;overflow:hidden}
+body.admin-vr-page .payment-companion-overview-hero:after{content:"";pointer-events:none;border:1px solid #ffffff1f;border-radius:50%;width:260px;height:260px;position:absolute;bottom:-95px;right:-45px;box-shadow:0 0 0 30px #ffffff07,0 0 0 70px #ffffff05}
+body.admin-vr-page .payment-companion-overview-heading{z-index:1;align-items:flex-start;gap:14px;min-width:0;display:flex}
+body.admin-vr-page .payment-companion-overview-hero-icon{color:#e0f9e9;background:#ffffff24;border-radius:13px;flex-shrink:0;justify-content:center;align-items:center;width:45px;height:45px;font-size:22px;display:flex}
+body.admin-vr-page .payment-companion-overview-heading>div{min-width:0}
+body.admin-vr-page .payment-companion-overline{color:#b8e8ca;letter-spacing:.12em;margin-bottom:5px;font-size:10px;font-weight:800;display:block}
+body.admin-vr-page .payment-companion-overview-heading h3{color:#fff;margin:0;font-size:20px;font-weight:800;line-height:1.25}
+body.admin-vr-page .payment-companion-overview-heading p{color:#d6e9de;margin:7px 0 0;font-size:12px;line-height:1.55}
+body.admin-vr-page .payment-companion-overview-status{z-index:1;white-space:nowrap;color:#e8fff0;background:#ffffff21;border:1px solid #fff3;border-radius:999px;align-items:center;gap:7px;padding:8px 11px;font-size:11px;font-weight:750;display:inline-flex;position:relative}
+body.admin-vr-page .payment-companion-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:16px;display:grid}
+body.admin-vr-page .payment-companion-metric{background:#fff;border:1px solid #e4ece6;border-radius:13px;align-content:start;justify-items:start;gap:6px;min-width:0;min-height:137px;padding:17px 16px;display:grid;box-shadow:0 2px 6px #20412c05}
+body.admin-vr-page .payment-companion-metric-icon{color:#26824d;background:#e7f5ec;border-radius:10px;justify-content:center;align-items:center;width:35px;height:35px;font-size:16px;display:flex}
+body.admin-vr-page .payment-companion-metric.is-blue .payment-companion-metric-icon{color:#336eaa;background:#e9f2fd}
+body.admin-vr-page .payment-companion-metric.is-amber .payment-companion-metric-icon{color:#b67815;background:#fff2d9}
+body.admin-vr-page .payment-companion-metric.is-violet .payment-companion-metric-icon{color:#8062b1;background:#f1edfc}
+body.admin-vr-page .payment-companion-metric-label{color:#607467;font-size:11px;font-weight:700;line-height:1.45}
+body.admin-vr-page .payment-companion-metric-number{color:#193d2a;font-variant-numeric:tabular-nums;font-size:27px;font-weight:850;line-height:1.1}
+body.admin-vr-page .payment-companion-metric-hint{color:#89988c;font-size:10.5px;line-height:1.45}
+body.admin-vr-page .payment-companion-overview-bottom{color:#718578;background:#f7faf8;border-top:1px solid #e6eee8;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 24px;padding:12px 17px;font-size:11px;line-height:1.55;display:flex}
+body.admin-vr-page .payment-companion-overview-bottom>span{align-items:flex-start;gap:7px;display:flex}
+body.admin-vr-page .payment-companion-overview-bottom i{color:#4e9066;margin-top:1px}
+body.admin-vr-page .payment-companion-overview-bottom strong{color:#355a43;font-weight:750}
+body.admin-vr-page .payment-companion-activity-actions{flex-wrap:wrap;align-items:center;gap:10px;display:flex}
+body.admin-vr-page .payment-companion-activity-count{color:#52765e;white-space:nowrap;background:#edf4ef;border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:800}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-head{color:#87998c;grid-template-columns:minmax(190px,1.2fr) minmax(158px,1fr) minmax(155px,1fr) minmax(125px,.8fr);gap:13px;padding:10px 14px 8px;font-size:11px;font-weight:800;display:grid}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice-list{gap:9px}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice{background:#fff;border:1px solid #e2ebe4;border-radius:12px;grid-template-columns:minmax(190px,1.2fr) minmax(158px,1fr) minmax(155px,1fr) minmax(125px,.8fr);align-items:center;gap:13px;min-width:0;padding:15px 14px;display:grid}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice.is-duplicate{background:#fffdf8;border-color:#f2dfb9}
+body.admin-vr-page .payment-companion-history-amount{align-items:center;gap:11px;min-width:0;display:flex}
+body.admin-vr-page .payment-companion-history-amount .payment-companion-notice-icon{width:39px;height:39px}
+body.admin-vr-page .payment-companion-history-amount .payment-companion-notice-info strong{white-space:nowrap;color:#156d3d;font-size:15px;line-height:1.4}
+body.admin-vr-page .payment-companion-history-data{gap:4px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-history-data strong{color:#3c5746;overflow-wrap:anywhere;font-size:11.5px;font-weight:700;line-height:1.45}
+body.admin-vr-page .payment-companion-history-data small{color:#88978b;font-size:10.5px}
+body.admin-vr-page .payment-companion-history-state{justify-items:start;gap:6px;min-width:0;display:grid}
+body.admin-vr-page .payment-companion-history-state small{color:#97713b;font-size:10px;line-height:1.35}
+body.admin-vr-page .payment-companion-history-state .payment-companion-unverified{white-space:nowrap;margin:0}
+body.admin-vr-page .payment-companion-activity .payment-companion-duplicate-note{color:#926318;background:#fff6e5;border-radius:8px;grid-column:1/-1;align-items:flex-start;gap:7px;margin:0;padding:9px 11px;font-size:11px;line-height:1.55;display:flex}
+body.admin-vr-page .payment-companion-duplicate-note i{flex-shrink:0;margin-top:1px}
+body.admin-vr-page .payment-companion-mobile-label{display:none}
+body.admin-vr-page .payment-companion-list-limit{color:#8a928b;margin:0;font-size:11px;line-height:1.5}
+@media (width<=1080px){
+body.admin-vr-page .payment-companion-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.admin-vr-page .payment-companion-metric{min-height:125px}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-head{display:none}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-amount{grid-column:1/2}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-state{grid-area:1/2/auto/3;justify-self:end}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-data{border-top:1px solid #edf1ee;padding-top:10px}
+body.admin-vr-page .payment-companion-mobile-label{color:#93a294;font-size:10px;display:block}
+}
+@media (width<=580px){
+body.admin-vr-page .payment-companion-overview-hero{flex-wrap:wrap;gap:12px;padding:18px}
+body.admin-vr-page .payment-companion-overview-heading h3{font-size:17px}
+body.admin-vr-page .payment-companion-overview-heading p{font-size:11px}
+body.admin-vr-page .payment-companion-overview-status{margin-left:58px}
+body.admin-vr-page .payment-companion-metrics{gap:9px;padding:11px}
+body.admin-vr-page .payment-companion-metric{min-height:132px;padding:13px 11px}
+body.admin-vr-page .payment-companion-metric-number{font-size:24px}
+body.admin-vr-page .payment-companion-metric-label{font-size:10.5px}
+body.admin-vr-page .payment-companion-overview-bottom{padding:12px}
+body.admin-vr-page .payment-companion-activity-actions{justify-content:space-between;width:100%}
+body.admin-vr-page .payment-companion-activity .payment-companion-notice{grid-template-columns:1fr;gap:10px}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-amount,body.admin-vr-page .payment-companion-activity .payment-companion-history-state{grid-area:auto}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-state{flex-wrap:wrap;justify-self:start;align-items:center;gap:8px;display:flex}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-data{padding-top:8px}
+body.admin-vr-page .payment-companion-history-amount .payment-companion-notice-icon{width:36px;height:36px}
+body.admin-vr-page .payment-companion-activity .payment-companion-duplicate-note{grid-column:1}
+}
+body.admin-vr-page .payment-companion-download{background:linear-gradient(115deg,#f2faf5,#f8fcfa);border:1px solid #cfe5d7;border-radius:12px;flex-wrap:wrap;align-items:center;gap:13px;min-width:0;padding:14px 15px;display:flex}
+body.admin-vr-page .payment-companion-download-icon{color:#1a7546;background:#def2e5;border-radius:11px;flex-shrink:0;justify-content:center;align-items:center;width:41px;height:41px;font-size:23px;display:flex}
+body.admin-vr-page .payment-companion-download-copy{flex:1;gap:4px;min-width:180px;display:grid}
+body.admin-vr-page .payment-companion-download-copy strong{color:#1c5232;font-size:13px;font-weight:800}
+body.admin-vr-page .payment-companion-download-copy small{color:#6f8978;font-size:11px;line-height:1.6}
+body.admin-vr-page .payment-companion-download-copy .payment-companion-download-warning{color:#ad7120;font-weight:700}
+body.admin-vr-page .payment-companion-download-btn{white-space:nowrap;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;gap:9px;min-height:41px;padding:9px 14px;font-size:12px;font-weight:700;text-decoration:none;display:inline-flex}
+body.admin-vr-page .payment-companion-download-unavailable{color:#947a53;align-items:center;gap:6px;font-size:11px;font-weight:650;display:inline-flex}
+@media (width<=680px){
+body.admin-vr-page .payment-companion-download{gap:10px;padding:12px}
+body.admin-vr-page .payment-companion-download-copy{flex-basis:calc(100% - 52px);min-width:0}
+body.admin-vr-page .payment-companion-download-btn{width:100%}
+}
+
+/* Android pilot device name only. Keep the pairing-token read-only field,
+   confirmation buttons, revoke and key-erasure controls unchanged. */
+body.admin-vr-page .payment-companion-form-controls .payment-companion-dynamic-field {
+  flex:1;
+  min-width:0;
+  --lk-field-height:42px;
+}
+body.admin-vr-page .payment-companion-form-controls .payment-companion-dynamic-field .lk-dynamic-control > input {
+  min-height:42px;
+  height:42px;
+  max-width:100%;
+  padding:17px 12px 3px;
+  border-radius:10px;
+  font-size:13px;
+}
+body.admin-vr-page .payment-companion-form-controls .payment-companion-dynamic-field .lk-dynamic-caption {
+  font-weight:400;
+}
+body.admin-vr-page .payment-companion-form-controls .payment-companion-dynamic-field .lk-dynamic-help {
+  display:flex;
+  margin:5px 0 0;
+  color:#7a887e;
+  font-size:11px;
+  line-height:1.5;
+}
+
+/* Payment Companion receiver authorization: consistent Admin card language,
+   bank/PromptPay hierarchy and meaningful action/status icons. UI-only.
+   Do not change source-of-truth payment settings or payment-state gates. */
+body.admin-vr-page .payment-companion-bank-receiver-card{
+ display:grid;gap:15px;min-width:0;box-sizing:border-box;
+ padding:19px;border:1px solid #dbe8df;border-radius:15px;
+ background:linear-gradient(155deg,#fff 0%,#fafdfa 100%);
+ box-shadow:0 3px 16px #21442d08;
+}
+body.admin-vr-page .payment-companion-receiver-heading{
+ display:flex;align-items:flex-start;justify-content:space-between;
+ gap:12px;min-width:0;padding-bottom:14px;border-bottom:1px solid #edf2ee;
+}
+body.admin-vr-page .payment-companion-receiver-heading-main{
+ display:flex;align-items:flex-start;gap:11px;min-width:0;flex:1;
+}
+body.admin-vr-page .payment-companion-receiver-heading-icon{
+ display:inline-flex;align-items:center;justify-content:center;
+ flex-shrink:0;width:40px;height:40px;border-radius:12px;
+ color:#147444;background:#e3f4e9;font-size:19px;
+}
+body.admin-vr-page .payment-companion-receiver-heading-copy{display:grid;gap:4px;min-width:0}
+body.admin-vr-page .payment-companion-receiver-heading-copy h4{
+ margin:0;font-size:14px;line-height:1.45;font-weight:800;color:#1c432c;
+}
+body.admin-vr-page .payment-companion-receiver-heading-copy p{
+ margin:0;color:#788c7e;font-size:11.5px;line-height:1.6;
+}
+body.admin-vr-page .payment-companion-receiver-state{
+ display:inline-flex;align-items:center;justify-content:center;gap:6px;
+ flex:0 0 auto;white-space:nowrap;border-radius:999px;padding:7px 10px;
+ font-size:11px;font-weight:750;background:#f1f3f1;color:#788379;
+}
+body.admin-vr-page .payment-companion-receiver-state.is-active{
+ color:#117444;background:#e6f6ec;
+}
+body.admin-vr-page .payment-companion-receiver-state.is-warning{
+ color:#94621a;background:#fff0d9;
+}
+body.admin-vr-page .payment-companion-receiver-accounts{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;
+}
+body.admin-vr-page .payment-companion-receiver-account{
+ display:flex;gap:12px;align-items:flex-start;min-width:0;
+ padding:15px;border-radius:13px;background:#f5faf6;border:1px solid #e1ece4;
+}
+body.admin-vr-page .payment-companion-receiver-account.is-promptpay{
+ background:#f7fafb;border-color:#e1eaed;
+}
+body.admin-vr-page .payment-companion-receiver-account-icon{
+ flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+ width:39px;height:39px;border-radius:11px;background:#e2f2e7;
+ color:#19804b;font-size:18px;
+}
+body.admin-vr-page .payment-companion-receiver-account.is-promptpay .payment-companion-receiver-account-icon{
+ background:#e9f1f6;color:#346f8e;
+}
+body.admin-vr-page .payment-companion-receiver-account-info{
+ display:grid;gap:5px;min-width:0;align-content:start;
+}
+body.admin-vr-page .payment-companion-receiver-account-label{
+ color:#6e8676;font-size:11px;line-height:1.45;font-weight:650;
+}
+body.admin-vr-page .payment-companion-receiver-account-info strong{
+ color:#1e482f;font-size:14px;line-height:1.45;font-weight:800;overflow-wrap:anywhere;
+}
+body.admin-vr-page .payment-companion-receiver-account-number{
+ display:inline-flex;gap:7px;align-items:center;flex-wrap:wrap;
+ color:#557463;font-size:12px;font-weight:650;line-height:1.5;overflow-wrap:anywhere;
+}
+body.admin-vr-page .payment-companion-receiver-account.is-promptpay .payment-companion-receiver-account-info strong{
+ font-variant-numeric:tabular-nums;
+}
+body.admin-vr-page .payment-companion-receiver-explanation{
+ display:flex;align-items:flex-start;gap:9px;min-width:0;
+ padding:11px 13px;border:1px solid #e5ece7;border-radius:10px;
+ background:#f7faf8;color:#677f70;font-size:11.5px;line-height:1.65;
+}
+body.admin-vr-page .payment-companion-receiver-explanation > i{
+ color:#32835a;font-size:14px;flex-shrink:0;margin-top:1px;
+}
+body.admin-vr-page .payment-companion-receiver-actions{
+ display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:9px;min-width:0;
+}
+body.admin-vr-page .payment-companion-receiver-action{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ min-height:40px;max-width:100%;box-sizing:border-box;
+ padding:9px 15px;border-radius:10px;font-size:12px;font-weight:750;
+ line-height:1.5;text-align:center;white-space:normal;
+}
+body.admin-vr-page .payment-companion-receiver-action > i{
+ flex-shrink:0;font-size:14px;
+}
+body.admin-vr-page .payment-companion-receiver-action.is-secondary{
+ color:#46584b;background:#f1f4f2;border:1px solid #dfe7e2;
+}
+body.admin-vr-page .payment-companion-receiver-action.is-secondary:not(:disabled):hover{
+ background:#e7eeea;color:#2f4f3b;
+}
+body.admin-vr-page .payment-companion-receiver-feedback{
+ display:flex;align-items:flex-start;gap:9px;min-width:0;
+ padding:11px 13px;border:1px solid #e5ece7;border-radius:11px;
+ color:#6b7e70;background:#f7faf8;font-size:11.5px;line-height:1.6;
+}
+body.admin-vr-page .payment-companion-receiver-feedback > i{
+ flex-shrink:0;margin-top:1px;font-size:15px;
+}
+body.admin-vr-page .payment-companion-receiver-feedback.is-success{
+ color:#246a42;background:#edf8f0;border-color:#d5eadc;
+}
+body.admin-vr-page .payment-companion-receiver-feedback.is-warning{
+ color:#92621b;background:#fffaef;border-color:#f2e4c4;
+}
+body.admin-vr-page .payment-companion-receiver-feedback.is-error{
+ color:#a7373f;background:#fff4f4;border-color:#f1d3d4;
+}
+@media(max-width:680px){
+ body.admin-vr-page .payment-companion-bank-receiver-card{padding:14px;gap:12px}
+ body.admin-vr-page .payment-companion-receiver-heading{flex-wrap:wrap;gap:10px}
+ body.admin-vr-page .payment-companion-receiver-heading-main{flex:1 1 100%}
+ body.admin-vr-page .payment-companion-receiver-state{margin-left:51px}
+ body.admin-vr-page .payment-companion-receiver-accounts{grid-template-columns:1fr;gap:9px}
+ body.admin-vr-page .payment-companion-receiver-account{padding:12px}
+ body.admin-vr-page .payment-companion-receiver-action{width:100%}
+}
+@media(max-width:380px){
+ body.admin-vr-page .payment-companion-receiver-heading-copy h4{font-size:13px}
+ body.admin-vr-page .payment-companion-receiver-heading-icon{width:36px;height:36px}
+ body.admin-vr-page .payment-companion-receiver-state{margin-left:47px}
+ body.admin-vr-page .payment-companion-receiver-account{gap:9px}
+}
+
+/* Android incoming-credit history: scroll only the rows. The section title,
+   refresh button and audit footnote remain visible outside this viewport.
+   The existing responsive row grid and financial states are unchanged. */
+body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  max-height: 430px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #94bca3 #f2f7f3;
+  padding-right: 5px;
+  border-radius: 10px;
+}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll::-webkit-scrollbar {
+  width: 9px;
+}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll::-webkit-scrollbar-track {
+  background: #f2f7f3;
+  border-radius: 999px;
+}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll::-webkit-scrollbar-thumb {
+  background: #a3c7ad;
+  border: 2px solid #f2f7f3;
+  border-radius: 999px;
+}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll::-webkit-scrollbar-thumb:hover {
+  background: #6f9d7d;
+}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll:focus-visible {
+  outline: 2px solid #168a4b;
+  outline-offset: 2px;
+}
+body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll .payment-companion-history-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  border-bottom: 1px solid #e5eee7;
+}
+@media (max-width: 580px) {
+  body.admin-vr-page .payment-companion-activity .payment-companion-history-scroll {
+    max-height: 380px;
+  }
+}
+
+/* Advisory match card: independent payment and kitchen status; no financial
+   state is inferred from an operational release. Scoped away from history. */
+body.admin-vr-page .payment-companion-match-panel .payment-companion-match-row {
+ display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch;
+ gap:12px;padding:16px;border:1px solid #dce9e0;border-radius:14px;background:#fff;min-width:0;
+}
+.companion-match-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;min-width:0}
+.companion-match-header .payment-companion-history-amount{flex:1 1 240px;align-items:flex-start}
+body.admin-vr-page .companion-match-header .payment-companion-notice-info strong{font-size:20px;font-weight:800;line-height:1.3}
+body.admin-vr-page .companion-match-header .companion-match-badge{white-space:normal;max-width:100%;margin:0;line-height:1.5}
+.companion-match-status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.companion-match-status{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid #e1e9e3;border-radius:11px;min-width:0;background:#f5f8f6;color:#415d4b}
+.companion-match-status>i{flex:0 0 34px;height:34px;display:grid;place-items:center;background:#fff9;border-radius:9px;font-size:18px}
+.companion-match-status>div{display:grid;gap:4px;min-width:0}
+.companion-match-status small{font-size:11px;font-weight:600;line-height:1.5}
+.companion-match-status strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.companion-match-status.is-awaiting{background:#fff9ed;color:#8a601b;border-color:#eedfbd}
+.companion-match-status.is-released{background:#eef8f1;color:#14653b;border-color:#d1e8d8}
+body.admin-vr-page .payment-companion-match-panel .companion-match-details{display:grid;gap:9px;margin:0;min-width:0;padding-top:12px;border-top:1px solid #e8eee9;overflow-wrap:anywhere}
+.companion-match-detail-title{display:flex;align-items:center;gap:7px;font-size:13px;color:#284b35}
+.companion-match-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0}
+.companion-match-facts>div{display:grid;gap:3px;min-width:0;padding:9px 11px;background:#f5f8f6;border-radius:8px}
+.companion-match-facts dt{font-size:11px;color:#657b6b}
+.companion-match-facts dd{margin:0;font-size:12px;font-weight:700;color:#284b35;overflow-wrap:anywhere}
+.companion-match-caution{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;background:#f7f6f1;border:1px solid #eae7db;border-radius:9px;color:#746039;font-size:11px;line-height:1.65}
+.companion-match-caution i{flex-shrink:0;margin-top:2px}
+@media(max-width:580px){
+ body.admin-vr-page .payment-companion-match-panel .payment-companion-match-row{padding:12px;gap:10px}
+ .companion-match-status-grid,.companion-match-facts{grid-template-columns:minmax(0,1fr)}
+ .companion-match-header .payment-companion-history-amount{flex-basis:100%}
+}
+
+/* The live AdminPage uses data-admin-card-key="store", not the legacy ID.
+   Keep actual controls padded; remove redundant gutters from wrapper layers. */
+body.admin-vr-page [data-admin-card-key="store"] > .admin-card-body > :is(#storeForm,#paymentCompanionPilot,#storeTelegramGroup,#storeSettingsSaveButton) {
+  box-sizing:border-box;width:100%;max-width:none;min-width:0;
+}
+body.admin-vr-page [data-admin-card-key="store"] .admin-settings-group-body {
+  padding-inline:8px;
+}
+body.admin-vr-page [data-admin-card-key="store"] #storeTelegramGroup .admin-settings-group-body {
+  padding-inline:8px;
+}
+body.admin-vr-page [data-admin-card-key="store"] .payment-companion-body {
+  padding:0;gap:12px;
+}
+body.admin-vr-page [data-admin-card-key="store"] .payment-companion-dashboard {
+  padding:0;border:0;border-radius:0;background:transparent;gap:12px;
+}
+body.admin-vr-page [data-admin-card-key="store"] .payment-companion-panel {
+  padding:12px;gap:12px;
+}
+@media(max-width:680px) {
+  body.admin-vr-page [data-admin-card-key="store"] > .section-title {
+    padding-inline:8px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .admin-settings-group-body,
+  body.admin-vr-page [data-admin-card-key="store"] #storeTelegramGroup .admin-settings-group-body {
+    padding:4px !important;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-panel {
+    padding:7px;gap:10px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-bank-receiver-card,
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-match-panel .payment-companion-match-row {
+    padding:9px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-activity .payment-companion-notice {
+    padding:9px;gap:8px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-overview-hero,
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-overview-bottom,
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-intro,
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-download {
+    padding:10px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-metrics {
+    padding:7px;gap:7px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .payment-companion-history-scroll {
+    padding-right:2px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .lukkaja-telegram-panel {
+    padding:8px;
+  }
+  body.admin-vr-page [data-admin-card-key="store"] .lukkaja-telegram-channel {
+    padding:10px;
+  }
+}
+
+body.admin-vr-page .payment-companion-history-state .payment-companion-unverified.is-cashier-confirmed {
+ background:#e4f5e9;color:#116638;border:1px solid #c7e8d1;
+}
+@media(max-width:580px){
+ body.admin-vr-page .payment-companion-activity .payment-companion-notice {
+  grid-template-columns:minmax(0,1fr) minmax(0,auto);gap:9px;
+ }
+ body.admin-vr-page .payment-companion-activity .payment-companion-history-amount,
+ body.admin-vr-page .payment-companion-activity .payment-companion-history-data:not(.payment-companion-history-device){grid-column:1/-1}
+ body.admin-vr-page .payment-companion-activity .payment-companion-history-device{grid-column:1;grid-row:3}
+ body.admin-vr-page .payment-companion-activity .payment-companion-history-state{grid-column:2;grid-row:3;justify-self:end;align-self:center;display:grid;justify-items:end;max-width:100%}
+ body.admin-vr-page .payment-companion-activity .payment-companion-history-state .payment-companion-unverified{white-space:normal;text-align:center;max-width:100%;line-height:1.4}
+ body.admin-vr-page .payment-companion-activity .payment-companion-duplicate-note{grid-column:1/-1}
+}
+
+/* Mobile: compact, equal metrics and a continuous divider across both
+   account and status columns. No change to payment state or scroll logic. */
+@media(max-width:680px){
+ body.admin-vr-page .payment-companion-overview .payment-companion-metrics {
+  grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:8px;padding:8px;
+ }
+ body.admin-vr-page .payment-companion-overview .payment-companion-metric {
+  grid-column:auto;min-height:0;min-width:0;padding:10px;gap:5px 7px;
+  grid-template-columns:30px minmax(0,1fr);grid-template-rows:auto auto auto;
+  align-items:center;align-content:start;justify-items:start;
+ }
+ body.admin-vr-page .payment-companion-overview .payment-companion-metric-icon {
+  grid-column:1;grid-row:1;width:30px;height:30px;border-radius:8px;font-size:14px;
+ }
+ body.admin-vr-page .payment-companion-overview .payment-companion-metric-number {
+  grid-column:2;grid-row:1;font-size:22px;line-height:1.2;
+ }
+ body.admin-vr-page .payment-companion-overview .payment-companion-metric-label {
+  grid-column:1/-1;grid-row:2;font-size:11px;line-height:1.35;
+ }
+ body.admin-vr-page .payment-companion-overview .payment-companion-metric-hint {
+  grid-column:1/-1;grid-row:3;font-size:10px;line-height:1.35;overflow-wrap:anywhere;
+ }
+}
+@media(max-width:580px){
+ body.admin-vr-page .payment-companion-activity .payment-companion-notice::before {
+  content:"";grid-column:1/-1;grid-row:3;align-self:start;
+  border-top:1px solid #edf1ee;pointer-events:none;
+ }
+ body.admin-vr-page .payment-companion-activity .payment-companion-history-device {
+  border-top:0;padding-top:9px;
+ }
+ body.admin-vr-page .payment-companion-activity .payment-companion-history-state {
+  margin-top:9px;
+ }
+}
+
+/* Admin > LK Shop room picker.
+   The legacy admin-wide form styles otherwise override native radio sizing,
+   stretch the radio label and leave its Thai description a few pixels wide.
+   Scope this repair to LK Shop; do not change other Admin controls. */
+body.admin-vr-page #storeLKShopGroup {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+}
+body.admin-vr-page #storeLKShopGroup .admin-settings-group-body {
+  min-width: 0;
+}
+body.admin-vr-page #storeLKShopGroup .lk-shop-pairing-panel.is-embedded {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+body.admin-vr-page #storeLKShopGroup .lk-shop-room-picker {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  width: 100%;
+  max-width: 100% !important;
+  gap: 12px !important;
+  align-items: stretch;
+}
+body.admin-vr-page #storeLKShopGroup .lk-shop-room-picker > .lk-shop-room-option {
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 10px !important;
+  align-items: flex-start !important;
+  min-width: 0 !important;
+  width: 100%;
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 13px 12px !important;
+  position: relative;
+  white-space: normal !important;
+}
+body.admin-vr-page #storeLKShopGroup .lk-shop-room-picker > .lk-shop-room-option > input[type="radio"] {
+  box-sizing: border-box !important;
+  appearance: auto !important;
+  display: block !important;
+  position: static !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  flex: 0 0 20px !important;
+  transform: none !important;
+  padding: 0 !important;
+  margin: 2px 0 0 !important;
+  opacity: 1 !important;
+  border-radius: 50% !important;
+  accent-color: #16834a;
+}
+body.admin-vr-page #storeLKShopGroup .lk-shop-room-picker > .lk-shop-room-option > span {
+  box-sizing: border-box;
+  display: grid !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: auto !important;
+  gap: 4px;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+}
+body.admin-vr-page #storeLKShopGroup .lk-shop-room-option > span > :is(strong, small) {
+  display: block;
+  max-width: 100%;
+  width: auto;
+  text-align: left;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+}
+@media (max-width: 980px) {
+  body.admin-vr-page #storeLKShopGroup .lk-shop-room-picker {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* The high-frequency read-only Android / LK Shop observer is an independent
+ * dashboard after Sales Report. All key/device/receiver changes remain in
+ * the lower Admin Settings section. */
+body.admin-vr-page [data-admin-card-key="companion-observer"] {
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+/* Monitoring header stays one line on narrow phones. The full wording is
+ * accessible via its heading aria-label / title, while a concise visual
+ * label prevents microscopic fonts and two-line card headers. */
+body.admin-vr-page [data-admin-card-key="companion-observer"] > .admin-card-touch-target {
+  display: flex;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  min-width: 0;
+  gap: clamp(5px, 1.5vw, 10px);
+}
+body.admin-vr-page [data-admin-card-key="companion-observer"] > .admin-card-touch-target > .admin-card-heading {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  font-size: clamp(14px, 1.3vw, 16px);
+  line-height: 1.25;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow: hidden;
+  text-overflow: clip;
+}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading-compact {
+  display: none;
+}
+@media (max-width: 390px) {
+  /* Only this collapsed monitor card needs extra horizontal room for
+   * a legible 14px single-line heading; preserve arrow hit-target size. */
+  body.admin-vr-page [data-admin-card-key="companion-observer"] {
+    padding-inline: 8px !important;
+  }
+}
+@media (max-width: 680px) {
+  body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading {
+    font-size: clamp(14px, 3.6vw, 16px);
+    letter-spacing: -0.02em;
+  }
+  body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading-full {
+    display: none;
+  }
+  body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading-compact {
+    display: inline;
+    white-space: nowrap;
+  }
+}
+
+body.admin-vr-page [data-admin-card-key="companion-observer"] > .admin-card-body {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 12px;
+}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-observer {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-dashboard {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+  gap: 12px;
+}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-panel {
+  padding: 14px;
+  min-width: 0;
+  gap: 12px;
+}
+body.admin-vr-page .payment-companion-lkshop-list {
+  display: grid;
+  gap: 10px;
+  max-height: 440px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 5px 3px 1px;
+}
+body.admin-vr-page .payment-companion-lkshop-row {
+  min-width: 0;
+  border: 1px solid #dce9e0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  display: grid;
+  gap: 8px;
+}
+body.admin-vr-page .payment-companion-lkshop-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 7px;
+}
+body.admin-vr-page .payment-companion-lkshop-row-head strong {
+  color: #194d31;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+body.admin-vr-page .payment-companion-lkshop-row-head > span,
+body.admin-vr-page .payment-companion-lkshop-row-meta {
+  color: #637a6b;
+  font-size: 11px;
+}
+body.admin-vr-page .payment-companion-lkshop-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 16px;
+}
+body.admin-vr-page .payment-companion-lkshop-row-meta span,
+body.admin-vr-page .payment-companion-lkshop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+body.admin-vr-page .payment-companion-lkshop-message {
+  min-width: 0;
+  border-top: 1px solid #edf2ef;
+  padding-top: 7px;
+  font-size: 11.5px;
+}
+body.admin-vr-page .payment-companion-lkshop-message summary {
+  cursor: pointer;
+  color: #1b7342;
+  font-weight: 600;
+}
+body.admin-vr-page .payment-companion-lkshop-message p {
+  margin: 9px 0 0;
+  border-radius: 9px;
+  padding: 10px;
+  background: #f6faf7;
+  color: #2d503c;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+body.admin-vr-page .payment-companion-lkshop-link {
+  color: #156b42;
+  font-size: 11.5px;
+  text-decoration: underline;
+  width: fit-content;
+}
+@media (max-width: 680px) {
+  body.admin-vr-page [data-admin-card-key="companion-observer"] > .admin-card-body {
+    padding: 7px;
+  }
+  body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-panel {
+    padding: 9px;
+  }
+  body.admin-vr-page .payment-companion-lkshop-row {
+    padding: 9px;
+  }
+  body.admin-vr-page .payment-companion-lkshop-row-meta {
+    gap: 6px 9px;
+  }
+}

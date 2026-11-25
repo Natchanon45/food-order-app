@@ -1,0 +1,204 @@
+/* Admin store profile + existing payee details only: explicit DynamicField.
+   Preserve the native 44px input / 82px address textarea heights and all
+   existing form/validation handlers. Do not style transaction or card controls. */
+body.admin-vr-page .admin-store-dynamic-field {
+  min-width: 0;
+  width: 100%;
+  --lk-field-height: 44px;
+}
+body.admin-vr-page .admin-store-dynamic-field .lk-dynamic-control {
+  min-height: 44px;
+}
+body.admin-vr-page .admin-store-dynamic-field .lk-dynamic-control > input {
+  min-height: 44px;
+  height: 44px;
+}
+body.admin-vr-page .admin-store-dynamic-field.lk-dynamic-field--textarea .lk-dynamic-control,
+body.admin-vr-page .admin-store-dynamic-field.lk-dynamic-field--textarea .lk-dynamic-control > textarea {
+  min-height: 82px;
+}
+body.admin-vr-page .admin-store-dynamic-field.lk-dynamic-field--textarea .lk-dynamic-control > textarea {
+  height: 82px;
+  padding-top: 23px;
+  resize: vertical;
+}
+body.admin-vr-page .admin-store-dynamic-field .lk-dynamic-control > .lk-dynamic-caption {
+  font-weight: 400;
+  max-width: calc(100% - 28px);
+}
+body.admin-vr-page .admin-store-dynamic-field .lk-dynamic-control > .lk-dynamic-caption .lk-dynamic-caption-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.admin-vr-page .admin-store-basic-grid .field,
+body.admin-vr-page .admin-payment-method-card .field {
+  min-width: 0;
+}
+
+/* Section 3: explicitly scoped Lalamove credentials/environment and the
+   temporary opening-hours reason. No changes to payment, wallet or keys. */
+body.admin-vr-page .admin-lalamove-dynamic-field,
+body.admin-vr-page .admin-delivery-hours-dynamic-field {
+  min-width:0;
+  --lk-field-height:44px;
+}
+body.admin-vr-page .admin-lalamove-dynamic-field .lk-dynamic-control > :is(input,select),
+body.admin-vr-page .admin-delivery-hours-dynamic-field .lk-dynamic-control > input {
+  box-sizing:border-box;
+  height:44px;
+  min-height:44px;
+  padding-top:17px;
+  padding-bottom:3px;
+}
+body.admin-vr-page .admin-lalamove-dynamic-field .lk-dynamic-caption,
+body.admin-vr-page .admin-delivery-hours-dynamic-field .lk-dynamic-caption {
+  font-weight:400;
+  max-width:calc(100% - 28px);
+}
+body.admin-vr-page .admin-lalamove-dynamic-field .lk-dynamic-help,
+body.admin-vr-page .admin-delivery-hours-dynamic-field .lk-dynamic-help {
+  margin:5px 0 0;
+  font-size:11px;
+  font-weight:400;
+  line-height:1.5;
+}
+body.admin-vr-page #lalamoveTenantCredentials .field,
+body.admin-vr-page .admin-delivery-hours-override .field {
+  min-width:0;
+}
+
+/* Section 4: native numeric controls in Delivery promotion/distance settings.
+   Keep pricing formulas, dates, units and custom delivery-fee rows untouched. */
+body.admin-vr-page .admin-delivery-promotion-dynamic-field {
+  --lk-field-height: 44px;
+  min-width: 0;
+  width: 100%;
+}
+body.admin-vr-page .admin-delivery-promotion-dynamic-field .lk-dynamic-control > input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: 44px;
+  padding: 17px 12px 3px;
+  font-size: 0.94rem;
+}
+body.admin-vr-page .admin-delivery-promotion-dynamic-field .lk-dynamic-caption {
+  font-size: 0.84rem;
+  font-weight: 400;
+  max-width: calc(100% - 24px);
+}
+body.admin-vr-page .admin-delivery-promotion-dynamic-field .lk-dynamic-control:focus-within .lk-dynamic-caption,
+body.admin-vr-page .admin-delivery-promotion-dynamic-field .lk-dynamic-control.is-filled .lk-dynamic-caption {
+  font-size: 0.62rem;
+  font-weight: 400;
+}
+body.admin-vr-page .admin-promotion-money-input > .admin-delivery-promotion-dynamic-field,
+body.admin-vr-page .admin-promotion-number-input > .admin-delivery-promotion-dynamic-field,
+body.admin-vr-page .admin-delivery-discount-rule .admin-delivery-promotion-dynamic-field {
+  min-width: 0;
+}
+body.admin-vr-page .admin-delivery-discount-rule .admin-delivery-promotion-dynamic-field .lk-dynamic-caption-text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* The legacy promotion CSS styles every span under the unit-input grid.
+   Restore the floating caption's own theme color / tiny focus font without
+   changing the actual trailing unit text. */
+body.admin-vr-page :is(.admin-promotion-money-input, .admin-promotion-number-input)
+  .admin-delivery-promotion-dynamic-field .lk-dynamic-caption-text {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* Section 5: editable delivery-fee rows. Keep the source table's grid
+   placement, pickup lock, readonly and native input min/step/change handlers. */
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-dynamic-field {
+  --lk-field-height: 42px;
+  min-width: 0;
+  width: 100%;
+}
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-description-field {
+  grid-column: auto;
+  min-width: 0;
+}
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-description-field .lk-dynamic-help {
+  color: #687f70;
+  font-size: 10px;
+  margin: 3px 0 0;
+  line-height: 1.4;
+}
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-dynamic-field .lk-dynamic-caption {
+  max-width: calc(100% - 18px);
+  left: 9px;
+  font-weight: 400;
+  font-size: 0.77rem;
+}
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-dynamic-field .lk-dynamic-control:is(:focus-within, .is-filled) > .lk-dynamic-caption {
+  top: 3px;
+  left: 9px;
+  font-size: 0.59rem;
+  font-weight: 400;
+}
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-dynamic-field .lk-dynamic-control > input {
+  box-sizing: border-box;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 16px 9px 2px !important;
+  min-width: 0;
+}
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-dynamic-field [data-delivery-fee-distance],
+body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-dynamic-field [data-delivery-fee-amount] {
+  text-align: right;
+}
+@media (max-width: 720px) {
+  body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-description-field {
+    grid-area: description !important;
+  }
+  body.admin-react-store-master #deliveryFeeOptionsList .delivery-fee-cell:has(.admin-delivery-fee-dynamic-field) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  body.admin-react-store-master #deliveryFeeOptionsList .delivery-fee-cell:has(.admin-delivery-fee-dynamic-field)::before {
+    content: none !important;
+  }
+  body.admin-react-store-master #deliveryFeeOptionsList .admin-delivery-fee-dynamic-field .lk-dynamic-control > input {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 15px 8px 2px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* Native date / datetime-local are segmented browser controls. Always float
+   their title so empty locale-dependent date fragments and calendar/time
+   icons remain visible and keyboard accessible at standard control height. */
+body.admin-vr-page .admin-native-date-dynamic-field {
+  --lk-field-height: 44px;
+  min-width: 0;
+}
+body.admin-vr-page .admin-native-date-dynamic-field .lk-dynamic-control > input:is([type="date"], [type="datetime-local"]) {
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  padding: 16px 10px 2px;
+  min-width: 0;
+  font-size: 16px;
+}
+body.admin-vr-page .admin-native-date-dynamic-field .lk-dynamic-control > .lk-dynamic-caption {
+  top: 3px;
+  left: 10px;
+  max-width: calc(100% - 26px);
+  transform: none;
+  font-size: 0.62rem;
+  font-weight: 400;
+}
+body.admin-vr-page .admin-native-date-dynamic-field .lk-dynamic-help {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+}

@@ -1,0 +1,422 @@
+/* LUKKAJA presentation polish, November 2026.
+ * Scoped to tenant Admin / Sales Report / non-print Receipt only.
+ * Keep the pinned React/SOURCE component layout and payment behavior intact. */
+
+/* Large, balanced primary report CTA on desktop and touch screens. */
+body.admin-vr-page .admin-sales-report-spotlight {
+  min-width: 0;
+}
+body.admin-vr-page .admin-sales-report-spotlight__action {
+  box-sizing: border-box;
+  min-height: 49px;
+  min-width: 124px;
+  padding: 11px 18px;
+  gap: 9px;
+  font-size: 14px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+body.admin-vr-page .admin-sales-report-spotlight__action .bi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+body.admin-vr-page .admin-sales-report-spotlight__action span {
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  body.admin-vr-page .admin-sales-report-spotlight {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 9px;
+    padding: 13px 11px 13px 15px;
+  }
+  body.admin-vr-page .admin-sales-report-spotlight__action {
+    min-width: 94px;
+    min-height: 43px;
+    padding: 9px 11px;
+    gap: 6px;
+    font-size: 12px;
+    border-radius: 11px;
+  }
+  body.admin-vr-page .admin-sales-report-spotlight__action .bi {
+    font-size: 17px;
+  }
+}
+@media (max-width: 365px) {
+  body.admin-vr-page .admin-sales-report-spotlight {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 11px 9px 11px 12px;
+  }
+  body.admin-vr-page .admin-sales-report-spotlight__icon {
+    width: 36px;
+    height: 36px;
+  }
+  body.admin-vr-page .admin-sales-report-spotlight__content h2 {
+    font-size: 13px;
+  }
+  body.admin-vr-page .admin-sales-report-spotlight__content p {
+    font-size: 10px;
+  }
+  body.admin-vr-page .admin-sales-report-spotlight__action {
+    min-width: 84px;
+    min-height: 42px;
+    padding: 8px;
+    font-size: 11px;
+    gap: 5px;
+  }
+  body.admin-vr-page .admin-sales-report-spotlight__action .bi {
+    font-size: 16px;
+  }
+}
+
+/* Native HTML fieldset/legend: the browser interrupts the border as part
+ * of the actual outline. No white background overlay or absolute label. */
+body.sales-report-workspace .report-filter-grid {
+  align-items: stretch;
+  gap: 14px 12px;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field,
+body.sales-report-workspace .sales-dynamic-select,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic {
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 50px;
+  margin: 0;
+  padding: 0 9px 5px;
+  border: 1px solid #cbded1;
+  border-radius: 12px;
+  background: #fff;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field > legend,
+body.sales-report-workspace .sales-dynamic-select > legend,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic > legend {
+  display: table;
+  box-sizing: border-box;
+  float: none;
+  width: auto;
+  max-width: calc(100% - 12px);
+  margin: 0 0 0 7px;
+  padding: 0 5px;
+  border: 0;
+  background: transparent;
+  color: #287247;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  white-space: nowrap;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field > legend > label,
+body.sales-report-workspace .sales-dynamic-select > legend > label,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic > legend > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field > legend .bi {
+  flex: 0 0 auto;
+  font-size: 11px;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field > .input,
+body.sales-report-workspace .sales-dynamic-select > .input,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic > .input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 29px;
+  min-height: 29px;
+  margin: 0;
+  padding: 2px 3px;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field > select.input,
+body.sales-report-workspace .sales-dynamic-select > select.input,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic > select.input {
+  padding-right: 21px;
+}
+/* Existing SOURCE and Admin theme styles also draw .input borders and
+ * :hover/:focus rings. A native fieldset must own the ONLY visible border.
+ * These deliberately narrow overrides cover every interaction state,
+ * including CSS chunks loaded after the React entry on the live host. */
+body.sales-report-workspace .report-filter-grid fieldset.sales-dynamic-field > :is(input, select).input,
+body.sales-report-workspace fieldset.sales-receipt-status-filter > select.input,
+body.pg-source-receipt-not-enabled fieldset.receipt-paper-dynamic > select.input {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  min-height: 26px !important;
+}
+body.sales-report-workspace .report-filter-grid fieldset.sales-dynamic-field > :is(input, select).input {
+  height: 29px !important;
+  min-height: 29px !important;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+body.sales-report-workspace fieldset.sales-receipt-status-filter > select.input,
+body.pg-source-receipt-not-enabled fieldset.receipt-paper-dynamic > select.input {
+  height: 26px !important;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field > .input:focus,
+body.sales-report-workspace .sales-dynamic-select > .input:focus,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic > .input:focus {
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field:focus-within,
+body.sales-report-workspace .sales-dynamic-select:focus-within,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic:focus-within {
+  border-color: #159447;
+  box-shadow: 0 0 0 2px rgba(21, 148, 71, 0.13);
+}
+body.sales-report-workspace .report-filter-grid .sales-dynamic-field:focus-within > legend,
+body.sales-report-workspace .sales-dynamic-select:focus-within > legend,
+body.pg-source-receipt-not-enabled .receipt-paper-dynamic:focus-within > legend {
+  color: #087535;
+}
+body.sales-report-workspace .report-filter-grid .custom-date-grid {
+  min-width: 0;
+  align-items: stretch;
+}
+body.sales-report-workspace .report-filter-grid .custom-date-grid[hidden],
+body.sales-report-workspace .report-filter-grid .period-control[hidden] {
+  display: none !important;
+}
+@media (max-width: 900px) {
+  body.sales-report-workspace .report-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 550px) {
+  body.sales-report-workspace .report-filter-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  body.sales-report-workspace .report-filter-grid .custom-date-grid {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+/* A native legend owns only the text-sized notch. In particular, table
+ * display/auto width may expand to the available field width in Chrome.
+ * Keep the actual form below the notch, without a painted label overlay. */
+body.sales-report-workspace .report-filter-grid fieldset.sales-dynamic-field:not([hidden]) {
+  display: block;
+  min-inline-size: 0;
+}
+body.sales-report-workspace .report-filter-grid fieldset.sales-dynamic-field > legend {
+  display: block;
+  position: static;
+  float: none;
+  width: fit-content !important;
+  max-width: calc(100% - 12px);
+  background: transparent !important;
+  box-shadow: none;
+}
+body.sales-report-workspace .report-filter-grid fieldset.sales-dynamic-field > legend > label {
+  width: fit-content !important;
+  max-width: 100%;
+  background: transparent !important;
+  box-shadow: none;
+}
+body.sales-report-workspace .report-filter-grid fieldset.sales-dynamic-field > :is(input, select).input {
+  position: static;
+  margin: 0;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
+/* The receipt status filter also uses native legend outlining. */
+body.sales-report-workspace .receipt-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+body.sales-report-workspace .receipt-heading > div:first-child {
+  min-width: 0;
+}
+body.sales-report-workspace .receipt-cancellation-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  width: auto;
+  min-width: 0;
+}
+body.sales-report-workspace .sales-receipt-status-filter {
+  flex: 0 0 auto;
+  width: clamp(126px, 10vw, 165px);
+  min-height: 44px;
+  padding: 0 8px 3px;
+}
+body.sales-report-workspace #receiptStatusFilter {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  height: 26px;
+  min-height: 26px;
+  padding: 1px 20px 1px 3px;
+  font-size: 12px;
+}
+body.sales-report-workspace #receiptResultCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Keep receipts readable: payment method, code, cancelled status and totals
+ * are compact single-line cells; the table scrolls within its own card on
+ * narrow screens instead of spilling into the viewport. */
+body.sales-report-workspace .receipt-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+body.sales-report-workspace .receipt-table-scroll > .receipt-table {
+  min-width: 1050px;
+  table-layout: auto;
+}
+body.sales-report-workspace .receipt-table thead th {
+  padding: 11px 9px;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+body.sales-report-workspace .receipt-table tbody td {
+  padding: 10px 9px;
+  font-size: 12px;
+  line-height: 1.45;
+  vertical-align: middle;
+}
+body.sales-report-workspace .receipt-table .receipt-code {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+body.sales-report-workspace .receipt-table tbody td:nth-child(2),
+body.sales-report-workspace .receipt-table tbody td:nth-child(5),
+body.sales-report-workspace .receipt-table tbody td:nth-child(6),
+body.sales-report-workspace .receipt-table tbody td.number {
+  white-space: nowrap;
+}
+body.sales-report-workspace .receipt-table .receipt-cancelled-stripe {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 5px 7px;
+  max-width: max-content;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  letter-spacing: 0;
+  border-width: 1px;
+}
+body.sales-report-workspace .receipt-table .receipt-status-normal {
+  font-size: 12px;
+}
+body.sales-report-workspace .receipt-table .receipt-row-action {
+  white-space: nowrap;
+  font-size: 11px;
+}
+@media (max-width: 640px) {
+  body.sales-report-workspace .receipt-heading {
+    align-items: flex-start;
+  }
+  body.sales-report-workspace .receipt-cancellation-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  body.sales-report-workspace .sales-receipt-status-filter {
+    width: min(180px, 60vw);
+  }
+}
+
+/* A matching floating label for paper selection; never affect the printed
+ * 58/80 mm or A4 receipt itself. */
+@media screen {
+  body.pg-source-receipt-not-enabled .receipt-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  body.pg-source-receipt-not-enabled .receipt-paper-dynamic {
+    width: clamp(138px, 14vw, 185px);
+    flex: 0 0 auto;
+    margin-top: 0;
+    min-height: 45px;
+    padding: 0 8px 3px;
+  }
+  body.pg-source-receipt-not-enabled #paperSize {
+    height: 26px;
+    min-height: 26px;
+    font-size: 13px;
+  }
+  body.pg-source-receipt-not-enabled .receipt-toolbar > #printButton {
+    min-height: 45px;
+    height: 45px;
+    padding: 10px 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    white-space: nowrap;
+    font-size: 13px;
+    border-radius: 11px;
+  }
+  body.pg-source-receipt-not-enabled .receipt-toolbar > #printButton .bi {
+    font-size: 16px;
+  }
+}
+@media screen and (max-width: 365px) {
+  body.pg-source-receipt-not-enabled .receipt-toolbar {
+    gap: 8px;
+  }
+  body.pg-source-receipt-not-enabled .receipt-paper-dynamic {
+    width: 138px;
+    max-width: calc(100% - 142px);
+  }
+  body.pg-source-receipt-not-enabled .receipt-toolbar > #printButton {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}
