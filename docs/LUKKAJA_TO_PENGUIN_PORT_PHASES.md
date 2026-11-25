@@ -1,5 +1,12 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — P2.1 Merchant Owner Payment Observer from latest Source
+
+**Partial P2 Merchant Admin Module 1/next:** Source `feature/react-golang-vite-tailwind-axios@7bf9d159` adds collapsed Owner Android/LK Shop observer after Sales Report. Ported into existing PENGUIN `AdminPage` using tenant-scoped Firebase `getPaymentCompanionDashboard`, owner-only read guard, strict unverified projections and Source responsive summary/history. Original pairing/settings now omits duplicate observer summary, while preserving device/receiver/UAT actions. Missing Firebase LK Shop Outbox and Go `PlatformLineWalletTopup` are explicitly **not** presented as live payment support. See [P2.1 module report](./LUKKAJA_P2_1_MERCHANT_PAYMENT_OBSERVER_20261125.md). The P2 merchant/onboarding phase has **not** been fully ported; next P2.2 Store Master/QR controls.
+
+---
+
+
 ## 2026-11-25 — P1.5 Superadmin Tenant Wallet unified history
 
 Started from the latest user-selected JSX Source `feature/react-golang-vite-tailwind-axios@7bf9d159`. Replaced Stripe-only/pending-only wallet UI with Source unified history, backed exclusively by the existing canonical Firebase Lalamove credit ledger and post/review proof. Stripe Sandbox remains separate (never real credit); `appeal_pending` approval remains blocked until bank-authoritative evidence integration exists. See [P1.5 Module report](./LUKKAJA_P1_5_UNIFIED_WALLET_SOURCE_PORT_20261125.md). Do not imply real bank/Stripe provider activation.

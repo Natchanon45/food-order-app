@@ -1,6 +1,7 @@
 import { TelegramSettingsPanel } from "@/components/TelegramSettingsPanel";
 import { LKShopPairingPanel } from "@/components/LKShopPairingPanel";
 import { PaymentCompanionPairingCard } from "@/components/PaymentCompanionPairingCard";
+import { PaymentCompanionObserverCard } from "@/components/PaymentCompanionObserverCard";
 import { BankalertStripeWalletTopup } from "@/components/BankalertStripeWalletTopup";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
@@ -1663,6 +1664,24 @@ export function AdminPage() {
             <span>{t("admin.sales_report.button")}</span>
           </Link>
         </section>
+
+        {profile?.role === "owner" ? (
+          <AdminCollapsibleCard
+            id="paymentCompanionObserverCard"
+            cardKey="companion-observer"
+            className="admin-companion-observer-card"
+            icon="activity" accent="green"
+            heading={<h2 className="admin-companion-observer-heading"
+              title="ภาพรวมการแจ้งเงินเข้า · Android / LK Shop"
+              aria-label="ภาพรวมการแจ้งเงินเข้า · Android / LK Shop">
+              <span className="admin-companion-observer-heading-full" aria-hidden="true">ภาพรวมการแจ้งเงินเข้า · Android / LK Shop</span>
+              <span className="admin-companion-observer-heading-compact" aria-hidden="true">สรุปเงินเข้า · Android/LK Shop</span>
+            </h2>}
+            t={t} style={{marginBottom:16}}
+          >
+            <PaymentCompanionObserverCard isOwner={profile?.role==="owner"} />
+          </AdminCollapsibleCard>
+        ) : null}
 
         <AdminDeliveryQr tenant={tenant} shopName={settings.shopName || tenant?.name || ""} t={t} />
 

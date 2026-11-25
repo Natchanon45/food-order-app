@@ -1,3 +1,13 @@
+## 2026-11-25 — P2.1 Owner Android/LK Shop Payment Observer
+
+- Source confirmed `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159` read-only, Target `Natchanon45/food-order-app` feature/react-firebase-port initially `c56d6d3d`.
+- Latest Source adds separate collapsed Owner observer card after Sales Report before QR, plus a Go/SQL Line Wallet topup provider. Safely ported Source observer card into existing Firebase/AdminPage and scoped CSS. No Source Go/Stripe/LINE wallet request/writer ported: bank-authoritative claim+webhook missing; LK Shop Outbox read unavailable, displayed as unavailable instead of fake data.
+- Strict `projectMerchantObserver` rejects forged bank/Paid claims, malformed money and duplicate IDs, only grouped presentation, always unverified. Reuses existing Owner-only `getPaymentCompanionDashboard` with Tenant scope and active actor. Moved duplicate summary/history from device settings card; preserved original pairing, receiver/UAT controls.
+- P2.1 Source data/UI static contracts **4/4 PASS**, Firebase Firestore Emulator Owner/Tenant boundaries **1/1 PASS**, real Chrome fixture **1/1 PASS** at four widths. Full React parity and final Build receipts in later lines. Source and Production untouched.
+- Detailed module report `docs/LUKKAJA_P2_1_MERCHANT_PAYMENT_OBSERVER_20261125.md`.
+
+---
+
 ## 2026-11-25 — P1.5 latest Source Superadmin Tenant Wallet unified history
 
 - **Source:** pinned `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159` read-only; Target `Natchanon45/food-order-app` `feature/react-firebase-port` start `f5ab9d3c`.

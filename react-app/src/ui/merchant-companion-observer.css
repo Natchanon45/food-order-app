@@ -1,0 +1,25 @@
+/* Source 7bf9 Merchant Owner observer card: independent read-only status. */
+body.admin-vr-page [data-admin-card-key="companion-observer"]>.admin-card-touch-target>.admin-card-heading{min-width:0;overflow:hidden;flex:1 1 0}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading{display:block;min-width:0;margin:0;font-size:clamp(14px,1.3vw,16px);line-height:1.3;white-space:nowrap;overflow:hidden}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading-compact{display:none}
+body.admin-vr-page [data-admin-card-key="companion-observer"]>.admin-card-body{min-width:0;padding:12px}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-observer{display:grid;gap:14px;min-width:0}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-dashboard{min-width:0;border:0;background:transparent;padding:0;gap:12px}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-panel{min-width:0;padding:14px;gap:12px}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-metric{min-width:0;display:grid;gap:7px}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-metric-label{font-size:11px;min-width:0}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-metric-number{font-size:20px;min-width:0}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-history-scroll{max-height:440px;max-width:100%;overflow:auto}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-notice{min-width:0}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-history-data strong{overflow-wrap:anywhere}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-activity-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-overview-bottom{flex-wrap:wrap}
+body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-panel .payment-companion-empty{overflow-wrap:anywhere}
+@media(max-width:680px){
+ body.admin-vr-page [data-admin-card-key="companion-observer"] .payment-companion-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading{font-size:clamp(14px,3.6vw,16px)}
+ body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading-full{display:none}
+ body.admin-vr-page [data-admin-card-key="companion-observer"] .admin-companion-observer-heading-compact{display:inline}
+}
+@media(max-width:390px){body.admin-vr-page [data-admin-card-key="companion-observer"]{padding-inline:8px!important}}

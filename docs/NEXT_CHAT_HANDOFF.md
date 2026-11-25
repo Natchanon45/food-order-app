@@ -1,3 +1,14 @@
+## 2026-11-25 — P2.1 Merchant Admin Owner Payment Observer (latest Source)
+
+- **Source read-only:** `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159`; **Target:** `Natchanon45/food-order-app`, `feature/react-firebase-port`, starting from P1.5 commit `c56d6d3d`.
+- Latest Source `AdminPage` added Owner-only, default collapsed `PaymentCompanionObserverCard` after Sales Report. Ported using existing tenant-scoped `getPaymentCompanionDashboard` / Auth+Firestore, scoped responsive CSS, duplicate-safe grouping presentation, read-only owner view, manual Refresh and 15s poll while card expanded and browser visible.
+- Split duplicate Android activity/metrics from settings card; retained actual device pair/unlink, receiver confirmation, UAT guard, cashier review controls in original `PaymentCompanionPairingCard`. No second settings card or route.
+- **No bank proof:** all Paid/settlement flags must be explicitly false. Owner-only server authorization; cross-Tenant/cashier/anonymous/disabled profile blocked. LK Shop Outbox API and Source Go/SQL `PlatformLineWalletTopup` are **not** available in Firebase, so do not fake messages, receiver bank evidence or automatically credit Wallet.
+- **Final QA:** `npm run test:p21-merchant-observer` **4/4 PASS**; local Owner/Tenant Firestore Emulator **1/1 PASS**, isolated Chrome read-only fixture **1/1 PASS** at 320/390/768/1440; preexisting Android pairing Browser/Policy **4/4 PASS**; entire `npm run test:react-parity` **EXIT 0**; React Build/Hosting Contract **PASS EXIT 0** (`2026.11.09.535`, `index-DTLfIgLI.js`). Fixture Browser is not a live bank connection or signed full-app session; real Firebase owner permission tested independently. Public build artifacts and Emulator temp removed. No Production, live payment, Source writes, main merge or APK/IPA.
+- Next **P2.2** Merchant Store Master / QR / image crop / Firebase persistence. Do not create standalone Source-only `AdminStoreMasterPage` route without proving necessity. Detailed report `docs/LUKKAJA_P2_1_MERCHANT_PAYMENT_OBSERVER_20261125.md`.
+
+---
+
 ## 2026-11-25 — P1.5 new-Source Superadmin Tenant Wallet module
 
 - **Source read-only:** `cosmatch/lukkhaja` `feature/react-golang-vite-tailwind-axios@7bf9d159`; **Target:** `Natchanon45/food-order-app`, `feature/react-firebase-port` (started at `f5ab9d3c`). Never use old bankalert Source branch.
