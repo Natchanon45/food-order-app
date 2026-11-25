@@ -356,6 +356,9 @@ exports.kitchenApplyOrderAction = operationalOrders.kitchenApplyOrderAction;
 
 // Superadmin-only encrypted Telegram bot settings and explicit test delivery.
 const platformTelegram = require("./platform-telegram");
+const stripeWalletSetup = require("./platform-stripe-setup");
+exports.getPlatformStripeWalletSetup = stripeWalletSetup.getPlatformStripeWalletSetup;
+exports.savePlatformStripeWalletSetup = stripeWalletSetup.savePlatformStripeWalletSetup;
 const stripeWalletSandbox = require("./stripe-wallet-sandbox");
 exports.getPlatformStripeWalletSandboxStatus = stripeWalletSandbox.getPlatformStripeWalletSandboxStatus;
 const stripeWalletCheckout = require("./stripe-wallet-sandbox-checkout");
