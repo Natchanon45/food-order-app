@@ -1,7 +1,3 @@
-import { M7StripeTestShadowHistory } from "@/components/M7StripeTestShadowHistory";
-import { M7OperationalFinanceReadiness } from "@/components/M7OperationalFinanceReadiness";
-import { M7SourceMigrationPreflight } from "@/components/M7SourceMigrationPreflight";
-import { M7FinanceEvidenceHistory } from "@/components/M7FinanceEvidenceHistory";
 import { BankalertStripeHistory, PlatformStripeWalletSandboxHistory } from "@/components/BankalertStripeHistory";
 import { validateWalletHistory, verifyWalletReviewReadback } from "@/data/tenantWalletHistory.mjs";
 import "@/ui/tenant-wallet-unified.css";
@@ -289,6 +285,8 @@ export function AdminTenantsPage() {
       "tenant-control-panel-port.css",
       "revenue-share-slip-dialog.css",
       "super-admin-header.css",
+      "react-port-platform-tenants.css",
+      "react-port-tenant-report-desktop-row.css",
     ],
     attributes: { "data-roles": "super_admin" },
   });
@@ -302,6 +300,9 @@ export function AdminTenantsPage() {
   const [tenants, setTenants] = useState([]);
   const [summaries, setSummaries] = useState({});
   const [totals, setTotals] = useState({});
+  const [salesScope,setSalesScope]=useState("");
+  const [salesReadError,setSalesReadError]=useState(false);
+  const salesRequestRef=useRef(0);
   const [periodInfo, setPeriodInfo] = useState(null);
   const [period, setPeriod] = useState("daily");
   const [tenantId, setTenantId] = useState("");
@@ -330,6 +331,7 @@ export function AdminTenantsPage() {
   const [reviewStatus, setReviewStatus] = useState("pending");
   const [reviewCounts, setReviewCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [reviewItems, setReviewItems] = useState([]);
+  const [reviewExpanded,setReviewExpanded]=useState(false);
   const [paymentHistoryRevision, setPaymentHistoryRevision] = useState(0);
   const [shareTenant, setShareTenant] = useState(null);
   const [centralDeliveryPricing, setCentralDeliveryPricing] = useState(null);
@@ -390,20 +392,27 @@ export function AdminTenantsPage() {
     }
   }, [t]);
 
+  const reportScope=JSON.stringify(periodPayload());
   const loadSales = useCallback(async () => {
-    setLoadingSales(true);
+    const requestId=++salesRequestRef.current;
+    setLoadingSales(true);setSalesScope("");setSalesReadError(false);
     try {
       const data = await getPlatformRevenueShareSummary(periodPayload());
-      setSummaries(data.tenants || {});
-      setTotals(data.totals || {});
+      if(requestId!==salesRequestRef.current)return;
+      if(!data?.totals||!data?.tenants||!data?.period||
+        !["orderSales","posSales","combinedSales","revenueShare","customerDeliveryFees","lalamoveDeliveryCost","deliverySubsidy","platformAmountDue","orderCount","posCount"].every(k=>typeof data.totals[k]==="number"&&Number.isFinite(data.totals[k])))throw Error("TENANT_REPORT_INVALID");
+      setSummaries(data.tenants);
+      setTotals(data.totals);setSalesScope(reportScope);
       setPeriodInfo(data.period || null);
     } catch (error) {
+      if(requestId!==salesRequestRef.current)return;
+      setSalesReadError(true);setSalesScope("");setSummaries({});setTotals({});
       console.error("TENANT_SALES_LOAD_FAILED", error);
       setStatus(t("admin_tenants.report.load_failed"));
     } finally {
-      setLoadingSales(false);
+      if(requestId===salesRequestRef.current)setLoadingSales(false);
     }
-  }, [periodPayload, t]);
+  }, [periodPayload, t, reportScope]);
 
   const loadReviews = useCallback(async () => {
     try {
@@ -592,6 +601,7 @@ export function AdminTenantsPage() {
   };
 
   const openRevenueNotice = tenant => {
+    setReviewExpanded(true);
     setTenantId(String(tenant?.id || ""));
     setReviewStatus("all");
     window.setTimeout(() => document.getElementById("tenantShareReviewTitle")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
@@ -1381,6 +1391,8 @@ export function AdminTenantsPage() {
   if (!profile) return <Navigate to="/login?next=%2Fadmin%2Ftenants" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
+  const reportConfirmed=salesScope===reportScope&&!loadingSales&&!salesReadError;
+  const reportMoney=value=>reportConfirmed?money(value):"—";
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const shareSummary = shareTenant ? (summaries[shareTenant.id] || {}) : {};
   const currentPeriodLabel = localizedPeriodLabel(period, {
@@ -1422,35 +1434,6 @@ export function AdminTenantsPage() {
         {pendingProvisionId ? <TenantProvisionRecoveryNotice
           operationId={pendingProvisionId} checking={provisionChecking}
           busy={saving} onCheck={reconcileProvision} /> : null}
-
-        {!adminNotificationsLoading && notificationTotal > 0 ? (
-          <section className="card tenant-admin-notification-panel" aria-labelledby="tenantAdminNotificationTitle" data-admin-notification-total={notificationTotal}>
-            <div className="tenant-admin-notification-copy">
-              <span className="tenant-admin-notification-icon"><i className="bi bi-bell-fill" aria-hidden="true"></i><b>{formatNumber(notificationTotal)}</b></span>
-              <div>
-                <strong id="tenantAdminNotificationTitle">{t("admin_tenants.notifications.title")}</strong>
-                <span>{t("admin_tenants.notifications.description")}</span>
-                <small>{t("admin_tenants.notifications.scope")}</small>
-              </div>
-            </div>
-            <div className="tenant-admin-notification-summary">
-              {revenueNotificationCount > 0 ? (
-                <article className="revenue">
-                  <span><i className="bi bi-receipt-cutoff" aria-hidden="true"></i>{t("admin_tenants.notifications.revenue_share_label")}</span>
-                  <strong>{formatNumber(revenueNotificationCount)}</strong>
-                  <small>{t("admin_tenants.notifications.breakdown", { pending: formatNumber(adminNotifications.revenueShare?.pending || 0), auto: formatNumber(adminNotifications.revenueShare?.autoApprovedToday || 0) })}</small>
-                </article>
-              ) : null}
-              {walletNotificationCount > 0 ? (
-                <article className="wallet">
-                  <span><i className="bi bi-wallet2" aria-hidden="true"></i>{t("admin_tenants.notifications.wallet_label")}</span>
-                  <strong>{formatNumber(walletNotificationCount)}</strong>
-                  <small>{t("admin_tenants.notifications.breakdown", { pending: formatNumber(adminNotifications.wallet?.pending || 0), auto: formatNumber(adminNotifications.wallet?.autoApprovedToday || 0) })}</small>
-                </article>
-              ) : null}
-            </div>
-          </section>
-        ) : null}
 
         <section className="card tenant-global-filter" aria-labelledby="tenantGlobalFilterLabel">
           <div className="tenant-global-filter-copy">
@@ -1502,23 +1485,27 @@ export function AdminTenantsPage() {
             </div>
           </div>
 
-          <div className="tenant-platform-summary">
-            <article><span>{t("admin_tenants.report.summary.order_sales")}</span><strong id="platformOrderSales">{money(totals.orderSales)}</strong><small id="platformOrderCount">{t("admin_tenants.common.orders", { count: formatNumber(totals.orderCount || 0) })}</small></article>
-            <article><span>{t("admin_tenants.report.summary.pos_sales")}</span><strong id="platformPosSales">{money(totals.posSales)}</strong><small id="platformPosCount">{t("admin_tenants.common.receipts", { count: formatNumber(totals.posCount || 0) })}</small></article>
-            <article className="primary"><span>{t("admin_tenants.report.summary.combined_sales")}</span><strong id="platformCombinedSales">{money(totals.combinedSales)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-            <article className="share"><span>{t("admin_tenants.report.summary.revenue_share")}</span><strong id="platformRevenueShare">{money(totals.revenueShare)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-            <article className="delivery-customer"><span>{t("admin_tenants.report.summary.customer_delivery_fees")}</span><strong id="platformCustomerDeliveryFees">{money(totals.customerDeliveryFees)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-            <article className="delivery-cost"><span>{t("admin_tenants.report.summary.lalamove_delivery_cost")}</span><strong id="platformLalamoveDeliveryCost">{money(totals.lalamoveDeliveryCost)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-            <article className="subsidy"><span>{t("admin_tenants.report.summary.delivery_subsidy")}</span><strong id="platformDeliverySubsidy">{money(totals.deliverySubsidy)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
-            <article className="amount-due"><span>{t("admin_tenants.report.summary.platform_amount_due")}</span><strong id="platformAmountDue">{money(totals.platformAmountDue)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
+          {salesReadError && <p role="alert" className="upload-error">{t("admin_tenants.report.load_failed")}</p>}
+          <div className="tenant-platform-summary" aria-busy={loadingSales}>
+            <article><span>{t("admin_tenants.report.summary.order_sales")}</span><strong id="platformOrderSales">{reportMoney(totals.orderSales)}</strong><small id="platformOrderCount">{reportConfirmed?t("admin_tenants.common.orders", { count: formatNumber(totals.orderCount) }):"—"}</small></article>
+            <article><span>{t("admin_tenants.report.summary.pos_sales")}</span><strong id="platformPosSales">{reportMoney(totals.posSales)}</strong><small id="platformPosCount">{reportConfirmed?t("admin_tenants.common.receipts", { count: formatNumber(totals.posCount) }):"—"}</small></article>
+            <article className="primary"><span>{t("admin_tenants.report.summary.combined_sales")}</span><strong id="platformCombinedSales">{reportMoney(totals.combinedSales)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
+            <article className="share"><span>{t("admin_tenants.report.summary.revenue_share")}</span><strong id="platformRevenueShare">{reportMoney(totals.revenueShare)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
+            <article className="delivery-customer"><span>{t("admin_tenants.report.summary.customer_delivery_fees")}</span><strong id="platformCustomerDeliveryFees">{reportMoney(totals.customerDeliveryFees)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
+            <article className="delivery-cost"><span>{t("admin_tenants.report.summary.lalamove_delivery_cost")}</span><strong id="platformLalamoveDeliveryCost">{reportMoney(totals.lalamoveDeliveryCost)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
+            <article className="subsidy"><span>{t("admin_tenants.report.summary.delivery_subsidy")}</span><strong id="platformDeliverySubsidy">{reportMoney(totals.deliverySubsidy)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
+            <article className="amount-due"><span>{t("admin_tenants.report.summary.platform_amount_due")}</span><strong id="platformAmountDue">{reportMoney(totals.platformAmountDue)}</strong><small>{t("admin_tenants.common.baht")}</small></article>
           </div>
         </section>
 
-        <section className="card tenant-share-review-card" aria-labelledby="tenantShareReviewTitle">
+        <PlatformPaymentHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
+
+        {reviewExpanded && <section className="card tenant-share-review-card" aria-labelledby="tenantShareReviewTitle">
           <div className="section-title tenant-share-review-heading">
             <div><h2 id="tenantShareReviewTitle"><i className="bi bi-receipt-cutoff" aria-hidden="true"></i><span>{t("admin_tenants.review.title")}</span></h2><p>{t("admin_tenants.review.description")}</p></div>
             <button id="refreshRevenueShareReview" className="btn btn-sm" type="button" onClick={refreshReviews}><i className="bi bi-arrow-clockwise" aria-hidden="true"></i><span>{t("admin_tenants.review.refresh")}</span></button>
           </div>
+          <button className="btn btn-sm" type="button" onClick={()=>setReviewExpanded(false)}><i className="bi bi-x-lg" aria-hidden="true"/> ปิดรายการตรวจสอบเดิม</button>
           <div className="tenant-review-tabs" role="tablist" aria-label={t("admin_tenants.review.filter_aria")}>
             {["pending", "approved", "rejected", "all"].map(key => (
               <button className={reviewStatus === key ? "active" : ""} type="button" data-review-status={key} key={key} onClick={() => setReviewStatus(key)}>
@@ -1543,13 +1530,7 @@ export function AdminTenantsPage() {
                 ))
               : <div className="tenant-review-empty"><i className="bi bi-inbox" aria-hidden="true"></i><strong>{t("admin_tenants.review.empty_title")}</strong><span>{t("admin_tenants.review.empty_help")}</span></div>}
           </div>
-        </section>
-
-        <PlatformPaymentHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
-        <M7FinanceEvidenceHistory scope="platform" tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
-        <M7OperationalFinanceReadiness tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
-        <M7SourceMigrationPreflight tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
-        <M7StripeTestShadowHistory tenantId={tenantId} refreshVersion={paymentHistoryRevision}/>
+        </section>}
 
         <TenantDeletionRecoveryNotice pending={deletionPending}
           checking={deletionChecking} onCheck={reconcileDeletion}/>

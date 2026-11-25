@@ -1411,7 +1411,10 @@ for(const locale of ["th","en","my","lo","km"]) {
 const adminTenantsPage=read("react-app/src/pages/AdminTenantsPage.jsx");
 const tenantControlPanel=read("react-app/src/components/TenantControlPanel.jsx");
 assert(
-  adminTenantsPage.includes('className="card tenant-admin-notification-panel"')
+  !adminTenantsPage.includes('className="card tenant-admin-notification-panel"')
+  &&adminTenantsPage.includes('"react-port-tenant-report-desktop-row.css"')
+  &&adminTenantsPage.includes('setReviewExpanded(true)')
+  &&adminTenantsPage.includes('{reviewExpanded &&')
   &&tenantControlPanel.includes("data-tenant-revenue-notification={tenant.id}")
   &&tenantControlPanel.includes("data-tenant-wallet-notification={tenant.id}")
   &&adminTenantsPage.includes("<TenantControlPanel")
@@ -1420,7 +1423,7 @@ assert(
   &&tenantAdminClarityCss.includes(".tenant-admin-notification-panel")
   &&tenantAdminClarityCss.includes(".tenant-notification-chip.revenue")
   &&tenantAdminClarityCss.includes(".tenant-notification-chip.wallet"),
-  "Admin Tenants must expose actionable aggregate and per-tenant notification badges"
+  "Admin Tenants must match Source dashboard and keep per-tenant review navigation"
 );
 assert(
   tenantControlPanel.includes('tenant.lalamove?.accountMode === "fod_central"')

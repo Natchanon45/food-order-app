@@ -1,0 +1,41 @@
+/* Original Super Admin tenants, revenue share, wallet and printing styles. */
+
+/* Correct source layout after global Vite CSS bundling.
+   Source tenant-admin.css/clarity.css both specify 1480px, but the global
+   app.css .container (1120px) can be emitted later in the combined entry
+   CSS. Two-class specificity restores only the Tenant main container,
+   retaining mobile responsive overrides and the original 14px padding. */
+.container.tenant-admin-page {
+  width: min(1480px, 100%);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/* Effective M7 invoice suspension is independent from stored subscription
+   status. Match the same warning treatment shown on Revenue Share. */
+.tenant-store-card .tenant-m7-financial-hold {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 12px 12px;
+  padding: 12px 14px;
+  border: 1px solid #edb98c;
+  border-left: 4px solid #ce6d15;
+  background: #fff7ed;
+  border-radius: 9px;
+  color: #773c0b;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.tenant-store-card .tenant-m7-financial-hold .bi {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.tenant-store-card:has([data-m7-finance-access="suspended"]) .tenant-status-pill {
+  background: #fee8e3;
+  color: #aa3021;
+  border: 1px solid #f4c0b7;
+}
+.tenant-store-card .tenant-status-pill .bi {
+  margin-right: 5px;
+}
