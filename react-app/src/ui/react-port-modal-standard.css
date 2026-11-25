@@ -1,0 +1,435 @@
+/*
+ * One FB-style LUKKAJA modal shell for existing and future React dialogs.
+ * A Header, independently scrolling Body and Footer, shared across admin,
+ * tenant, POS, kitchen and cashier without rewriting business actions.
+ * Existing forms retain their React-owned DOM and original refs.
+ * SweetAlert / sweetDialog / popovers are deliberately NOT covered.
+ */
+:root {
+  --lk-modal-surface: #fff;
+  --lk-modal-border: #e4e6eb;
+  --lk-modal-heading: #1c1e21;
+  --lk-modal-muted: #65676b;
+  --lk-modal-scrollbar: #bcc0c4;
+  --lk-modal-backdrop: rgb(240 242 245 / 68%);
+}
+
+dialog[data-app-modal="standard"]:not(.sweet-dialog):not([hidden]) {
+  box-sizing: border-box;
+  max-width: min(920px, calc(100vw - 24px)) !important;
+  max-height: min(88dvh, 900px) !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  padding: 0 !important;
+  color: var(--lk-modal-heading);
+  background: var(--lk-modal-surface) !important;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 18%) !important;
+  overflow: hidden !important;
+}
+dialog[data-app-modal="standard"]::backdrop {
+  background: var(--lk-modal-backdrop);
+  -webkit-backdrop-filter: blur(1.5px);
+  backdrop-filter: blur(1.5px);
+}
+
+dialog[data-app-modal="standard"] > [data-app-modal-frame="true"] {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  max-height: min(88dvh, 900px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lk-modal-scrollbar) transparent;
+}
+
+/* When original JSX already has an explicit body, only that body scrolls. */
+dialog[data-app-modal="standard"] > [data-app-modal-frame="true"]:has(> [data-app-modal-body="true"]) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+}
+dialog[data-app-modal="standard"] > [data-app-modal-frame="true"] > [data-app-modal-body="true"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lk-modal-scrollbar) transparent;
+}
+
+/* Old modals with several independent form siblings scroll in their existing
+ * frame, keeping the real header/footer sticky. DOM is never reparented. */
+[role="dialog"][aria-modal="true"][data-app-modal="standard"]:not(.sweet-dialog) {
+  box-sizing: border-box;
+  max-height: min(88dvh, 900px);
+  max-width: calc(100vw - 24px);
+  border-radius: 16px;
+  color: var(--lk-modal-heading);
+  background: var(--lk-modal-surface);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 18%);
+}
+[role="dialog"][aria-modal="true"][data-app-modal="standard"] > [data-app-modal-frame="true"] {
+  max-height: min(88dvh, 900px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* SOURCE role dialogs with a header sibling of a form: the footer stays in
+ * that same form and sticks to its bottom; do not reparent buttons. */
+[role="dialog"][aria-modal="true"][data-app-modal="standard"]:has(> [data-app-modal-header="true"]):has(> form) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* Kitchen editors, QR previews and developer panels are custom role
+ * dialogs. They scroll inside their own surface without changing overlays. */
+[role="dialog"][aria-modal="true"][data-app-modal="standard"]:not(:has(> form)) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lk-modal-scrollbar) transparent;
+}
+[role="dialog"][aria-modal="true"][data-app-modal="standard"] > form:has([data-app-modal-footer="true"]) {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lk-modal-scrollbar) transparent;
+}
+
+[data-app-modal="standard"] [data-app-modal-header="true"] {
+  position: sticky !important;
+  z-index: 4;
+  top: 0;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start !important;
+  flex-direction: row !important;
+  gap: 12px;
+  min-height: 56px;
+  margin: 0 !important;
+  padding: 13px 56px 13px 20px !important;
+  border-bottom: 1px solid var(--lk-modal-border) !important;
+  border-radius: 0 !important;
+  color: var(--lk-modal-heading);
+  background: var(--lk-modal-surface) !important;
+  text-align: left !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > :is(div,span) {
+  min-width: 0;
+  text-align: left !important;
+}
+/* Align the entire title group and its nested heading/description to the
+ * left, including existing Delivery map and Cashier receipt dialogs. */
+[data-app-modal="standard"] [data-app-modal-header="true"] :is(
+  [class*="dialog-heading"],
+  [class*="dialog-title"],
+  [class*="modal-heading"],
+  [class*="modal-title"],
+  [class*="title-wrap"],
+  [class*="title-cluster"]
+) {
+  min-width: 0;
+  max-width: 100%;
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] :is(
+  h1,h2,h3,p,small,[class*="eyebrow"],[class*="subtitle"]
+) {
+  text-align: left !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > :is(h1,h2,h3) {
+  margin-right: auto;
+}
+/* Header icons stay next to the LEFT title rather than centering the label. */
+[data-app-modal="standard"] [data-app-modal-header="true"] :is(h1,h2,h3) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] :is(h1,h2,h3) {
+  margin: 0;
+  font-size: clamp(1rem, 2.7vw, 1.22rem);
+  line-height: 1.4;
+  color: var(--lk-modal-heading);
+  font-weight: 800;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] :is(p,small) {
+  margin: 3px 0 0;
+  font-size: .78rem;
+  line-height: 1.4;
+  color: var(--lk-modal-muted);
+}
+
+/* Legacy round X buttons: preserve their existing handler, busy flags, and
+ * accessible names. Never insert synthetic controls in a React-owned tree. */
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"]) {
+  position: absolute !important;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px !important;
+  color: #606770 !important;
+  background: #e4e6eb !important;
+  cursor: pointer;
+}
+/* Shared, optically centered X on every header-close button.
+ * SOURCE icon-font glyphs may carry different baselines on 390px mobile;
+ * draw the cross using two CSS strokes centered on the BUTTON's own axes,
+ * not the font's line-height. Existing onClick / disabled / aria-label remain. */
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"]) {
+  box-sizing: border-box !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  text-align: center !important;
+  white-space: nowrap;
+  isolation: isolate;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"]) > :is(i,svg,span) {
+  visibility: hidden !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"])::before,
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"])::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  box-sizing: border-box !important;
+  width: 15px !important;
+  height: 1.6px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 2px !important;
+  background: currentColor !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"])::before {
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"])::after {
+  transform: translate(-50%, -50%) rotate(-45deg) !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"]):hover {
+  background: #d8dadf !important;
+}
+[data-app-modal="standard"] [data-app-modal-header="true"] > button:is([aria-label],[id*="close"],[class*="close"]):focus-visible {
+  outline: 3px solid #1877f2;
+  outline-offset: 2px;
+}
+
+[data-app-modal="standard"] [data-app-modal-footer="true"] {
+  position: sticky !important;
+  z-index: 4;
+  bottom: 0;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: auto 0 0 !important;
+  padding: 12px 16px !important;
+  border-top: 1px solid var(--lk-modal-border) !important;
+  border-radius: 0 !important;
+  background: var(--lk-modal-surface) !important;
+}
+[data-app-modal="standard"] [data-app-modal-footer="true"] > :is(button,a,.btn) {
+  min-height: 36px;
+  border-radius: 8px;
+}
+[data-app-modal="standard"] :is([data-app-modal-body="true"],[data-app-modal-frame="true"])::-webkit-scrollbar {
+  width: 8px;
+}
+[data-app-modal="standard"] :is([data-app-modal-body="true"],[data-app-modal-frame="true"])::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: #b8bec5;
+  background-clip: padding-box;
+}
+
+/* Explicit standard three-part React modal used by all newly authored UI. */
+dialog.app-modal {
+  width: min(var(--app-modal-width, 600px), calc(100vw - 24px));
+  max-height: min(88dvh, 900px);
+}
+dialog.app-modal > .app-modal__frame {
+  display: flex;
+  flex-direction: column;
+  max-height: min(88dvh, 900px);
+  overflow: hidden;
+}
+dialog.app-modal > .app-modal__frame > .app-modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+dialog.app-modal > .app-modal__frame > .app-modal__footer {
+  justify-content: flex-end;
+}
+@media (max-width: 600px) {
+  dialog[data-app-modal="standard"]:not(.sweet-dialog):not([hidden]) {
+    max-width: calc(100vw - 12px) !important;
+    max-height: calc(100dvh - 18px) !important;
+    border-radius: 14px !important;
+  }
+  dialog[data-app-modal="standard"] > [data-app-modal-frame="true"] {
+    max-height: calc(100dvh - 18px) !important;
+  }
+  [data-app-modal="standard"] [data-app-modal-header="true"] {
+    min-height: 54px;
+    padding: 11px 50px 11px 16px !important;
+  }
+  [data-app-modal="standard"] [data-app-modal-footer="true"] {
+    padding: 10px 12px !important;
+  }
+  dialog.app-modal > .app-modal__frame > .app-modal__body {
+    padding: 12px 14px;
+  }
+}
+/* 08/11/2026: Owner-approved modal action alignment.
+ * Exactly two-button standard modal footers place Cancel then Save/Create
+ * together at the RIGHT; mobile stays horizontal, never stacked.
+ * Do not alter three-or-more-action finance toolbars. */
+[data-app-modal="standard"] [data-app-modal-footer="true"]:has(> :first-child:nth-last-child(2)) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+[data-app-modal="standard"] [data-app-modal-footer="true"]:has(> :first-child:nth-last-child(2)) > :first-child,
+[data-app-modal="standard"] [data-app-modal-footer="true"]:has(> :first-child:nth-last-child(2)) > :last-child {
+  margin-inline: 0 !important;
+}
+/* Old tenant modal had full-width buttons and mobile single-column grid. */
+#tenantDialog[data-app-modal="standard"] .tenant-dialog-actions > .btn {
+  width: auto !important;
+  max-width: min(72%, 360px) !important;
+  min-width: 0 !important;
+  flex: 0 1 auto !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
+/* Old Owner editor used a two-column grid spanning both sides.
+ * Align both buttons at the right instead, retaining readable Thai text. */
+.owner-modal-card[data-app-modal="standard"] .owner-modal-actions[data-app-modal-footer="true"]:has(> :first-child:nth-last-child(2)) {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+.owner-modal-card[data-app-modal="standard"] .owner-modal-actions > :is(button,.btn) {
+  width: auto !important;
+  max-width: 72% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  flex: 0 1 auto !important;
+  white-space: normal !important;
+  text-align: center !important;
+  padding-inline: clamp(8px, 2.3vw, 16px) !important;
+  line-height: 1.35 !important;
+}
+.owner-modal-card[data-app-modal="standard"] .owner-modal-actions > :is(button,.btn) span {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+/* Keep Cancel at readable intrinsic width; shrink only the longer
+ * Save/Create caption on narrow phones. Both buttons stay right-aligned. */
+.owner-modal-card[data-app-modal="standard"] .owner-modal-actions > [data-owner-close] {
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
+  white-space: nowrap !important;
+}
+.owner-modal-card[data-app-modal="standard"] .owner-modal-actions > #ownerSubmitButton {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 94px) !important;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 420px) {
+  [data-app-modal="standard"] [data-app-modal-footer="true"] {
+    padding-inline: 12px !important;
+    gap: 6px !important;
+  }
+  #tenantDialog[data-app-modal="standard"] .tenant-dialog-actions > .btn,
+  .owner-modal-card[data-app-modal="standard"] .owner-modal-actions > :is(button,.btn) {
+    min-height: 44px !important;
+    padding: 7px 9px !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+}
+
+/* Root cause of screenshot's blank header: the standard modal forces a
+ * WHITE header, but the old owners theme still paints the title WHITE.
+ * Use dark title and readable store label against the standardized surface. */
+.owner-modal-card[data-app-modal="standard"] [data-app-modal-header="true"] #ownerModalTitle {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #173a28 !important;
+  font-size: clamp(18px, 2.6vw, 21px) !important;
+  line-height: 1.4 !important;
+}
+.owner-modal-card[data-app-modal="standard"] [data-app-modal-header="true"] #ownerModalShop {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #617368 !important;
+}
+.owner-modal-card[data-app-modal="standard"] [data-app-modal-header="true"] .owner-modal-icon {
+  color: #126f3d !important;
+  background: #e8f6ed !important;
+}
+@media (max-width: 420px) {
+  [data-app-modal="standard"] [data-app-modal-footer="true"] {
+    padding-inline: 12px !important;
+    gap: 6px !important;
+  }
+  #tenantDialog[data-app-modal="standard"] .tenant-dialog-actions > .btn,
+  .owner-modal-card[data-app-modal="standard"] .owner-modal-actions > :is(button,.btn) {
+    min-height: 44px !important;
+    padding: 7px 9px !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+}
+
+@media print {
+  dialog[data-app-modal="standard"] {
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+  dialog[data-app-modal="standard"] > [data-app-modal-frame="true"] {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}

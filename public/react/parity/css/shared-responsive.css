@@ -27,7 +27,7 @@ body:not(.receipt-page):not(.print-page):not(.document-page) :is(input, select, 
   max-width: 100%;
 }
 
-body:not(.receipt-page):not(.print-page):not(.document-page) :is(.table-list, table) {
+body:not(.receipt-page):not(.print-page):not(.document-page):not(.admin-vr-page) :is(.table-list, table) {
   max-width: 100%;
 }
 
@@ -96,7 +96,7 @@ body:not(.receipt-page):not(.print-page):not(.document-page) :is(.table-list, ta
     min-width: 0;
   }
 
-  body:not(.receipt-page):not(.print-page):not(.document-page) :is(.table-list, table) {
+  body:not(.receipt-page):not(.print-page):not(.document-page):not(.admin-vr-page) :is(.table-list, table) {
     display: block;
     width: 100%;
     overflow-x: auto;

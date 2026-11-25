@@ -167,3 +167,24 @@ new MutationObserver(mutations => {
 // event is emitted by showPopover()/hidePopover() themselves and can create a
 // self-scheduling browser Top Layer feedback loop.
 window.__enforceUiLayerOrder = enforceLayerOrder;
+
+// Existing central app-toast presentation, now callable by shared panels
+// such as Telegram that do not belong to any one page's local showToast.
+// This deliberately reuses the same .app-toast icons, layers and timing as
+// the Admin/Platform pages. Messages are always text, never HTML.
+export function showAppToast(message, type = "success") {
+  if (!String(message || "").trim()) return;
+  const isError = type === "error" || type === "warning";
+  const el = document.createElement("div");
+  el.className = `app-toast ${isError ? "error" : "success"}`;
+  el.setAttribute("role", isError ? "alert" : "status");
+  el.setAttribute("aria-live", isError ? "assertive" : "polite");
+  el.innerHTML = `<span class="app-toast-icon" aria-hidden="true"><i class="bi bi-${isError ? "x-circle" : "check-circle"} app-icon"></i></span><span class="app-toast-message"></span>`;
+  el.querySelector(".app-toast-message").textContent = String(message);
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("show"));
+  window.setTimeout(() => {
+    el.classList.remove("show");
+    window.setTimeout(() => el.remove(), 250);
+  }, 3200);
+}

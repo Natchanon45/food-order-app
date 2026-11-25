@@ -1,0 +1,73 @@
+/*
+ * Order workflow typography: all ACTION labels use regular 400.
+ *
+ * Covers customer Delivery, Takeaway, Table Order, Quick Order, cashiers,
+ * kitchens and the order queue. Do not change headings, totals, status
+ * badges outside controls, layout, colors, icons or payment behavior.
+ *
+ * SOURCE route styles are injected after the SPA entry on some deep links,
+ * therefore !important is intentional to keep 400 on mobile and desktop,
+ * including buttons given inline/bold weights by older modules.
+ */
+body:is(
+  .delivery-page,
+  .delivery-success-page,
+  .table-order-page,
+  .takeaway-order-page,
+  .quick-order-page,
+  .kitchen-page,
+  .cashier-page,
+  .waiting-queue-workspace,
+  .waiting-queue-customer-react-port
+) :is(button, .btn, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+  font-weight: 400 !important;
+}
+
+/* Some controls wrap their Thai action label in <strong>, <b> or styled
+ * spans. Normalize only text INSIDE controls, not other data on the page. */
+body:is(
+  .delivery-page,
+  .delivery-success-page,
+  .table-order-page,
+  .takeaway-order-page,
+  .quick-order-page,
+  .kitchen-page,
+  .cashier-page,
+  .waiting-queue-workspace,
+  .waiting-queue-customer-react-port
+) :is(button, .btn, [role="button"]) :is(span, strong, b, small, em) {
+  font-weight: 400 !important;
+}
+
+/* App-wide confirmation and modal action labels follow the same standard,
+ * including dialogs mounted in a portal directly under <body>. Never change
+ * modal titles/body copy or the font-weight of the icon glyph itself. */
+:is(
+  dialog,
+  [role="dialog"][aria-modal="true"],
+  [data-app-modal="standard"],
+  #sweetDialogRoot,
+  .sweet-dialog,
+  .swal2-container,
+  .swal2-popup
+) :is(button, .btn, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+  font-weight: 400 !important;
+}
+:is(
+  dialog,
+  [role="dialog"][aria-modal="true"],
+  [data-app-modal="standard"],
+  #sweetDialogRoot,
+  .sweet-dialog,
+  .swal2-container,
+  .swal2-popup
+) :is(button, .btn, [role="button"]) :is(span, strong, b, small, em) {
+  font-weight: 400 !important;
+}
+
+/* Override the older high-specificity cashier bank reconciliation dialog
+ * without modifying its single-line/mobile responsive sizing or spacing. */
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button,
+#sweetDialogRoot[data-variant="cashier-bank-reconcile"] .sweet-dialog-button > span {
+  font-weight: 400 !important;
+}

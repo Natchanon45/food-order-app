@@ -6,8 +6,14 @@ import { AuthProvider } from "@/auth/AuthProvider";
 import { TenantProvider } from "@/tenant/TenantProvider";
 import { PlatformBrandingRuntime } from "@/components/PlatformBrandingRuntime";
 import { FormValidationUi } from "@/components/FormValidationUi";
+import { FormDynamicEnhancer } from "@/components/FormDynamicEnhancer";
 import "@/ui/toast-top-layer";
 import "@/ui/horizontalScrollEnhancer";
+import "@/ui/app-modal-standard.js";
+import "@/ui/react-port-modal-standard.css";
+import "@/ui/react-port-dynamic-auto.css";
+import "@/ui/react-port-viewport-footer.css";
+import "@/ui/react-port-order-button-font-weight.css";
 import App from "@/app/App";
 
 const reactAlias = location.pathname === "/react" || location.pathname.startsWith("/react/");
@@ -23,6 +29,7 @@ if (reactAlias) {
     <React.StrictMode>
       <I18nProvider>
         <FormValidationUi />
+        <FormDynamicEnhancer />
         <AuthProvider>
           <TenantProvider>
             <PlatformBrandingRuntime />

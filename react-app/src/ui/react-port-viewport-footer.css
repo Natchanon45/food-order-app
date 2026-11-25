@@ -1,0 +1,77 @@
+/*
+ * Persistent app version in the viewport's bottom footer for the four
+ * operational screens. The version/build strings still come from PORT_RELEASE.
+ * Keep this scoped: the other React screens retain their own footer layout.
+ */
+body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page) {
+  margin: 0;
+  padding-inline: 0;
+  /* Shared mobile shell adds 8px top padding on public pages. Remove the
+     exposed strip above the green header without affecting scroll content. */
+  padding-block-start: 0 !important;
+}
+body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page) .app-header {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page)
+  footer.app-version[data-shared-app-footer] {
+  box-sizing: border-box;
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 80;
+  min-height: 28px;
+  width: 100%;
+  margin: 0;
+  padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
+  background: rgba(246, 250, 247, .97);
+  border-top: 1px solid #dce9df;
+  color: #627166;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page)
+  footer.app-version[data-shared-app-footer]::-webkit-scrollbar {
+  display: none;
+}
+body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page)
+  footer.app-version[data-shared-app-footer] > * {
+  flex: 0 0 auto;
+}
+body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page)
+  :is(main.container, main.receipt-page) {
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+}
+@media (max-width: 899px) {
+  body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page)
+    .app-header {
+    margin: 0;
+    width: 100%;
+  }
+  body:is(.cashier-page, .kitchen-page) main.container {
+    padding-top: 8px;
+  }
+  body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page)
+    footer.app-version[data-shared-app-footer] {
+    font-size: 9px;
+    min-height: 26px;
+    padding-inline: 5px;
+  }
+}
+@media print {
+  body:is(.delivery-page, .delivery-success-page, .cashier-page, .kitchen-page)
+    footer.app-version[data-shared-app-footer] {
+    display: none !important;
+  }
+}
