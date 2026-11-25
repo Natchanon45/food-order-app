@@ -1,0 +1,35 @@
+#!/bin/sh
+# Independently deploy only Delivery threshold history read callable.
+# The primary codebase also contains secret-bound Stripe/Telegram functions;
+# do not require unrelated provider credentials for this deployment.
+# No secret files, .env files, triggers, rules or payment endpoints are packaged.
+set -eu
+cd "$(dirname "$0")/.."
+ROOT="$PWD"
+[ "$(git branch --show-current)" = "feature/react-firebase-port" ]
+[ "${1:-}" = "--deploy" ] || { echo "Usage: sh tools/deploy-delivery-threshold-read.sh --deploy"; exit 2; }
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/penguin-threshold-read-release.XXXXXX")"
+trap 'rm -rf "$STAGE"' EXIT HUP INT TERM
+mkdir "$STAGE/functions"
+cp "$ROOT/functions/subscription-pricing.js" "$ROOT/functions/subscription-pricing-core.js" "$ROOT/functions/delivery-threshold-schedule.js" "$ROOT/functions/billing-anniversary.js" "$ROOT/functions/managed-email-callable.js" "$STAGE/functions/"
+cat > "$STAGE/functions/index.js" <<'JS'
+const {initializeApp}=require("firebase-admin/app");
+initializeApp();
+exports.getDeliveryThresholdVersions=require("./subscription-pricing").getDeliveryThresholdVersions;
+JS
+node - "$ROOT" "$STAGE" <<'JS'
+const fs=require("fs"),path=require("path");
+const [root,stage]=process.argv.slice(2);
+const dependencies={};
+for(const name of ["firebase-admin","firebase-functions"]){
+ dependencies[name]=require(path.join(root,"functions","node_modules",name,"package.json")).version;
+}
+fs.writeFileSync(path.join(stage,"functions","package.json"),JSON.stringify({name:"penguin-threshold-read",private:true,main:"index.js",engines:{node:"22"},dependencies},null,2));
+fs.writeFileSync(path.join(stage,"firebase.json"),JSON.stringify({functions:{source:"functions",codebase:"default",disallowLegacyRuntimeConfig:true,ignore:["node_modules","**/.*"]}},null,2));
+JS
+# Reuse installed dependencies solely for local function discovery. The
+# deployment manifest contains exact package versions; node_modules excluded.
+ln -s "$ROOT/functions/node_modules" "$STAGE/functions/node_modules"
+(cd "$STAGE" && node -e 'const f=require("./functions");const expected=["getDeliveryThresholdVersions"];if(JSON.stringify(Object.keys(f).sort())!==JSON.stringify(expected.sort()))process.exit(1);for(const n of expected){if((f[n].__endpoint.secretEnvironmentVariables||[]).length)process.exit(1)};console.log("Scoped threshold read manifest:",expected.join(", "))')
+cd "$STAGE"
+firebase deploy --config "$STAGE/firebase.json" --project chat-45754 --only functions:getDeliveryThresholdVersions --non-interactive

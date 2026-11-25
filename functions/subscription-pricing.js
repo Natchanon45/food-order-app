@@ -140,10 +140,11 @@ exports.getDeliveryThresholdVersions = onCall({ region: "asia-southeast1" }, asy
   const raw = snap.data() || {};
   const baselineThresholdCents = Math.round(Number(raw.deliveryThreshold)*100);
   if (!snap.exists || !validCents(baselineThresholdCents)) throw new HttpsError("failed-precondition", "DELIVERY_THRESHOLD_MASTER_UNAVAILABLE");
-  return {ok:true, baselineThresholdCents, versions:readThresholdHistory(raw), writeEnabled:true};
+  return {ok:true, baselineThresholdCents, versions:readThresholdHistory(raw), writeEnabled:process.env.PENGUIN_DELIVERY_THRESHOLD_SCHEDULE_ENABLED==="true"};
 });
 exports.appendDeliveryThresholdVersion = onCall({ region: "asia-southeast1" }, async request => {
   await assertSuperAdmin(request.auth);
+  if(process.env.FUNCTIONS_EMULATOR!=="true" && process.env.PENGUIN_DELIVERY_THRESHOLD_SCHEDULE_ENABLED!=="true") throw new HttpsError("failed-precondition","DELIVERY_THRESHOLD_SCHEDULE_ROLLOUT_PENDING");
   const db = getFirestore(), ref = db.collection(PRICING_DOC.collection).doc(PRICING_DOC.id);
   const version = await db.runTransaction(async tx => {
     const [profile,snap] = await Promise.all([tx.get(db.collection("users").doc(request.auth.uid)),tx.get(ref)]);

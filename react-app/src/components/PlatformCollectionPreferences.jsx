@@ -1,5 +1,7 @@
 import {useEffect,useState} from "react";
 import {Link} from "react-router-dom";
+import {httpsCallable} from "firebase/functions";
+import {functions} from "@/firebase/client";
 import {loadPlatformReceiptReceiver} from "@/data/platformReceiptReceiver";
 import "@/ui/platform-collection.css";
 
@@ -16,16 +18,30 @@ const methods=[
 export function PlatformCollectionPreferences(){
  const [readiness,setReadiness]=useState(null);
  const [loading,setLoading]=useState(true);
+ const [choice,setChoice]=useState("bank_transfer");
  const [error,setError]=useState("");
  const reload=async()=>{
   setLoading(true);setError("");setReadiness(null);
   try{
-   const item=await loadPlatformReceiptReceiver();
+   const [receiver,stripe]=await Promise.allSettled([
+    loadPlatformReceiptReceiver(),
+    httpsCallable(functions,"getPlatformStripeWalletSetup")({})
+   ]);
+   const item=receiver.status==="fulfilled"?receiver.value:null;
+   const stripeStatus=stripe.status==="fulfilled"?stripe.value?.data:null;
+   const stripeKnown=stripeStatus?.ok===true&&stripeStatus.storageReady===true&&stripeStatus.checkoutEnabled===false&&
+     typeof stripeStatus.keyPresent==="boolean"&&typeof stripeStatus.webhookPresent==="boolean";
    setReadiness({
-    receiverConfigured:item.configured===true,
-    revision:item.revision,
+    receiverConfigured:item?.configured===true,
+    receiverKnown:receiver.status==="fulfilled",
+    stripeKnown,
+    stripeKeysConfigured:stripeKnown&&stripeStatus.configured===true,
+    stripeKeyPresent:stripeKnown&&stripeStatus.keyPresent,
+    stripeWebhookPresent:stripeKnown&&stripeStatus.webhookPresent,
+    revision:item?.revision,
     paymentRoutingEnabled:false,
    });
+   if(!item||!stripeKnown)setError("ยังอ่านสถานะการตั้งค่าบางส่วนไม่ได้ กรุณาตรวจสอบอีกครั้ง");
   }catch{
    setError("ไม่สามารถตรวจสอบบัญชีผู้รับเงินจาก Firebase ได้");
   }finally{setLoading(false);}
@@ -39,14 +55,13 @@ export function PlatformCollectionPreferences(){
     <p>ค่าบริการ Platform ส่วนแบ่งรายวัน และการเติมเครดิต Lalamove ของร้านค้า</p></div>
   </div>
   <p role="alert" className="platform-collection-warning">
-   <i className="bi bi-shield-lock" aria-hidden="true"/> การเลือกช่องทางรับเงินอัตโนมัติยังไม่เปิดใน PENGUIN Firebase
-   จนกว่าระบบจับคู่ธุรกรรม LINE และ Stripe Webhook จะผ่านการทดสอบด้านการเงิน
+   <i className="bi bi-shield-lock" aria-hidden="true"/> เลือกช่องทางเพื่อดูขั้นตอนตั้งค่าได้ แต่ยังไม่เปลี่ยนช่องทางรับเงินจริงจนกว่าการเชื่อมต่อและการตรวจสอบยอดจะพร้อม
   </p>
   {error&&<p role="alert" className="platform-collection-warning">{error}</p>}
-  <div className="platform-collection-choices" role="group" aria-label="ช่องทางรับเงินที่อยู่ระหว่างเตรียมใช้งาน">
-   {methods.map(method=><label className="platform-collection-choice" key={method.value}>
+  <div className="platform-collection-choices" role="radiogroup" aria-label="ดูการตั้งค่าช่องทางรับเงิน (ยังไม่บันทึก)">
+   {methods.map(method=><label className={"platform-collection-choice"+(choice===method.value?" is-selected":"")} key={method.value}>
     <input type="radio" name="platformCollectionMethod" value={method.value}
-      checked={false} disabled aria-disabled="true" readOnly/>
+      checked={choice===method.value} onChange={()=>setChoice(method.value)} disabled={loading}/>
     <span className="platform-collection-choice-icon"><i className={"bi "+method.icon} aria-hidden="true"/></span>
     <span className="platform-collection-choice-text"><strong>{method.title}</strong><small>{method.detail}</small></span>
    </label>)}
@@ -55,6 +70,26 @@ export function PlatformCollectionPreferences(){
    <i className="bi bi-info-circle" aria-hidden="true"/>
    {" "}ยังไม่ได้เปิดช่องทางรับชำระหลักของระบบกลาง · ไม่มีการเปลี่ยนสถานะชำระเงิน
   </div>
+  {choice==="bank_transfer"?<div className="platform-collection-setup" data-collection-bank-setup>
+    <strong><i className="bi bi-bank" aria-hidden="true"/> ตั้งค่ารับโอนเงินส่วนกลาง</strong>
+    <p>ใช้บัญชีรับเงินส่วนกลางที่ตั้งไว้สำหรับตรวจสอบยอด โดยยังไม่อนุมัติ Invoice หรือเติมเครดิตจากข้อความแจ้งเตือน</p>
+    <Link className="btn btn-sm" to="/platform#platformReceiverSettings"><i className="bi bi-bank" aria-hidden="true"/> ตั้งค่าบัญชีผู้รับ</Link>
+    <section id="platformCompanionPairingSection" className="platform-companion" aria-label="การจับคู่ LK Connect ส่วนกลาง">
+      <div className="platform-companion-heading"><div>
+        <strong><i className="bi bi-phone" aria-hidden="true"/> LK Connect สำหรับบัญชี Platform</strong>
+        <small>ดาวน์โหลดแอป Android และจับคู่สำหรับบัญชีส่วนกลาง แยกจาก LK Shop ซึ่งใช้รับแจ้งเตือนจากระบบร้านค้า</small>
+      </div><span>ยังไม่พร้อม</span></div>
+      <div className="platform-companion-install">
+        <button type="button" className="btn btn-sm" disabled><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด LK Connect</button>
+        <button type="button" className="btn btn-primary" disabled><i className="bi bi-qr-code" aria-hidden="true"/> สร้างคีย์ / QR จับคู่</button>
+      </div>
+      <p role="note">ยังไม่มี APK ที่สร้างสำหรับ PENGUIN Firebase และยังไม่เปิด API จับคู่ส่วนกลาง ไม่สามารถใช้ไฟล์ APK ของ LUKKAJA แทนได้</p>
+    </section>
+  </div>:<div className="platform-collection-setup" data-collection-stripe-setup>
+    <strong><i className="bi bi-credit-card" aria-hidden="true"/> Stripe สำหรับระบบกลาง</strong>
+    <p>{!readiness?.stripeKnown?"ยังอ่านสถานะคีย์ไม่ได้":readiness.stripeKeysConfigured?"บันทึกคีย์ครบแล้ว · ยังต้องตรวจสอบการเชื่อมต่อและ Webhook":"ยังบันทึกคีย์ไม่ครบ · กรุณาตั้งค่าที่ระบบกลาง"}</p>
+    <Link className="btn btn-sm" to="/platform#platformStripeSettings"><i className="bi bi-gear" aria-hidden="true"/> ตั้งค่า Stripe</Link>
+  </div>}
   <div className="platform-collection-progress" data-platform-collection-progress>
    <strong><i className="bi bi-list-check" aria-hidden="true"/> ขั้นตอนก่อนเปิดใช้งาน</strong>
    <div className="platform-collection-progress-step">
@@ -63,7 +98,7 @@ export function PlatformCollectionPreferences(){
     <Link to="/platform#platformReceiverSettings">ไปตั้งค่าบัญชี</Link>
    </div>
    <div className="platform-collection-progress-step">
-    <i className="bi bi-circle" aria-hidden="true"/><span>ตรวจสอบการเชื่อมต่อ Stripe Sandbox/Webhook</span>
+    <i className="bi bi-circle" aria-hidden="true"/><span>{readiness?.stripeKeysConfigured?"ตั้งค่าคีย์ Stripe ครบ · รอตรวจสอบ Webhook":"ตั้งค่าคีย์และตรวจสอบ Stripe/Webhook"}</span>
     <Link to="/platform#platformStripeSettings">ตรวจ Stripe</Link>
    </div>
    <div className="platform-collection-progress-step">

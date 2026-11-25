@@ -398,6 +398,7 @@ export function PlatformPricingPage() {
             <span><strong>เพดานฐานเดิม (อ่านอย่างเดียว): {thresholdBaseline === null ? "—" : money(thresholdBaseline)}</strong>
               <small>ค่าเดิมเป็นข้อมูลอ้างอิงแบบอ่านอย่างเดียว · เวอร์ชันใหม่เริ่มใช้ตามรอบบิลของแต่ละร้านหลังวันที่ประกาศ</small></span>
           </div>
+          {thresholdScheduleReady&&!thresholdScheduleWriteEnabled&&<p className="platform-threshold-schedule-error" role="note">อ่านเพดานและประวัติจาก Firebase ได้แล้ว แต่ยังไม่เปิดประกาศเพดานใหม่จนกว่าการคำนวณตามรอบบิลบนระบบจริงจะพร้อม</p>}
           <form className="platform-threshold-schedule-form" onSubmit={scheduleThreshold}>
             <label><span className="platform-threshold-field-title"><i className="bi bi-lock" aria-hidden="true"/> เพดานเดิมก่อนวันที่มีผล (บาท)</span>
               <input id="deliveryThresholdBaselineAmount" type="number" required step="0.01" min="1"
@@ -406,12 +407,12 @@ export function PlatformPricingPage() {
               <small className="platform-threshold-field-caption">ล็อกตามข้อมูลเดิม ไม่อนุญาตให้เปลี่ยนย้อนหลัง</small>
             </label>
             <label><span className="platform-threshold-field-title"><i className="bi bi-calendar-event" aria-hidden="true"/> วันที่มีผล (วัน/เดือน/ปี)</span>
-              <input id="deliveryThresholdEffectiveOn" type="date" required min={thresholdEarliestDate} value={thresholdScheduleDate}
+              <input id="deliveryThresholdEffectiveOn" type="date" disabled={!thresholdScheduleReady||!thresholdScheduleWriteEnabled} required min={thresholdEarliestDate} value={thresholdScheduleDate}
                 onChange={e=>{setThresholdScheduleDate(e.target.value);setThresholdScheduleError("");}}/>
               <small className="platform-threshold-field-caption">เลือกวันในอนาคต · ใช้เมื่อร้านเริ่มรอบบิลใหม่</small>
             </label>
             <label><span className="platform-threshold-field-title"><i className="bi bi-graph-up-arrow" aria-hidden="true"/> เพดาน Delivery ใหม่ (บาท)</span>
-              <input id="deliveryThresholdScheduledAmount" type="number" min="1" max="1000000000" step="0.01" required
+              <input id="deliveryThresholdScheduledAmount" type="number" disabled={!thresholdScheduleReady||!thresholdScheduleWriteEnabled} min="1" max="1000000000" step="0.01" required
                 placeholder="กรอกเพดานใหม่" value={thresholdScheduleAmount}
                 onChange={e=>{setThresholdScheduleAmount(e.target.value);setThresholdScheduleError("");}}/>
               <small className="platform-threshold-field-caption">ประกาศล่วงหน้าโดยไม่เปลี่ยนยอดของรอบปัจจุบัน</small>
