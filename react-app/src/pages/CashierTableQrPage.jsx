@@ -19,6 +19,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
+import { sameQrTicketSession, isCurrentQrTicket, isCurrentQrTicketInTables } from "@/data/qrTicketSession.mjs";
 
 const ALLOWED = new Set(["owner", "admin", "manager", "cashier"]);
 
@@ -41,7 +42,7 @@ function createOrderToken() {
   if (typeof crypto?.randomUUID === "function") return crypto.randomUUID();
   const bytes = new Uint8Array(16);
   if (typeof crypto?.getRandomValues === "function") crypto.getRandomValues(bytes);
-  else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+  else throw new Error("TABLE_QR_SECURE_RANDOM_UNAVAILABLE");
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
   const hex = [...bytes].map(value => value.toString(16).padStart(2, "0")).join("");
@@ -148,6 +149,20 @@ export function CashierTableQrPage() {
     return () => window.removeEventListener("afterprint", afterPrint);
   }, []);
 
+  useEffect(() => {
+    if (!ticket || loading || !tenant?.id || !allowed || isCurrentQrTicketInTables(ticket,tables)) return;
+    let active=true;
+    const requestId=printRequestRef.current;
+    void getOperationalTable(tenant.id,ticket.table.id,{server:true}).then(latest=>{
+      if(!active||requestId!==printRequestRef.current)return;
+      if(isCurrentQrTicket(ticket,latest))return;
+      printRequestRef.current+=1;
+      setTicket(current=>sameQrTicketSession(current,ticket)?null:current);
+      document.body.classList.remove("qr-printing");
+    }).catch(()=>{});
+    return()=>{active=false;};
+  },[ticket,tables,loading,tenant?.id,allowed]);
+
   const available = useMemo(() => tables.filter(table =>
     table.active !== false
     && !isWalkInTable(table)
@@ -191,18 +206,32 @@ export function CashierTableQrPage() {
     printRequestRef.current += 1;
     const requestId = printRequestRef.current;
     window.setTimeout(async () => {
-      if (requestId !== printRequestRef.current) return;
-      document.body.classList.add("qr-printing");
-      const image = document.querySelector("#issuedQr img");
-      if (image && !image.complete) {
-        await Promise.race([
-          new Promise(resolve => image.addEventListener("load", resolve, { once: true })),
-          new Promise(resolve => image.addEventListener("error", resolve, { once: true })),
-          new Promise(resolve => setTimeout(resolve, 1500)),
-        ]);
+      try{
+        const latest=await getOperationalTable(tenant.id,nextTicket.table.id,{server:true});
+        if(requestId!==printRequestRef.current)return;
+        if(!isCurrentQrTicket(nextTicket,latest)){
+          setTicket(current=>sameQrTicketSession(current,nextTicket)?null:current);
+          showToast(t("cashier_documents.table_qr.expired"),"error");return;
+        }
+        let image=null;
+        for(let attempt=0;attempt<90;attempt++){
+          if(requestId!==printRequestRef.current)return;
+          const candidate=document.querySelector("#issuedQr .qr-ticket-code img");
+          if(candidate?.complete&&candidate.naturalWidth>0){image=candidate;break;}
+          await new Promise(resolve=>requestAnimationFrame(resolve));
+        }
+        if(!image)throw Error("TABLE_QR_PRINT_IMAGE_NOT_READY");
+        await image.decode?.();
+        if(document.fonts?.ready)await document.fonts.ready;
+        if(requestId!==printRequestRef.current)return;
+        document.body.classList.add("qr-printing");
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+        if(requestId===printRequestRef.current)window.print();
+      }catch(error){
+        document.body.classList.remove("qr-printing");
+        showToast(qrErrorMessage(error),"error");
       }
-      requestAnimationFrame(() => window.print());
-    }, 30);
+    },30);
   };
 
   const issueTable = async table => {
@@ -217,12 +246,14 @@ export function CashierTableQrPage() {
       const token = createOrderToken();
       const updated = await updateOperationalTable(tenant.id, table.id, {
         status: "occupied",
+        expectedOrderToken: "",
         orderToken: token,
         currentRound: 0,
         orderIds: [],
         sessionStartedAt: new Date().toISOString(),
       });
-      requestPrint({ table: updated, token });
+      setTables(current=>current.map(row=>String(row.id)===String(updated.id)?updated:row));
+      requestPrint({ table: updated, token: updated.orderToken });
     } catch (error) {
       console.error("TABLE_QR_ISSUE_FAILED", error);
       showToast(qrErrorMessage(error), "error");
@@ -270,13 +301,18 @@ export function CashierTableQrPage() {
       );
       if (!ok) return;
       setBusyKey(`close:${table.id}`);
-      await updateOperationalTable(tenant.id, table.id, {
+      const closed=await updateOperationalTable(tenant.id, table.id, {
         status: "available",
+        expectedOrderToken: String(target.orderToken||""),
         orderToken: "",
         sessionStartedAt: null,
         currentRound: 0,
         orderIds: [],
       });
+      setTables(current=>current.map(row=>String(row.id)===String(closed.id)?closed:row));
+      if(ticket&&String(ticket.table.id)===String(closed.id)){
+        printRequestRef.current+=1;setTicket(null);document.body.classList.remove("qr-printing");
+      }
       showToast(t("cashier_documents.table_qr.close_success", { table: label }));
     } catch (error) {
       console.error("TABLE_CLOSE_FAILED", error);

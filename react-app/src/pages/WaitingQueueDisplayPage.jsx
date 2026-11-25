@@ -10,7 +10,7 @@ const VOICE_BASE = { th: "/assets/audio/waiting-queue-th", en: "/assets/audio/wa
 export function WaitingQueueDisplayPage() {
   const { locale, intlLocale } = useI18n();
   const tr = useMemo(() => waitingQueueNamespaceTranslator(locale, "waiting_queue_display"), [locale]);
-  const stylesReady = useParityPage({ title: tr("meta.title"), styles: ["retail-pos.css", "waiting-queue-display.css"] });
+  const stylesReady = useParityPage({ title: tr("meta.title"), bodyClass: "waiting-queue-display-react-port", styles: ["retail-pos.css", "waiting-queue-display.css"] });
   const tenantId = useMemo(() => new URLSearchParams(location.search).get("tenantId")?.trim() || "", []);
   const [rows, setRows] = useState([]);
   const [initialReady, setInitialReady] = useState(false);
@@ -73,6 +73,7 @@ export function WaitingQueueDisplayPage() {
 
   useEffect(() => {
     if (!primary) { lastSignature.current=""; return; }
+    if (!soundEnabled || !soundArmed) return;
     const signature=`${primary.waitingQueueId}:${primary.calledAtMs || primary.updatedAtMs}:${primary.recallSignalAtMs || 0}`;
     if (signature !== lastSignature.current) { lastSignature.current=signature; announce(primary.queueNumber); }
   }, [primary?.waitingQueueId, primary?.calledAtMs, primary?.updatedAtMs, primary?.recallSignalAtMs, soundArmed, soundEnabled, locale]);
@@ -80,7 +81,14 @@ export function WaitingQueueDisplayPage() {
   const toggleSound = async () => {
     if (!soundEnabled || !soundArmed) {
       setSoundEnabled(true); localStorage.setItem("waiting_queue_display_sound","on");
-      try { const ctx=await ensureContext(); if (ctx?.state === "running") { setSoundArmed(true); if (primary) setTimeout(()=>announce(primary.queueNumber),0); else chime(); } } catch {}
+      try {
+        const ctx = await ensureContext();
+        if (ctx?.state === "running") {
+          if (primary) lastSignature.current = "";
+          setSoundArmed(true);
+          if (!primary) void chime();
+        }
+      } catch {}
       return;
     }
     setSoundEnabled(false); localStorage.setItem("waiting_queue_display_sound","off");

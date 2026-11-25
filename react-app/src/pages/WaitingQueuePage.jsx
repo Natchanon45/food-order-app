@@ -125,7 +125,6 @@ export function WaitingQueuePage() {
   const [seatError, setSeatError] = useState("");
   const [seatBusy, setSeatBusy] = useState(false);
   const responseInFlight = useRef(new Set());
-  const repairInFlight = useRef(new Set());
   const addDialogRef = useRef(null);
   const addFormRef = useRef(null);
   const ticketDialogRef = useRef(null);
@@ -216,23 +215,7 @@ export function WaitingQueuePage() {
     })();
   }, [tenant?.id, publicRows, queues, wq]);
 
-  useEffect(() => {
-    if (!tenant?.id || !tables.length) return;
-    queues.forEach(queue => {
-      if (queue.status !== WAITING_QUEUE_STATUS.SEATED || queue.tableToken || !queue.tableId || repairInFlight.current.has(queue.id)) return;
-      const table = tables.find(item => String(item.id) === String(queue.tableId));
-      if (!table) return;
-      repairInFlight.current.add(queue.id);
-      seatWaitingQueue(queue.id, table, {
-        tenantId: tenant.id,
-        allowSeatRepair: true,
-        reason: "ซ่อม session โต๊ะที่เปิดจากคิวรอโต๊ะรุ่นก่อนหน้า",
-      }).then(result => {
-        if (result?.repaired) refreshTables();
-      }).catch(error => console.warn("WAITING_SEAT_REPAIR_FAILED", error))
-        .finally(() => repairInFlight.current.delete(queue.id));
-    });
-  }, [tenant?.id, queues, tables, refreshTables, wq]);
+  // Opening the queue screen must not repair or reopen occupied sessions.
 
   const active = useMemo(() => queues.filter(queue => WAITING_QUEUE_ACTIVE_STATUSES.has(queue.status)), [queues]);
   const stats = useMemo(() => ({
@@ -522,7 +505,10 @@ export function WaitingQueuePage() {
     return <PageReadyOverlay context="PENGUIN" title={wq("hero.loading_actor")} message={wq("controls.syncing")} />;
   }
   if (!profile) return <Navigate to="/login?next=%2Fwaiting-queue" replace />;
-  if (!ROLES.has(profile.role) || tenantState.status === "error" || !tenant) return <Navigate to="/" replace />;
+  if (!ROLES.has(profile.role) || tenantState.status === "error" || !tenant)
+    return <PageReadyOverlay error title="ไม่สามารถเปิดหน้าจัดการคิวได้"
+      message={!ROLES.has(profile.role) ? "บัญชีนี้ไม่มีสิทธิ์จัดการคิวรอโต๊ะ" : "ไม่พบข้อมูลร้านค้าที่ได้รับอนุญาต กรุณาลองใหม่"}
+      onRetry={()=>window.location.reload()} />;
 
   const publicFor = queue => publicRows.find(row => row.waitingQueueId === queue.id || row.token === queue.publicToken);
   const statusText = status => wq(`queue.status.${status}`);

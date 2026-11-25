@@ -30,6 +30,7 @@ export function WaitingQueueCustomerPage() {
   const t = useMemo(() => waitingQueueTranslator(locale), [locale]);
   const stylesReady = useParityPage({
     title: t("customer.meta_title"),
+    bodyClass: "waiting-queue-customer-react-port",
     styles: ["retail-pos.css", "sweet-dialog.css", "waiting-queue-customer.css"],
   });
   const params = useMemo(() => new URLSearchParams(location.search), []);

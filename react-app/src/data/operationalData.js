@@ -1,6 +1,6 @@
 import {
   collection, deleteDoc, doc, getDoc, getDocFromServer, getDocs, onSnapshot, orderBy, query,
-  serverTimestamp, setDoc
+  serverTimestamp, setDoc, runTransaction
 } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { auth, db, functions } from "@/firebase/client";
@@ -134,14 +134,33 @@ export async function updateOperationalTable(tenantId, tableId, patch = {}) {
   const id = String(tableId || "").trim();
   if (!id) throw new Error("TABLE_REQUIRED");
   const ref = tenantDoc(tenantId, "tables", id);
-  await setDoc(ref, {
-    ...patch,
-    tenantId: requireTenantId(tenantId),
-    shopId: requireTenantId(tenantId),
-    updatedAt: serverTimestamp(),
-  }, { merge: true });
-  const snapshot = await getDoc(ref);
-  if (!snapshot.exists()) throw new Error("TABLE_NOT_FOUND");
+  const {expectedOrderToken,...changes}=patch;
+  if(typeof expectedOrderToken!=="string"||!["available","occupied"].includes(changes.status))
+    throw new Error("TABLE_SESSION_EXPECTED_REQUIRED");
+  await runTransaction(db,async tx=>{
+    const snapshot=await tx.get(ref);
+    if(!snapshot.exists())throw new Error("TABLE_NOT_FOUND");
+    const row=snapshot.data();
+    if(row.active===false||row.occupancyType==="walkin"||row.walkInOrderId||
+      String(row.orderToken||"")!==expectedOrderToken)
+      throw new Error("TABLE_SESSION_CHANGED");
+    if(changes.status==="occupied"){
+      if((row.status&&row.status!=="available")||expectedOrderToken||!changes.orderToken||
+         (row.orderIds||[]).length)throw new Error("TABLE_SESSION_CHANGED");
+    }else{
+      if(row.status!=="occupied"||!expectedOrderToken||changes.orderToken!=="")
+        throw new Error("TABLE_SESSION_CHANGED");
+      if(!Array.isArray(row.orderIds)||row.orderIds.length>100)throw new Error("TABLE_ORDER_HISTORY_UNAVAILABLE");
+      // Never clear an outstanding order, including a newly submitted round.
+      const orders=await Promise.all(row.orderIds.map(orderId=>tx.get(tenantDoc(tenantId,"orders",orderId))));
+      if(orders.some(o=>!o.exists()||!(o.data().paymentStatus==="paid"||o.data().status==="cancelled")))
+        throw new Error("TABLE_HAS_UNPAID_ORDERS");
+    }
+    tx.update(ref,{...changes,tenantId:requireTenantId(tenantId),shopId:requireTenantId(tenantId),updatedAt:serverTimestamp()});
+  });
+  const snapshot = await getDocFromServer(ref);
+  if (!snapshot.exists()||String(snapshot.data().orderToken||"")!==String(changes.orderToken||"")||
+      snapshot.data().status!==changes.status) throw new Error("TABLE_SESSION_CHANGED");
   return documentRow(snapshot);
 }
 export async function getOperationalOrder(tenantId, orderId) {
@@ -166,10 +185,10 @@ export async function getOperationalStoreSettings(tenantId) {
   return snapshot.exists() ? documentRow(snapshot) : {};
 }
 
-export async function getOperationalTable(tenantId, tableId) {
+export async function getOperationalTable(tenantId, tableId, {server=false}={}) {
   const id = String(tableId || "").trim();
   if (!id) return null;
-  const snapshot = await getDoc(tenantDoc(tenantId, "tables", id));
+  const snapshot = await (server?getDocFromServer:getDoc)(tenantDoc(tenantId, "tables", id));
   return snapshot.exists() ? documentRow(snapshot) : null;
 }
 export async function updateCustomerDisplay(tenantId, displayId, payload = {}) {

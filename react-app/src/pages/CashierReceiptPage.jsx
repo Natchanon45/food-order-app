@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { deliveryReceiptTotals } from "@/utils/deliveryReceiptTotal.mjs";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
+import { ReceiptOriginalItemRow, RevisedOrderNet } from "@/components/OrderRevisionDisplay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
 import { getOperationalOrder, getOperationalStoreSettings } from "@/data/operationalData";
@@ -11,6 +13,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
 import { useTenant } from "@/tenant/TenantProvider";
 import { qrDataUrl } from "@/utils/localQr";
+import { deliveryReceiptZoneLabel } from "@/utils/deliveryReceiptPresentation";
 
 const ALLOWED = new Set(["owner", "admin", "manager", "cashier"]);
 const BANGKOK = "Asia/Bangkok";
@@ -28,23 +31,14 @@ function toDate(value) {
 }
 
 function ReceiptItemName({ item, t }) {
-  const details = [];
-  if (item.note) details.push(item.note);
-  if (item.originalQty && (
-    Number(item.originalQty) !== Number(item.qty)
-    || item.originalName
-    || item.replacedFromName
-  )) {
-    details.push(`${t("cashier_documents.receipt.original_order_label")} ${item.originalName || item.replacedFromName || item.name} x ${item.originalQty}`);
-  }
-  const name = `${item.name || "-"}${item?.isGift === true ? ` ${t("cashier_documents.receipt.gift_suffix")}` : ""}`;
+  const name = (item.name || "-") + (item?.isGift === true ? " " + t("cashier_documents.receipt.gift_suffix") : "");
   return (
     <>
       <div className="receipt-item-line">
         <span className="receipt-item-text" title={name}>{name}</span>
         <span className="receipt-item-qty">x {item.qty}</span>
       </div>
-      {details.map((text, index) => <div className="receipt-item-note" key={`${text}-${index}`}>{text}</div>)}
+      {item.note ? <div className="receipt-item-note">{item.note}</div> : null}
     </>
   );
 }
@@ -81,13 +75,21 @@ export function CashierReceiptPage() {
     if (!tenant?.id || !allowed) return undefined;
     let alive = true;
     setError("");
+    setSnapshot(null);
+    printedRef.current=false;
     Promise.all([
       Promise.all(ids.map(id => getOperationalOrder(tenant.id, id))),
       getOperationalStoreSettings(tenant.id),
     ])
       .then(([loadedOrders, settings]) => {
         if (!alive) return;
-        setSnapshot({ orders: loadedOrders.filter(Boolean), settings });
+        if(loadedOrders.some(order=>!order)||new Set(ids).size!==ids.length||
+          (ids.length>1&&loadedOrders.some(order=>order.orderType!=="table"||
+            !order.tableToken||order.tableToken!==loadedOrders[0].tableToken||
+            order.tableCode!==loadedOrders[0].tableCode))){
+          setError(t("cashier_documents.receipt.load_failed"));return;
+        }
+        setSnapshot({ orders: loadedOrders, settings });
       })
       .catch(err => {
         console.error("CASHIER_RECEIPT_LOAD_FAILED", err);
@@ -105,13 +107,17 @@ export function CashierReceiptPage() {
 
   const combined = ids.length > 1;
   const first = orders[0] || null;
-  const total = orders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
-  const cancelledReceipt = orders.length > 0 && orders.every(order => String(order.status || "").toLowerCase() === "cancelled");
+  const total = orders.reduce((sum, order) =>
+    sum + (order.status === "cancelled" ? 0 : Number(order.totalAmount || 0)), 0);
+  const cancelledReceipt = orders.length > 0 && orders.every(order =>
+    String(order.status || "").toLowerCase() === "cancelled");
+  const historicalNet = cancelledReceipt ? orders.reduce((sum, order) => {
+    const source = order.originalPaidTotal ?? order.originalUnpaidTotal ?? order.totalAmount;
+    const value = Number(source);
+    return sum + (Number.isFinite(value) ? value : 0);
+  }, 0) : total;
   const cancellationSources = new Set(orders.map(order => String(order.cancellationSource || "unknown")));
   const cancellationActor = cancellationSources.size === 1 ? [...cancellationSources][0] : "mixed";
-  const displayedNet = cancelledReceipt
-    ? orders.reduce((sum, order) => sum + Number(order.totalAmount || order.originalPaidTotal || order.originalUnpaidTotal || 0), 0)
-    : total;
   const money = value => formatNumber(Number(value || 0), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const displayDate = value => {
     const date = toDate(value);
@@ -149,6 +155,8 @@ export function CashierReceiptPage() {
       }
       return t("cashier_documents.receipt.paid");
     }
+    if(order?.paymentMethod==="stripe_connect")
+      return order?.paymentStatus==="paid"?"ชำระผ่านบัตร • ชำระแล้ว":"ชำระผ่านบัตร • รอชำระ";
     if (order?.paymentMethod === "cod") return t("cashier.payment.cod");
     return t("cashier_documents.receipt.unpaid");
   };
@@ -175,7 +183,7 @@ export function CashierReceiptPage() {
   const receiptNumber = first
     ? (combined
       ? `TABLE-${first.tableCode || "-"}-${String(first.tableToken || first.id).slice(0, 8)}`.toUpperCase()
-      : String(first.id || ids[0] || "").slice(0, 12).toUpperCase())
+      : (first.billNo || String(first.id || ids[0] || "").slice(0, 12).toUpperCase()))
     : "-";
   const notes = combined ? orders.map(order => order.note).filter(Boolean) : (first?.note ? [first.note] : []);
   const verifyParams = new URLSearchParams();
@@ -186,10 +194,12 @@ export function CashierReceiptPage() {
   const verifyQr = first ? qrDataUrl(verifyUrl, { size: 180, margin: 4 }) : "";
 
   useEffect(() => {
-    if (printedRef.current || params.get("autoprint") !== "1" || !first || error) return;
+    if (printedRef.current || params.get("autoprint") !== "1" || !first || error || !stylesReady || authState.status === "loading" || tenantState.status === "loading") return;
     printedRef.current = true;
     let cancelled = false;
     (async () => {
+      // Never open Chrome Print Preview while unstyled/raw receipt content
+      // is still behind the presentation veil. No payment POST is repeated.
       if (document.fonts?.ready) await document.fonts.ready;
       const image = document.querySelector("#verifyQr");
       if (image && !image.complete) {
@@ -200,10 +210,10 @@ export function CashierReceiptPage() {
         ]);
       }
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      if (!cancelled) window.print();
+      if (!cancelled && image?.complete && image.naturalWidth > 0) window.print();
     })();
     return () => { cancelled = true; };
-  }, [first, error, params]);
+  }, [first, error, params, stylesReady, authState.status, tenantState.status]);
 
   // A Quick Order receipt is printed in a script-opened tab. Close that tab
   // once the print dialog is dismissed instead of leaving an orphaned receipt.
@@ -233,9 +243,9 @@ export function CashierReceiptPage() {
 
   const cashReceived = Number(first?.cashReceived);
   const changeAmount = Number(first?.changeAmount);
-  const showCash = isWalkIn && first?.paymentStatus === "paid" && first?.paymentMethod === "cash" &&
-    first?.cashReceived !== null && first?.cashReceived !== undefined &&
-    Number.isFinite(cashReceived) && Number.isFinite(changeAmount);
+  const showCash = isWalkIn && first?.paymentStatus === "paid" && first?.paymentMethod === "cash"
+    && first?.cashReceived !== null && first?.cashReceived !== undefined
+    && Number.isFinite(cashReceived) && Number.isFinite(changeAmount);
 
   return (
     <>
@@ -253,18 +263,22 @@ export function CashierReceiptPage() {
       <div id="demoBanner"></div>
       <main className="receipt-page">
         <div className="receipt-toolbar no-print">
-          <label htmlFor="paperSize">{t("cashier_documents.receipt.paper_size")}</label>
-          <select className="input" id="paperSize" style={{ width: "auto", minWidth: 130 }} value={paperSize} onChange={event => setPaperSize(event.target.value)}>
-            <option value="80">{t("cashier_documents.receipt.paper_80")}</option>
-            <option value="58">{t("cashier_documents.receipt.paper_58")}</option>
-            <option value="a4">A4</option>
-          </select>
-          <button className="btn btn-primary" id="printButton" type="button" onClick={() => window.print()}><i className="bi bi-check-lg app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.print")}</span></button>
+          <fieldset className="receipt-paper-dynamic">
+            <legend><label htmlFor="paperSize">{t("cashier_documents.receipt.paper_size")}</label></legend>
+            <select className="input" id="paperSize" value={paperSize} onChange={event => setPaperSize(event.target.value)}>
+              <option value="80">{t("cashier_documents.receipt.paper_80")}</option>
+              <option value="58">{t("cashier_documents.receipt.paper_58")}</option>
+              <option value="a4">A4</option>
+            </select>
+          </fieldset>
+          <button className="btn btn-primary" id="printButton" type="button" disabled={!first||Boolean(error)} onClick={() => window.print()}><i className="bi bi-check-lg app-icon" aria-hidden="true"></i><span>{t("cashier_documents.receipt.print")}</span></button>
         </div>
 
         <section className={receiptClass + (cancelledReceipt ? " receipt-is-cancelled" : "")} id="receipt">
-          {cancelledReceipt ? <div className="receipt-cancelled-watermark" aria-label={t("sales_report.cancel.cancelled")}>
-            {t("sales_report.cancel.source_" + (["cashier", "kitchen", "mixed"].includes(cancellationActor) ? cancellationActor : "unknown"))}
+          {cancelledReceipt ? <div className="receipt-cancelled-watermark"
+            aria-label={t("sales_report.cancel.cancelled")}>
+            {t("sales_report.cancel.source_" + (["cashier", "kitchen", "mixed"].includes(cancellationActor)
+              ? cancellationActor : "unknown"))}
           </div> : null}
           {missingMessage ? <div className="empty">{missingMessage}</div> : first ? (
             <>
@@ -284,7 +298,7 @@ export function CashierReceiptPage() {
               <div className="receipt-row">
                 <span>{t("cashier_documents.receipt.payment")}</span>
                 <strong id="receiptPayment">{combined
-                  ? t(orders.every(order => order.status === "paid" || order.paymentStatus === "paid") ? "cashier_documents.receipt.paid" : "cashier_documents.receipt.unpaid")
+                  ? t(orders.every(order => order.paymentStatus === "paid" && order.status !== "cancelled") ? "cashier_documents.receipt.paid" : "cashier_documents.receipt.unpaid")
                   : paymentText(first)}</strong>
               </div>
 
@@ -294,12 +308,13 @@ export function CashierReceiptPage() {
                   <div><strong>{t("cashier_documents.receipt.recipient")}:</strong> <span id="receiptRecipient">{first.recipientName || "-"}</span></div>
                   <div><strong>{t("cashier_documents.receipt.phone")}:</strong> <span id="receiptPhone">{first.recipientPhone || "-"}</span></div>
                   <div><strong>{t("cashier_documents.receipt.address")}:</strong> <span id="receiptAddress">{first.deliveryAddress || "-"}</span></div>
-                  <div><strong>{t("cashier_documents.receipt.zone")}:</strong> <span id="receiptDeliveryZone">{first.deliveryZoneLabel || "-"}</span></div>
+                  <div><strong>{t("cashier_documents.receipt.zone")}:</strong> <span id="receiptDeliveryZone">{deliveryReceiptZoneLabel(first, t)}</span></div>
                 </div>
               ) : null}
 
               <hr className="receipt-rule" />
-              <table className="receipt-items receipt-items-3col">
+              <div className="receipt-items-watermark-region">
+                <table className="receipt-items receipt-items-3col">
                 <thead><tr>
                   <th>{t("cashier_documents.receipt.item")}</th>
                   <th className="num receipt-unit">{t("cashier_documents.receipt.price")}</th>
@@ -309,30 +324,39 @@ export function CashierReceiptPage() {
                   {combined ? orders.flatMap(order => [
                     <tr key={`round-${order.id}`}><td colSpan="3"><strong>{t("cashier_documents.receipt.round", { round: order.roundNumber || 1 })}</strong></td></tr>,
                     ...normalizeOrderGiftItems(order).filter(item => !item.cancelled).map((item, index) => (
-                      <tr key={`${order.id}-${index}`}>
+                      <Fragment key={order.id + "-" + index}>
+                        <ReceiptOriginalItemRow item={item} money={money} />
+                        <tr>
+                          <td className="receipt-item-name"><ReceiptItemName item={item} t={t} /></td>
+                          <td className="num receipt-unit">{money(Number(item.price))}</td>
+                          <td className="num receipt-line-total">{money(Number(item.qty) * Number(item.price))}</td>
+                        </tr>
+                      </Fragment>
+                    )),
+                  ]) : normalizeOrderGiftItems(first).map((item, index) => (
+                    <Fragment key={first.id + "-" + index}>
+                      <ReceiptOriginalItemRow item={item} money={money} />
+                      <tr>
                         <td className="receipt-item-name"><ReceiptItemName item={item} t={t} /></td>
                         <td className="num receipt-unit">{money(Number(item.price))}</td>
                         <td className="num receipt-line-total">{money(Number(item.qty) * Number(item.price))}</td>
                       </tr>
-                    )),
-                  ]) : normalizeOrderGiftItems(first).map((item, index) => (
-                    <tr key={`${first.id}-${index}`}>
-                      <td className="receipt-item-name"><ReceiptItemName item={item} t={t} /></td>
-                      <td className="num receipt-unit">{money(Number(item.price))}</td>
-                      <td className="num receipt-line-total">{money(Number(item.qty) * Number(item.price))}</td>
-                    </tr>
+                    </Fragment>
                   ))}
                 </tbody>
-              </table>
+                </table>
+              </div>
               <hr className="receipt-rule" />
 
               {isDelivery ? (
                 <div id="receiptDeliverySummary">
                   <div className="receipt-row"><span>{t("cashier_documents.receipt.food_subtotal")}</span><span><span id="receiptSubtotal">{money(first.subtotalAmount ?? Number(first.totalAmount || 0) - Number(first.deliveryFee || 0))}</span> {t("cashier.common.baht")}</span></div>
                   <div className="receipt-row"><span>{t("cashier_documents.receipt.delivery_fee")}</span><span><span id="receiptDeliveryFee">{money(first.deliveryFee || 0)}</span> {t("cashier.common.baht")}</span></div>
+                  <div className="receipt-row delivery-before-discount-total"><span>ยอดรวมก่อนส่วนลด</span><span><strong id="cashierReceiptBeforeDiscountTotal">{money(deliveryReceiptTotals(first).beforeDiscount)}</strong> {t("cashier.common.baht")}</span></div>
+                  {Number(first.deliveryPromotionDiscount || 0)>0 ? <div className="receipt-row delivery-promotion-discount-row" id="cashierReceiptDeliveryPromotionDiscount"><span>ส่วนลดค่าจัดส่งตามยอดอาหาร</span><span>−{money(first.deliveryPromotionDiscount)} {t("cashier.common.baht")}</span></div> : null}
                 </div>
               ) : null}
-              <div className="receipt-row receipt-total"><span>{t("cashier_documents.receipt.net_total")}</span><span><span id="receiptTotal">{money(cancelledReceipt ? displayedNet : (combined ? total : first.totalAmount))}</span> {t("cashier.common.baht")}</span></div>
+              <div className="receipt-row receipt-total"><span>{t("cashier_documents.receipt.net_total")}</span><span><span id="receiptTotal">{cancelledReceipt ? <>{money(historicalNet)} {t("cashier.common.baht")}</> : <RevisedOrderNet order={first} orders={combined ? orders : undefined} current={combined ? total : first.totalAmount} money={money} unit={t("cashier.common.baht")} />}</span></span></div>
 
               {showCash ? (
                 <div id="receiptCashSummary">
@@ -355,7 +379,7 @@ export function CashierReceiptPage() {
                 <div>{t("cashier_documents.receipt.verify_instruction")}</div>
                 <small id="verifyCode">{combined
                   ? t("cashier_documents.receipt.verify_combined", { rounds: orders.length, table: first.tableCode || "-" })
-                  : t("cashier_documents.receipt.verify_single", { code: String(first.id || ids[0]).slice(0, 12).toUpperCase() })}</small>
+                  : t("cashier_documents.receipt.verify_single", { code: receiptNumber })}</small>
               </div>
             </>
           ) : null}
