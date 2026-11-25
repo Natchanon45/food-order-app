@@ -1,0 +1,35 @@
+/* Sales Report cascade: LUKKAJA auth entry order, scoped to this page.
+   Source desktop width is 1320px including container padding. */
+body.sales-report-workspace main.sales-report-page {
+  width: min(1320px, 100%);
+}
+body.sales-report-workspace.order-delivery-workspace {
+  color: var(--od-ink);
+  background:
+    radial-gradient(circle at 8% 4%, rgba(52, 185, 106, 0.12), transparent 28rem),
+    radial-gradient(circle at 94% 12%, rgba(21, 148, 71, 0.1), transparent 27rem),
+    #f3f7f4;
+}
+/* Do not carry the Admin dashboard's decorative fixed circles onto the report. */
+body.sales-report-workspace.admin-vr-page::before,
+body.sales-report-workspace.admin-vr-page::after {
+  content: none;
+}
+body.sales-report-workspace .report-period-tabs button {
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 14px;border:0;border-radius:11px;background:transparent;color:#53635a;font:inherit;font-size:.86rem;font-weight:800;white-space:nowrap
+}
+/* Source generic button rule follows the compact header rules in the auth bundle. */
+body.sales-report-workspace .sales-back-link {
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+body.sales-report-workspace .report-period-tabs .period-tab {
+  min-height: 40px;
+}
+@media (max-width: 640px) {
+  body.sales-report-workspace .report-period-tabs .period-tab {
+    min-width: 0;
+    padding: 8px;
+    font-size: 12px;
+  }
+}

@@ -5,7 +5,6 @@ body.sales-report-workspace {
   overflow-x: clip;
 }
 body.sales-report-workspace .sales-report-page {
-  width: 100%;
   max-width: 100%;
   min-width: 0;
 }
@@ -70,7 +69,6 @@ body.sales-report-workspace .super-admin-header {
 /* Keep the padded report and its nested grid inside the viewport box. */
 body.sales-report-workspace main.sales-report-page {
   box-sizing: border-box !important;
-  width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
   margin-left: auto;
