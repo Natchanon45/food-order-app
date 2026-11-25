@@ -1,0 +1,58 @@
+.platform-shell #platformReceiverSettings{scroll-margin-top:110px;outline:none}
+.platform-shell #platformReceiverSettings:focus{box-shadow:0 0 0 3px rgba(21,137,75,.13)}
+.platform-receiver-intro{display:flex;align-items:flex-start;gap:13px;padding:17px;margin-bottom:19px;border:1px solid #d4eadd;border-radius:14px;background:linear-gradient(125deg,#effaf3,#f9fdfa)}
+.platform-receiver-intro-icon{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:12px;background:#dcf2e5;color:#0d8250;font-size:19px}
+.platform-receiver-intro strong{display:block;font-size:15px;font-weight:650;color:#194c34}
+.platform-receiver-intro p{font-size:12px;line-height:1.7;margin:4px 0 0;color:#62776b}
+.platform-receiver-section-title{margin:0 0 12px;font-size:15px;font-weight:600;color:#244c38}
+.platform-receiver-uses{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:16px 0}
+.platform-receiver-uses span{display:inline-flex;align-items:center;gap:7px;background:#eef8f1;color:#236a44;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:550}
+.platform-receiver-footnote{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.65;color:#66776b;padding:0 3px 2px;margin-top:16px}
+.platform-receiver-footnote i{color:#188b51;font-size:15px}
+.platform-shell #platformReceiverSettings .platform-google-api-actions{margin-top:12px}
+.bankalert-stripe-settings .platform-stripe-rotation{border:1px solid #dceae0;background:#f8fcf9;border-radius:14px;padding:15px;margin:14px 0}
+.platform-stripe-rotation-header{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.platform-stripe-rotation-header>div{display:grid;gap:5px;min-width:0}
+.platform-stripe-rotation-header strong{color:#164a30;font-size:14px;font-weight:650}
+.platform-stripe-rotation-header small{font-size:12px;color:#667e6d;line-height:1.55}
+.platform-stripe-rotation-header .btn{font-weight:400;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.platform-stripe-rotation-steps{display:grid;gap:10px;margin:15px 0 0}
+.platform-stripe-rotation-steps>div{display:flex;align-items:flex-start;gap:11px;padding:10px 12px;border-radius:10px;background:white;border:1px solid #e3eee7}
+.platform-stripe-rotation-steps>div>span{display:grid;place-items:center;flex:0 0 27px;height:27px;border-radius:50%;background:#e0f4e9;color:#187a4c;font-weight:700;font-size:12px}
+.platform-stripe-rotation-steps p{margin:2px 0 0;font-size:12px;color:#456654;line-height:1.65}
+.platform-stripe-rotation-steps a{color:#177b4f;text-decoration:underline}
+.platform-stripe-rotation-actions{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
+.platform-stripe-rotation-actions .btn{display:inline-flex;gap:7px;align-items:center;font-weight:400}
+.platform-stripe-mode-note{font-size:11px;display:inline-flex;gap:6px;color:#597461;align-items:center}
+@media(max-width:650px){.platform-stripe-rotation-header{align-items:stretch;flex-direction:column}.platform-stripe-rotation-header .btn{justify-content:center}.platform-receiver-intro{padding:12px}.platform-receiver-uses span{flex:1 1 140px;justify-content:center}}
+.platform-shell #platformStripeSettings{scroll-margin-top:110px}
+
+/* One compact receiving-account form, scoped to this card only. */
+.platform-shell #platformReceiptRecipientForm{--lk-field-height:56px;display:grid;gap:12px;min-width:0}
+.platform-shell #platformReceiverSettings .platform-receiver-intro{margin-bottom:16px;padding:12px}
+.platform-shell #platformReceiptRecipientForm .platform-receiver-section-title{margin:0}
+.platform-shell #platformReceiptRecipientForm .platform-receiver-bank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0;align-items:start}
+.platform-shell #platformReceiptRecipientForm .platform-receiver-bank-grid>*{min-width:0}
+.platform-shell #platformReceiptRecipientForm .lk-dynamic-control>.input,
+.platform-shell #platformReceiptRecipientForm .platform-bank-dynamic>.input{box-sizing:border-box;height:var(--lk-field-height);min-height:var(--lk-field-height);width:100%;margin:0;padding:23px 14px 6px;border:1px solid #d5e5da;border-radius:12px;background:#fff;color:#19412a;font:inherit;font-size:.94rem;font-weight:500;line-height:1.4;box-shadow:none}
+.platform-shell #platformReceiptRecipientForm .lk-dynamic-control>select.input{padding-right:32px}
+.platform-shell #platformReceiptRecipientForm .platform-bank-dynamic>.input{padding-right:43px}
+.platform-shell #platformReceiptRecipientForm .lk-dynamic-control>.input:focus,
+.platform-shell #platformReceiptRecipientForm .platform-bank-dynamic>.input:focus{border-color:#159447;box-shadow:0 0 0 3px rgb(21 148 71 / 12%);outline:0}
+.platform-shell #platformReceiptRecipientForm :is(.lk-dynamic-control,.platform-bank-dynamic)>.input:disabled{background:#f3f8f5;color:#697c6d;cursor:not-allowed}
+.platform-shell #platformReceiptRecipientForm .platform-bank-dynamic>.bi-search{display:none}
+.platform-shell #platformReceiptRecipientForm :is(.platform-bank-dynamic-label,.lk-dynamic-caption){position:absolute;left:14px;top:50%;margin:0;padding:0;transform:translateY(-50%);font-size:.87rem;font-weight:400;color:#15864a;pointer-events:none;line-height:1.3;max-width:calc(100% - 28px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.platform-shell #platformReceiptRecipientForm .platform-bank-dynamic-label{max-width:calc(100% - 56px)}
+.platform-shell #platformReceiptRecipientForm :is(.platform-bank-dynamic,.lk-dynamic-control):is(.is-filled,:focus-within)>:is(.platform-bank-dynamic-label,.lk-dynamic-caption){top:7px;transform:none;font-size:.72rem;color:#0b7138}
+.platform-shell #platformReceiptRecipientForm .platform-bank-dynamic:not(.is-filled):not(:focus-within)>.input{padding-top:6px}
+.platform-shell #platformReceiptRecipientForm .platform-bank-combobox-toggle{border-left:0;background:transparent}
+.platform-shell #platformReceiptRecipientForm .platform-receiver-promptpay{display:grid;gap:10px;border-top:1px solid #e1ede6;margin:2px 0 0;padding-top:14px;min-width:0}
+.platform-shell #platformReceiptRecipientForm .platform-receiver-promptpay-help{font-size:12px;color:#62776b;margin:0;line-height:1.6}
+.platform-shell #platformReceiptRecipientForm .platform-receiver-promptpay-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.platform-shell #platformReceiptRecipientForm .platform-receiver-uses{margin:0;gap:6px}
+.platform-shell #platformReceiptRecipientForm .platform-google-api-actions{margin:0;padding:0}
+.platform-shell #platformReceiverSettings .platform-receiver-footnote{margin-top:12px}
+@media(max-width:650px){
+ .platform-shell #platformReceiptRecipientForm .platform-receiver-bank-grid{grid-template-columns:minmax(0,1fr)}
+ .platform-shell #platformReceiptRecipientForm{gap:10px}
+}

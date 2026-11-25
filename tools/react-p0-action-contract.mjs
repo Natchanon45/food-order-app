@@ -39,6 +39,8 @@ const platformOwnersPage = read("react-app/src/pages/PlatformOwnersPage.jsx");
 const platformPricingPage = read("react-app/src/pages/PlatformPricingPage.jsx");
 const subscriptionPricing = read("react-app/src/data/subscriptionPricing.js");
 const platformSettingsFunction = read("functions/platform-settings.js");
+const platformReceiverFunction = read("functions/platform-receiver.js");
+const platformReceiverService = read("react-app/src/data/platformReceiptReceiver.js");
 const tenantAdminFunction = read("functions/tenant-admin.js");
 const tenantOwnerFunction = read("functions/tenant-owner-operation.js");
 const subscriptionPricingFunction = read("functions/subscription-pricing.js");
@@ -332,8 +334,7 @@ for (const fn of [
 requireAll("Platform console actions", platformPage, [
   "await savePlatformBranding({ files: brandingFiles, clear: brandingClear })",
   "await savePlatformGoogleApis({",
-  "await savePlatformSlipVerification({",
-  "await testPlatformSlipVerification()",
+  "await savePlatformReceiptReceiver(",
   "await savePlatformLalamove({",
   "await testPlatformLalamove()",
   "await registerPlatformLalamoveWebhook({ url: webhookUrl })",
@@ -352,6 +353,24 @@ requireAll("Platform branding storage/callable", platformBrandingService, [
   "await uploadBytes(ref(storage, path), file",
   "deleteObject(ref(storage, path)).catch",
 ]);
+requireAll("Latest Source central receiver Firebase authority", platformReceiverFunction, [
+  'exports.getPlatformReceiptReceiver=onCall',
+  'exports.updatePlatformReceiptReceiver=onCall',
+  'profile.role!=="super_admin"',
+  'db.runTransaction',
+  'current!==expectedRevision',
+  'paymentRoutingEnabled:false',
+]);
+requireAll("Latest Source central receiver Client canonical proof", platformReceiverService, [
+  'getPlatformReceiptReceiver',
+  'updatePlatformReceiptReceiver',
+  'RECEIVER_SAVE_UNCONFIRMED',
+  'await loadPlatformReceiptReceiver()',
+]);
+if (platformPage.includes('savePlatformSlipVerification(') ||
+    platformPage.includes('testPlatformSlipVerification()') ||
+    platformPage.includes('id="platformSlipVerificationForm"'))
+  fail("Latest Source must not restore retired Slip2Go receiver credentials UI");
 requireAll("Platform settings server guard", platformSettingsFunction, [
   'profile.role !== "super_admin"',
   'exports.updatePlatformBranding = onCall',

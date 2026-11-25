@@ -12,8 +12,8 @@ const cases = [
     load: "loadPlatformBranding", actions: ["saveBranding"] },
   { name: "google", flag: "googleReadReady", error: "googleLoadError",
     load: "loadPlatformGoogleApis", actions: ["saveGoogle"] },
-  { name: "slip", flag: "slipReadReady", error: "slipLoadError",
-    load: "loadPlatformSlipVerification", actions: ["saveSlip", "testSlip"] },
+  { name: "receiver", flag: "slipReadReady", error: "slipLoadError",
+    load: "loadPlatformReceiptReceiver", actions: ["saveReceiptReceiver"] },
   { name: "lalamove", flag: "lalamoveReadReady", error: "lalamoveLoadError",
     load: "loadPlatformLalamove", actions: ["saveLalamove", "testLalamove", "registerLalamoveWebhook"] },
 ];
@@ -28,11 +28,13 @@ test("source-equivalent platform readiness tracks successful authenticated Fireb
     assert.ok(page.includes(`${errorSetter}(true);`), spec.name + " error");
     assert.ok(page.includes(`!${spec.flag}`), spec.name + " guard");
   }
-  assert.doesNotMatch(page, /storageReady/);
+  assert.doesNotMatch(page, /slip\.storageReady/);
   assert.match(page, /PLATFORM_GOOGLE_READ_INVALID/);
   assert.match(page, /PLATFORM_BRANDING_READ_INVALID/);
   assert.match(page, /PLATFORM_SLIP_READ_INVALID/);
   assert.match(page, /PLATFORM_LALAMOVE_READ_INVALID/);
+  assert.doesNotMatch(page, /platformSlipVerificationForm|platformSlip2GoApiUrl|testPlatformSlip2GoButton/);
+  assert.match(page, /anchorId="platformReceiverSettings"/);
 });
 
 test("platform save/test/event actions fail closed on stale reads and wrong roles", () => {
@@ -55,14 +57,14 @@ test("platform save/test/event actions fail closed on stale reads and wrong role
 });
 
 test("all Firebase settings forms and secret controls are disabled until a successful read", () => {
-  const forms = ["platformBrandingForm", "platformGoogleApiForm", "platformSlipVerificationForm", "platformLalamoveForm"];
+  const forms = ["platformBrandingForm", "platformGoogleApiForm", "platformReceiptRecipientForm", "platformLalamoveForm"];
   for (const form of forms) assert.ok(page.includes(`id="${form}"`), form);
   for (const spec of cases) {
-    assert.match(page, new RegExp(`disabled=\\{[^}]*${spec.error} \\|\\| !${spec.flag}\\}`));
+    assert.match(page, new RegExp(`disabled=\\{[^}]*${spec.error} \\|\\| !${spec.flag}(?: \\|\\| receiverUnconfirmed)?\\}`));
   }
   for (const id of [
     "savePlatformBrandingButton", "savePlatformGoogleApiButton",
-    "savePlatformSlipVerificationButton", "testPlatformSlip2GoButton",
+    "savePlatformReceiptRecipientButton",
     "savePlatformLalamoveButton", "testPlatformLalamoveButton", "registerPlatformLalamoveWebhookButton"
   ]) assert.ok(page.includes(`id="${id}"`), id);
   // A feature hidden by prior owner request must remain hidden.

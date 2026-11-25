@@ -5,6 +5,10 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { PlatformReceiverBankSelect } from "@/components/PlatformReceiverBankSelect";
+import { DynamicField } from "@/components/DynamicField";
+import { sweetConfirm } from "@/components/sweetDialog";
+import { loadPlatformReceiptReceiver, savePlatformReceiptReceiver } from "@/data/platformReceiptReceiver";
+import "@/ui/platform-receiver-redesign.css";
 import { PageReadyOverlay } from "@/components/PageReadyOverlay";
 import { ParityFooter } from "@/components/ParityFooter";
 import { UserMenu } from "@/components/UserMenu";
@@ -14,13 +18,10 @@ import { EMPTY_PLATFORM_ADMIN_NOTIFICATIONS, loadPlatformAdminNotificationSummar
 import {
   loadPlatformGoogleApis,
   loadPlatformLalamove,
-  loadPlatformSlipVerification,
   registerPlatformLalamoveWebhook,
   savePlatformGoogleApis,
   savePlatformLalamove,
-  savePlatformSlipVerification,
   testPlatformLalamove,
-  testPlatformSlipVerification,
 } from "@/data/platformSettingsService";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useParityPage } from "@/hooks/useParityPage";
@@ -70,13 +71,11 @@ const EMPTY_GOOGLE = {
 };
 
 const EMPTY_SLIP = {
-  provider: "google_vision",
-  slip2GoApiUrl: "",
-  slip2GoSecretConfigured: false,
-  slip2GoSecretMasked: "",
-  slip2GoReady: false,
-  googleVisionReady: false,
   receiver: {},
+  revision: 0,
+  configured: false,
+  promptPayStorageReady: false,
+  paymentRoutingEnabled: false,
 };
 
 const EMPTY_LALAMOVE = {
@@ -101,11 +100,21 @@ function showToast(message, type = "success") {
   }, 3200);
 }
 
-function ControlCard({ titleId, icon, title, description, badge = "", badgeId, badgeClass = "", children, className = "" }) {
-  const [expanded, setExpanded] = useState(false);
+function ControlCard({ titleId, icon, title, description, badge = "", badgeId, badgeClass = "", children, className = "", anchorId = "" }) {
+  const [expanded, setExpanded] = useState(() => Boolean(anchorId && window.location.hash === "#" + anchorId));
+  useEffect(() => {
+    if (!anchorId || window.location.hash !== "#" + anchorId) return;
+    setExpanded(true);
+    const frame = requestAnimationFrame(() => {
+      const el = document.getElementById(anchorId);
+      el?.scrollIntoView({behavior:"smooth",block:"start"});
+      el?.focus({preventScroll:true});
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [anchorId]);
   const panelId = `${titleId}Panel`;
   return (
-    <section className={`card platform-google-api-card platform-card-collapsible ${className}`}
+    <section id={anchorId || undefined} tabIndex={anchorId ? -1 : undefined} className={`card platform-google-api-card platform-card-collapsible ${className}`}
       data-expanded={expanded} aria-labelledby={titleId}>
       <PlatformCardAccordionHeader
         titleId={titleId} panelId={panelId} icon={icon} title={title}
@@ -175,11 +184,10 @@ export function PlatformPage() {
   const [googleReadReady, setGoogleReadReady] = useState(false);
 
   const [slip, setSlip] = useState(EMPTY_SLIP);
-  const [slipSecret, setSlipSecret] = useState("");
-  const [slipClearSecret, setSlipClearSecret] = useState(false);
+  const [receiverUnconfirmed, setReceiverUnconfirmed] = useState(false);
+  const [receiverPersisted, setReceiverPersisted] = useState(false);
   const [slipBusy, setSlipBusy] = useState(true);
   const [initialSlipReady, setInitialSlipReady] = useState(false);
-  const [slipQuota, setSlipQuota] = useState("");
   const [slipLoadError, setSlipLoadError] = useState(false);
   const [slipReadReady, setSlipReadReady] = useState(false);
 
@@ -204,12 +212,6 @@ export function PlatformPage() {
       ? t("platform.google_api.configured", { masked: masked || "••••" })
       : t("platform.google_api.not_configured");
   };
-  const slipSecretText = (configured, masked, clearing = false) => {
-    if (clearing) return t("platform.slip_verification.clear_pending");
-    return configured
-      ? t("platform.slip_verification.configured", { masked: masked || "••••" })
-      : t("platform.slip_verification.not_configured");
-  };
   const lalamoveCredentialText = (configured, masked, clearing = false) => {
     if (clearing) return t("platform.lalamove.clear_pending");
     return configured
@@ -224,10 +226,9 @@ export function PlatformPage() {
   };
 
   const applySlip = item => {
-    const next = { ...EMPTY_SLIP, ...(item || {}), receiver: { ...(item?.receiver || {}) } };
+    const next = {...EMPTY_SLIP,...(item || {}),receiver:{...(item?.receiver || {})}};
     setSlip(next);
-    setSlipSecret("");
-    setSlipClearSecret(false);
+    setReceiverPersisted(next.configured === true && next.revision > 0);
   };
 
   const applyLalamove = item => {
@@ -304,14 +305,13 @@ export function PlatformPage() {
     setSlipBusy(true);
     setSlipLoadError(false);
     setSlipReadReady(false);
-    loadPlatformSlipVerification()
+    loadPlatformReceiptReceiver().then(item => ({item}))
       .then(data => {
         if (!active) return;
         if (!data?.item || typeof data.item !== "object" || Array.isArray(data.item)) throw new Error("PLATFORM_SLIP_READ_INVALID");
         applySlip(data.item);
         setSlipReadReady(true);
         setSlipLoadError(false);
-        setSlipQuota(t("platform.slip_verification.quota_not_checked"));
       })
       .catch(error => {
         console.error("PLATFORM_SLIP_LOAD_FAILED", error);
@@ -443,8 +443,8 @@ export function PlatformPage() {
       applyGoogle(data.item);
       setGoogleLoadError(false);
       showToast(t("platform.google_api.save_success"));
-      const slipData = await loadPlatformSlipVerification().catch(() => null);
-      if (slipData?.item) applySlip(slipData.item);
+      // Provider keys and the bank receiver are now independent. Saving a
+      // Google API key must never clobber a locally edited bank account.
     } catch (error) {
       console.error("PLATFORM_GOOGLE_API_SAVE_FAILED", error);
       showToast(t("platform.google_api.save_failed"), "error");
@@ -453,72 +453,41 @@ export function PlatformPage() {
     }
   };
 
-  const saveSlip = async event => {
+  const saveReceiptReceiver = async event => {
     event?.preventDefault?.();
-    if (authState.status !== "ready" || profile?.role !== "super_admin" || slipBusy || slipLoadError || !slipReadReady) return null;
-    setSlipBusy(true);
-    try {
-      const receiver = slip.receiver || {};
-      const data = await savePlatformSlipVerification({
-        provider: slip.provider,
-        slip2GoApiUrl: slip.slip2GoApiUrl,
-        slip2GoSecret: slipSecret,
-        clearSlip2GoSecret: slipClearSecret,
-        receiverAccountType: receiver.accountType || "",
-        receiverNameTh: receiver.accountNameTH || "",
-        receiverNameEn: receiver.accountNameEN || "",
-        receiverAccountNumber: receiver.accountNumber || "",
-      });
-      applySlip(data.item);
-      setSlipLoadError(false);
-      setSlipQuota(t("platform.slip_verification.quota_not_checked"));
-      showToast(t("platform.slip_verification.save_success"));
-      return data.item;
-    } catch (error) {
-      console.error("PLATFORM_SLIP_SAVE_FAILED", error);
-      const invalidUrl = String(error?.message || "").includes("SLIP2GO_API_URL_INVALID");
-      showToast(t(invalidUrl ? "platform.slip_verification.api_url_invalid" : "platform.slip_verification.save_failed"), "error");
-      throw error;
-    } finally {
-      setSlipBusy(false);
+    if (authState.status !== "ready" || profile?.role !== "super_admin" ||
+        slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed) return;
+    const receiver=slip.receiver||{};
+    const accountNumber=String(receiver.accountNumber||"").replace(/[-\s]/g,"");
+    if(!/^01[0-9]{3}$/.test(receiver.accountType||"")||
+       !/^[0-9]{4,20}$/.test(accountNumber)||
+       !(String(receiver.accountNameTH||"").trim()||String(receiver.accountNameEN||"").trim())||
+       (receiver.promptPayType==="phone"&&!/^0[0-9]{9}$/.test(receiver.promptPayId||""))||
+       (receiver.promptPayType==="citizen"&&!/^[0-9]{13}$/.test(receiver.promptPayId||""))){
+      showToast("กรุณาตรวจสอบบัญชีธนาคารและหมายเลขพร้อมเพย์", "error");
+      return;
     }
-  };
-
-  const testSlip = async () => {
-    if (authState.status !== "ready" || profile?.role !== "super_admin" || slipBusy || slipLoadError || !slipReadReady) return;
+    const confirmed=await sweetConfirm(
+      "ยืนยันเปลี่ยนบัญชีรับเงินกลาง? การบันทึกบัญชีนี้ไม่ใช่หลักฐานว่ารับชำระแล้ว และจะไม่เปิดอนุมัติใบแจ้งหนี้อัตโนมัติ",
+      {title:"ยืนยันบัญชีผู้รับเงินกลาง",type:"warning",
+        confirmText:"ยืนยันบันทึก",cancelText:"กลับ",confirmIcon:"shield-check"},
+    );
+    if(!confirmed)return;
     setSlipBusy(true);
-    setSlipQuota(t("platform.slip_verification.testing"));
-    try {
-      const data = await testPlatformSlipVerification();
-      const result = data.result || {};
-      if (data.ok === false) {
-        const details = [
-          result.status || "",
-          result.httpStatus ? `HTTP ${result.httpStatus}` : "",
-          result.code ? `Code ${result.code}` : "",
-          result.message || "",
-        ].filter(Boolean).join(" • ");
-        setSlipQuota(`${t("platform.slip_verification.test_failed")}${details ? ` — ${details}` : ""}`);
-        const error = new Error(result.status || "SLIP2GO_TEST_FAILED");
-        error.slipResult = result;
-        throw error;
-      }
-      const account = result.data || {};
-      setSlipQuota(t("platform.slip_verification.quota_ready", {
-        package: account.package || "-",
-        remaining: account.estimatedQuotaSlip ?? account.tokenRemaining ?? "-",
-      }));
-      showToast(t("platform.slip_verification.test_success"));
-    } catch (error) {
-      console.error("PLATFORM_SLIP_TEST_FAILED", error);
-      if (!error?.slipResult) {
-        const technical = [error?.code, error?.message].filter(Boolean).join(" • ");
-        setSlipQuota(`${t("platform.slip_verification.test_failed")}${technical ? ` — ${technical}` : ""}`);
-      }
-      showToast(t("platform.slip_verification.test_failed"), "error");
-    } finally {
-      setSlipBusy(false);
-    }
+    try{
+      const item=await savePlatformReceiptReceiver(
+        {...receiver,accountNumber},Number(slip.revision||0));
+      applySlip(item);
+      showToast("บันทึกบัญชีผู้รับเงินกลางแล้ว");
+    }catch(error){
+      console.error("PLATFORM_RECEIPT_RECEIVER_SAVE_FAILED",error?.code||error?.message);
+      const code=String(error?.code||"");
+      if(error?.message==="RECEIVER_SAVE_UNCONFIRMED"||
+         code.includes("failed-precondition")){
+        setReceiverUnconfirmed(true);
+        showToast("ยังยืนยันการบันทึกไม่ได้ กรุณารีโหลดและตรวจสอบบัญชีก่อนบันทึกซ้ำ","error");
+      }else showToast("บันทึกบัญชีรับเงินกลางไม่สำเร็จ","error");
+    }finally{setSlipBusy(false);}
   };
 
   const saveLalamove = async (event, { silent = false } = {}) => {
@@ -610,8 +579,10 @@ export function PlatformPage() {
   if (!profile) return <Navigate to="/login?next=%2Fplatform" replace />;
   if (profile.role !== "super_admin") return <Navigate to="/" replace />;
 
-  const receiverTypes = raw("platform.slip_verification.receiver_account_types") || {};
-  const slipReady = slip.provider === "google_vision" ? slip.googleVisionReady === true : slip.slip2GoReady === true;
+  const receiverTypes = Object.fromEntries(
+    Object.entries(raw("platform.slip_verification.receiver_account_types") || {})
+      .filter(([code]) => /^01[0-9]{3}$/.test(code)),
+  );
   const lalamoveBadge = lalamoveTesting
     ? t("platform.lalamove.testing")
     : (lalamoveError || (lalamove.ready
@@ -651,11 +622,11 @@ export function PlatformPage() {
           </Link>
           <Link className="card nav-card" to="/platform/owners"><i className="bi bi-people app-icon" aria-hidden="true"></i><strong>{t("platform.cards.owners.title")}</strong><small>{t("platform.cards.owners.description")}</small></Link>
           <Link className="card nav-card" to="/platform/contact"><i className="bi bi-chat-heart app-icon" aria-hidden="true"></i><strong>{t("platform.cards.contact.title")}</strong><small>{t("platform.cards.contact.description")}</small></Link>
-          <Link className="card nav-card" to="/platform/pricing"><i className="bi bi-tags app-icon" aria-hidden="true"></i><strong>{t("platform.cards.pricing.title")}</strong><small>{t("platform.cards.pricing.description")}</small></Link>
+          <Link className="card nav-card" to="/platform/pricing"><i className="bi bi-credit-card app-icon" aria-hidden="true"></i><strong>ช่องทางรับเงิน</strong><small>Stripe, โอนเงิน และเพดาน Delivery</small></Link>
           {/* Hybrid invoice review route and its existing data are retained; the Platform launch card is temporarily hidden. */}
         </section>
 
-        <BankalertStripePlatformSettings />
+        <div id="platformStripeSettings"><BankalertStripePlatformSettings /></div>
 
         <ControlCard titleId="platformBrandingTitle" icon="bi bi-palette" title={t("platform.branding.title")} description={t("platform.branding.description")} badge={t("shared.user_menu.roles.super_admin")} className="platform-branding-card">
           <form id="platformBrandingForm" className="platform-google-api-form" noValidate onSubmit={saveBranding}>
@@ -758,69 +729,88 @@ export function PlatformPage() {
         </ControlCard>
 
         <ControlCard
-          titleId="platformSlipVerificationTitle" icon="bi bi-shield-check"
-          title={t("platform.slip_verification.title")} description={t("platform.slip_verification.description")}
-          badge={slipLoadError ? t("platform.slip_verification.load_failed") : t(slipReady ? "platform.slip_verification.ready" : "platform.slip_verification.not_ready")}
-          badgeId="platformSlipVerificationStatus" badgeClass={slipReady && !slipLoadError && slipReadReady ? "is-ready" : "is-error"}
+          titleId="platformSlipVerificationTitle" icon="bi bi-bank"
+          title="บัญชีผู้รับเงินกลาง"
+          description="จัดการบัญชีปลายทางสำหรับรับค่าบริการ ส่วนแบ่งรายวัน และการเติมเครดิต Lalamove"
+          badge={receiverUnconfirmed ? "รอตรวจสอบผลบันทึก" : receiverPersisted ? "ตั้งค่าบัญชีแล้ว" : "ยังไม่ได้ตั้งค่า"}
+          badgeId="platformSlipVerificationStatus"
+          badgeClass={receiverPersisted && !receiverUnconfirmed ? "is-ready" : "is-error"}
           className="platform-slip-verification-card"
+          anchorId="platformReceiverSettings"
         >
-          <form id="platformSlipVerificationForm" className="platform-google-api-form" noValidate onSubmit={saveSlip}>
-            <div className="platform-google-api-grid">
-              <div className="field platform-google-api-field">
-                <label htmlFor="platformSlipVerificationProvider">{t("platform.slip_verification.provider")}</label>
-                <select className="input" id="platformSlipVerificationProvider" value={slip.provider} disabled={slipBusy || slipLoadError || !slipReadReady} onChange={event => setSlip(current => ({ ...current, provider: event.target.value }))}>
-                  <option value="google_vision">{t("platform.slip_verification.providers.google_vision")}</option>
-                  <option value="slip2go">{t("platform.slip_verification.providers.slip2go")}</option>
-                  <option value="slip2go_fallback_vision">{t("platform.slip_verification.providers.slip2go_fallback_vision")}</option>
-                </select>
-                <small>{t("platform.slip_verification.provider_help")}</small>
-              </div>
-              <div className="field platform-google-api-field">
-                <label htmlFor="platformSlip2GoApiUrl">{t("platform.slip_verification.api_url")}</label>
-                <input className="input" id="platformSlip2GoApiUrl" type="url" maxLength="255" autoComplete="off" spellCheck={false} placeholder="https://...slip2go.com" value={slip.slip2GoApiUrl} disabled={slipBusy || slipLoadError || !slipReadReady} onChange={event => setSlip(current => ({ ...current, slip2GoApiUrl: event.target.value }))} />
-                <small>{t("platform.slip_verification.api_url_help")}</small>
-              </div>
-              <SecretField
-                id="platformSlip2GoSecret" clearId="clearPlatformSlip2GoSecret"
-                placeholder={t("platform.slip_verification.secret_placeholder")} label={t("platform.slip_verification.secret")}
-                clearText={t("platform.slip_verification.clear")} value={slipSecret} disabled={slipBusy || slipLoadError || !slipReadReady}
-                statusId="platformSlip2GoSecretStatus"
-                status={slipLoadError ? t("platform.slip_verification.load_failed") : slipSecretText(slip.slip2GoSecretConfigured, slip.slip2GoSecretMasked, slipClearSecret)}
-                onChange={value => { setSlipSecret(value); if (value) setSlipClearSecret(false); }}
-                onClear={() => { setSlipSecret(""); setSlipClearSecret(true); }}
-              />
-            </div>
-
-            <div className="platform-slip-receiver-grid">
-              <div className="field">
-                <label htmlFor="platformSlip2GoReceiverAccountType">{t("platform.slip_verification.receiver_account_type")}</label>
+          <div className="platform-receiver-intro" role="note">
+            <div className="platform-receiver-intro-icon"><i className="bi bi-shield-check" aria-hidden="true"/></div>
+            <div><strong>บัญชีรับชำระของระบบกลาง</strong>
+              <p>กำหนดบัญชีให้ถูกต้องก่อนเปิดรับโอนจากร้านค้า โดยข้อมูลนี้เป็นเพียงบัญชีผู้รับ ไม่ใช่หลักฐานยืนยันว่าได้รับเงินจริง</p></div>
+          </div>
+          <form id="platformReceiptRecipientForm" className="platform-google-api-form" noValidate onSubmit={saveReceiptReceiver}>
+            <h3 className="platform-receiver-section-title">รายละเอียดบัญชีรับเงิน</h3>
+            <div className="platform-receiver-bank-grid">
                 <PlatformReceiverBankSelect
-                  id="platformSlip2GoReceiverAccountType"
-                  value={slip.receiver?.accountType || ""}
+                  dynamicLabel="ธนาคารผู้รับเงิน"
+                  id="platformReceiptReceiverAccountType"
+                  value={receiverTypes[slip.receiver?.accountType] ? slip.receiver.accountType : ""}
                   options={receiverTypes}
-                  disabled={slipBusy || slipLoadError || !slipReadReady}
+                  disabled={slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed}
                   searchPlaceholder={t("platform.slip_verification.receiver_search_placeholder")}
                   noResultsText={t("platform.slip_verification.receiver_no_results")}
                   loadMoreText={t("platform.slip_verification.receiver_load_more")}
-                  onChange={accountType => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountType } }))}
+                  onChange={accountType => setSlip(current=>({...current,receiver:{...current.receiver,accountType, ...(!/^01[0-9]{3}$/.test(current.receiver?.accountType||"")?{accountNumber:""}:{})}}))}
                 />
+              <DynamicField id="platformReceiptReceiverAccountNumber" label="เลขบัญชีธนาคารที่รับเงินจริง" value={/^01[0-9]{3}$/.test(slip.receiver?.accountType||"") ? slip.receiver?.accountNumber || "" : ""}>
+                <input className="input" id="platformReceiptReceiverAccountNumber" maxLength="20" inputMode="numeric"
+                  value={/^01[0-9]{3}$/.test(slip.receiver?.accountType||"") ? slip.receiver?.accountNumber || "" : ""} disabled={slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed}
+                  onChange={event=>setSlip(current=>({...current,receiver:{...current.receiver,accountNumber:event.target.value}}))}/>
+              </DynamicField>
+              <DynamicField id="platformReceiptReceiverNameTH" label="ชื่อบัญชีผู้รับ (ภาษาไทย)" value={slip.receiver?.accountNameTH || ""}>
+                <input className="input" id="platformReceiptReceiverNameTH" maxLength="180"
+                  value={slip.receiver?.accountNameTH || ""} disabled={slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed}
+                  onChange={event=>setSlip(current=>({...current,receiver:{...current.receiver,accountNameTH:event.target.value}}))}/>
+              </DynamicField>
+              <DynamicField id="platformReceiptReceiverNameEN" label="ชื่อบัญชีผู้รับ (ภาษาอังกฤษ)" value={slip.receiver?.accountNameEN || ""}>
+                <input className="input" id="platformReceiptReceiverNameEN" maxLength="180"
+                  value={slip.receiver?.accountNameEN || ""} disabled={slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed}
+                  onChange={event=>setSlip(current=>({...current,receiver:{...current.receiver,accountNameEN:event.target.value}}))}/>
+              </DynamicField>
+            </div>
+            <section className="platform-receiver-promptpay">
+              <h3 className="platform-receiver-section-title">รายละเอียดพร้อมเพย์</h3>
+              <p className="platform-receiver-promptpay-help">ใช้สร้าง QR รับชำระเงินเท่านั้น โปรดตรวจสอบว่าหมายเลขพร้อมเพย์ผูกกับบัญชีธนาคารด้านบนจริง</p>
+              {slip.promptPayStorageReady !== true && <p role="status" className="platform-receiver-promptpay-help">ระบบยังไม่พร้อมจัดเก็บข้อมูลพร้อมเพย์แยกจากบัญชีธนาคาร</p>}
+              <div className="platform-receiver-promptpay-grid">
+                <DynamicField id="platformReceiptPromptPayType" kind="select" label="ประเภทพร้อมเพย์" value={slip.receiver?.promptPayType || "none"}>
+                  <select id="platformReceiptPromptPayType" className="input" value={slip.receiver?.promptPayType || ""} disabled={slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed || slip.promptPayStorageReady !== true}
+                    onChange={event=>setSlip(current=>({...current,receiver:{...current.receiver,promptPayType:event.target.value,promptPayId:""}}))}>
+                    <option value="">ไม่ใช้พร้อมเพย์</option>
+                    <option value="phone">หมายเลขโทรศัพท์</option>
+                    <option value="citizen">เลขบัตรประชาชน</option>
+                  </select>
+                </DynamicField>
+                {slip.receiver?.promptPayType && <DynamicField id="platformReceiptPromptPayId" label={slip.receiver.promptPayType==="phone"?"หมายเลขโทรศัพท์พร้อมเพย์":"เลขบัตรประชาชนพร้อมเพย์"} value={slip.receiver?.promptPayId || ""}>
+                  <input id="platformReceiptPromptPayId" className="input" inputMode="numeric" autoComplete="off" maxLength={slip.receiver.promptPayType==="phone"?10:13} value={slip.receiver?.promptPayId || ""} disabled={slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed || slip.promptPayStorageReady !== true}
+                    onChange={event=>setSlip(current=>({...current,receiver:{...current.receiver,promptPayId:event.target.value.replace(/[^0-9]/g,"")}}))}/>
+                </DynamicField>}
               </div>
-              <div className="field"><label htmlFor="platformSlip2GoReceiverNameTh">{t("platform.slip_verification.receiver_name_th")}</label><input className="input" id="platformSlip2GoReceiverNameTh" maxLength="180" disabled={slipBusy || slipLoadError || !slipReadReady} value={slip.receiver?.accountNameTH || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameTH: event.target.value } }))} /></div>
-              <div className="field"><label htmlFor="platformSlip2GoReceiverNameEn">{t("platform.slip_verification.receiver_name_en")}</label><input className="input" id="platformSlip2GoReceiverNameEn" maxLength="180" disabled={slipBusy || slipLoadError || !slipReadReady} value={slip.receiver?.accountNameEN || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNameEN: event.target.value } }))} /></div>
-              <div className="field"><label htmlFor="platformSlip2GoReceiverAccountNumber">{t("platform.slip_verification.receiver_account_number")}</label><input className="input" id="platformSlip2GoReceiverAccountNumber" maxLength="80" disabled={slipBusy || slipLoadError || !slipReadReady} value={slip.receiver?.accountNumber || ""} onChange={event => setSlip(current => ({ ...current, receiver: { ...current.receiver, accountNumber: event.target.value } }))} /></div>
+              {slip.receiver?.accountType && !/^01[0-9]{3}$/.test(slip.receiver.accountType) && <p role="alert">ข้อมูลเดิมไม่ใช่บัญชีธนาคาร กรุณาเลือกธนาคารและกรอกบัญชีที่รับเงินจริงก่อนบันทึก</p>}
+            </section>
+            <div className="platform-receiver-uses" aria-label="การใช้งานบัญชีรับเงิน">
+              <span><i className="bi bi-check-circle" aria-hidden="true"/> ค่าบริการ Platform</span>
+              <span><i className="bi bi-check-circle" aria-hidden="true"/> ส่วนแบ่งรายวัน</span>
+              <span><i className="bi bi-check-circle" aria-hidden="true"/> เติมเครดิต Lalamove</span>
             </div>
-            <small className="platform-slip-receiver-help">{t("platform.slip_verification.receiver_help")}</small>
-
-            <div className="platform-google-api-notes">
-              <p><i className="bi bi-shield-lock" aria-hidden="true"></i><span>{t("platform.slip_verification.security_help")}</span></p>
-              <p><i className="bi bi-arrow-repeat" aria-hidden="true"></i><span>{t("platform.slip_verification.fallback_help")}</span></p>
-              <p><i className="bi bi-speedometer2" aria-hidden="true"></i><span id="platformSlip2GoQuotaStatus">{slipQuota || t("platform.slip_verification.quota_not_checked")}</span></p>
-            </div>
-            <div className="platform-google-api-actions platform-lalamove-actions">
-              <button className="btn" id="testPlatformSlip2GoButton" type="button" disabled={slipBusy || slipLoadError || !slipReadReady} onClick={testSlip}><i className="bi bi-plug" aria-hidden="true"></i><span>{t("platform.slip_verification.test")}</span></button>
-              <button className="btn btn-primary" id="savePlatformSlipVerificationButton" type="submit" disabled={slipBusy || slipLoadError || !slipReadReady}><i className="bi bi-floppy" aria-hidden="true"></i><span>{t("platform.slip_verification.save")}</span></button>
+            <p role="note" className="platform-receiver-promptpay-help">บัญชีที่บันทึกใน Firebase ยังไม่เปิดใช้เป็นช่องทางรับชำระอัตโนมัติ ต้องตรวจสอบระบบจับคู่ธุรกรรมและอนุมัติแยกต่างหาก</p>
+            {receiverUnconfirmed && <p role="alert" className="platform-receiver-promptpay-help">ยังยืนยันผลการบันทึกไม่ได้ กรุณารีโหลดก่อนดำเนินการต่อ</p>}
+            <div className="platform-google-api-actions">
+              <button className="btn btn-primary" id="savePlatformReceiptRecipientButton" type="submit"
+                disabled={slipBusy || slipLoadError || !slipReadReady || receiverUnconfirmed}>
+                <i className="bi bi-floppy" aria-hidden="true"/> บันทึกบัญชีผู้รับ
+              </button>
             </div>
           </form>
+          <div className="platform-receiver-footnote" role="note">
+            <i className="bi bi-info-circle" aria-hidden="true"/>
+            <span>ระบบตรวจสลิปใช้สำหรับอ่านหลักฐานประกอบ การรับเงินอัตโนมัติผ่าน LK Connect จะตรวจแจ้งเตือน LINE ตามเงื่อนไขที่เลือกไว้ และบันทึกประวัติแยกจาก Stripe</span>
+          </div>
         </ControlCard>
 
         <ControlCard

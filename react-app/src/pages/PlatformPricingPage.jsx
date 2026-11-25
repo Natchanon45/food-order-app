@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { sweetConfirm } from "@/components/sweetDialog";
+import { PlatformCollectionPreferences } from "@/components/PlatformCollectionPreferences";
 import "@/ui/platform-threshold-schedule.css";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
@@ -137,6 +138,9 @@ export function PlatformPricingPage() {
     setConfig(current => normalizeSubscriptionPricing({
       ...DEFAULT_SUBSCRIPTION_PRICING,
       deliveryThreshold: current.deliveryThreshold,
+      // Retired Slip2Go quota stays in the stored pricing contract but
+      // must not be exposed or reset by the new Premium form.
+      monthlySlipQuota: current.monthlySlipQuota,
     }));
     setMessage("");
   };
@@ -278,17 +282,6 @@ export function PlatformPricingPage() {
                   value={config.deliveryThreshold} />
                 <small className="platform-pricing-locked-note"><i className="bi bi-lock" aria-hidden="true"/> อ่านอย่างเดียว · ประกาศเพดานใหม่พร้อมวันที่มีผลด้านล่าง</small>
               </label>
-              <label className="platform-pricing-quota-field" style={{gridColumn:"1 / -1"}}>
-                <span className="platform-pricing-field-label"><i className="bi bi-shield-check" aria-hidden="true"></i><span>{intlLocale.startsWith("th")
-                  ? "จำนวนครั้งตรวจสลิป Slip2Go ต่อรอบบิล (ครั้ง)"
-                  : "Slip2Go verification quota per billing cycle (checks)"}</span></span>
-                <input id="pricingMonthlySlipQuota" type="number" min="0" max="1000000" step="1" required
-                  style={{maxWidth:280}}
-                  value={config.monthlySlipQuota} onChange={e => update({monthlySlipQuota:e.target.value})}/>
-                <small className="platform-pricing-quota-help" style={{display:"block",marginTop:7,fontSize:12,color:"#61766a",lineHeight:1.5}}>{intlLocale.startsWith("th")
-                  ? "นับเฉพาะบิลที่ส่งตรวจ Slip2Go จริง ไม่รวมการตรวจซ้ำ เมื่อยอด Delivery ถึงเพดานจะใช้งานได้ไม่จำกัด"
-                  : "Counts unique bills sent to Slip2Go. Unlimited after reaching the paid Delivery threshold."}</small>
-              </label>
               <label>
                 <span className="platform-pricing-field-label"><i className="bi bi-percent" aria-hidden="true"></i><span>{intlLocale.startsWith("th") ? "ส่วนแบ่ง Platform จากยอด Delivery (%)" : "Platform share of paid Delivery (%)"}</span></span>
                 <input id="pricingDeliveryShareRate" type="number" min="0" max="100" step="0.01" required
@@ -391,6 +384,7 @@ export function PlatformPricingPage() {
             </div>
           </aside>
         </section>
+        <PlatformCollectionPreferences />
         <section className="card platform-threshold-schedule" id="platformThresholdSchedule" aria-label="กำหนดเพดาน Delivery ตามรอบบิล">
           <div className="platform-threshold-schedule-header">
             <span className="platform-threshold-schedule-icon" aria-hidden="true"><i className="bi bi-calendar2-week" /></span>

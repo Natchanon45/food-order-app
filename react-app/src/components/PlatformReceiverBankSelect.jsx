@@ -13,7 +13,7 @@ export function filterReceiverBanks(entries, query) {
 // Bank codes are the original Slip2Go account type keys, not array indices.
 export function PlatformReceiverBankSelect({
   id, value, options, disabled = false, onChange,
-  searchPlaceholder, noResultsText, loadMoreText,
+  searchPlaceholder, noResultsText, loadMoreText, dynamicLabel,
 }) {
   const uid = useId().replace(/:/g, "");
   const listId = uid + "-receiver-banks";
@@ -97,7 +97,7 @@ export function PlatformReceiverBankSelect({
 
   return (
     <div className={"platform-bank-combobox" + (open ? " is-open" : "")} ref={rootRef}>
-      <div className="platform-bank-combobox-input">
+      <div className={"platform-bank-combobox-input" + (dynamicLabel ? " platform-bank-dynamic" : "") + (value || open ? " is-filled" : "")}>
         <i className="bi bi-search" aria-hidden="true"></i>
         <input
           ref={inputRef}
@@ -111,13 +111,14 @@ export function PlatformReceiverBankSelect({
           aria-controls={listId}
           aria-activedescendant={open && visible[activeIndex] ? listId + "-option-" + activeIndex : undefined}
           disabled={disabled}
-          placeholder={searchPlaceholder}
+          placeholder={dynamicLabel && !open ? "" : searchPlaceholder}
           value={open ? query : selectedLabel}
           onFocus={() => { if (!open) openMenu(); }}
           onClick={() => { if (!open) openMenu(); }}
           onChange={event => changeQuery(event.target.value)}
           onKeyDown={onKeyDown}
         />
+        {dynamicLabel && <label className="platform-bank-dynamic-label" htmlFor={id}>{dynamicLabel}</label>}
         <button type="button" className="platform-bank-combobox-toggle" aria-label={searchPlaceholder}
           disabled={disabled} aria-expanded={open}
           onClick={() => { if (open) setOpen(false); else { openMenu(); inputRef.current?.focus(); } }}>

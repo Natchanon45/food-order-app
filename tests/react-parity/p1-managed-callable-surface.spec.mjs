@@ -71,8 +71,8 @@ test("every exported v2 Callable definition uses a single shared pre-handler Aut
   assert.doesNotMatch(text,/require\(["']firebase-functions\/v2\/https["']\)/,
    name+" may import an unguarded onCall");
  }
- assert.equal(modules,45,"audit each of the 45 callable modules");
- assert.equal(definitions,144,"audit the complete 144-Callable surface");
+ assert.equal(modules,46,"audit all 46 Callable modules including new Platform Receiver");
+ assert.equal(definitions,146,"audit all 146 Callables including dedicated receiver read/update");
  const source=readFileSync(new URL("managed-email-callable.js",root),"utf8");
  assert.match(source,/await assertManagedEmailVerified\(request\);\s*return handler\(request,\.\.\.rest\)/);
  assert.match(source,/request.auth\?\.token\?\.email_verified === true/);

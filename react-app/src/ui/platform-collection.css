@@ -1,0 +1,99 @@
+body.platform-pricing-page .platform-collection-settings{margin:18px 0;padding:22px;border-radius:18px;border:1px solid #d9e9df;background:#fff}
+body.platform-pricing-page .platform-collection-heading{display:flex;align-items:flex-start;gap:13px;margin-bottom:18px}
+body.platform-pricing-page .platform-collection-heading-icon{flex:0 0 42px;display:grid;place-items:center;height:42px;border-radius:12px;background:#e7f4ec;color:#147a4a;font-size:20px}
+body.platform-pricing-page .platform-collection-heading h2{font-size:19px;font-weight:650;line-height:1.4;margin:0;color:#143c29}
+body.platform-pricing-page .platform-collection-heading p{font-size:12px;color:#62776a;line-height:1.6;margin:3px 0 0}
+body.platform-pricing-page .platform-collection-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+body.platform-pricing-page .platform-collection-choice{display:flex;align-items:flex-start;min-width:0;gap:11px;cursor:pointer;border:1px solid #dfebe3;border-radius:14px;padding:15px;background:#f9fcfa}
+body.platform-pricing-page .platform-collection-choice.is-selected{border-color:#18864d;background:#ecf9f0;box-shadow:inset 0 0 0 1px #18864d}
+body.platform-pricing-page .platform-collection-choice input[type=radio]{flex:0 0 19px;width:19px;min-width:19px;max-width:19px;height:19px;min-height:19px;max-height:19px;appearance:auto;accent-color:#128148;padding:0;margin:9px 0 0}
+body.platform-pricing-page .platform-collection-choice-icon{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:10px;background:#e2f3e9;color:#137b48}
+body.platform-pricing-page .platform-collection-choice-text{display:grid;flex:1;min-width:0;gap:4px}
+body.platform-pricing-page .platform-collection-choice-text strong{font-size:15px;color:#16432c;font-weight:600}
+body.platform-pricing-page .platform-collection-choice-text small{font-size:12px;color:#5e7566;line-height:1.6}
+body.platform-pricing-page .platform-collection-status{font-size:12px;color:#2d6b48;margin:14px 0 0;line-height:1.55}
+body.platform-pricing-page .platform-collection-setup{margin-top:15px;padding:16px;border:1px solid #dcece2;border-radius:14px;background:#f8fbf9}
+body.platform-pricing-page .platform-collection-setup>strong{display:flex;align-items:center;gap:8px;color:#173e2c;font-size:14px;font-weight:600}
+body.platform-pricing-page .platform-collection-setup p{font-size:12px;line-height:1.6;color:#5f7467;margin:8px 0}
+body.platform-pricing-page .platform-collection-setup>.btn{display:inline-flex;align-items:center;gap:7px;margin-top:5px}
+body.platform-pricing-page .platform-collection-setup-note{display:flex;align-items:flex-start;gap:8px;padding:10px;margin:12px 0;border-radius:10px;background:#fff4e4;color:#7b4e14;font-size:12px;line-height:1.6}
+body.platform-pricing-page .platform-collection-warning{margin:10px 0;color:#a22932;font-size:13px}
+body.platform-pricing-page .platform-collection-actions{display:flex;justify-content:flex-end;align-items:center;gap:9px;margin-top:16px;flex-wrap:wrap}
+body.platform-pricing-page .platform-collection-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;white-space:nowrap;font-weight:400}
+@media(max-width:680px){body.platform-pricing-page .platform-collection-settings{padding:14px;margin:14px 0}body.platform-pricing-page .platform-collection-heading h2{font-size:17px}body.platform-pricing-page .platform-collection-choices{grid-template-columns:minmax(0,1fr)}body.platform-pricing-page .platform-collection-choice{padding:12px}body.platform-pricing-page .platform-collection-actions{flex-wrap:nowrap}body.platform-pricing-page .platform-collection-actions .btn{padding:8px 10px;font-size:clamp(11px,2.8vw,13px)}}
+body.platform-pricing-page .platform-companion{margin-top:16px;padding:15px;border:1px solid #cfe6d9;border-radius:14px;background:#fff;min-width:0}
+body.platform-pricing-page .platform-companion-heading{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+body.platform-pricing-page .platform-companion-heading>div{display:grid;gap:5px;min-width:0}
+body.platform-pricing-page .platform-companion-heading strong{font-size:14px;font-weight:600;color:#16432e}
+body.platform-pricing-page .platform-companion-heading small{font-size:12px;color:#5a7062;line-height:1.6}
+body.platform-pricing-page .platform-companion-heading>span{white-space:nowrap;font-size:12px;color:#227348;background:#e6f5ed;padding:4px 8px;border-radius:16px}
+body.platform-pricing-page .platform-companion-install{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin:15px 0}
+body.platform-pricing-page .platform-companion-install>label{display:grid;gap:5px;flex:1 1 190px;min-width:0;font-size:12px;color:#264e36}
+body.platform-pricing-page .platform-companion-install .input{min-width:0;width:100%;max-width:100%;min-height:40px}
+body.platform-pricing-page .platform-companion-install>.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;margin:0;font-size:12px;font-weight:400;white-space:nowrap}
+body.platform-pricing-page .platform-companion-muted{font-size:12px;color:#9a5f16}
+body.platform-pricing-page .platform-companion-issued{display:grid;justify-items:center;gap:10px;max-width:100%;border:1px solid #cfe5d8;border-radius:12px;padding:15px;background:#f4fbf6}
+body.platform-pricing-page .platform-companion-issued>strong{font-size:14px;color:#174e31;font-weight:600}
+body.platform-pricing-page .platform-companion-issued>small{font-size:12px;color:#58705f;text-align:center}
+body.platform-pricing-page .platform-companion-key-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;width:100%}
+body.platform-pricing-page .platform-companion-key-actions .input{min-width:0;flex:1 1 180px;max-width:420px}
+body.platform-pricing-page .platform-companion-key-actions>.btn{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:400}
+body.platform-pricing-page .platform-companion-members{display:grid;gap:8px;border-top:1px solid #e4ece5;margin-top:15px;padding-top:12px}
+body.platform-pricing-page .platform-companion-members>strong{font-size:13px;font-weight:600;color:#173e2b}
+body.platform-pricing-page .platform-companion-members>small,body.platform-pricing-page .platform-companion-member small{font-size:11px;color:#698075}
+body.platform-pricing-page .platform-companion-member{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px;border:1px solid #e4eee6;border-radius:10px;background:#fbfdfb;font-size:12px}
+body.platform-pricing-page .platform-companion-member>span:first-child{display:grid;gap:4px}
+body.platform-pricing-page .platform-companion-member>.btn{font-size:12px;font-weight:400}
+@media(max-width:520px){body.platform-pricing-page .platform-companion{padding:11px}body.platform-pricing-page .platform-companion-install>label{flex-basis:100%;order:-1}body.platform-pricing-page .platform-companion-install>.btn{flex:1 1 auto;min-width:0;padding:8px 10px;font-size:clamp(10px,2.7vw,12px)}}
+.m7-platform-promptpay{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px;margin:12px 0;border:1px solid #d5eadc;border-radius:14px;background:#f5fcf7}
+.m7-platform-promptpay strong{font-size:14px;color:#165632;font-weight:600}
+.m7-platform-promptpay svg{display:block;max-width:100%;height:auto;background:#fff;padding:9px;border-radius:12px}
+.m7-platform-promptpay small{font-size:12px;color:#496b58;text-align:center}
+[data-m7-line-auto-match-note]{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.7;color:#376b4e}
+.platform-line-topup .platform-line-wallet-payment{display:flex;flex-direction:column;gap:7px;background:#f2faf4;border:1px solid #cfe7d6;border-radius:13px;margin:14px 0;padding:14px;min-width:0;overflow-wrap:anywhere}
+.platform-line-topup .platform-line-wallet-payment>strong{color:#155432;font-size:14px;font-weight:600}
+.platform-line-topup .platform-line-wallet-payment>small{font-size:12px;color:#55715f;line-height:1.6}
+.platform-line-topup .platform-line-wallet-success{color:#147448;font-weight:600;font-size:13px;display:flex;gap:7px;align-items:center;overflow-wrap:anywhere}
+.platform-line-topup .bankalert-wallet-actions .btn{font-weight:400}
+@media(max-width:520px){.platform-line-topup .bankalert-wallet-actions{flex-wrap:wrap}.platform-line-topup .bankalert-wallet-actions .btn{min-width:0;font-size:clamp(11px,2.9vw,13px)}}
+.platform-line-topup .bankalert-wallet-amount{min-width:0;max-width:100%;width:100%}
+.platform-line-topup .bankalert-wallet-amount-input-wrap{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
+.platform-line-topup .bankalert-wallet-amount-input-wrap .input{box-sizing:border-box;width:100%;min-width:0;max-width:100%;flex:1}
+body.platform-pricing-page .platform-companion-match-label{font-weight:500;color:#17864c;overflow-wrap:anywhere;max-width:100%}
+body.platform-pricing-page .platform-collection-progress{margin-top:16px;padding:15px 16px;background:#fbfefc;border:1px solid #d9ebe0;border-radius:14px}
+body.platform-pricing-page .platform-collection-progress>strong{display:flex;align-items:center;gap:8px;font-size:14px;color:#214f35;margin-bottom:11px;font-weight:650}
+body.platform-pricing-page .platform-collection-progress-step{display:flex;align-items:center;gap:10px;min-height:38px;font-size:12px;color:#435c4c;border-top:1px solid #e7eee9;padding:9px 2px}
+body.platform-pricing-page .platform-collection-progress-step>i{font-size:16px;color:#a0b6a5;flex:0 0 16px}
+body.platform-pricing-page .platform-collection-progress-step>i.bi-check-circle-fill{color:#168a50}
+body.platform-pricing-page .platform-collection-progress-step>span{flex:1;min-width:0}
+body.platform-pricing-page .platform-collection-progress-step a,body.platform-pricing-page .platform-collection-progress-step button{font-size:12px;display:inline-flex;border:0;padding:5px;background:transparent;color:#167a49;text-decoration:underline;cursor:pointer}
+body.platform-pricing-page .platform-collection-next{display:flex;gap:9px;align-items:flex-start;margin-top:11px;padding:13px;border:1px solid #cfe6d5;background:#edf9f0;color:#236543;border-radius:10px;font-size:12px;line-height:1.65}
+body.platform-pricing-page .platform-companion{scroll-margin-top:95px}
+@media(max-width:520px){body.platform-pricing-page .platform-collection-progress{padding:11px}body.platform-pricing-page .platform-collection-progress-step{flex-wrap:wrap}body.platform-pricing-page .platform-collection-progress-step a,body.platform-pricing-page .platform-collection-progress-step button{margin-left:27px}}
+
+.platform-line-topup .platform-topup-countdown{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid #cfe5d6;border-radius:12px;background:#f3faf5;padding:12px 14px;color:#21583b;font-size:.88rem;overflow-wrap:anywhere}
+.platform-line-topup .platform-topup-countdown strong{font-size:1.4rem;font-variant-numeric:tabular-nums;color:#08743d}
+.platform-line-topup .platform-topup-failed{display:grid;gap:8px;padding:14px;border:1px solid #f2d1c7;background:#fff8f5;border-radius:12px;color:#8d352b;overflow-wrap:anywhere}
+/* Payment appeal upload: same pacing as Delivery, finer green diagonal stripes. */
+.platform-line-topup .platform-topup-appeal{display:grid;gap:8px;min-width:0}
+.platform-line-topup .platform-appeal-picker{position:relative;display:flex;align-items:center;gap:12px;min-width:0;width:100%;box-sizing:border-box;padding:14px;border:1px dashed #a7cdb3;border-radius:12px;background:#fff;color:#214f35;cursor:pointer;transition:border-color .15s,background .15s}
+.platform-line-topup .platform-appeal-picker:hover,.platform-line-topup .platform-appeal-picker:focus-within{border-color:#16884c;background:#f4fbf6}
+.platform-line-topup .platform-appeal-picker:focus-within{outline:2px solid #16884c;outline-offset:2px}
+.platform-line-topup .platform-appeal-picker.is-disabled{opacity:.6;cursor:not-allowed}
+.platform-line-topup .platform-appeal-picker input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:inherit}
+.platform-line-topup .platform-appeal-picker-icon{display:grid;place-items:center;flex:0 0 44px;height:44px;border-radius:12px;background:#e6f4ea;color:#16834a;font-size:23px}
+.platform-line-topup .platform-appeal-picker-copy{display:grid;gap:4px;flex:1;min-width:0;overflow-wrap:anywhere;text-align:left}
+.platform-line-topup .platform-appeal-picker-copy strong{font-size:.92rem;font-weight:600;color:#204c34}
+.platform-line-topup .platform-appeal-picker-copy small{font-size:.75rem;color:#65796b;line-height:1.5}
+.platform-line-topup .platform-appeal-picker-action{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;background:#eaf5ed;color:#137e43;border-radius:9px;padding:9px 13px;font-size:.82rem;font-weight:600;pointer-events:none}
+.platform-line-topup .platform-appeal-upload{display:grid;gap:10px;min-width:0;padding:14px;border:1px solid #cce3d3;border-radius:12px;background:#f7fcf8;color:#21583b;overflow-wrap:anywhere}
+.platform-line-topup .platform-appeal-upload-file{display:flex;align-items:center;gap:10px;min-width:0}
+.platform-line-topup .platform-appeal-success-icon{font-size:22px;color:#16884c}
+.platform-line-topup .platform-appeal-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.85rem;color:#147643;font-variant-numeric:tabular-nums}
+.platform-line-topup .platform-appeal-progress-track{height:16px;border-radius:999px;overflow:hidden;background:#e2ebe4;box-shadow:inset 0 1px 2px #00000012}
+.platform-line-topup .platform-appeal-progress-fill{height:100%;border-radius:999px;background-color:#16884c;background-image:linear-gradient(45deg,#45b96a 25%,transparent 25%,transparent 50%,#45b96a 50%,#45b96a 75%,transparent 75%,transparent);background-size:12px 12px;animation:platform-appeal-stripes .65s linear infinite;transition:width .1s linear}
+.platform-line-topup .platform-appeal-progress-fill.is-complete{background:#16884c;animation:none}
+.platform-line-topup .platform-appeal-upload>small{font-size:.75rem;color:#55715f;line-height:1.5}
+@keyframes platform-appeal-stripes{from{background-position:0 0}to{background-position:12px 0}}
+@media(max-width:480px){.platform-line-topup .platform-appeal-picker{flex-wrap:wrap;padding:12px;gap:9px}.platform-line-topup .platform-appeal-picker-action{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.platform-line-topup .platform-appeal-progress-fill{animation:none;transition:none}}

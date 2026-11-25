@@ -12,11 +12,12 @@ test("monthly trial follows Bangkok activation anniversary and does not give old
   assert.equal(result.trialStartsAt.toISOString(), first.toISOString());
   assert.equal(result.trialEndsAt.toISOString(), "2026-11-17T16:59:59.999Z");
   assert.equal(result.subscriptionExpiresAt.toISOString(), "2026-11-17T16:59:59.999Z");
-  const server = src("functions/tenant-admin.js");
-  assert.match(server, /const onboardingRequired = tenant.onboardingRequired === true/);
-  assert.match(server, /const firstActivation = onboardingRequired/);
-  assert.match(server, /firstActivatedAt: Timestamp.fromDate\(activatedAt\)/);
-  assert.match(server, /onboardingRequired: false/);
+  const server = src("functions/tenant-provision.js");
+  assert.match(server, /onboardingRequired: false, firstActivatedAt: started/);
+  assert.match(server, /planCode: input.planCode, onboardingRequired: false/);
+  const renewal = src("functions/subscription-admin.js");
+  assert.match(renewal, /tenant.onboardingRequired === true/);
+  assert.match(renewal, /SUBSCRIPTION_ORIGINAL_ENROLLMENT_REQUIRED/);
 });
 
 test("yearly plan has one free month then twelve membership months", () => {
@@ -40,8 +41,10 @@ test("new tenant is not billed by subscription job before first owner is created
 
 test("staff scope is checked server-side and stale tenant data is rejected in UI", () => {
   const server = src("functions/staff-admin.js");
-  assert.match(server, /function assertRequestedTenant\(request, tenant\)/);
-  assert.equal((server.match(/assertRequestedTenant\(request, tenant\);/g) || []).length, 3);
+  assert.match(server, /async function authorized\(db,auth,expectedTenantId,nativeAuth\)/);
+  assert.match(server, /profile.tenantId!==expectedTenantId/);
+  assert.match(server, /await reservationActor\(tx,db,caller.uid,tenantId\)/);
+  assert.match(server, /user.data\(\)\?\.tenantId!==input.expectedTenantId/);
   const page = src("react-app/src/pages/AdminUsersPage.jsx");
   assert.match(page, /activeTenantIdRef.current !== expectedTenantId/);
   assert.match(page, /requestId !== loadRequestRef.current/);
@@ -52,11 +55,12 @@ test("staff scope is checked server-side and stale tenant data is rejected in UI
 
 test("new Platform Owner UI requires canonical reread and retains uncertain write lock", () => {
   const page = src("react-app/src/pages/PlatformOwnersPage.jsx");
-  assert.match(page, /const confirmedTenants = await listTenants\(\)/);
-  assert.match(page, /confirmed.ownerUid !== createdUid/);
-  assert.match(page, /OWNER_WRITE_UNCONFIRMED/);
+  assert.match(page, /const nextTenants = await listTenants\(\)/);
+  assert.match(page, /canonicalOwnerMatches\(nextTenants,status\)/);
+  assert.match(page, /OWNER_OPERATION_NOT_CONFIRMED/);
+  assert.match(page, /getPlatformTenantOwnerOperation/);
   assert.match(page, /id="ownerBillingPlan"/);
-  assert.match(page, /disabled=\{saving \|\| \(selected != null && unconfirmedOwners.includes\(selected.id\)\)\}/);
+  assert.match(page, /disabled=\{saving \|\| \(selected != null && isOwnerLocked\(selected.id\)\)\}/);
 });
 
 test("Telegram and pricing controls are server-owned and hide secrets", () => {
@@ -68,7 +72,8 @@ test("Telegram and pricing controls are server-owned and hide secrets", () => {
   const pricing = src("functions/subscription-pricing.js");
   assert.match(pricing, /Monthly Slip2Go quota must be a whole number/);
   const form = src("react-app/src/pages/PlatformPricingPage.jsx");
-  assert.match(form, /id="pricingMonthlySlipQuota"/);
+  assert.doesNotMatch(form, /id="pricingMonthlySlipQuota"/);
+  assert.match(form, /monthlySlipQuota: current.monthlySlipQuota/);
   assert.match(form, /saveUnconfirmed/);
   assert.match(form, /storageReady/);
 });

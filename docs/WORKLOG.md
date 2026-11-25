@@ -1,3 +1,15 @@
+## 2026-11-25 — NEW Source JSX baseline and P1 Platform re-port first slice
+
+- Source changed by user to **`feature/react-golang-vite-tailwind-axios@7bf9d159`** (verified GitHub HEAD). Source `cosmatch/lukkhaja` strict read-only; Target `Natchanon45/food-order-app` `feature/react-firebase-port` (start `fc480549`), clean baseline. No new project/duplicate structure.
+- Completed 65-page JSX inventory, source-only/target-only and 15 newer JSX commits / 8 changed files; saved `docs/LUKKAJA_JSX_SOURCE_REBASELINE_20261125.md`.
+- Updated `PlatformPricingPage.jsx` to retire only Slip2Go quota field, preserving `monthlySlipQuota` in normalization/reset and immutable threshold history. Added latest Source-style `PlatformCollectionPreferences` with Stripe vs bank/LINE guidance, **intentionally disabled Save** until verified payment backends exist.
+- Updated `PlatformPage.jsx`: replaced obsolete Slip2Go provider form with Source bank receiver/PromptPay card, account/name/phone/citizen dynamic inputs, anchor navigation, proper source CSS, explicit confirmation and no-repeat guard. Added separate read and transaction CAS update Callables in `functions/platform-receiver.js` for `platformPrivateSettings/receiptReceiver`; legacy receiver can prefill as *unconfirmed*, no implicit import, no original credential changes.
+- Updated bank picker dynamic labels and LK Shop Contact copy. Existing Firebase security and messaging remain, no real banks/Stripe/LINE interactions or invoices marked paid.
+- Verification: Source static contracts 5/5 PASS; updated original Platform/Pricing/Bank picker contracts 14/14 PASS; Firebase Receiver Emulator 6/6 PASS; actual Chrome signed Browser 1/1 PASS; Vite React Build and generated Hosting Contract PASS. Read current final logs before certifying full project parity. Build-generated `public/**` must be removed, no Hosting deploy.
+- **Remaining:** new Source Platform payment routing/companion pairing + AdminTenants unified top-up review, operations/merchant changes. No Production or Staging release, `main` merge, Source changes or mobile builds. See `docs/LUKKAJA_P1_NEW_SOURCE_PLATFORM_REBASE_20261125.md`.
+
+---
+
 ## 2026-11-23 — P1.4 Pricing/SaaS Setup: complete LOCAL Source JSX + Firebase acceptance
 
 - **Source pinned READ ONLY:** `cosmatch/lukkhaja` `feature/lukkaja_bankalert_stripe@8b108f1278b7c59bd44c02133d659b8e6cd6fd3f`; **Destination** `Natchanon45/food-order-app` `feature/react-firebase-port`, starting `04d76db92cd610c65594cff94b3ff1d4dc324e33`. 2 pages covered: Pricing Source 461 → Firebase 462 lines, SaaS Source 152 → Firebase 153 lines.

@@ -1,5 +1,18 @@
 # LUKKAJA → PENGUIN: JSX-first / Firebase-adapted phased port
 
+## 2026-11-25 — NEW authoritative Source JSX baseline: `feature/react-golang-vite-tailwind-axios`
+
+**Explicit user change:** Source is now `cosmatch/lukkhaja@7bf9d15934f387cd887b46d1b17ca1f2924ffab0`, branch `feature/react-golang-vite-tailwind-axios` (verified with `git ls-remote`); **do not use old `feature/lukkaja_bankalert_stripe@8b108f1` as the latest Source.** Destination remains `Natchanon45/food-order-app` `feature/react-firebase-port`, based on `fc480549`. Source is READ ONLY, Target Firebase modules retained.
+
+**Source JSX inventory:** 65 files / 36,001 lines, Target prior 53 files / 30,893 lines, 52 shared pages, 13 Source-only, 1 Firebase-specific Target-only; latest diff has 15 JSX-modifying commits / eight page files since old baseline. [Full page-by-page inventory](./LUKKAJA_JSX_SOURCE_REBASELINE_20261125.md).
+
+**Started source refresh in Platform/Pricing/Contact:** Latest Premium retired quota input while preserving billed quota, Central Receiver bank/PromptPay dynamic form and dedicated revision-guarded private Firebase Callables, scoped Source CSS, LK Shop copy. New bank/Stripe collection preferences visibly present **read-only/disabled**, because a Firebase replacement for Go LINE match/Webhook/payment routing is not yet audited; never present a saved receiver as paid evidence. Existing Firebase owner/staff email guard and prior modules remain. **Local acceptance: Full React Parity EXIT 0, React Build/Hosting Contract PASS, new Source contracts 5/5, receiver Firestore 6/6, real signed Chrome 1/1; 46/146 managed-email Callable audit protected.** [Implementation/report/remaining gates](./LUKKAJA_P1_NEW_SOURCE_PLATFORM_REBASE_20261125.md).
+
+**Next Source delta:** Superadmin Tenant unified wallet/topup and appeal verification, then P2 Merchant Admin, P3/P4 operations, P5 Retail POS. Actual provider switching requires independent payment-authority acceptance; do not silently activate billing, migrate real shops, merge `main`, deploy Production or build APK/IPA.
+
+---
+
+
 ## 2026-11-23 P1.4 — Pricing / SaaS Setup MODULE COMPLETE (LOCAL)
 
 **Target:** `Natchanon45/food-order-app` `feature/react-firebase-port`; **Source READ ONLY:** `cosmatch/lukkhaja` `feature/lukkaja_bankalert_stripe@8b108f1`. Compared pinned Source JSX for **both P1.4 pages**: `PlatformPricingPage.jsx` Source 461 lines → Firebase 462 lines; `SaasSetupPage.jsx` Source 152 → Firebase 153. Original Source SaaS page is **inspection-only**, not an approved migration tool.

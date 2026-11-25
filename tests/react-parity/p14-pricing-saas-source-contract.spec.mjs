@@ -46,7 +46,7 @@ test("P1.4 SaaS server never copies Source data, mints Tenant/owner or edits fin
  assert.match(saasServer,/profile\.active !== true/);
 });
 test("P1.4 Premium pricing preserves Source control IDs and locked Delivery history",()=>{
- for(const id of ["pricingForm","pricingMonthlyPrice","pricingMonthlySlipQuota",
+ for(const id of ["pricingForm","pricingMonthlyPrice",
   "pricingDeliveryThreshold","pricingDeliveryShareRate","pricingAnnualMonths",
   "pricingDiscountType","pricingDiscountValue","pricingVatMode","pricingVatRate",
   "pricingReset","pricingSave","previewMonthly","previewRegular",
@@ -56,6 +56,9 @@ test("P1.4 Premium pricing preserves Source control IDs and locked Delivery hist
   "saveScheduledDeliveryThreshold"]){
   assert.ok(pricingPage.includes('id="'+id+'"'),"Missing Source pricing control "+id);
  }
+ assert.doesNotMatch(pricingPage,/id="pricingMonthlySlipQuota"/);
+ assert.match(pricingPage,/monthlySlipQuota: current.monthlySlipQuota/);
+ assert.match(pricingPage,/id="platformCollectionSettings"|PlatformCollectionPreferences/);
  assert.match(pricingPage,/id="pricingDeliveryThreshold"[\s\S]{0,180}readOnly/);
  assert.match(pricingPage,/id="deliveryThresholdBaselineAmount"[\s\S]{0,200}readOnly/);
  assert.match(pricingPage,/thresholdScheduleUnconfirmed/);

@@ -279,6 +279,9 @@ exports.getPlatformLalamove = platformSettings.getPlatformLalamove;
 exports.updatePlatformLalamove = platformSettings.updatePlatformLalamove;
 exports.testPlatformLalamove = platformSettings.testPlatformLalamove;
 exports.registerPlatformLalamoveWebhook = platformSettings.registerPlatformLalamoveWebhook;
+const platformReceiver = require("./platform-receiver");
+exports.getPlatformReceiptReceiver = platformReceiver.getPlatformReceiptReceiver;
+exports.updatePlatformReceiptReceiver = platformReceiver.updatePlatformReceiptReceiver;
 
 const tenantLalamoveWallet = require("./tenant-lalamove-wallet");
 exports.updateTenantLalamoveApproval = tenantLalamoveWallet.updateTenantLalamoveApproval;

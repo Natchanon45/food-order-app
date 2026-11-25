@@ -30,9 +30,9 @@ test("Zero-balance periods explain why slips cannot be submitted", () => {
 
 test("Platform receiver selection uses a paginated, keyboard accessible searchable combobox", () => {
   assert.match(platform, /<PlatformReceiverBankSelect/);
-  assert.match(platform, /id="platformSlip2GoReceiverAccountType"/);
-  assert.match(platform, /onChange=\{accountType => setSlip\(current => \(\{ \.\.\.current, receiver: \{ \.\.\.current\.receiver, accountType \} \}\)\)\}/);
-  assert.doesNotMatch(platform, /<select[^>]+id="platformSlip2GoReceiverAccountType"/);
+  assert.match(platform, /id="platformReceiptReceiverAccountType"/);
+  assert.match(platform, /onChange=\{accountType => setSlip\(current=>/);
+  assert.doesNotMatch(platform, /<select[^>]+id="platformReceiptReceiverAccountType"/);
   assert.match(component, /RECEIVER_BANK_PAGE_SIZE = 12/);
   assert.match(component, /role="combobox"/);
   assert.match(component, /role="listbox"/);
@@ -61,7 +61,9 @@ test("Zero-payment and bank paging messages exist in TH EN MY LO KM", () => {
 test("Platform React does not restore jQuery/Select2 and existing credential saver stays unchanged", () => {
   assert.ok(!platform.includes("window.jQuery"));
   assert.ok(!platform.includes("select2"));
-  assert.match(platform, /const receiverTypes = raw\("platform\.slip_verification\.receiver_account_types"\) \|\| \{\}/);
-  assert.match(platform, /savePlatformSlipVerification\(/);
-  assert.match(platform, /receiverAccountType: receiver\.accountType \|\| ""/);
+  assert.match(platform, /Object\.fromEntries\(/);
+  assert.match(platform, /receiver_account_types/);
+  assert.match(platform, /savePlatformReceiptReceiver\(/);
+  assert.doesNotMatch(platform, /savePlatformSlipVerification\(/);
+  assert.match(platform, /dynamicLabel="ธนาคารผู้รับเงิน"/);
 });

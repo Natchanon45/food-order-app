@@ -612,7 +612,7 @@ export function PlatformContactPage() {
                 </span>
                 <div className="platform-contact-heading-copy">
                   <h2 id="platformLKShopHeading">การแจ้งเตือนผ่าน LK Shop</h2>
-                  <p>เลือกห้องและจับคู่อุปกรณ์เพื่อรับการแจ้งเตือนของระบบ</p>
+                  <p>เชื่อมต่ออุปกรณ์กับห้องแจ้งเตือนส่วนกลางของ Superadmin</p>
                 </div>
               </div>
             </div>
