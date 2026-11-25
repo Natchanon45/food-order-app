@@ -23,7 +23,7 @@ test("source-equivalent platform readiness tracks successful authenticated Fireb
     const setter = "set" + spec.flag[0].toUpperCase() + spec.flag.slice(1);
     const errorSetter = "set" + spec.error[0].toUpperCase() + spec.error.slice(1);
     assert.ok(page.includes(`const [${spec.flag}, ${setter}] = useState(false);`), spec.name);
-    assert.ok(page.includes(`${setter}(false);\n    ${spec.load}()`), spec.name + " load");
+    assert.ok(page.includes(`${setter}(false);\n    boundedPlatformRead(${spec.load}())`), spec.name + " load");
     assert.ok(page.includes(`${setter}(true);`), spec.name + " ready");
     assert.ok(page.includes(`${errorSetter}(true);`), spec.name + " error");
     assert.ok(page.includes(`!${spec.flag}`), spec.name + " guard");

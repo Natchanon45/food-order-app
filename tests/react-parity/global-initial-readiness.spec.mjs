@@ -41,7 +41,6 @@ test("pages with known first-load fetches keep the full-screen overlay until ini
     "PosCatalogPage.jsx",
     "RevenueShareReportPage.jsx",
     "PlatformContactPage.jsx",
-    "PlatformPage.jsx",
     "SaasSetupPage.jsx",
   ];
   for (const file of pages) {
@@ -52,4 +51,12 @@ test("pages with known first-load fetches keep the full-screen overlay until ini
     const before = source.slice(Math.max(0, overlayIndex - 900), overlayIndex);
     assert.ok(/!initialReady/.test(before), `${file} overlay must wait for initialReady`);
   }
+});
+
+test("Platform navigation is independent of bounded individual settings reads", () => {
+ const source=fs.readFileSync(path.join(pageDir,"PlatformPage.jsx"),"utf8");
+ assert.match(source,/function boundedPlatformRead/);
+ assert.match(source,/if \(authState.status === "loading" \|\| !stylesReady\)/);
+ assert.match(source,/!initialReady && <p role="status"/);
+ assert.match(source,/slipLoadError \|\| !slipReadReady/);
 });

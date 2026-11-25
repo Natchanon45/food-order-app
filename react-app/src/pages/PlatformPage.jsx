@@ -85,6 +85,14 @@ const EMPTY_LALAMOVE = {
   ready: false,
 };
 
+// A failed or slow remote read must never hold the entire Superadmin page.
+function boundedPlatformRead(promise, timeoutMs=10000) {
+  let timer;
+  return Promise.race([promise,new Promise((_,reject)=>{
+    timer=window.setTimeout(()=>reject(Error("PLATFORM_READ_TIMEOUT")),timeoutMs);
+  })]).finally(()=>window.clearTimeout(timer));
+}
+
 function showToast(message, type = "success") {
   const el = document.createElement("div");
   el.className = `app-toast ${type === "error" ? "error" : "success"}`;
@@ -205,6 +213,7 @@ export function PlatformPage() {
   const [adminNotifications, setAdminNotifications] = useState(EMPTY_PLATFORM_ADMIN_NOTIFICATIONS);
   const [adminNotificationsLoading, setAdminNotificationsLoading] = useState(true);
   const [initialNotificationsReady, setInitialNotificationsReady] = useState(false);
+  const [notificationsReadError,setNotificationsReadError]=useState(false);
 
   const googleStatusText = (configured, masked, clearing = false) => {
     if (clearing) return t("platform.google_api.clear_pending");
@@ -250,7 +259,7 @@ export function PlatformPage() {
     setBrandingBusy(true);
     setBrandingLoadError(false);
     setBrandingReadReady(false);
-    loadPlatformBranding()
+    boundedPlatformRead(loadPlatformBranding())
       .then(item => {
         if (!active) return;
         if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("PLATFORM_BRANDING_READ_INVALID");
@@ -279,7 +288,7 @@ export function PlatformPage() {
     setGoogleBusy(true);
     setGoogleLoadError(false);
     setGoogleReadReady(false);
-    loadPlatformGoogleApis()
+    boundedPlatformRead(loadPlatformGoogleApis())
       .then(data => {
         if (!active) return;
         if (!data?.item || typeof data.item !== "object" || Array.isArray(data.item)) throw new Error("PLATFORM_GOOGLE_READ_INVALID");
@@ -305,7 +314,7 @@ export function PlatformPage() {
     setSlipBusy(true);
     setSlipLoadError(false);
     setSlipReadReady(false);
-    loadPlatformReceiptReceiver().then(item => ({item}))
+    boundedPlatformRead(loadPlatformReceiptReceiver()).then(item => ({item}))
       .then(data => {
         if (!active) return;
         if (!data?.item || typeof data.item !== "object" || Array.isArray(data.item)) throw new Error("PLATFORM_SLIP_READ_INVALID");
@@ -318,7 +327,7 @@ export function PlatformPage() {
         if (active) {
           setSlipReadReady(false);
           setSlipLoadError(true);
-          showToast(t("platform.slip_verification.load_failed"), "error");
+          showToast("โหลดข้อมูลบัญชีผู้รับเงินกลางไม่สำเร็จ", "error");
         }
       })
       .finally(() => {
@@ -331,7 +340,7 @@ export function PlatformPage() {
     setLalamoveBusy(true);
     setLalamoveLoadError(false);
     setLalamoveReadReady(false);
-    loadPlatformLalamove()
+    boundedPlatformRead(loadPlatformLalamove())
       .then(data => {
         if (!active) return;
         if (!data?.item || typeof data.item !== "object" || Array.isArray(data.item)) throw new Error("PLATFORM_LALAMOVE_READ_INVALID");
@@ -361,13 +370,18 @@ export function PlatformPage() {
   useEffect(() => {
     if (profile?.role !== "super_admin") return undefined;
     let active = true;
+    let refreshing=false;
     const refresh = async () => {
+      if(refreshing)return;
+      refreshing=true;
       try {
-        const summary = await loadPlatformAdminNotificationSummary({ force: true });
-        if (active) setAdminNotifications(summary);
+        const summary = await boundedPlatformRead(loadPlatformAdminNotificationSummary({ force: true }));
+        if (active) {setAdminNotifications(summary);setNotificationsReadError(false);}
       } catch (error) {
         console.error("PLATFORM_ADMIN_NOTIFICATIONS_LOAD_FAILED", error);
+        if(active){setNotificationsReadError(true);setAdminNotifications(EMPTY_PLATFORM_ADMIN_NOTIFICATIONS);}
       } finally {
+        refreshing=false;
         if (active) {
           setAdminNotificationsLoading(false);
           setInitialNotificationsReady(true);
@@ -572,7 +586,7 @@ export function PlatformPage() {
 
   const initialReady = initialBrandingReady && initialGoogleReady && initialSlipReady && initialLalamoveReady && initialNotificationsReady;
 
-  if (authState.status === "loading" || !stylesReady || (profile?.role === "super_admin" && !initialReady)) {
+  if (authState.status === "loading" || !stylesReady) {
     return <PageReadyOverlay context="PENGUIN" title={t("shared.state.loading")} message={t("shared.state.please_wait")} />;
   }
   if (authState.status === "error") return <main role="alert" data-platform-auth-error>{t("shared.state.load_failed")}</main>;
@@ -608,6 +622,11 @@ export function PlatformPage() {
           <p>{t("platform.hero.description")}</p>
         </section>
 
+        {!initialReady && <p role="status" className="platform-receiver-promptpay-help">กำลังโหลดการตั้งค่าแต่ละส่วน สามารถเข้าเมนูจัดการร้านค้าได้ตามปกติ</p>}
+        {(brandingLoadError||googleLoadError||slipLoadError||lalamoveLoadError||notificationsReadError) &&
+          <div className="card" role="alert" style={{padding:12,marginBottom:12}}>
+            โหลดข้อมูลบางส่วนไม่สำเร็จ กรุณาลองใหม่ <button type="button" className="btn btn-sm" onClick={()=>location.reload()}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> โหลดใหม่</button>
+          </div>}
         <section className="nav-cards platform-cards">
           <Link className={`card nav-card platform-tenant-notification-card${notificationTotal > 0 ? " has-notifications" : ""}`} to="/admin/tenants" data-platform-tenant-notifications={notificationTotal}>
             <span className="platform-nav-card-icon"><i className="bi bi-arrow-left-right app-icon" aria-hidden="true"></i>{notificationTotal > 0 ? <b className="platform-nav-notification-badge" aria-label={t("platform.notifications.total_aria", { count: formatNumber(notificationTotal) })}>{formatNumber(notificationTotal)}</b> : null}</span>
@@ -732,9 +751,9 @@ export function PlatformPage() {
           titleId="platformSlipVerificationTitle" icon="bi bi-bank"
           title="บัญชีผู้รับเงินกลาง"
           description="จัดการบัญชีปลายทางสำหรับรับค่าบริการ ส่วนแบ่งรายวัน และการเติมเครดิต Lalamove"
-          badge={receiverUnconfirmed ? "รอตรวจสอบผลบันทึก" : receiverPersisted ? "ตั้งค่าบัญชีแล้ว" : "ยังไม่ได้ตั้งค่า"}
+          badge={slipBusy ? "กำลังโหลด" : slipLoadError || !slipReadReady ? "อ่านข้อมูลไม่สำเร็จ" : receiverUnconfirmed ? "รอตรวจสอบผลบันทึก" : receiverPersisted ? "ตั้งค่าบัญชีแล้ว" : "ยังไม่ได้ตั้งค่า"}
           badgeId="platformSlipVerificationStatus"
-          badgeClass={receiverPersisted && !receiverUnconfirmed ? "is-ready" : "is-error"}
+          badgeClass={receiverPersisted && slipReadReady && !slipLoadError && !receiverUnconfirmed ? "is-ready" : "is-error"}
           className="platform-slip-verification-card"
           anchorId="platformReceiverSettings"
         >
@@ -743,6 +762,7 @@ export function PlatformPage() {
             <div><strong>บัญชีรับชำระของระบบกลาง</strong>
               <p>กำหนดบัญชีให้ถูกต้องก่อนเปิดรับโอนจากร้านค้า โดยข้อมูลนี้เป็นเพียงบัญชีผู้รับ ไม่ใช่หลักฐานยืนยันว่าได้รับเงินจริง</p></div>
           </div>
+          {slipLoadError && <p role="alert" className="platform-receiver-promptpay-help">ไม่สามารถอ่านบัญชีผู้รับเงินกลางได้ ข้อมูลยังไม่ยืนยันและไม่สามารถบันทึกได้</p>}
           <form id="platformReceiptRecipientForm" className="platform-google-api-form" noValidate onSubmit={saveReceiptReceiver}>
             <h3 className="platform-receiver-section-title">รายละเอียดบัญชีรับเงิน</h3>
             <div className="platform-receiver-bank-grid">
