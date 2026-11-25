@@ -346,8 +346,12 @@ export async function createPublicDeliveryOrder(tenant, order = {}, catalog = nu
   if(order.paymentQrMode==="confirmed_order_5m" &&
     result?.data?.paymentQrMode!=="confirmed_order_5m")
     throw new Error("DELIVERY_QR_CAPABILITY_UNCONFIRMED");
+  if(order.bankTransferReviewFlow==="notification_first"&&
+    result?.data?.bankTransferReviewFlow!=="notification_first")
+    throw new Error("DELIVERY_NOTIFICATION_CREATE_NOT_CONFIRMED");
   clearPublicOrderId(tenant, "delivery");
   return { id,
+    ...(order.bankTransferReviewFlow==="notification_first"?{bankTransferReviewFlow:"notification_first"}:{}),
     ...(order.paymentMethod==="promptpay"?{
       paymentCorrectionCapability:result.data.paymentCorrectionCapability,
     }:{}),

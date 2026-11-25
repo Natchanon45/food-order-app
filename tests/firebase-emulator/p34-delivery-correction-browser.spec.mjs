@@ -212,6 +212,12 @@ test("P3.4 notification-first demo creates only canonical unpaid order without s
   return {status:response.status,body:await response.json()};
  };
  const submit=(o=order,tenantId=tenant)=>call("submitPublicDeliveryOrder",{tenantId,order:o});
+ const availability=await call("getPublicDeliveryNotificationAvailability",{tenantId:tenant});
+ assert.equal(availability.body.result?.enabled,true);
+ assert.equal(availability.body.result?.mode,"notification_first");
+ assert.equal(availability.body.result?.demoOnly,true);
+ assert.equal(availability.body.result?.paymentVerified,false);
+ assert.equal((await call("getPublicDeliveryNotificationAvailability",{tenantId:"ordinary-demo-tenant"})).body.result?.enabled,false);
  assert.equal((await submit(order,"ordinary-demo-tenant")).body.error?.message,"DELIVERY_NOTIFICATION_DISABLED");
  assert.equal((await submit()).body.error?.message,"DELIVERY_NOTIFICATION_ROUTE_REQUIRED");
  assert.equal((await ref.get()).exists,false);

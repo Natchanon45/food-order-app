@@ -1,3 +1,9 @@
+## 2026-11-26 — P3.4.7 Checkout, Delivery Success and Cashier web integration
+
+Source read-only @7e47e85f; target from 1f71d4ad. Added server-gated notification-first Demo availability, checkout create-before-slip, original-bill correction on success, cashier advisory matching + optional server-provided synthetic evidence preflight. Demo payment is explicitly non-payable; no scannable new-flow QR, no paid status, no Kitchen release. Existing live checkout remains unchanged; unsupported gift/manual-distance cases retain existing checkout. React build and generated hosting assets updated; no deploy. Targeted UI/security regression 48/48 PASS; actual Firebase Emulator 4/4 PASS including server availability checks; React Build PASS. New full browser checkout-to-cashier workflow not yet individually accepted. New matcher/reconciliation signed staff end-to-end acceptance and real bank/provider integration still pending. Overall strict source acceptance 15/65 (23.1%); 50/65 pending. User requested rapid web-first delivery, concise reports, and will perform full-system testing.
+
+---
+
 ## 2026-11-26 — P3.4.6 Delivery bank evidence preflight (Demo only)
 
 Source read-only cosmatch/lukkhaja feature/react-golang-vite-tailwind-axios@7e47e85f; Target Natchanon45/food-order-app feature/react-firebase-port from 5c570c16. Source Go supports signed cashier attestation of a real bank receipt separately from unverified Android notice. This slice adds an independent synthetic bank-credit signature preflight rather than claiming real bank acceptance or paid-state parity.

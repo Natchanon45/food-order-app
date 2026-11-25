@@ -387,6 +387,7 @@ exports.cancelTenantLalamoveDispatch = lalamoveDispatch.cancelTenantLalamoveDisp
 
 // Server-enforced public Delivery writes; client Firestore delivery creates are denied.
 exports.submitPublicDeliveryOrder = require("./public-delivery-submit").submitPublicDeliveryOrder;
+exports.getPublicDeliveryNotificationAvailability = require("./public-delivery-submit").getPublicDeliveryNotificationAvailability;
 const publicGuestOrders = require("./public-guest-order-intake");
 exports.submitPublicTableOrder = publicGuestOrders.submitPublicTableOrder;
 exports.submitPublicTakeawayOrder = publicGuestOrders.submitPublicTakeawayOrder;

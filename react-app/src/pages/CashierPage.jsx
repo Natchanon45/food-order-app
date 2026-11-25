@@ -387,7 +387,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, busyKey, act
       {Number(order.deliveryPromotionDiscount || 0)>0 ? <div className="receipt-row delivery-promotion-discount-row"><span>ส่วนลดค่าจัดส่ง</span><strong>−{money(order.deliveryPromotionDiscount)} {t("cashier.common.baht")}</strong></div> : null}
     </div>
     <div className="order-head" style={{ marginTop: 10 }}><strong>{t("cashier.delivery.net_total")}</strong><strong className="price"><RevisedOrderNet order={order} current={order.totalAmount} money={money} unit={t("cashier.common.baht")} /></strong></div>
-    {order.paymentStatus === "pending_verification" && order.paymentMethod === "promptpay" && <CompanionCashierReview key={order.id} orderId={order.id} notify={showToast} />}
+    {order.paymentStatus === "pending_verification" && order.paymentMethod === "promptpay" && <CompanionCashierReview key={order.id} orderId={order.id} notificationFirst={order.bankTransferReviewFlow==="notification_first"} notify={showToast} />}
     {order.companionKitchenRelease?.status==="admitted_unverified"&&order.paymentStatus!=="paid"&&
       <div className="card" role="status" style={{marginTop:10,padding:"10px 12px",background:"#fff8e9",border:"1px solid #efd9a8",boxShadow:"none"}}>
         <strong>ส่งเข้าครัวจากรายการแจ้งเงินเข้าแล้ว (ยังไม่ยืนยันชำระ)</strong>
@@ -399,7 +399,7 @@ function DeliveryCard({ order, t, money, formatTime, slipUrl, busy, busyKey, act
       <button className="btn btn-warning cashier-view-bill-action" type="button" aria-label={t("cashier.bill_preview.view")} onClick={() => actions.viewBill(order, slipUrl)}><i className="bi bi-eye app-icon" aria-hidden="true"></i><span>{t("cashier.bill_preview.view")}</span></button>
       {order.paymentStatus !== "paid" && order.paymentMethod === "promptpay"
         ? <span className="badge warning" role="status" data-delivery-superadmin-review={order.id}>
-            {t("cashier.payment.slip_manual_superadmin")}
+            {order.bankTransferReviewFlow==="notification_first"?"รอตรวจสอบรายการแจ้งเงินเข้า":t("cashier.payment.slip_manual_superadmin")}
           </span>
         : order.paymentStatus !== "paid" && !isLalamoveCod(order) && order.slipCheckStatus !== "matched"
           ? <button className="btn btn-primary cashier-payment-action" type="button"

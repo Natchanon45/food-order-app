@@ -59,7 +59,16 @@ exports.getDeliveryNotificationMatch=onCall(opts,async request=>{
  return db.runTransaction(async tx=>{
   const c=await context(db,tx,request);
   const prior=(await tx.get(auditRef(c,orderId))).data();
-  if(prior)return {orderId,status:"recorded_unverified",notificationId:prior.notificationId,amountSatang:prior.amountSatang,...flags};
+  if(prior){
+   const [receipt,evidence]=await Promise.all([
+    tx.get(c.root.collection("notificationFirstBankPreflights").doc(orderId)),
+    tx.get(db.collection("deliveryDemoBankEvidence").where("tenantId","==",c.tenantId).where("orderId","==",orderId).limit(2))
+   ]);
+   const row=receipt.data(),candidate=evidence.size===1?evidence.docs[0]:null;
+   const evidenceId=!row&&candidate&&candidate.data()?.environment==="demo"&&HEX.test(candidate.id)?candidate.id:null;
+   return {orderId,status:"recorded_unverified",notificationId:prior.notificationId,amountSatang:prior.amountSatang,
+    demoEvidenceId:evidenceId,demoEvidenceRecorded:row?.status==="demo_evidence_preflight_passed",...flags};
+  }
   const r=await snapshot(tx,c,orderId);
   if(r.status==="candidate"){
    const [claim,fingerprint]=await Promise.all([tx.get(claimRef(c,r.notificationId)),tx.get(fingerprintRef(c,r.observationFingerprint))]);

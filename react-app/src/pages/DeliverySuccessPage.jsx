@@ -421,6 +421,11 @@ export function DeliverySuccessPage() {
             </div>
             <span className="badge warning">รอตรวจสอบ</span>
           </div>
+          {order.bankTransferReviewFlow==="notification_first"&&
+            <div className="receipt-row" data-notification-first-success>
+              <strong>ยอดคำสั่งซื้อทดสอบ</strong><strong>{formatNumber(Number(order.totalAmount||0),{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</strong>
+            </div>}
+          {order.bankTransferReviewFlow==="notification_first"&&<p>โหมดทดสอบ ไม่ต้องโอนเงินจริง สามารถแนบไฟล์ตัวอย่างเพื่อทดสอบการส่งหลักฐานของบิลนี้ได้</p>}
           <p>บันทึกออเดอร์แล้ว แต่หลักฐานธนาคารหรือการแจ้งเงินเข้ายังไม่ใช่ผลยืนยันการชำระเงิน
             โปรดอย่าโอนเงินซ้ำ หากโอนแล้วกรุณาติดต่อร้านค้าพร้อมสลิปต้นฉบับของรายการเดิม</p>
           {order?.companionKitchenRelease?.status === "admitted_unverified" &&

@@ -252,5 +252,33 @@ exports.submitPublicDeliveryOrder = onCall(
   }
 );
 
+// UI discovery is deliberately limited to local synthetic fixtures. Intake
+// still independently validates every order in its own transaction.
+exports.getPublicDeliveryNotificationAvailability = onCall(
+  {region: REGION, timeoutSeconds: 15},
+  async request => {
+    const id = request.data?.tenantId;
+    const disabled = {enabled:false,mode:"none",demoOnly:true,paymentVerified:false};
+    if(typeof id!=="string"||!notification.demoEnabled(id))return disabled;
+    const tenant=getFirestore().collection("tenants").doc(id);
+    const [shop,settings]=await Promise.all([tenant.get(),tenant.collection("settings").doc("store").get()]);
+    const row=shop.data()||{},store=settings.data()||{};
+    if(row.active!==true||row.operationalSuspended===true||row.revenueShareSuspended===true||
+      ["expired","suspended"].includes(row.subscriptionStatus)||row.status==="suspended"||
+      !["both","restaurant_cafe"].includes(row.businessType||"both")||
+      store.deliveryPromptPayEnabled===false||store.deliveryPromotion?.freeGift?.enabled===true||
+      !getDeliveryOpeningStatus(store,new Date()).open)return disabled;
+    const provider=String(store.deliveryProvider||"self");
+    if(!["self","lalamove"].includes(provider)||
+      provider==="lalamove"&&Number(store.deliveryMaxDistanceKm)>0||
+      provider==="self"&&(!Number.isFinite(store.storeLatitude)||!Number.isFinite(store.storeLongitude)||
+      (store.storeLatitude===0&&store.storeLongitude===0)))return disabled;
+    try{
+      if(!require("./payment-companion-receiver").receiverRevision(settings))return disabled;
+      return {enabled:true,mode:notification.FLOW,provider,recipientId:qr.payee(store),demoOnly:true,paymentVerified:false};
+    }catch{return disabled;}
+  }
+);
+
 // Export pure helpers for regression tests without touching a live tenant.
 exports.__test = { validateSubmission, createDeliveryOrderWithGuard, authorizedSlipStatus, ALLOWED_FIELDS };
