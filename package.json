@@ -48,7 +48,7 @@
     "test:verify-page-i18n": "node --test tests/react-parity/verify-page-i18n.spec.mjs",
     "test:revenue-payment-bank-picker": "node --test tests/react-parity/revenue-share-payment-platform-bank.spec.mjs tests/react-parity/revenue-share-current-settings.spec.mjs tests/react-parity/revenue-share-billing-cycle-display.spec.mjs tests/react-parity/billing-anniversary.spec.mjs tests/react-parity/revenue-share-cutover-periods.spec.mjs tests/react-parity/universal-billing-policy.spec.mjs tests/react-parity/finance-slip-claims.spec.mjs",
     "test:pos-users-ui-toast": "node --test tests/react-parity/pos-users-buttons-toast.spec.mjs",
-    "test:pos-mobile-header": "node --test tests/react-parity/pos-mobile-header-one-row.spec.mjs tests/react-parity/p38-pos-web-scope.spec.mjs tests/react-parity/p39-pos-workspace-read.spec.mjs",
+    "test:pos-mobile-header": "node --test tests/react-parity/pos-mobile-header-one-row.spec.mjs tests/react-parity/p38-pos-web-scope.spec.mjs tests/react-parity/p39-pos-workspace-read.spec.mjs tests/react-parity/platform-connect-pairing.spec.mjs",
     "test:pos-floating-developer-badge": "node --test tests/react-parity/pos-floating-developer-badge.spec.mjs",
     "test:pos-floating-developer-badge-browser": "playwright test tests/react-parity/pos-floating-developer-badge-browser.spec.mjs",
     "test:pos-mobile-header-browser": "playwright test tests/react-parity/pos-mobile-header-browser.spec.mjs",

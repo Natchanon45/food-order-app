@@ -1,0 +1,13 @@
+plugins { id "com.android.application" }
+android { buildFeatures { buildConfig true }; namespace "com.lukkaja.companion"; compileSdk 36; defaultConfig { applicationId "com.natchanon45.penguin.lkconnect"; minSdk 26; targetSdk 35; versionCode 1; versionName "1.0.0-pairing-uat" }; flavorDimensions "target"; productFlavors {
+  local { dimension "target"; buildConfigField "String","DEFAULT_SERVER_URL",'"http://127.0.0.1:8000"' }
+  production { dimension "target"; applicationIdSuffix ".production"; buildConfigField "String","DEFAULT_SERVER_URL",'"https://penguin-food.web.app"' }
+}; buildTypes { debug { applicationIdSuffix ".debug" }; release { minifyEnabled false } }; compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 } }
+
+dependencies {
+  implementation "com.journeyapps:zxing-android-embedded:4.3.0"
+  // ZXing CaptureManager calls AndroidX ContextCompat/ActivityCompat to obtain camera permission.
+  // Without this runtime dependency the scanner crashes on opening the camera.
+  implementation "androidx.core:core:1.13.1"
+  testImplementation "junit:junit:4.13.2"
+}

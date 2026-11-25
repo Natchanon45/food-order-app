@@ -1,5 +1,6 @@
 import {useEffect,useState} from "react";
 import {Link} from "react-router-dom";
+import {PlatformCompanionPairing} from "./PlatformCompanionPairing";
 import {httpsCallable} from "firebase/functions";
 import {functions} from "@/firebase/client";
 import {loadPlatformReceiptReceiver} from "@/data/platformReceiptReceiver";
@@ -74,17 +75,7 @@ export function PlatformCollectionPreferences(){
     <strong><i className="bi bi-bank" aria-hidden="true"/> ตั้งค่ารับโอนเงินส่วนกลาง</strong>
     <p>ใช้บัญชีรับเงินส่วนกลางที่ตั้งไว้สำหรับตรวจสอบยอด โดยยังไม่อนุมัติ Invoice หรือเติมเครดิตจากข้อความแจ้งเตือน</p>
     <Link className="btn btn-sm" to="/platform#platformReceiverSettings"><i className="bi bi-bank" aria-hidden="true"/> ตั้งค่าบัญชีผู้รับ</Link>
-    <section id="platformCompanionPairingSection" className="platform-companion" aria-label="การจับคู่ LK Connect ส่วนกลาง">
-      <div className="platform-companion-heading"><div>
-        <strong><i className="bi bi-phone" aria-hidden="true"/> LK Connect สำหรับบัญชี Platform</strong>
-        <small>ดาวน์โหลดแอป Android และจับคู่สำหรับบัญชีส่วนกลาง แยกจาก LK Shop ซึ่งใช้รับแจ้งเตือนจากระบบร้านค้า</small>
-      </div><span>ยังไม่พร้อม</span></div>
-      <div className="platform-companion-install">
-        <button type="button" className="btn btn-sm" disabled><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด LK Connect</button>
-        <button type="button" className="btn btn-primary" disabled><i className="bi bi-qr-code" aria-hidden="true"/> สร้างคีย์ / QR จับคู่</button>
-      </div>
-      <p role="note">ยังไม่มี APK ที่สร้างสำหรับ PENGUIN Firebase และยังไม่เปิด API จับคู่ส่วนกลาง ไม่สามารถใช้ไฟล์ APK ของ LUKKAJA แทนได้</p>
-    </section>
+    <PlatformCompanionPairing />
   </div>:<div className="platform-collection-setup" data-collection-stripe-setup>
     <strong><i className="bi bi-credit-card" aria-hidden="true"/> Stripe สำหรับระบบกลาง</strong>
     <p>{!readiness?.stripeKnown?"ยังอ่านสถานะคีย์ไม่ได้":readiness.stripeKeysConfigured?"บันทึกคีย์ครบแล้ว · ยังต้องตรวจสอบการเชื่อมต่อและ Webhook":"ยังบันทึกคีย์ไม่ครบ · กรุณาตั้งค่าที่ระบบกลาง"}</p>

@@ -524,6 +524,14 @@
         }
       },
       {
+        "source": "/api/platform/connect/device/status",
+        "function": {"functionId": "platformConnectDeviceStatus", "region": "asia-southeast1"}
+      },
+      {
+        "source": "/api/platform/connect/device/unpair",
+        "function": {"functionId": "platformConnectDeviceUnpair", "region": "asia-southeast1"}
+      },
+      {
         "source": "/api/companion/device/status",
         "function": {
           "functionId": "paymentCompanionDeviceStatus",

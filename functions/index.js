@@ -403,6 +403,12 @@ exports.approveDeliveryPaymentReview = deliverySlip.approveDeliveryPaymentReview
 exports.listPlatformDeliveryManualReviews = deliverySlip.listPlatformDeliveryManualReviews;
 exports.notifyKitchenDeliveryAdmitted = deliverySlip.notifyKitchenDeliveryAdmitted;
 
+const platformConnectPairing = require("./platform-connect-pairing");
+exports.getPlatformConnectPairing = platformConnectPairing.getPlatformConnectPairing;
+exports.createPlatformConnectPairing = platformConnectPairing.createPlatformConnectPairing;
+exports.revokePlatformConnectPairing = platformConnectPairing.revokePlatformConnectPairing;
+exports.platformConnectDeviceStatus = platformConnectPairing.platformConnectDeviceStatus;
+exports.platformConnectDeviceUnpair = platformConnectPairing.platformConnectDeviceUnpair;
 const paymentCompanion = require("./payment-companion");
 exports.pairPaymentCompanionDevice = paymentCompanion.pairPaymentCompanionDevice;
 exports.changePaymentCompanionDevice = paymentCompanion.changePaymentCompanionDevice;

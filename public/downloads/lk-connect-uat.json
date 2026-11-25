@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0-pairing-uat",
+  "mode": "pairing_only",
+  "path": "/downloads/LK-Connect-PENGUIN-Pairing-UAT.apk",
+  "sha256": "0e6e460f41492adad0664c6ebea2381e380fe72dfb5a185e7976cfe90ea3d1bc",
+  "sizeBytes": 2614649,
+  "androidMinSdk": 26,
+  "signing": "development",
+  "notificationEnabled": false
+}
