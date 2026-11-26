@@ -77,7 +77,7 @@ final class CompanionClient {
                     }
                 }
                 JSONObject result=new JSONObject(body.toString("UTF-8"));
-                if(!result.optBoolean("ok",false)||!"platform".equals(result.optString("scope"))||
+                if(!result.optBoolean("ok",false)||(!"platform".equals(result.optString("scope"))&&!"tenant".equals(result.optString("scope")))||
                     !"pairing_only".equals(result.optString("mode"))||
                     !Boolean.FALSE.equals(result.opt("notificationEnabled"))||
                     !Boolean.FALSE.equals(result.opt("paymentRoutingEnabled"))||

@@ -40,3 +40,22 @@ test("isolated Firestore central pairing: authorization, three slots, check, sel
  assert.equal((await http("platformConnectDeviceStatus","GET",pairs[1].pairingToken)).code,401);
  assert.equal((await fn.getPlatformConnectPairing.run({auth,data:{}})).devices.length,1);
 });
+
+test("same device API accepts isolated merchant pairing and preserves platform scope",async()=>{
+ const ids=[randomUUID(),randomUUID()],users=ids.map(id=>({uid:"owner-"+id}));
+ for(let i=0;i<2;i++){
+  await db.collection("tenants").doc(ids[i]).set({active:true});
+  await db.collection("users").doc(users[i].uid).set({role:i===0?"admin":"owner",active:true,tenantId:ids[i]});
+ }
+ const call=(name,i,data={})=>fn[name].run({auth:users[i],data:{scope:"tenant",...data}});
+ const pair=await call("createPlatformConnectPairing",0,{label:"Merchant fixture"});
+ assert.equal(pair.scope,"tenant");assert.equal(pair.notificationEnabled,false);
+ assert.equal((await call("getPlatformConnectPairing",0)).devices.length,1);
+ assert.equal((await call("getPlatformConnectPairing",1)).devices.length,0);
+ assert.equal((await fn.getPlatformConnectPairing.run({auth,data:{}})).devices.some(d=>d.id===pair.deviceId),false);
+ const connected=await http("platformConnectDeviceStatus","GET",pair.pairingToken);
+ assert.equal(connected.code,200);assert.equal(connected.data.scope,"tenant");assert.equal(connected.data.paymentVerified,false);
+ assert.equal((await call("getPlatformConnectPairing",0)).devices[0].connected,true);
+ assert.equal((await http("platformConnectDeviceUnpair","POST",pair.pairingToken)).code,200);
+ assert.equal((await http("platformConnectDeviceStatus","GET",pair.pairingToken)).code,401);
+});

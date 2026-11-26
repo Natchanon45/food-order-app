@@ -1,3 +1,4 @@
+import {PlatformCompanionPairing} from "./PlatformCompanionPairing";
 import {useCallback,useEffect,useRef,useState} from "react";
 import {httpsCallable} from "firebase/functions";
 import {functions} from "@/firebase/client";
@@ -7,7 +8,7 @@ import "@/ui/payment-companion.css";
 const money=cents=>new Intl.NumberFormat("th-TH",{minimumFractionDigits:2,maximumFractionDigits:2}).format(cents/100);
 const date=value=>{const d=new Date(value||"");return Number.isNaN(d.getTime())?"ยังไม่มีข้อมูล":new Intl.DateTimeFormat("th-TH",{timeZone:"Asia/Bangkok",dateStyle:"medium",timeStyle:"short"}).format(d);};
 const states={candidate:"พบยอดและเวลาที่อาจตรง",ambiguous:"พบหลายรายการ ต้องตรวจสอบ",no_match:"ยังไม่พบรายการตรง",unavailable:"ข้อมูลไม่ครบ ยังยืนยันไม่ได้"};
-export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=()=>{}}){
+export function PaymentCompanionPairingCard({isOwner=false,canPair=isOwner,SettingsGroup,notify=()=>{}}){
  const [data,setData]=useState(null),[error,setError]=useState(""),[label,setLabel]=useState("Android ร้านค้า"),[token,setToken]=useState(""),[visible,setVisible]=useState(false),[busy,setBusy]=useState(false);
  const lock=useRef(false),revision=useRef(0);
  const reload=useCallback(async()=>{
@@ -65,12 +66,13 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
    notify(enabled?"เปิด BankAlert เข้าครัวเฉพาะ UAT แล้ว":"ปิด BankAlert เข้าครัวแล้ว");
   });
  };
- if(!isOwner||!SettingsGroup)return null;
+ if(!canPair||!SettingsGroup)return null;
  const active=data?.devices.filter(d=>d.enabled).length??0,recipient=data?.receiver||{};
  return <div id="paymentCompanionPilot" className="payment-companion-pilot" data-payment-companion-pilot>
  <SettingsGroup id="paymentCompanionSettingsGroup" icon="phone" title="รับแจ้งเงินเข้า Android" description="ตั้งค่าบัญชีรับเงิน การจับคู่อุปกรณ์ และเงื่อนไขปล่อยครัวอัตโนมัติ" status={!data?"ยังไม่ยืนยัน":data.enabled?active+" อุปกรณ์":"ยังไม่เปิดใช้"} statusTone={data?.enabled?"ready":"neutral"}>
   <div className="payment-companion-body">
    <div className="payment-companion-intro"><span className="payment-companion-intro-icon"><i className="bi bi-shield-check" aria-hidden="true"/></span><div><strong>เชื่อมอุปกรณ์รับแจ้งเงินเข้า</strong><p>ใช้ข้อมูลแจ้งเตือนยอดและเวลาเพื่อเสนอรายการที่อาจตรงกันเท่านั้น ไม่ใช่หลักฐานที่ธนาคารรับรอง ไม่เปลี่ยนสถานะ Paid และไม่ปล่อยครัวอัตโนมัติ</p></div><span className="payment-companion-pilot-tag">ตั้งค่า</span></div>
+   {isOwner&&<>
    {error&&<div role="alert" className="payment-companion-error">{error}</div>}
    <button className="btn btn-sm payment-companion-refresh" type="button" disabled={busy} onClick={reload}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรชข้อมูล</button>
    {!data?<div className="payment-companion-empty" role="status">ยังไม่ยืนยันข้อมูลจากระบบ</div>:<>
@@ -162,12 +164,13 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
       </section>
      </section>
 
+   {data.enabled&&<>
    <section className="payment-companion-panel"><div className="payment-companion-section-heading"><div className="payment-companion-section-title"><i className="bi bi-phone" aria-hidden="true"/><div><strong>อุปกรณ์ที่เชื่อมต่อ</strong><small>จัดการอุปกรณ์และรหัสสำหรับรับแจ้งเงินเข้า</small></div></div><span className="payment-companion-count">{active}/3 อุปกรณ์</span></div>
     <div className="payment-companion-download">
      <span className="payment-companion-download-icon" aria-hidden="true"><i className="bi bi-android2"/></span>
      <div className="payment-companion-download-copy"><strong>ติดตั้งแอป PG Connect</strong>
       <small>ดาวน์โหลดแอป แล้วนำเฉพาะรหัสที่สร้างจากเว็บไปกรอก</small>
-      <small className="payment-companion-download-warning">PG Connect รุ่นปัจจุบันรองรับเฉพาะการจับคู่ส่วนกลาง ยังไม่รองรับการรับแจ้งเงินเข้าของร้าน</small>
+      <small className="payment-companion-download-warning">การรับแจ้งเงินเข้าของร้านยังจำกัดเฉพาะ Pilot</small>
      </div>
      <button type="button" className="btn btn-primary payment-companion-download-btn" disabled><i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด Android APK</button>
     </div>
@@ -176,6 +179,7 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
 
     {data.devices.length?<ul className="payment-companion-device-list">{data.devices.map(d=><li key={d.id} className="payment-companion-device"><span className="payment-companion-device-icon"><i className="bi bi-phone" aria-hidden="true"/></span><div className="payment-companion-device-info"><strong>{d.label}</strong><small>รับข้อมูลล่าสุด: {date(d.lastSeenUTC)}</small></div><span className={"payment-companion-device-state "+(d.enabled?"is-active":"")}>{d.enabled?"เปิดสิทธิ์":"ยกเลิกแล้ว"}</span><button className="btn btn-sm payment-companion-revoke" disabled={busy} type="button" onClick={()=>change(d,d.enabled?"revoke":"archive")}>{d.enabled?"ยกเลิกสิทธิ์":"ลบคีย์"}</button></li>)}</ul>:<div className="payment-companion-empty">ยังไม่มีอุปกรณ์</div>}
    </section>
+   </>}
    {data.enabled&&<section className="payment-companion-panel"><div className="payment-companion-section-title"><i className="bi bi-intersect" aria-hidden="true"/><div><strong>รายการที่อาจตรงกับคำสั่งซื้อ</strong><small>ข้อมูลตรวจสอบเบื้องต้น</small></div></div>
     {data.autoKitchenAvailable&&recipient.enabled&&<div className="payment-companion-receiver-confirmation">
       <strong>การส่งเข้าครัวจาก BankAlert · UAT เท่านั้น</strong>
@@ -191,6 +195,8 @@ export function PaymentCompanionPairingCard({isOwner=false,SettingsGroup,notify=
     <p className="payment-companion-footnote">แคชเชียร์บันทึกการตรวจเบื้องต้นได้ แต่การอนุมัติชำระยังใช้ขั้นตอน Superadmin เดิม ระบบยังไม่อนุมัติการชำระหรือปล่อยครัวจากข้อมูลนี้</p>
    </section>}
    </>}
+   </>}
+   <PlatformCompanionPairing scope="tenant"/>
   </div>
  </SettingsGroup></div>;
 }

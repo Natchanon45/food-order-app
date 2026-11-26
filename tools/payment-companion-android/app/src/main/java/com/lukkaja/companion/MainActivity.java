@@ -328,7 +328,7 @@ public final class MainActivity extends Activity {
         screenRoot.requestApplyInsets();
         LinearLayout intro=card(outer);
         add(intro,text("PG Connect • PENGUIN UAT",17,Color.rgb(24,67,40),true),8);
-        add(intro,text("ทดสอบเชื่อมต่อบัญชีส่วนกลางด้วยคีย์หรือ QR · คีย์หมดอายุใน 24 ชั่วโมง",13,Color.rgb(75,108,87),false),8);
+        add(intro,text("ทดสอบเชื่อมต่อบัญชีส่วนกลางหรือร้านค้าด้วยคีย์หรือ QR · คีย์หมดอายุใน 24 ชั่วโมง",13,Color.rgb(75,108,87),false),8);
         add(intro,text("รุ่นนี้ทดสอบการจับคู่เท่านั้น ไม่อ่าน Notification และไม่รับส่งข้อมูลธนาคาร",12,Color.rgb(154,97,35),false),8);
         healthLabel=text("",13,Color.rgb(144,85,22),true);
         add(intro,healthLabel,0);
@@ -339,7 +339,7 @@ public final class MainActivity extends Activity {
         visible(statusLabel,false);
 
         LinearLayout pairing=card(outer);
-        add(pairing,text("1. เชื่อมต่อบัญชีส่วนกลาง",17,Color.rgb(24,67,40),true),9);
+        add(pairing,text("1. เชื่อมต่อบัญชีส่วนกลางหรือร้านค้า",17,Color.rgb(24,67,40),true),9);
         pairingSummary=new LinearLayout(this);
         pairingSummary.setOrientation(LinearLayout.VERTICAL);
         pairingSummary.setPadding(dp(14),dp(12),dp(14),dp(12));
@@ -359,18 +359,18 @@ public final class MainActivity extends Activity {
 
         pairingForm=new LinearLayout(this);
         pairingForm.setOrientation(LinearLayout.VERTICAL);
-        Button scanPairingButton=button("สแกน QR จับคู่ส่วนกลาง",true);
+        Button scanPairingButton=button("สแกน QR จับคู่",true);
         add(pairingForm,scanPairingButton,12);
         scanPairingButton.setOnClickListener(v->{
             IntentIntegrator integrator=new IntentIntegrator(this);
             integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
             integrator.setCaptureActivity(LKQRScanActivity.class);
-            integrator.setPrompt("สแกน QR จากหน้า /platform/pricing");
+            integrator.setPrompt("สแกน QR จากหน้า Superadmin หรือจัดการร้าน");
             integrator.setBeepEnabled(false);
             integrator.setOrientationLocked(true);
             integrator.initiateScan();
         });
-        add(pairingForm,text("กรอกรหัสที่สร้างจากหน้า /platform/pricing",12,
+        add(pairingForm,text("กรอกรหัสที่สร้างจากหน้า Superadmin หรือจัดการร้าน",12,
                 Color.rgb(83,107,92),false),13);
         add(pairingForm,text("URL เซิร์ฟเวอร์",12,GREEN,true),6);
         serverInput=field("https://penguin-food.web.app");

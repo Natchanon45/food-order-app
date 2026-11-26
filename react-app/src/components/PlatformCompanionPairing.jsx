@@ -1,19 +1,22 @@
+import "@/ui/platform-collection.css";
 import {useCallback,useEffect,useState} from "react";
 import {qrDataUrl} from "@/utils/localQr";
 import {httpsCallable} from "firebase/functions";
 import {functions} from "@/firebase/client";
 const call=(name,data={})=>httpsCallable(functions,name)(data).then(r=>r.data);
-const valid=r=>r?.ok===true&&r.scope==="platform"&&r.mode==="pairing_only"&&r.notificationEnabled===false&&r.paymentRoutingEnabled===false&&r.paymentVerified===false;
+const valid=(r,scope)=>r?.ok===true&&r.scope===scope&&r.mode==="pairing_only"&&r.notificationEnabled===false&&r.paymentRoutingEnabled===false&&r.paymentVerified===false;
 import {sweetConfirm} from "./sweetDialog";
 
-export function PlatformCompanionPairing({onDevicesChange}){
+export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
+ const merchant=scope==="tenant",scopeLabel=merchant?"ร้านค้า":"ส่วนกลาง";
+ const scopedCall=(name,data={})=>call(name,{...data,scope});
  const [devices,setDevices]=useState([]);
 
  const [apk,setApk]=useState(null);
  const [expiresAt,setExpiresAt]=useState("");
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false);
- const [label,setLabel]=useState("PG Connect ส่วนกลาง");
+ const [label,setLabel]=useState("PG Connect "+scopeLabel);
  const [token,setToken]=useState("");
  const [issuedDeviceId,setIssuedDeviceId]=useState("");
  const [revokeStatus,setRevokeStatus]=useState("");
@@ -24,25 +27,27 @@ export function PlatformCompanionPairing({onDevicesChange}){
  const refresh=useCallback(async()=>{
   setLoading(true);
   try{
-   const data=await call("getPlatformConnectPairing");
-   if(!valid(data)||!Array.isArray(data.devices)||data.devices.length>3||
+   const data=await scopedCall("getPlatformConnectPairing");
+   if(!valid(data,scope)||!Array.isArray(data.devices)||data.devices.length>3||
       data.devices.some(d=>typeof d.id!=="string"||typeof d.label!=="string"||typeof d.connected!=="boolean"))throw Error("INVALID_PAIRING_RESPONSE");
    setDevices(data.devices);
    onDevicesChange?.(data.devices.filter(d=>d.connected).length);
    setReady(true);setError("");
+   return data.devices;
+  }catch{
+   setReady(false);
+   setError("ยังไม่สามารถอ่านสถานะ PG Connect ได้ กรุณาตรวจสอบการตั้งค่า Backend");
+  }finally{setLoading(false);}
+ },[onDevicesChange,scope]);
+ useEffect(()=>{void refresh();},[refresh]);
+ useEffect(()=>{async function loadApk(){
    // A published APK requires an actual versioned release manifest, never a guessed URL.
    try{
     const response=await fetch("/downloads/pg-connect.json",{cache:"no-store"});
     const manifest=await response.json();
     setApk(response.ok&&manifest?.mode==="pairing_only"&&/^\/downloads\/PG_Connect_V\d+\.\d+\.\d+_\d{4}\.apk$/.test(manifest.path)&&/^[a-f0-9]{64}$/.test(manifest.sha256)?manifest:null);
    }catch{setApk(null);}
-   return data.devices;
-  }catch{
-   setReady(false);
-   setError("ยังไม่สามารถอ่านสถานะ PG Connect ส่วนกลางได้ กรุณาตรวจสอบการตั้งค่า Backend");
-  }finally{setLoading(false);}
- },[onDevicesChange]);
- useEffect(()=>{void refresh();},[refresh]);
+ }void loadApk();},[]);
  useEffect(()=>{
   if(!token||!expiresAt)return undefined;
   const remaining=Date.parse(expiresAt)-Date.now();
@@ -55,13 +60,13 @@ export function PlatformCompanionPairing({onDevicesChange}){
  },[devices,issuedDeviceId,ready]);
  const pair=async()=>{
   if(!ready||busy||loading||!label.trim()||devices.filter(d=>d.enabled).length>=3)return;
-  const ok=await sweetConfirm("คีย์นี้ใช้ตรวจสอบการเชื่อมต่อส่วนกลางเท่านั้น มีอายุ 24 ชั่วโมง แสดงเพียงครั้งเดียวและไม่อนุญาตรับส่งแจ้งเงินเข้า",{
-   title:"สร้างคีย์ PG Connect ส่วนกลาง",confirmText:"สร้างคีย์",confirmIcon:"key",cancelText:"กลับ",type:"warning"});
+  const ok=await sweetConfirm("คีย์นี้ใช้ตรวจสอบการเชื่อมต่อตามขอบเขตที่เลือกเท่านั้น มีอายุ 24 ชั่วโมง แสดงเพียงครั้งเดียวและไม่อนุญาตรับส่งแจ้งเงินเข้า",{
+   title:"สร้างคีย์ PG Connect",confirmText:"สร้างคีย์",confirmIcon:"key",cancelText:"กลับ",type:"warning"});
   if(!ok)return;
   setBusy(true);setError("");setRevokeStatus("");setToken("");setIssuedDeviceId("");
   try{
-   const data=await call("createPlatformConnectPairing",{label:label.trim()});
-   if(!/^[a-f0-9]{64}$/.test(data?.pairingToken||"")||!valid(data)||data.showOnce!==true||!Number.isFinite(Date.parse(data.expiresAt)))throw Error("PLATFORM_COMPANION_PAIR_RESPONSE_INVALID");
+   const data=await scopedCall("createPlatformConnectPairing",{label:label.trim()});
+   if(!/^[a-f0-9]{64}$/.test(data?.pairingToken||"")||!valid(data,scope)||data.showOnce!==true||!Number.isFinite(Date.parse(data.expiresAt)))throw Error("PLATFORM_COMPANION_PAIR_RESPONSE_INVALID");
    await refresh();setExpiresAt(data.expiresAt);setToken(data.pairingToken);setIssuedDeviceId(data.deviceId||"");setShowToken(false);setCopyStatus("");
   }catch{setError("สร้างคีย์ไม่สำเร็จหรือยังยืนยันผลไม่ได้ กรุณารีเฟรชตรวจรายชื่ออุปกรณ์ก่อนสร้างใหม่");}
   finally{setBusy(false);}
@@ -69,11 +74,11 @@ export function PlatformCompanionPairing({onDevicesChange}){
  const revoke=async device=>{
   if(busy||loading)return;
   const ok=await sweetConfirm("ยกเลิกการจับคู่ "+device.label+"? คีย์นี้จะตรวจสอบการเชื่อมต่อไม่ได้อีก",{
-   title:"ยกเลิก PG Connect ส่วนกลาง",type:"warning",confirmText:"ยกเลิกคีย์",confirmIcon:"link-45deg",cancelText:"กลับ"});
+   title:"ยกเลิก PG Connect",type:"warning",confirmText:"ยกเลิกคีย์",confirmIcon:"link-45deg",cancelText:"กลับ"});
   if(!ok)return;
   setBusy(true);setError("");setRevokeStatus("");
   try{
-   const data=await call("revokePlatformConnectPairing",{deviceId:device.id});
+   const data=await scopedCall("revokePlatformConnectPairing",{deviceId:device.id});
    if(data?.revoked!==true||data?.keyDeleted!==true||data?.deviceId!==device.id)throw Error("REVOCATION_UNCONFIRMED");
    if(issuedDeviceId===device.id){setToken("");setIssuedDeviceId("");setShowToken(false);setCopyStatus("");}
    setDevices(current=>current.map(d=>d.id===device.id?{...d,enabled:false,keyDeleted:true}:d));
@@ -98,10 +103,10 @@ export function PlatformCompanionPairing({onDevicesChange}){
   }catch{setCopyStatus("คัดลอกไม่ได้ กรุณาอนุญาต Clipboard หรือแสดงรหัสและคัดลอกด้วยตนเอง");}
  };
  const visibleDevices=devices.filter(d=>d.enabled||d.keyDeleted!==true);
- return <section id="platformCompanionPairingSection" className="platform-companion" aria-label="การจับคู่ PG Connect ส่วนกลาง" data-platform-companion>
+ return <section id={merchant?"merchantConnectPairingSection":"platformCompanionPairingSection"} className="platform-companion" aria-label={"การจับคู่ PG Connect "+scopeLabel} data-platform-companion>
   <div className="platform-companion-heading">
-   <div><strong><i className="bi bi-phone" aria-hidden="true"/> PG Connect สำหรับบัญชี Platform</strong>
-    <small>ทดสอบดาวน์โหลดแอปและจับคู่ด้วยคีย์หรือ QR ส่วนกลาง · รุ่นนี้ยังไม่รับแจ้งเงินเข้า</small></div>
+   <div><strong><i className="bi bi-phone" aria-hidden="true"/> PG Connect สำหรับบัญชี{merchant?"ร้านค้า":" Platform"}</strong>
+    <small>ทดสอบดาวน์โหลดแอปและจับคู่ด้วยคีย์หรือ QR ตามขอบเขตบัญชี · รุ่นนี้ยังไม่รับแจ้งเงินเข้า</small></div>
    <span>{devices.filter(d=>d.enabled).length}/3 เครื่อง</span>
   </div>
   {revokeStatus?<p role="status"><i className="bi bi-check-circle" aria-hidden="true"/> {revokeStatus}</p>:null}
@@ -120,11 +125,11 @@ export function PlatformCompanionPairing({onDevicesChange}){
     <i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรช</button>
   </div>
   {token?<div className="platform-companion-issued" role="status" data-platform-pairing-token>
-   <strong>QR สำหรับจับคู่ PG Connect ส่วนกลาง</strong>
-   <img src={qrDataUrl("lkconnect://pair?v=1&server="+encodeURIComponent("https://penguin-food.web.app")+"&token="+token,{size:210})} width="210" height="210" alt="QR สำหรับจับคู่ PG Connect ส่วนกลาง"/>
+   <strong>QR สำหรับจับคู่ PG Connect {scopeLabel}</strong>
+   <img src={qrDataUrl("lkconnect://pair?v=1&server="+encodeURIComponent("https://penguin-food.web.app")+"&token="+token,{size:210})} width="210" height="210" alt={"QR สำหรับจับคู่ PG Connect "+scopeLabel}/>
    <small>รหัสนี้เป็นความลับ แสดงเพียงครั้งเดียว มีอายุ 24 ชั่วโมง · หมดอายุ {expiresAt?new Date(expiresAt).toLocaleString("th-TH",{timeZone:"Asia/Bangkok"}):"—"}</small>
    <div className="platform-companion-key-actions">
-    <input className="input" type={showToken?"text":"password"} readOnly value={token} aria-label="คีย์ PG Connect ส่วนกลาง"/>
+    <input className="input" type={showToken?"text":"password"} readOnly value={token} aria-label={"คีย์ PG Connect "+scopeLabel}/>
     <button type="button" className="btn btn-sm" onClick={()=>void copy()}>
      <i className="bi bi-copy" aria-hidden="true"/> คัดลอก</button>
     <button type="button" className="btn btn-sm" onClick={()=>setShowToken(!showToken)}>
@@ -136,7 +141,7 @@ export function PlatformCompanionPairing({onDevicesChange}){
   </div>:null}
   <div className="platform-companion-members">
    <strong>อุปกรณ์ที่เชื่อมต่อ</strong>
-   {visibleDevices.length===0?<small>ยังไม่มีอุปกรณ์ส่วนกลางที่เชื่อมต่อ</small>:
+   {visibleDevices.length===0?<small>ยังไม่มีอุปกรณ์ที่เชื่อมต่อ</small>:
     visibleDevices.map(d=><div className="platform-companion-member" key={d.id}>
      <span><i className="bi bi-phone" aria-hidden="true"/> {d.label} <small>{d.enabled?(d.connected?"เชื่อมต่อแล้ว":"รอเชื่อมต่อ"):d.keyDeleted===true?"ยกเลิกและลบคีย์แล้ว":"ยกเลิกแล้ว (ยังไม่ยืนยันการลบคีย์)"}</small></span>
      {d.enabled?<button type="button" className="btn btn-sm" onClick={()=>void revoke(d)} disabled={busy||loading}>

@@ -2122,7 +2122,7 @@ export function AdminPage() {
 
           </form>
 
-          <PaymentCompanionPairingCard key={tenant?.id} isOwner={profile?.role === "owner"} SettingsGroup={AdminSettingsGroup} notify={showToast} />
+          <PaymentCompanionPairingCard key={tenant?.id} isOwner={profile?.role === "owner"} canPair={["owner","admin"].includes(profile?.role)} SettingsGroup={AdminSettingsGroup} notify={showToast} />
           {["owner","admin"].includes(profile?.role) ? (
             <AdminSettingsGroup
               id="storeLKShopGroup"
