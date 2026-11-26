@@ -83,3 +83,35 @@ test("synthetic device test is scoped, idempotent, rate limited, and revoked wit
  await http("platformConnectDeviceUnpair","POST",pair.pairingToken);
  assert.equal((await send(event)).code,401);
 });
+
+test("receiver confirmation uses canonical scope and exact saved account revision",async()=>{
+ const tenantId=randomUUID(),owner={uid:"receiver-"+tenantId};
+ await db.collection("tenants").doc(tenantId).set({active:true});
+ await db.collection("users").doc(owner.uid).set({role:"owner",active:true,tenantId});
+ const store=db.collection("tenants").doc(tenantId).collection("settings").doc("store");
+ await store.set({bankName:"SCB",bankAccountNumber:"1234567890",bankAccountName:"Synthetic shop"});
+ const get=()=>fn.getPlatformConnectPairing.run({auth:owner,data:{scope:"tenant"}});
+ const confirm=(confirmed,version)=>fn.confirmPlatformConnectReceiver.run({auth:owner,data:{scope:"tenant",confirmed,version}});
+ const initial=(await get()).receiver;
+ assert.equal(initial.ready,true);assert.equal(initial.confirmed,false);
+ assert.equal(initial.accountLast4,"7890");assert.equal(initial.bankCode,"scb");
+ assert.equal(JSON.stringify(initial).includes("1234567890"),false);
+ assert.equal(Object.hasOwn(initial,"revision"),false);
+ await assert.rejects(confirm(true,"1.0"),{code:"failed-precondition"});
+ const result=await confirm(true,initial.version);
+ assert.equal(result.receiver.confirmed,true);assert.equal(result.notificationEnabled,false);
+ assert.equal((await get()).receiver.confirmed,true);
+ await store.update({bankAccountNumber:"1234567891"});
+ const changed=(await get()).receiver;
+ assert.equal(changed.confirmed,false);assert.equal(changed.requiresReconfirmation,true);
+ await assert.rejects(confirm(true,initial.version),{code:"failed-precondition"});
+ assert.equal((await confirm(true,changed.version)).receiver.confirmed,true);
+ assert.equal((await confirm(false,"")).receiver.confirmed,false);
+ await assert.rejects(fn.confirmPlatformConnectReceiver.run({auth:owner,data:{scope:"platform",confirmed:false}}),{code:"permission-denied"});
+ const central=db.collection("platformPrivateSettings").doc("receiptReceiver");
+ await central.set({revision:1,receiver:{accountType:"01014",accountNumber:"1112223334",accountNameTH:"Synthetic central"}});
+ const c=(await fn.getPlatformConnectPairing.run({auth,data:{}})).receiver;
+ assert.equal(c.accountLast4,"3334");assert.equal(c.confirmed,false);
+ assert.equal((await fn.confirmPlatformConnectReceiver.run({auth,data:{confirmed:true,version:c.version}})).receiver.confirmed,true);
+ assert.equal((await get()).receiver.confirmed,false);
+});

@@ -410,6 +410,7 @@ exports.revokePlatformConnectPairing = platformConnectPairing.revokePlatformConn
 exports.platformConnectDeviceStatus = platformConnectPairing.platformConnectDeviceStatus;
 exports.platformConnectDeviceUnpair = platformConnectPairing.platformConnectDeviceUnpair;
 exports.platformConnectDeviceTest = platformConnectPairing.platformConnectDeviceTest;
+exports.confirmPlatformConnectReceiver = platformConnectPairing.confirmPlatformConnectReceiver;
 const paymentCompanion = require("./payment-companion");
 exports.pairPaymentCompanionDevice = paymentCompanion.pairPaymentCompanionDevice;
 exports.changePaymentCompanionDevice = paymentCompanion.changePaymentCompanionDevice;

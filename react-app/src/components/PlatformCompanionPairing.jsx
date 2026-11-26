@@ -11,6 +11,7 @@ export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
  const merchant=scope==="tenant",scopeLabel=merchant?"ร้านค้า":"ส่วนกลาง";
  const scopedCall=(name,data={})=>call(name,{...data,scope});
  const [devices,setDevices]=useState([]);
+ const [receiver,setReceiver]=useState(null);
 
  const [apk,setApk]=useState(null);
  const [expiresAt,setExpiresAt]=useState("");
@@ -31,6 +32,7 @@ export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
    if(!valid(data,scope)||!Array.isArray(data.devices)||data.devices.length>3||
       data.devices.some(d=>typeof d.id!=="string"||typeof d.label!=="string"||typeof d.connected!=="boolean"))throw Error("INVALID_PAIRING_RESPONSE");
    setDevices(data.devices);
+   setReceiver(data.receiver||null);
    onDevicesChange?.(data.devices.filter(d=>d.connected).length);
    setReady(true);setError("");
    return data.devices;
@@ -95,6 +97,19 @@ export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
   finally{setBusy(false);}
  };
 
+ const confirmReceiver=async confirmed=>{
+  if(busy||loading||!ready||confirmed&&!receiver?.ready)return;
+  const accept=await sweetConfirm(confirmed?"ยืนยันบัญชีรับเงินนี้สำหรับเตรียมเชื่อมต่อ PG Connect? ยังไม่เปิดอ่านแจ้งเตือนหรืออนุมัติการชำระ":"ยกเลิกการยืนยันบัญชีรับเงินสำหรับ PG Connect?",{title:"ยืนยันบัญชีรับเงิน",confirmText:confirmed?"ยืนยัน":"ยกเลิกการยืนยัน",cancelText:"กลับ",type:"warning"});
+  if(!accept)return;
+  setBusy(true);setError("");
+  try{
+   const data=await scopedCall("confirmPlatformConnectReceiver",{confirmed,version:receiver?.version||""});
+   if(!valid(data,scope)||data.receiver?.confirmed!==confirmed)throw Error("RECEIVER_NOT_CONFIRMED");
+   await refresh();
+  }catch{setError("ยืนยันบัญชีไม่สำเร็จ กรุณารีเฟรชตรวจสอบบัญชีอีกครั้ง");}
+  finally{setBusy(false);}
+ };
+ const bankNames={scb:"ไทยพาณิชย์",kbank:"กสิกรไทย",ktb:"กรุงไทย",bbl:"กรุงเทพ",krungsri:"กรุงศรีอยุธยา",gsb:"ออมสิน",cimb:"ซีไอเอ็มบีไทย",baac:"ธ.ก.ส.",linebk:"LINE BK"};
  const copy=async()=>{
   if(!token)return;
   try{
@@ -111,6 +126,15 @@ export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
   </div>
   {revokeStatus?<p role="status"><i className="bi bi-check-circle" aria-hidden="true"/> {revokeStatus}</p>:null}
   {error?<p role="alert" className="platform-collection-warning">{error}</p>:null}
+  <div className="platform-companion-members">
+   <strong><i className="bi bi-bank" aria-hidden="true"/> บัญชีรับเงินสำหรับ PG Connect</strong>
+   {receiver?.ready?<small>{bankNames[receiver.bankCode]||receiver.bankCode} · บัญชีลงท้าย {receiver.accountLast4}</small>:<small>ยังไม่พบบัญชีรับเงินที่บันทึกและรองรับ กรุณาตรวจสอบการตั้งค่าบัญชี{scopeLabel}</small>}
+   <small role="status">{receiver?.confirmed?"ยืนยันบัญชีแล้ว (ยังไม่เปิดรับแจ้งเงินเข้า)":receiver?.requiresReconfirmation?"บัญชีมีการเปลี่ยนแปลง กรุณายืนยันใหม่":"ยังไม่ได้ยืนยันบัญชี"}</small>
+   <div>
+    <button type="button" className="btn btn-sm" disabled={busy||loading||!ready||!receiver?.ready||receiver.confirmed} onClick={()=>void confirmReceiver(true)}><i className="bi bi-shield-check" aria-hidden="true"/> ยืนยันบัญชีรับเงิน</button>
+    {receiver?.confirmed||receiver?.requiresReconfirmation?<button type="button" className="btn btn-sm" disabled={busy||loading||!ready} onClick={()=>void confirmReceiver(false)}>ยกเลิกการยืนยัน</button>:null}
+   </div>
+  </div>
   <div className="platform-companion-install">
    {apk?<a className="btn btn-sm" href={apk.path} download={apk.path.split("/").pop()}>
     <i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด PG Connect (UAT)</a>:

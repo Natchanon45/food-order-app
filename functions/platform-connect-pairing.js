@@ -4,6 +4,7 @@
 const {onCall,onRequest,HttpsError}=require("./managed-email-callable");
 const {getFirestore}=require("firebase-admin/firestore");
 const {randomBytes,randomUUID,createHash}=require("node:crypto");
+const receiverPolicy=require("./platform-connect-receiver-policy");
 const options={region:"asia-southeast1",timeoutSeconds:20};
 const flags=Object.freeze({mode:"pairing_only",notificationEnabled:false,paymentRoutingEnabled:false,paymentVerified:false});
 const validId=/^[a-f0-9-]{36}$/;
@@ -33,10 +34,19 @@ async function admin(db,request,tx){
 function state(row,now){return row?.enabled===true&&Number.isSafeInteger(row.expiresMs)&&row.expiresMs>now;}
 function view(row,now){return {id:row.id,label:row.label,enabled:state(row,now),connected:state(row,now)&&Number.isSafeInteger(row.connectedMs),expiresAt:new Date(row.expiresMs).toISOString(),keyDeleted:row.keyDeleted===true,lastTestAt:Number.isSafeInteger(row.lastTestMs)?new Date(row.lastTestMs).toISOString():null};}
 function activeRows(rows,now){return (Array.isArray(rows)?rows:[]).filter(r=>state(r,now));}
+function receiverRef(db,scope,tenantId){
+ return scope==="platform"?db.collection("platformPrivateSettings").doc("receiptReceiver"):db.collection("tenants").doc(tenantId).collection("settings").doc("store");
+}
+async function receiverState(db,context,meta,tx){
+ const current=receiverPolicy.receiver(await snapshot(tx,receiverRef(db,context.scope,context.tenantId)),context.scope);
+ return {current,public:receiverPolicy.view(current,meta.receiverBinding)};
+}
+
 exports.getPlatformConnectPairing=onCall(options,async request=>{
- const db=getFirestore();const {scope,ref}=await admin(db,request);
+ const db=getFirestore();const context=await admin(db,request),{scope,ref}=context;
  const meta=(await ref.get()).data()||{},now=Date.now();
- return {ok:true,...scopeFlags(scope),devices:activeRows(meta.devices,now).map(r=>view(r,now)),maxDevices:3};
+ const receiver=await receiverState(db,context,meta);
+ return {ok:true,...scopeFlags(scope),devices:activeRows(meta.devices,now).map(r=>view(r,now)),maxDevices:3,receiver:receiver.public};
 });
 exports.createPlatformConnectPairing=onCall(options,async request=>{
  const db=getFirestore(),label=typeof request.data?.label==="string"?request.data.label.trim():"";
@@ -115,3 +125,19 @@ exports.platformConnectDeviceStatus=onRequest(options,(req,res)=>deviceOperation
 exports.platformConnectDeviceUnpair=onRequest(options,(req,res)=>deviceOperation(req,res,true));
 
 exports.platformConnectDeviceTest=onRequest(options,(req,res)=>deviceOperation(req,res,false,true));
+
+exports.confirmPlatformConnectReceiver=onCall(options,async request=>{
+ const data=request.data||{};
+ if(Object.keys(data).some(k=>!["scope","confirmed","version"].includes(k))||typeof data.confirmed!=="boolean"||
+    (data.confirmed&&(typeof data.version!=="string"||!/^\d+\.\d+$/.test(data.version))))throw err("invalid-argument","Invalid receiver confirmation");
+ const db=getFirestore();
+ return db.runTransaction(async tx=>{
+  const context=await admin(db,request,tx),{ref,scope}=context;
+  const meta=(await tx.get(ref)).data()||{};
+  const {current}=await receiverState(db,context,meta,tx);
+  if(data.confirmed&&(!current.ready||data.version!==current.version))throw err("failed-precondition","Receiver changed; refresh and confirm again");
+  const link=data.confirmed?{confirmed:true,revision:current.revision,confirmedMs:Date.now(),confirmedBy:request.auth.uid}:{confirmed:false};
+  tx.set(ref,{receiverBinding:link},{mergeFields:["receiverBinding"]});
+  return {ok:true,...scopeFlags(scope),receiver:receiverPolicy.view(current,link)};
+ });
+});

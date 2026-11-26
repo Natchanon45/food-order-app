@@ -45,3 +45,14 @@ test("explicit synthetic test can be displayed without enabling financial notifi
  assert.match(ui,/ได้รับเหตุการณ์ทดสอบ \(ไม่ใช่ยอดเงินเข้า\)/);
  assert.match(read("firebase.json"),/platformConnectDeviceTest/);
 });
+
+test("shared receiver binding is revision-bound, masked and does not authorize ingest",()=>{
+ const source=read("functions/platform-connect-receiver-policy.js");
+ assert.match(source,/account\.slice\(-4\)/);
+ assert.match(source,/link\?\.revision===current\.revision/);
+ assert.match(source,/notificationEnabled:false,paymentVerified:false/);
+ const api=read("functions/platform-connect-pairing.js");
+ assert.match(api,/data\.version!==current\.version/);
+ assert.match(api,/confirmPlatformConnectReceiver=onCall/);
+ assert.match(api,/mergeFields:\["receiverBinding"\]/);
+});

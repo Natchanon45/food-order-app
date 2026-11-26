@@ -72,7 +72,7 @@ test("every exported v2 Callable definition uses a single shared pre-handler Aut
    name+" may import an unguarded onCall");
  }
  assert.equal(modules,52,"audit all 52 managed Callable modules including signed Delivery correction");
- assert.equal(definitions,164,"audit all 164 shared managed Callables including two customer correction operations");
+ assert.equal(definitions,165,"audit all 165 shared managed Callables including two customer correction operations");
  const source=readFileSync(new URL("managed-email-callable.js",root),"utf8");
  assert.match(source,/await assertManagedEmailVerified\(request\);\s*return handler\(request,\.\.\.rest\)/);
  assert.match(source,/request.auth\?\.token\?\.email_verified === true/);

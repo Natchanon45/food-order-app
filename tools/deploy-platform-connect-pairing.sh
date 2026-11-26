@@ -11,7 +11,7 @@ ROOT="$PWD"
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/penguin-connect-pairing-release.XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT HUP INT TERM
 mkdir "$STAGE/functions"
-cp "$ROOT/functions/platform-connect-pairing.js" "$ROOT/functions/managed-email-callable.js" "$STAGE/functions/"
+cp "$ROOT/functions/platform-connect-pairing.js" "$ROOT/functions/platform-connect-receiver-policy.js" "$ROOT/functions/payment-companion-policy.js" "$ROOT/functions/managed-email-callable.js" "$STAGE/functions/"
 cat > "$STAGE/functions/index.js" <<'JS'
 const {initializeApp}=require("firebase-admin/app");
 initializeApp();
@@ -22,6 +22,7 @@ exports.revokePlatformConnectPairing=setup.revokePlatformConnectPairing;
 exports.platformConnectDeviceStatus=setup.platformConnectDeviceStatus;
 exports.platformConnectDeviceUnpair=setup.platformConnectDeviceUnpair;
 exports.platformConnectDeviceTest=setup.platformConnectDeviceTest;
+exports.confirmPlatformConnectReceiver=setup.confirmPlatformConnectReceiver;
 JS
 node - "$ROOT" "$STAGE" <<'JS'
 const fs=require("fs"),path=require("path");
@@ -36,6 +37,6 @@ JS
 # Reuse installed dependencies solely for local function discovery. The
 # deployment manifest contains exact package versions; node_modules excluded.
 ln -s "$ROOT/functions/node_modules" "$STAGE/functions/node_modules"
-(cd "$STAGE" && node -e 'const f=require("./functions");const expected=["getPlatformConnectPairing", "createPlatformConnectPairing", "revokePlatformConnectPairing", "platformConnectDeviceStatus", "platformConnectDeviceUnpair", "platformConnectDeviceTest"];if(JSON.stringify(Object.keys(f).sort())!==JSON.stringify(expected.sort()))process.exit(1);for(const n of expected){if((f[n].__endpoint.secretEnvironmentVariables||[]).length)process.exit(1)};console.log("Scoped Android connection manifest:",expected.join(", "))')
+(cd "$STAGE" && node -e 'const f=require("./functions");const expected=["getPlatformConnectPairing", "createPlatformConnectPairing", "revokePlatformConnectPairing", "platformConnectDeviceStatus", "platformConnectDeviceUnpair", "platformConnectDeviceTest", "confirmPlatformConnectReceiver"];if(JSON.stringify(Object.keys(f).sort())!==JSON.stringify(expected.sort()))process.exit(1);for(const n of expected){if((f[n].__endpoint.secretEnvironmentVariables||[]).length)process.exit(1)};console.log("Scoped Android connection manifest:",expected.join(", "))')
 cd "$STAGE"
-firebase deploy --config "$STAGE/firebase.json" --project chat-45754 --only functions:getPlatformConnectPairing,functions:createPlatformConnectPairing,functions:revokePlatformConnectPairing,functions:platformConnectDeviceStatus,functions:platformConnectDeviceUnpair,functions:platformConnectDeviceTest --non-interactive
+firebase deploy --config "$STAGE/firebase.json" --project chat-45754 --only functions:getPlatformConnectPairing,functions:createPlatformConnectPairing,functions:revokePlatformConnectPairing,functions:platformConnectDeviceStatus,functions:platformConnectDeviceUnpair,functions:platformConnectDeviceTest,functions:confirmPlatformConnectReceiver --non-interactive
