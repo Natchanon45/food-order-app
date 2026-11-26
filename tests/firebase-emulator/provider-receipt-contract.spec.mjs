@@ -85,3 +85,21 @@ test("receipt records are server-only, including for authenticated merchant prof
     await deleteClient(client);
   }
 });
+
+test("scoped history reads actual emulator records for the canonical admin only", async () => {
+  const { readProviderReceiptHistory: read } = require("./provider-receipt-history.js");
+  const { binding, event } = fixture();
+  const uid = "demo-history-" + randomUUID();
+  const other = { ...binding, connectionId: randomUUID(), tenantId: randomUUID() };
+  await db.collection("tenants").doc(binding.tenantId).set({ active: true });
+  await db.collection("users").doc(uid).set({ active: true, role: "admin", tenantId: binding.tenantId });
+  const mine = await recordProviderReceipt(db, binding, event, now);
+  await recordProviderReceipt(db, other, event, now);
+  const result = await read(db, { uid }, { scope: "tenant", limit: 1 });
+  assert.deepEqual(result.items.map(x => x.id), [mine.id]);
+  assert.equal(result.hasMore, false);
+  assert.equal(result.items[0].paymentVerified, false);
+  assert.equal(Object.hasOwn(result.items[0], "fingerprint"), false);
+  await assert.rejects(read(db, { uid }, { scope: "platform" }), { code: "permission-denied" });
+  await assert.rejects(read(db, { uid }, { scope: "tenant", tenantId: other.tenantId }), { code: "invalid-argument" });
+});
