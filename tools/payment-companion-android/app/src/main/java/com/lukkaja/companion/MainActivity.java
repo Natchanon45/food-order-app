@@ -259,23 +259,21 @@ public final class MainActivity extends Activity {
         visible(advancedToggleButton,false);
         if(advancedToggleButton!=null)advancedToggleButton.setText(advancedOpen
                 ?"ซ่อนการตั้งค่า Webhook":"ตั้งค่าขั้นสูง • Webhook");
-        visible(sourceCard,false);
+        visible(sourceCard,paired);
         visible(sourceEditor,CompanionUiVisibility.sourceEditor(paired,configured,sourceEditing));
         visible(sourceSummary,CompanionUiVisibility.sourceSummary(paired,configured,sourceEditing));
         visible(cancelSourceEditButton,paired&&configured&&sourceEditing);
         if(selectedSourceInfo!=null) selectedSourceInfo.setText(
             ("line".equals(settings.sourceMode())?"LINE":"แอปธนาคาร")+"  •  "+
             selectedSourceTitle(settings.sourceMode(),settings.bank()));
-        visible(consentCard,false);
+        visible(consentCard,paired);
         visible(diagnosticsCard,false);
-        boolean access=notificationAccessEnabled();
-        visible(openAccessButton,CompanionUiVisibility.notificationPermissionButton(access));
-        if(accessLabel!=null)accessLabel.setText(access
-            ?"✓ Notification Access เปิดแล้ว":"! ยังไม่ได้รับสิทธิ์ Notification Access");
-        // A previously opted-in owner can always turn OFF receiving even
-        // when Android temporarily revoked Notification Access.
-        enableCheckbox.setEnabled(CompanionUiVisibility.receiveToggleAvailable(paired,configured,access,settings.enabled()));
-        if(retryButton!=null)visible(retryButton,CompanionUiVisibility.retryButton(paired,settings.enabled(),CompanionQueue.count(this)));
+        // This release saves source settings locally only. Do not request
+        // Notification Access or present a successful opt-in while ingest is unavailable.
+        visible(openAccessButton,false);
+        if(accessLabel!=null)accessLabel.setText("ยังไม่เปิดบริการรับแจ้งเตือนเงินเข้าบน Firebase");
+        enableCheckbox.setEnabled(false);
+        if(retryButton!=null)visible(retryButton,false);
         if(disconnectButton!=null)visible(disconnectButton,paired);
         visible(diagnosticsBody,diagnosticsOpen);
         if(diagnosticsToggleButton!=null)diagnosticsToggleButton.setText(
@@ -329,7 +327,7 @@ public final class MainActivity extends Activity {
         LinearLayout intro=card(outer);
         add(intro,text("PG Connect • PENGUIN UAT",17,Color.rgb(24,67,40),true),8);
         add(intro,text("ทดสอบเชื่อมต่อบัญชีส่วนกลางหรือร้านค้าด้วยคีย์หรือ QR · คีย์หมดอายุใน 24 ชั่วโมง",13,Color.rgb(75,108,87),false),8);
-        add(intro,text("รุ่นนี้ทดสอบการจับคู่เท่านั้น ไม่อ่าน Notification และไม่รับส่งข้อมูลธนาคาร",12,Color.rgb(154,97,35),false),8);
+        add(intro,text("รุ่นนี้รองรับการจับคู่และบันทึกแหล่งแจ้งเตือน ยังไม่อ่าน Notification หรือส่งข้อมูลธนาคาร",12,Color.rgb(154,97,35),false),8);
         healthLabel=text("",13,Color.rgb(144,85,22),true);
         add(intro,healthLabel,0);
         statusLabel=text("",13,GREEN,true);
@@ -377,7 +375,7 @@ public final class MainActivity extends Activity {
         serverInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_URI);
         serverInput.setText(settings.server());serverInput.setEnabled(false);add(pairingForm,serverInput,12);
         add(pairingForm,text("รหัสจับคู่อุปกรณ์ (64 ตัวอักษร)",12,GREEN,true),6);
-        tokenInput=field("วางรหัสจากหน้า Pricing");
+        tokenInput=field("วางรหัสจากหน้า Superadmin หรือจัดการร้าน");
         tokenInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         add(pairingForm,tokenInput,12);
         saveButton=button("เชื่อมต่อและบันทึกรหัส",true);
@@ -513,12 +511,12 @@ public final class MainActivity extends Activity {
             refreshBankOptions();updateUiState();
         });
         add(sourceCard,sourceEditor,0);
-        add(sourceCard,text("ระบบอ่านเฉพาะ Notification ที่คุณเลือก ไม่อ่านแชทส่วนตัวหรือข้อมูลจากแอปอื่น",
+        add(sourceCard,text("บันทึกเฉพาะแหล่งแจ้งเตือนที่คุณเลือกไว้ในเครื่อง รุ่นนี้ยังไม่อ่าน Notification",
                 11,Color.rgb(96,118,104),false),0);
 
         consentCard=card(outer);
         add(consentCard,text("3. เปิดรับแจ้งเตือนเงินเข้า",17,Color.rgb(24,67,40),true),8);
-        add(consentCard,text("Android ต้องอนุญาต Notification Access ก่อน จึงจะรับจาก LINE หรือแอปธนาคารที่เลือกได้",
+        add(consentCard,text("เมื่อระบบรับแจ้งเตือนพร้อมใช้งาน จะต้องอนุญาต Notification Access ก่อนเปิดรับจากแหล่งที่เลือก",
                 12,Color.rgb(83,107,92),false),10);
         accessLabel=text("",13,Color.rgb(85,110,91),true);
         add(consentCard,accessLabel,10);
@@ -530,32 +528,20 @@ public final class MainActivity extends Activity {
         });
         enableCheckbox=new CheckBox(this);
         enableCheckbox.setText("เปิดรับและส่งแจ้งเตือนเงินเข้า");
+        enableCheckbox.setEnabled(false);
         enableCheckbox.setTextColor(Color.rgb(24,67,40));enableCheckbox.setTextSize(14);
         add(consentCard,enableCheckbox,10);
         enableCheckbox.setOnCheckedChangeListener((button,checked)->{
             if(restoringSavedCheckbox)return;
-            if(checked&&!notificationAccessEnabled()){
+            if(checked){
+                restoringSavedCheckbox=true;
                 enableCheckbox.setChecked(false);
-                showError("เปิด Notification Access ให้ PG Connect ในการตั้งค่า Android ก่อน");
-                updateUiState();return;
+                restoringSavedCheckbox=false;
             }
-            if(checked&&settings.token().isEmpty()){
-                enableCheckbox.setChecked(false);
-                showError("กรุณาเชื่อมต่อร้านค้าก่อนเปิดรับแจ้งเตือน");
-                updateUiState();return;
-            }
-            if(checked&&(!settings.sourceConfigured()||
-                    !CompanionParser.validSelection(settings.sourceMode(),settings.bank()))){
-                enableCheckbox.setChecked(false);
-                showError("กรุณาเลือกและบันทึกแหล่งแจ้งเตือนก่อน");
-                updateUiState();return;
-            }
-            settings.setEnabled(checked);
-            if(checked) CompanionQueue.schedule(this);
-            else CompanionQueue.cancel(this);
-            updateQueueLabel();
-            showSuccess(checked?"เปิดรับแจ้งเตือนเงินเข้าแล้ว":"หยุดรับและส่งแจ้งเตือนแล้ว");
+            settings.setEnabled(false);
         });
+        add(consentCard,text("เลือกและบันทึกแหล่งแจ้งเตือนได้แล้ว แต่ยังไม่สามารถเปิดรับหรือส่งข้อมูลจริงได้ในรุ่นนี้",
+                12,Color.rgb(154,97,35),false),10);
         queueLabel=text("",12,Color.rgb(80,102,88),false);
         add(consentCard,queueLabel,10);
         retryButton=button("ส่งข้อมูลค้างอีกครั้ง",true);
@@ -722,7 +708,7 @@ public final class MainActivity extends Activity {
     private void refreshHealthLabel() {
         if(healthLabel==null||settings==null)return;
         boolean paired=!settings.token().isEmpty();
-        healthLabel.setText(paired?"บันทึกการจับคู่แล้ว · กดตรวจสอบการเชื่อมต่อ":"ขั้นตอนถัดไป: สแกน QR หรือกรอกคีย์จาก Pricing");
+        healthLabel.setText(paired?"บันทึกการจับคู่แล้ว · กดตรวจสอบการเชื่อมต่อ":"ขั้นตอนถัดไป: สแกน QR หรือกรอกรหัสจาก Superadmin หรือจัดการร้าน");
         healthLabel.setTextColor(paired?Color.rgb(13,112,62):Color.rgb(144,85,22));
     }
     private void refresh() {
@@ -736,9 +722,7 @@ public final class MainActivity extends Activity {
     }
     private void updateQueueLabel() {
         if(queueLabel!=null)queueLabel.setText("รายการที่รอส่ง: "+CompanionQueue.count(this)+" รายการ");
-        if(accessLabel!=null)accessLabel.setText(notificationAccessEnabled()
-          ?"สิทธิ์ Notification Access: เปิดแล้ว"
-          :"สิทธิ์ Notification Access: ยังไม่เปิด — ต้องอนุญาตก่อน");
+        if(accessLabel!=null)accessLabel.setText("ยังไม่เปิดบริการรับแจ้งเตือนเงินเข้าบน Firebase");
         if(diagnosticsLabel!=null)diagnosticsLabel.setText(CompanionDiagnostics.summary(this));
         refreshHealthLabel();
         updateUiState();
@@ -838,7 +822,7 @@ public final class MainActivity extends Activity {
                     advancedOpen=false;
                     sourceEditing=!settings.sourceConfigured();
                     refresh();
-                    showSuccess("เชื่อมต่อ PENGUIN สำเร็จ (ทดสอบการจับคู่เท่านั้น)");
+                    showSuccess("เชื่อมต่อ PENGUIN สำเร็จ · เลือกแหล่งแจ้งเตือนได้แล้ว");
                 }catch(Exception ignored){
                     showError("บันทึกรหัสใน Android Keystore ไม่สำเร็จ ยังไม่ได้เปิดรับแจ้งเตือน");
                 }

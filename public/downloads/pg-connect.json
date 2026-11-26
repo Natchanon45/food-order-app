@@ -1,10 +1,10 @@
 {
   "version": "1.0.0",
-  "buildCode": 3,
+  "buildCode": 4,
   "mode": "pairing_only",
-  "path": "/downloads/PG_Connect_V1.0.0_0003.apk",
-  "sha256": "bda5ac0f18269c6934b7cc315e3b3afe815ce0c23901988ad3e6574875c5d3fe",
-  "sizeBytes": 2555834,
+  "path": "/downloads/PG_Connect_V1.0.0_0004.apk",
+  "sha256": "d26e4a685294945040af596bcf265e94fad9554381bafff962954d772423f6c8",
+  "sizeBytes": 2555434,
   "signing": "development",
   "notificationEnabled": false
 }

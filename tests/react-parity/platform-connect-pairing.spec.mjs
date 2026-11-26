@@ -22,3 +22,14 @@ test("platform setup has only connection status and self-unpair, not money or no
  assert.match(ui,/getPlatformConnectPairing/);assert.match(ui,/createPlatformConnectPairing/);
  assert.doesNotMatch(ui,/localStorage|sessionStorage/);
 });
+
+test("paired device displays source configuration and a truthful disabled receive toggle",()=>{
+ const base="tools/payment-companion-android/app/src/main/java/com/lukkaja/companion/";
+ const activity=read(base+"MainActivity.java");
+ assert.match(activity,/visible\(sourceCard,paired\)/);
+ assert.match(activity,/visible\(consentCard,paired\)/);
+ assert.match(activity,/settings\.chooseSource\(mode,bank,custom\)/);
+ assert.match(activity,/enableCheckbox\.setEnabled\(false\)/);
+ assert.match(activity,/visible\(openAccessButton,false\)/);
+ assert.match(read(base+"SecureSettings.java"),/boolean enabled\(\) \{ return false; \}/);
+});
