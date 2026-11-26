@@ -16,7 +16,7 @@ if (process.env.GCLOUD_PROJECT !== project || !local.test(firestoreHost) || !loc
 const require = createRequire(new URL("../../functions/package.json", import.meta.url));
 const { initializeApp, deleteApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
-const { normalizeProviderReceipt, recordProviderReceipt } = require("../../functions/provider-receipt-contract");
+const { normalizeProviderReceipt, recordProviderReceipt } = require("./provider-receipt-contract.js");
 const admin = initializeApp({ projectId: project });
 const db = getFirestore(admin);
 const now = Date.parse("2026-11-26T02:00:00.000Z");
