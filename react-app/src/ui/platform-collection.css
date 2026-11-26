@@ -21,30 +21,30 @@ body.platform-pricing-page .platform-collection-warning{margin:10px 0;color:#a22
 body.platform-pricing-page .platform-collection-actions{display:flex;justify-content:flex-end;align-items:center;gap:9px;margin-top:16px;flex-wrap:wrap}
 body.platform-pricing-page .platform-collection-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;white-space:nowrap;font-weight:400}
 @media(max-width:680px){body.platform-pricing-page .platform-collection-settings{padding:14px;margin:14px 0}body.platform-pricing-page .platform-collection-heading h2{font-size:17px}body.platform-pricing-page .platform-collection-choices{grid-template-columns:minmax(0,1fr)}body.platform-pricing-page .platform-collection-choice{padding:12px}body.platform-pricing-page .platform-collection-actions{flex-wrap:nowrap}body.platform-pricing-page .platform-collection-actions .btn{padding:8px 10px;font-size:clamp(11px,2.8vw,13px)}}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion{margin-top:16px;padding:15px;border:1px solid #cfe6d9;border-radius:14px;background:#fff;min-width:0}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-heading{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-heading>div{display:grid;gap:5px;min-width:0}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-heading strong{font-size:14px;font-weight:600;color:#16432e}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-heading small{font-size:12px;color:#5a7062;line-height:1.6}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-heading>span{white-space:nowrap;font-size:12px;color:#227348;background:#e6f5ed;padding:4px 8px;border-radius:16px}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-install{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin:15px 0}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-install>label{display:grid;gap:5px;flex:1 1 190px;min-width:0;font-size:12px;color:#264e36}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-install .input{min-width:0;width:100%;max-width:100%;min-height:40px}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-install>.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;margin:0;font-size:12px;font-weight:400;white-space:nowrap}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-muted{font-size:12px;color:#9a5f16}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-issued{display:grid;justify-items:center;gap:10px;max-width:100%;border:1px solid #cfe5d8;border-radius:12px;padding:15px;background:#f4fbf6}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-issued>strong{font-size:14px;color:#174e31;font-weight:600}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-issued>small{font-size:12px;color:#58705f;text-align:center}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-key-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;width:100%}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-key-actions .input{min-width:0;flex:1 1 180px;max-width:420px}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-key-actions>.btn{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:400}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-members{display:grid;gap:8px;border-top:1px solid #e4ece5;margin-top:15px;padding-top:12px}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-members>strong{font-size:13px;font-weight:600;color:#173e2b}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-members>small,:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-member small{font-size:11px;color:#698075}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-member{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px;border:1px solid #e4eee6;border-radius:10px;background:#fbfdfb;font-size:12px}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-member>span:first-child{display:grid;gap:4px}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-member>.btn{font-size:12px;font-weight:400}
-@media(max-width:520px){:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion{padding:11px}:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-install>label{flex-basis:100%;order:-1}:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-install>.btn{flex:1 1 auto;min-width:0;padding:8px 10px;font-size:clamp(10px,2.7vw,12px)}}
+body.platform-pricing-page .platform-companion{margin-top:16px;padding:15px;border:1px solid #cfe6d9;border-radius:14px;background:#fff;min-width:0}
+body.platform-pricing-page .platform-companion-heading{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+body.platform-pricing-page .platform-companion-heading>div{display:grid;gap:5px;min-width:0}
+body.platform-pricing-page .platform-companion-heading strong{font-size:14px;font-weight:600;color:#16432e}
+body.platform-pricing-page .platform-companion-heading small{font-size:12px;color:#5a7062;line-height:1.6}
+body.platform-pricing-page .platform-companion-heading>span{white-space:nowrap;font-size:12px;color:#227348;background:#e6f5ed;padding:4px 8px;border-radius:16px}
+body.platform-pricing-page .platform-companion-install{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin:15px 0}
+body.platform-pricing-page .platform-companion-install>label{display:grid;gap:5px;flex:1 1 190px;min-width:0;font-size:12px;color:#264e36}
+body.platform-pricing-page .platform-companion-install .input{min-width:0;width:100%;max-width:100%;min-height:40px}
+body.platform-pricing-page .platform-companion-install>.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;margin:0;font-size:12px;font-weight:400;white-space:nowrap}
+body.platform-pricing-page .platform-companion-muted{font-size:12px;color:#9a5f16}
+body.platform-pricing-page .platform-companion-issued{display:grid;justify-items:center;gap:10px;max-width:100%;border:1px solid #cfe5d8;border-radius:12px;padding:15px;background:#f4fbf6}
+body.platform-pricing-page .platform-companion-issued>strong{font-size:14px;color:#174e31;font-weight:600}
+body.platform-pricing-page .platform-companion-issued>small{font-size:12px;color:#58705f;text-align:center}
+body.platform-pricing-page .platform-companion-key-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;width:100%}
+body.platform-pricing-page .platform-companion-key-actions .input{min-width:0;flex:1 1 180px;max-width:420px}
+body.platform-pricing-page .platform-companion-key-actions>.btn{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:400}
+body.platform-pricing-page .platform-companion-members{display:grid;gap:8px;border-top:1px solid #e4ece5;margin-top:15px;padding-top:12px}
+body.platform-pricing-page .platform-companion-members>strong{font-size:13px;font-weight:600;color:#173e2b}
+body.platform-pricing-page .platform-companion-members>small,body.platform-pricing-page .platform-companion-member small{font-size:11px;color:#698075}
+body.platform-pricing-page .platform-companion-member{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px;border:1px solid #e4eee6;border-radius:10px;background:#fbfdfb;font-size:12px}
+body.platform-pricing-page .platform-companion-member>span:first-child{display:grid;gap:4px}
+body.platform-pricing-page .platform-companion-member>.btn{font-size:12px;font-weight:400}
+@media(max-width:520px){body.platform-pricing-page .platform-companion{padding:11px}body.platform-pricing-page .platform-companion-install>label{flex-basis:100%;order:-1}body.platform-pricing-page .platform-companion-install>.btn{flex:1 1 auto;min-width:0;padding:8px 10px;font-size:clamp(10px,2.7vw,12px)}}
 .m7-platform-promptpay{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px;margin:12px 0;border:1px solid #d5eadc;border-radius:14px;background:#f5fcf7}
 .m7-platform-promptpay strong{font-size:14px;color:#165632;font-weight:600}
 .m7-platform-promptpay svg{display:block;max-width:100%;height:auto;background:#fff;padding:9px;border-radius:12px}
@@ -59,7 +59,7 @@ body.platform-pricing-page .platform-collection-actions .btn{display:inline-flex
 .platform-line-topup .bankalert-wallet-amount{min-width:0;max-width:100%;width:100%}
 .platform-line-topup .bankalert-wallet-amount-input-wrap{box-sizing:border-box;width:100%;max-width:100%;min-width:0}
 .platform-line-topup .bankalert-wallet-amount-input-wrap .input{box-sizing:border-box;width:100%;min-width:0;max-width:100%;flex:1}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion-match-label{font-weight:500;color:#17864c;overflow-wrap:anywhere;max-width:100%}
+body.platform-pricing-page .platform-companion-match-label{font-weight:500;color:#17864c;overflow-wrap:anywhere;max-width:100%}
 body.platform-pricing-page .platform-collection-progress{margin-top:16px;padding:15px 16px;background:#fbfefc;border:1px solid #d9ebe0;border-radius:14px}
 body.platform-pricing-page .platform-collection-progress>strong{display:flex;align-items:center;gap:8px;font-size:14px;color:#214f35;margin-bottom:11px;font-weight:650}
 body.platform-pricing-page .platform-collection-progress-step{display:flex;align-items:center;gap:10px;min-height:38px;font-size:12px;color:#435c4c;border-top:1px solid #e7eee9;padding:9px 2px}
@@ -68,7 +68,7 @@ body.platform-pricing-page .platform-collection-progress-step>i.bi-check-circle-
 body.platform-pricing-page .platform-collection-progress-step>span{flex:1;min-width:0}
 body.platform-pricing-page .platform-collection-progress-step a,body.platform-pricing-page .platform-collection-progress-step button{font-size:12px;display:inline-flex;border:0;padding:5px;background:transparent;color:#167a49;text-decoration:underline;cursor:pointer}
 body.platform-pricing-page .platform-collection-next{display:flex;gap:9px;align-items:flex-start;margin-top:11px;padding:13px;border:1px solid #cfe6d5;background:#edf9f0;color:#236543;border-radius:10px;font-size:12px;line-height:1.65}
-:is(body.platform-pricing-page,body.admin-vr-page) .platform-companion{scroll-margin-top:95px}
+body.platform-pricing-page .platform-companion{scroll-margin-top:95px}
 @media(max-width:520px){body.platform-pricing-page .platform-collection-progress{padding:11px}body.platform-pricing-page .platform-collection-progress-step{flex-wrap:wrap}body.platform-pricing-page .platform-collection-progress-step a,body.platform-pricing-page .platform-collection-progress-step button{margin-left:27px}}
 
 .platform-line-topup .platform-topup-countdown{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid #cfe5d6;border-radius:12px;background:#f3faf5;padding:12px 14px;color:#21583b;font-size:.88rem;overflow-wrap:anywhere}

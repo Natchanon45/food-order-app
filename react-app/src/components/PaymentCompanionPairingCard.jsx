@@ -72,7 +72,7 @@ export function PaymentCompanionPairingCard({isOwner=false,canPair=isOwner,Setti
  <SettingsGroup id="paymentCompanionSettingsGroup" icon="phone" title="รับแจ้งเงินเข้า Android" description="ตั้งค่าบัญชีรับเงิน การจับคู่อุปกรณ์ และเงื่อนไขปล่อยครัวอัตโนมัติ" status={!data?"ยังไม่ยืนยัน":data.enabled?active+" อุปกรณ์":"ยังไม่เปิดใช้"} statusTone={data?.enabled?"ready":"neutral"}>
   <div className="payment-companion-body">
    <div className="payment-companion-intro"><span className="payment-companion-intro-icon"><i className="bi bi-shield-check" aria-hidden="true"/></span><div><strong>เชื่อมอุปกรณ์รับแจ้งเงินเข้า</strong><p>ใช้ข้อมูลแจ้งเตือนยอดและเวลาเพื่อเสนอรายการที่อาจตรงกันเท่านั้น ไม่ใช่หลักฐานที่ธนาคารรับรอง ไม่เปลี่ยนสถานะ Paid และไม่ปล่อยครัวอัตโนมัติ</p></div><span className="payment-companion-pilot-tag">ตั้งค่า</span></div>
-   {isOwner&&<>
+   {isOwner&&data?.enabled&&<>
    {error&&<div role="alert" className="payment-companion-error">{error}</div>}
    <button className="btn btn-sm payment-companion-refresh" type="button" disabled={busy} onClick={reload}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรชข้อมูล</button>
    {!data?<div className="payment-companion-empty" role="status">ยังไม่ยืนยันข้อมูลจากระบบ</div>:<>
@@ -196,7 +196,7 @@ export function PaymentCompanionPairingCard({isOwner=false,canPair=isOwner,Setti
    </section>}
    </>}
    </>}
-   <PlatformCompanionPairing scope="tenant"/>
+   {!data?.enabled&&<PlatformCompanionPairing scope="tenant" promptPayLast4={recipient.promptPayLast4||""}/>}
   </div>
  </SettingsGroup></div>;
 }

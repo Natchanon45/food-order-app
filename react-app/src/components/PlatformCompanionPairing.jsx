@@ -1,3 +1,4 @@
+import {DynamicField} from "./DynamicField";
 import "@/ui/platform-collection.css";
 import {useCallback,useEffect,useState} from "react";
 import {qrDataUrl} from "@/utils/localQr";
@@ -7,7 +8,7 @@ const call=(name,data={})=>httpsCallable(functions,name)(data).then(r=>r.data);
 const valid=(r,scope)=>r?.ok===true&&r.scope===scope&&r.mode==="pairing_only"&&r.notificationEnabled===false&&r.paymentRoutingEnabled===false&&r.paymentVerified===false;
 import {sweetConfirm} from "./sweetDialog";
 
-export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
+export function PlatformCompanionPairing({onDevicesChange,scope="platform",promptPayLast4=""}){
  const merchant=scope==="tenant",scopeLabel=merchant?"ร้านค้า":"ส่วนกลาง";
  const scopedCall=(name,data={})=>call(name,{...data,scope});
  const [devices,setDevices]=useState([]);
@@ -118,15 +119,9 @@ export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
   }catch{setCopyStatus("คัดลอกไม่ได้ กรุณาอนุญาต Clipboard หรือแสดงรหัสและคัดลอกด้วยตนเอง");}
  };
  const visibleDevices=devices.filter(d=>d.enabled||d.keyDeleted!==true);
- return <section id={merchant?"merchantConnectPairingSection":"platformCompanionPairingSection"} className="platform-companion" aria-label={"การจับคู่ PG Connect "+scopeLabel} data-platform-companion>
-  <div className="platform-companion-heading">
-   <div><strong><i className="bi bi-phone" aria-hidden="true"/> PG Connect สำหรับบัญชี{merchant?"ร้านค้า":" Platform"}</strong>
-    <small>ทดสอบดาวน์โหลดแอปและจับคู่ด้วยคีย์หรือ QR ตามขอบเขตบัญชี · รุ่นนี้ยังไม่รับแจ้งเงินเข้า</small></div>
-   <span>{devices.filter(d=>d.enabled).length}/3 เครื่อง</span>
-  </div>
-  {revokeStatus?<p role="status"><i className="bi bi-check-circle" aria-hidden="true"/> {revokeStatus}</p>:null}
-  {error?<p role="alert" className="platform-collection-warning">{error}</p>:null}
-  <div className="platform-companion-members">
+ const activeCount=devices.filter(d=>d.enabled).length;
+ const receiverControls=(
+<div className={merchant?"payment-companion-panel payment-companion-receiver-actions":"platform-companion-members"}>
    <strong><i className="bi bi-bank" aria-hidden="true"/> บัญชีรับเงินสำหรับ PG Connect</strong>
    {receiver?.ready?<small>{bankNames[receiver.bankCode]||receiver.bankCode} · บัญชีลงท้าย {receiver.accountLast4}</small>:<small>ยังไม่พบบัญชีรับเงินที่บันทึกและรองรับ กรุณาตรวจสอบการตั้งค่าบัญชี{scopeLabel}</small>}
    <small role="status">{receiver?.confirmed?"ยืนยันบัญชีแล้ว (ยังไม่เปิดรับแจ้งเงินเข้า)":receiver?.requiresReconfirmation?"บัญชีมีการเปลี่ยนแปลง กรุณายืนยันใหม่":"ยังไม่ได้ยืนยันบัญชี"}</small>
@@ -135,6 +130,166 @@ export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
     {receiver?.confirmed||receiver?.requiresReconfirmation?<button type="button" className="btn btn-sm" disabled={busy||loading||!ready} onClick={()=>void confirmReceiver(false)}>ยกเลิกการยืนยัน</button>:null}
    </div>
   </div>
+ );
+ const merchantReceiver={enabled:receiver?.confirmed===true,requiresReconfirmation:receiver?.requiresReconfirmation===true,storePaymentReady:receiver?.ready===true,bankName:bankNames[receiver?.bankCode]||receiver?.bankCode,accountLast4:receiver?.accountLast4,promptPayLast4:/^\d{4}$/.test(promptPayLast4)?promptPayLast4:""};
+ if(merchant)return <section id="merchantConnectPairingSection" className="payment-companion-body" aria-label="การจับคู่ PG Connect ร้านค้า">
+  {error?<p role="alert" className="payment-companion-error">{error}</p>:null}
+  {revokeStatus?<p role="status">{revokeStatus}</p>:null}
+     <section className="payment-companion-panel payment-companion-match-panel" data-companion-bank-settings aria-label="ตั้งค่าบัญชีรับเงินสำหรับปล่อยครัว">
+      <div className="payment-companion-section-heading">
+       <div className="payment-companion-section-title">
+        <i className="bi bi-bank" aria-hidden="true"/>
+        <div><strong>บัญชีรับเงินและการปล่อยครัวอัตโนมัติ</strong>
+         <small>ข้อมูลบัญชีรับเงินจากการตั้งค่าร้าน · ยังไม่เปิดรับแจ้งเงินเข้า</small></div>
+       </div>
+       <span className="payment-companion-count">{merchantReceiver.enabled?"ยืนยันบัญชีแล้ว":"ยังไม่ยืนยันบัญชี"}</span>
+      </div>
+      <p className="payment-companion-footnote" role="status">
+       <i className="bi bi-shield-exclamation" aria-hidden="true"/>
+       การยืนยันบัญชีนี้ยังไม่เปิดรับแจ้งเงินเข้า ไม่ยืนยันการชำระ และไม่ปล่อยครัวอัตโนมัติ
+      </p>
+      <section className="payment-companion-bank-receiver-card" data-companion-bank-receiver
+       aria-labelledby="paymentCompanionReceiverTitle">
+       <div className="payment-companion-receiver-heading">
+        <div className="payment-companion-receiver-heading-main">
+         <span className="payment-companion-receiver-heading-icon" aria-hidden="true"><i className="bi bi-bank"/></span>
+         <div className="payment-companion-receiver-heading-copy">
+          <h4 id="paymentCompanionReceiverTitle">ผูกบัญชีรับเงินสำหรับปล่อยครัวอัตโนมัติ</h4>
+          <p>ใช้ข้อมูลรับชำระเงินที่ร้านบันทึกไว้ ไม่ต้องกรอกหมายเลขบัญชีซ้ำ</p>
+         </div>
+        </div>
+        <span className={"payment-companion-receiver-state"+
+         (merchantReceiver.requiresReconfirmation?" is-warning":merchantReceiver.enabled?" is-active":" is-inactive")}>
+         <i className={"bi "+(merchantReceiver.requiresReconfirmation?"bi-exclamation-circle":
+          merchantReceiver.enabled?"bi-check-circle":"bi-clock-history")} aria-hidden="true"/>
+         {merchantReceiver.requiresReconfirmation?"รอยืนยันใหม่":merchantReceiver.enabled?"ยืนยันบัญชีแล้ว":"ยังไม่ยืนยันบัญชี"}
+        </span>
+       </div>
+
+       <div className="payment-companion-receiver-accounts" role="group" aria-label="ข้อมูลบัญชีรับเงินจากการตั้งค่าร้าน">
+        <div className="payment-companion-receiver-account">
+         <span className="payment-companion-receiver-account-icon" aria-hidden="true"><i className="bi bi-bank2"/></span>
+         <div className="payment-companion-receiver-account-info">
+          <span className="payment-companion-receiver-account-label">บัญชีธนาคารที่รับเงิน</span>
+          <strong>{merchantReceiver.bankName||"ยังไม่กำหนดธนาคาร"}</strong>
+          <span className="payment-companion-receiver-account-number">
+           <i className="bi bi-credit-card-2-front" aria-hidden="true"/>
+           {merchantReceiver.accountLast4?"•••• "+merchantReceiver.accountLast4:"ยังไม่มีเลขบัญชีรับเงิน"}
+          </span>
+         </div>
+        </div>
+        <div className="payment-companion-receiver-account is-promptpay">
+         <span className="payment-companion-receiver-account-icon" aria-hidden="true"><i className="bi bi-qr-code"/></span>
+         <div className="payment-companion-receiver-account-info">
+          <span className="payment-companion-receiver-account-label">พร้อมเพย์ของร้าน</span>
+          <strong>{merchantReceiver.promptPayLast4?"•••• "+merchantReceiver.promptPayLast4:"ยังไม่มีข้อมูลพร้อมเพย์"}</strong>
+          <span className="payment-companion-receiver-account-number">
+           <i className="bi bi-link-45deg" aria-hidden="true"/>
+           ข้อมูลจากการชำระเงินของร้าน
+          </span>
+         </div>
+        </div>
+       </div>
+
+       <div className="payment-companion-receiver-explanation">
+        <i className="bi bi-info-circle" aria-hidden="true"/>
+        <span>หมายเลขพร้อมเพย์และบัญชีธนาคารเป็นคนละข้อมูล เลขท้ายจึงไม่จำเป็นต้องเหมือนกัน
+         หากร้านยืนยันว่าเชื่อมกับบัญชีรับเงินเดียวกัน</span>
+       </div>
+
+       <div className="payment-companion-receiver-actions">
+        {!merchantReceiver.enabled||merchantReceiver.requiresReconfirmation?
+         <button type="button" className="btn btn-primary payment-companion-receiver-action is-primary"
+          disabled={busy||loading||!ready||!merchantReceiver.storePaymentReady}
+          onClick={()=>confirmReceiver(true)}>
+          <i className={"bi "+(busy?"bi-arrow-repeat":"bi-shield-check")} aria-hidden="true"/>
+          {busy?"กำลังบันทึก…":"ยืนยันบัญชีรับเงิน"}
+         </button>:null}
+        {merchantReceiver.enabled||merchantReceiver.requiresReconfirmation?
+         <button type="button" className="btn payment-companion-receiver-action is-secondary"
+          disabled={busy||loading||!ready} onClick={()=>confirmReceiver(false)}>
+          <i className="bi bi-pause-circle" aria-hidden="true"/> ยกเลิกการยืนยัน
+         </button>:null}
+       </div>
+
+       <div className={"payment-companion-receiver-feedback"+(error?" is-error":merchantReceiver.requiresReconfirmation?" is-warning":merchantReceiver.enabled?" is-success":" is-neutral")} role="status" aria-live="polite">
+        <i className="bi bi-info-circle" aria-hidden="true"/>
+        <span>{error||(!ready?"ยังไม่สามารถอ่านบัญชีจากระบบ":merchantReceiver.requiresReconfirmation?"มีการแก้ไขบัญชีรับเงิน กรุณายืนยันใหม่":merchantReceiver.enabled?"ยืนยันบัญชีแล้ว (ยังไม่เปิดรับแจ้งเงินเข้า)":merchantReceiver.storePaymentReady?"กรุณายืนยันบัญชีรับเงิน":"ยังไม่พบบัญชีรับเงินที่บันทึกและรองรับ")}</span>
+       </div>
+      </section>
+     </section>
+
+     <div className="payment-companion-panel">
+      <div className="payment-companion-section-heading">
+       <div className="payment-companion-section-title"><i className="bi bi-phone" aria-hidden="true"/><div><strong>อุปกรณ์ที่เชื่อมต่อ</strong><small>จัดการอุปกรณ์และรหัสสำหรับรับแจ้งเงินเข้า</small></div></div>
+       <span className="payment-companion-count">{activeCount}/3 อุปกรณ์</span>
+      </div>
+      <div className="payment-companion-download">
+       <span className="payment-companion-download-icon" aria-hidden="true"><i className="bi bi-android2"/></span>
+       <div className="payment-companion-download-copy">
+        <strong>ติดตั้งแอป PG Connect</strong>
+        <small>ดาวน์โหลดแอป แล้วนำเฉพาะรหัสที่สร้างจากเว็บไปกรอก แอปกำหนดเซิร์ฟเวอร์ไว้แล้ว</small>
+        {apk?.mode==="pairing_only"?<small className="payment-companion-download-warning">
+         รุ่นทดสอบการจับคู่และส่งเหตุการณ์ทดสอบ · ยังไม่เปิดรับแจ้งเงินเข้า
+        </small>:null}
+       </div>
+       {apk?<a className="btn btn-primary payment-companion-download-btn"
+        href={apk.path} download={apk.path.split("/").pop()}>
+        <i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด Android APK
+       </a>:<span className="payment-companion-download-unavailable"><i className="bi bi-info-circle" aria-hidden="true"/> เซิร์ฟเวอร์ยังไม่ได้ตั้งค่าไฟล์ APK</span>}
+      </div>
+      <div className="payment-companion-form">
+       <div className="payment-companion-form-controls">
+        <DynamicField id="companionDeviceLabel" label="ชื่ออุปกรณ์" value={label}
+         className="payment-companion-dynamic-field"
+         description="ตั้งชื่อเพื่อแยกอุปกรณ์ เช่น Android ร้านค้า (รหัสจับคู่จะแสดงเพียงครั้งเดียว)">
+         <input id="companionDeviceLabel" className="input" maxLength={100} value={label} disabled={busy||loading||!ready}
+          onChange={e=>setLabel(e.target.value)}/>
+        </DynamicField>
+        <button type="button" className="btn btn-primary payment-companion-primary-button" disabled={!ready||loading||busy||activeCount>=3||!label.trim()} onClick={pair}>
+         <i className="bi bi-plus-circle" aria-hidden="true"/>{busy?"กำลังดำเนินการ…":"สร้างรหัสจับคู่"}
+        </button>
+       </div>
+      </div>
+      {token?<div className="payment-companion-token" role="status">
+       <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,padding:12,background:"#ffffff",border:"1px solid #daede0",borderRadius:14,marginBottom:12}}>
+        <strong style={{color:"#0b5735"}}><i className="bi bi-qr-code-scan" aria-hidden="true"/> สแกน QR ด้วย PG Connect</strong>
+        <img src={qrDataUrl("lkconnect://pair?v=1&server="+encodeURIComponent("https://penguin-food.web.app")+"&token="+token,{size:210})} width="210" height="210" alt="QR สำหรับจับคู่ PG Connect" style={{maxWidth:"100%",height:"auto"}}/>
+        <small style={{textAlign:"center",maxWidth:300}}>QR มีรหัสอุปกรณ์อยู่ภายใน ไม่ควรถ่ายหรือส่งให้บุคคลอื่น เมื่อจับคู่แล้วกดปิดรหัส</small>
+       </div>
+       <div className="payment-companion-token-title"><i className="bi bi-key" aria-hidden="true"/><strong>รหัสสำหรับจับคู่อุปกรณ์</strong><span>แสดงครั้งเดียว</span></div>
+       <p>เก็บรหัสนี้เป็นความลับ รหัสใช้ทดสอบการเชื่อมต่อของร้าน มีอายุ 24 ชั่วโมง</p>
+       <div className="payment-companion-token-controls">
+        <input className="input" type={showToken?"text":"password"} aria-label="รหัสจับคู่อุปกรณ์" value={token} readOnly spellCheck={false}/>
+        <button type="button" className="btn" onClick={copy}><i className="bi bi-copy" aria-hidden="true"/> คัดลอก</button>
+        <button type="button" className="btn" onClick={()=>setShowToken(value=>!value)} aria-pressed={showToken}>
+         <i className={"bi "+(showToken?"bi-eye-slash":"bi-eye")} aria-hidden="true"/> {showToken?"ซ่อนรหัส":"แสดงรหัส"}
+        </button>
+        <button type="button" className="btn" onClick={()=>{setToken("");setIssuedDeviceId("");setShowToken(false);setCopyStatus("");}}>
+         <i className="bi bi-x-circle" aria-hidden="true"/> ปิดรหัส</button>
+       </div>
+       {copyStatus?<p role="status" className="payment-companion-copy-status">{copyStatus}</p>:null}
+      </div>:null}
+      {loading&&!ready?<div className="payment-companion-empty" role="status">กำลังโหลดอุปกรณ์…</div>:
+       devices.length===0?<div className="payment-companion-empty" role="status"><i className="bi bi-phone" aria-hidden="true"/><div><strong>ยังไม่มีอุปกรณ์ที่เชื่อมต่อ</strong><small>สร้างรหัสจับคู่เพื่อเริ่มใช้งานกับ Android</small></div></div>:
+       <ul className="payment-companion-device-list">{devices.map(device=><li key={device.id} className="payment-companion-device">
+        <span className="payment-companion-device-icon"><i className="bi bi-phone" aria-hidden="true"/></span>
+        <div className="payment-companion-device-info"><strong>{device.label}</strong><small>{device.lastTestAt?"ได้รับเหตุการณ์ทดสอบ (ไม่ใช่ยอดเงินเข้า) · "+new Date(device.lastTestAt).toLocaleString("th-TH",{timeZone:"Asia/Bangkok"}):"ยังไม่ได้รับเหตุการณ์ทดสอบจากอุปกรณ์"}</small></div>
+        <span className={"payment-companion-device-state"+(device.enabled?" is-active":"")}>{device.enabled?(device.connected?"เชื่อมต่อแล้ว":"รอเชื่อมต่อ"):"ยกเลิกแล้ว"}</span>
+        {device.enabled?<button type="button" className="btn btn-sm payment-companion-revoke" disabled={busy||loading} onClick={()=>revoke(device)}><i className="bi bi-x-circle" aria-hidden="true"/> ยกเลิกการจับคู่</button>:null}
+       </li>)}</ul>}
+     </div>
+  <button type="button" className="btn btn-sm payment-companion-refresh" onClick={()=>void refresh()} disabled={busy||loading}><i className="bi bi-arrow-clockwise" aria-hidden="true"/> รีเฟรช</button>
+ </section>;
+ return <section id={merchant?"merchantConnectPairingSection":"platformCompanionPairingSection"} className="platform-companion" aria-label={"การจับคู่ PG Connect "+scopeLabel} data-platform-companion>
+  <div className="platform-companion-heading">
+   <div><strong><i className="bi bi-phone" aria-hidden="true"/> PG Connect สำหรับบัญชี{merchant?"ร้านค้า":" Platform"}</strong>
+    <small>ทดสอบดาวน์โหลดแอปและจับคู่ด้วยคีย์หรือ QR ตามขอบเขตบัญชี · รุ่นนี้ยังไม่รับแจ้งเงินเข้า</small></div>
+   <span>{devices.filter(d=>d.enabled).length}/3 เครื่อง</span>
+  </div>
+  {revokeStatus?<p role="status"><i className="bi bi-check-circle" aria-hidden="true"/> {revokeStatus}</p>:null}
+  {error?<p role="alert" className="platform-collection-warning">{error}</p>:null}
+  {receiverControls}
   <div className="platform-companion-install">
    {apk?<a className="btn btn-sm" href={apk.path} download={apk.path.split("/").pop()}>
     <i className="bi bi-download" aria-hidden="true"/> ดาวน์โหลด PG Connect (UAT)</a>:
