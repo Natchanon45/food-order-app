@@ -409,6 +409,7 @@ exports.createPlatformConnectPairing = platformConnectPairing.createPlatformConn
 exports.revokePlatformConnectPairing = platformConnectPairing.revokePlatformConnectPairing;
 exports.platformConnectDeviceStatus = platformConnectPairing.platformConnectDeviceStatus;
 exports.platformConnectDeviceUnpair = platformConnectPairing.platformConnectDeviceUnpair;
+exports.platformConnectDeviceTest = platformConnectPairing.platformConnectDeviceTest;
 const paymentCompanion = require("./payment-companion");
 exports.pairPaymentCompanionDevice = paymentCompanion.pairPaymentCompanionDevice;
 exports.changePaymentCompanionDevice = paymentCompanion.changePaymentCompanionDevice;

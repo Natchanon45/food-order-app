@@ -11,7 +11,7 @@ test("Android pairing UAT has no registered notification listener, upload job or
  assert.match(client,/https:\/\/penguin-food\.web\.app/);
  assert.match(client,/else throw new IllegalArgumentException\("PAIRING_ONLY"\)/);
 });
-test("platform setup has only connection status and self-unpair, not money or notice capabilities",()=>{
+test("platform setup allows connectivity testing, not money or notice capabilities",()=>{
  const s=read("functions/platform-connect-pairing.js");
  assert.match(s,/notificationEnabled:false,paymentRoutingEnabled:false,paymentVerified:false/);
  assert.doesNotMatch(s,/collection\("(?:orders|invoices|notices|wallets)"\)/);
@@ -32,4 +32,16 @@ test("paired device displays source configuration and a truthful disabled receiv
  assert.match(activity,/enableCheckbox\.setEnabled\(false\)/);
  assert.match(activity,/visible\(openAccessButton,false\)/);
  assert.match(read(base+"SecureSettings.java"),/boolean enabled\(\) \{ return false; \}/);
+});
+
+test("explicit synthetic test can be displayed without enabling financial notifications",()=>{
+ const server=read("functions/platform-connect-pairing.js");
+ const app=read("tools/payment-companion-android/app/src/main/java/com/lukkaja/companion/MainActivity.java");
+ const ui=read("react-app/src/components/PlatformCompanionPairing.jsx");
+ assert.match(server,/exports.platformConnectDeviceTest=onRequest/);
+ assert.match(server,/Object.keys\(req.body\).length!==1/);
+ assert.match(server,/testReceived:true,duplicate:true/);
+ assert.match(app,/ส่งเหตุการณ์ทดสอบไปยังเว็บไซต์/);
+ assert.match(ui,/ได้รับเหตุการณ์ทดสอบ \(ไม่ใช่ยอดเงินเข้า\)/);
+ assert.match(read("firebase.json"),/platformConnectDeviceTest/);
 });

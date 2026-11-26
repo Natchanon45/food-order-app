@@ -46,6 +46,9 @@ final class CompanionClient {
         } else if ("/api/companion/device/unpair".equals(route) && payload != null) {
             route="/api/platform/connect/device/unpair";
             payload=new JSONObject();
+        } else if ("/api/platform/connect/device/test".equals(route) && payload != null &&
+                   payload.length()==1 && payload.optString("testId").matches("[a-f0-9-]{36}")) {
+            // Explicitly initiated synthetic connectivity test; no notification data.
         } else throw new IllegalArgumentException("PAIRING_ONLY");
         HttpURLConnection connection = (HttpURLConnection) new URL(server.replaceAll("/$", "") + route).openConnection();
         try {
@@ -82,7 +85,7 @@ final class CompanionClient {
                     !Boolean.FALSE.equals(result.opt("notificationEnabled"))||
                     !Boolean.FALSE.equals(result.opt("paymentRoutingEnabled"))||
                     !Boolean.FALSE.equals(result.opt("paymentVerified"))||
-                    !(route.endsWith("/unpair")?result.optBoolean("revoked",false):result.optBoolean("connected",false)))return 502;
+                    !(route.endsWith("/unpair")?result.optBoolean("revoked",false):route.endsWith("/test")?result.optBoolean("testReceived",false):result.optBoolean("connected",false)))return 502;
             }
             return responseCode;
         } finally { connection.disconnect(); }

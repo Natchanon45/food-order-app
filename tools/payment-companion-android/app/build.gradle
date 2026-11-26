@@ -1,5 +1,5 @@
 plugins { id "com.android.application" }
-android { buildFeatures { buildConfig true }; namespace "com.lukkaja.companion"; compileSdk 36; defaultConfig { applicationId "com.natchanon45.penguin.lkconnect"; minSdk 26; targetSdk 35; versionCode 4; versionName "1.0.0" }; flavorDimensions "target"; productFlavors {
+android { buildFeatures { buildConfig true }; namespace "com.lukkaja.companion"; compileSdk 36; defaultConfig { applicationId "com.natchanon45.penguin.lkconnect"; minSdk 26; targetSdk 35; versionCode 5; versionName "1.0.0" }; flavorDimensions "target"; productFlavors {
   local { dimension "target"; buildConfigField "String","DEFAULT_SERVER_URL",'"http://127.0.0.1:8000"' }
   production { dimension "target"; applicationIdSuffix ".production"; buildConfigField "String","DEFAULT_SERVER_URL",'"https://penguin-food.web.app"' }
 }; buildTypes { debug { applicationIdSuffix ".debug" }; release { minifyEnabled false } }; compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 } }

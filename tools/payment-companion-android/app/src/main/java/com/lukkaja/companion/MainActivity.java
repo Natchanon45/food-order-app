@@ -542,6 +542,27 @@ public final class MainActivity extends Activity {
         });
         add(consentCard,text("เลือกและบันทึกแหล่งแจ้งเตือนได้แล้ว แต่ยังไม่สามารถเปิดรับหรือส่งข้อมูลจริงได้ในรุ่นนี้",
                 12,Color.rgb(154,97,35),false),10);
+        Button sendTest=button("ส่งเหตุการณ์ทดสอบไปยังเว็บไซต์",true);
+        add(consentCard,sendTest,10);
+        sendTest.setOnClickListener(v->{
+            if(settings.token().isEmpty()){showError("กรุณาจับคู่อุปกรณ์ก่อน");return;}
+            sendTest.setEnabled(false);
+            final String server=settings.server(), token=settings.token();
+            executor.execute(()->{
+                int result=0;
+                try{
+                    org.json.JSONObject payload=new org.json.JSONObject();
+                    payload.put("testId",java.util.UUID.randomUUID().toString());
+                    result=CompanionClient.request(server,token,"/api/platform/connect/device/test",payload);
+                }catch(Exception ignored){}
+                final int code=result;
+                runOnUiThread(()->{
+                    sendTest.setEnabled(true);
+                    if(code==200)showSuccess("Firebase รับเหตุการณ์ทดสอบแล้ว · รีเฟรชรายการ PG Connect บนเว็บไซต์");
+                    else showError(code==429?"กรุณารอ 10 วินาทีก่อนส่งทดสอบอีกครั้ง":"ส่งทดสอบไม่สำเร็จ ตรวจการจับคู่และเครือข่าย (HTTP "+code+")");
+                });
+            });
+        });
         queueLabel=text("",12,Color.rgb(80,102,88),false);
         add(consentCard,queueLabel,10);
         retryButton=button("ส่งข้อมูลค้างอีกครั้ง",true);

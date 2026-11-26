@@ -150,7 +150,10 @@ export function PlatformCompanionPairing({onDevicesChange,scope="platform"}){
   </div>
   <div className="platform-companion-members">
    <strong>รายการแจ้งเงินเข้าที่ได้รับล่าสุด</strong>
-   <small>รุ่น UAT นี้ทดสอบการจับคู่เท่านั้น ยังไม่เปิดการรับข้อมูลแจ้งเตือนหรืออนุมัติการชำระ</small>
+   <small>ยังไม่เปิดรับแจ้งเงินเข้าจริง · สามารถส่งเหตุการณ์ทดสอบจากแอปเพื่อยืนยันการเชื่อมต่อ</small>
+   {visibleDevices.filter(d=>d.lastTestAt).map(d=><div className="platform-companion-member" key={"test-"+d.id}>
+    <span><i className="bi bi-check-circle" aria-hidden="true"/> {d.label} <small>ได้รับเหตุการณ์ทดสอบ (ไม่ใช่ยอดเงินเข้า) · {new Date(d.lastTestAt).toLocaleString("th-TH",{timeZone:"Asia/Bangkok"})}</small></span>
+   </div>)}
   </div>
  </section>;
 }

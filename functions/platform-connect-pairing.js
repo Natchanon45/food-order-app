@@ -31,7 +31,7 @@ async function admin(db,request,tx){
  return {scope,ref:root(db).collection("tenantPairings").doc(user.tenantId),tenantId:user.tenantId};
 }
 function state(row,now){return row?.enabled===true&&Number.isSafeInteger(row.expiresMs)&&row.expiresMs>now;}
-function view(row,now){return {id:row.id,label:row.label,enabled:state(row,now),connected:state(row,now)&&Number.isSafeInteger(row.connectedMs),expiresAt:new Date(row.expiresMs).toISOString(),keyDeleted:row.keyDeleted===true};}
+function view(row,now){return {id:row.id,label:row.label,enabled:state(row,now),connected:state(row,now)&&Number.isSafeInteger(row.connectedMs),expiresAt:new Date(row.expiresMs).toISOString(),keyDeleted:row.keyDeleted===true,lastTestAt:Number.isSafeInteger(row.lastTestMs)?new Date(row.lastTestMs).toISOString():null};}
 function activeRows(rows,now){return (Array.isArray(rows)?rows:[]).filter(r=>state(r,now));}
 exports.getPlatformConnectPairing=onCall(options,async request=>{
  const db=getFirestore();const {scope,ref}=await admin(db,request);
@@ -68,9 +68,13 @@ exports.revokePlatformConnectPairing=onCall(options,async request=>{
  });
  return {ok:true,...scopeFlags(scope),revoked:true,keyDeleted:true,deviceId:id};
 });
-async function deviceOperation(req,res,revoke){
+async function deviceOperation(req,res,revoke,test=false){
  res.set("Cache-Control","no-store");
- if(req.method!==(revoke?"POST":"GET"))return res.status(405).json({error:"METHOD_NOT_ALLOWED"});
+ if(req.method!==((revoke||test)?"POST":"GET"))return res.status(405).json({error:"METHOD_NOT_ALLOWED"});
+ // Test events contain no notification content or financial information.
+ const testId=test?req.body?.testId:null;
+ if(test&&(!req.body||Object.keys(req.body).length!==1||typeof testId!=="string"||!validId.test(testId)))
+  return res.status(422).json({error:"INVALID_TEST_EVENT"});
  const token=String(req.get("authorization")||"").match(/^Bearer ([a-f0-9]{64})$/)?.[1];
  if(!token)return res.status(401).json({error:"NOT_PAIRED"});
  try{
@@ -90,13 +94,24 @@ async function deviceOperation(req,res,revoke){
    const meta=await tx.get(ref);
    const rows=meta.data()?.devices||[],row=rows.find(r=>r.id===key.data()?.deviceId);
    if(!key.exists||!state(row,now)||row.keyHash!==hash||key.data()?.expiresMs!==row.expiresMs)return null;
+   if(test){
+    if(!row.connectedMs)return {notConnected:true};
+    if(row.lastTestId===testId)return {testReceived:true,duplicate:true,scope,deviceId:row.id};
+    if(Number(row.lastTestMs||0)>now-10000)return {rateLimited:true};
+    tx.set(ref,{devices:rows.map(r=>r.id===row.id?{...r,lastTestId:testId,lastTestMs:now}:r)},{merge:true});
+    return {testReceived:true,duplicate:false,scope,deviceId:row.id};
+   }
    if(revoke){tx.delete(keyRef);tx.set(ref,{devices:rows.filter(r=>r.id!==row.id)},{merge:true});return {revoked:true,scope};}
    if(!row.connectedMs)tx.set(ref,{devices:rows.map(r=>r.id===row.id?{...r,connectedMs:now}:r)},{merge:true});
    return {connected:true,scope,deviceId:row.id,expiresAt:new Date(row.expiresMs).toISOString()};
   });
   if(!result)return res.status(401).json({error:"NOT_PAIRED"});
+  if(result.notConnected)return res.status(409).json({error:"NOT_CONNECTED"});
+  if(result.rateLimited)return res.status(429).json({error:"TEST_RATE_LIMIT"});
   return res.status(200).json({ok:true,...flags,...result});
  }catch{return res.status(503).json({error:"CONNECTION_UNAVAILABLE"});}
 }
 exports.platformConnectDeviceStatus=onRequest(options,(req,res)=>deviceOperation(req,res,false));
 exports.platformConnectDeviceUnpair=onRequest(options,(req,res)=>deviceOperation(req,res,true));
+
+exports.platformConnectDeviceTest=onRequest(options,(req,res)=>deviceOperation(req,res,false,true));

@@ -10,9 +10,9 @@ initializeApp({projectId:project});
 const db=getFirestore(),fn=require("./platform-connect-pairing");
 const uid="connect-test-"+randomUUID(),other="connect-test-"+randomUUID(),auth={uid};
 const root=db.collection("platformPrivateSettings").doc("connectPairingUatV1");
-const http=async(name,method,token)=>{
+const http=async(name,method,token,body)=>{
  const response={set:()=>response,status:n=>{response.code=n;return response;},json:value=>{response.data=value;return response;}};
- await fn[name]({method,get:key=>key==="authorization"?"Bearer "+token:""},response);
+ await fn[name]({method,body,get:key=>key==="authorization"?"Bearer "+token:""},response);
  return response;
 };
 test("isolated Firestore central pairing: authorization, three slots, check, self-unpair and admin revoke",async()=>{
@@ -58,4 +58,28 @@ test("same device API accepts isolated merchant pairing and preserves platform s
  assert.equal((await call("getPlatformConnectPairing",0)).devices[0].connected,true);
  assert.equal((await http("platformConnectDeviceUnpair","POST",pair.pairingToken)).code,200);
  assert.equal((await http("platformConnectDeviceStatus","GET",pair.pairingToken)).code,401);
+});
+
+test("synthetic device test is scoped, idempotent, rate limited, and revoked with pairing",async()=>{
+ const id=randomUUID(),owner={uid:"test-"+id};
+ await db.collection("tenants").doc(id).set({active:true});
+ await db.collection("users").doc(owner.uid).set({role:"owner",active:true,tenantId:id});
+ const pair=await fn.createPlatformConnectPairing.run({auth:owner,data:{scope:"tenant",label:"Test phone"}});
+ const event={testId:randomUUID()};
+ const send=body=>http("platformConnectDeviceTest","POST",pair.pairingToken,body);
+ assert.equal((await send(event)).code,409);
+ assert.equal((await http("platformConnectDeviceStatus","GET",pair.pairingToken)).code,200);
+ assert.equal((await send({...event,amount:"100"})).code,422);
+ const receipt=await send(event);
+ assert.equal(receipt.code,200);assert.equal(receipt.data.testReceived,true);
+ assert.equal(receipt.data.paymentVerified,false);assert.equal(receipt.data.notificationEnabled,false);
+ assert.equal((await send(event)).data.duplicate,true);
+ assert.equal((await send({testId:randomUUID()})).code,429);
+ const mine=await fn.getPlatformConnectPairing.run({auth:owner,data:{scope:"tenant"}});
+ assert.ok(mine.devices[0].lastTestAt);
+ assert.equal(JSON.stringify(mine).includes(event.testId),false);
+ const central=await fn.getPlatformConnectPairing.run({auth,data:{}});
+ assert.equal(central.devices.some(d=>d.id===pair.deviceId),false);
+ await http("platformConnectDeviceUnpair","POST",pair.pairingToken);
+ assert.equal((await send(event)).code,401);
 });

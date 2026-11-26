@@ -532,6 +532,10 @@
         "function": {"functionId": "platformConnectDeviceUnpair", "region": "asia-southeast1"}
       },
       {
+        "source": "/api/platform/connect/device/test",
+        "function": {"functionId": "platformConnectDeviceTest", "region": "asia-southeast1"}
+      },
+      {
         "source": "/api/companion/device/status",
         "function": {
           "functionId": "paymentCompanionDeviceStatus",
